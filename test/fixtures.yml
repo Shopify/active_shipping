@@ -1,0 +1,6 @@
+usps: 
+  login: APIKey
+ups: 
+  key: XmlAccessKey
+  login: UPSDotComLogin
+  password: UPSDotComPassword
