@@ -27,11 +27,13 @@ Active Shipping is currently being used and improved in a production environment
 
 Currently this library is available on GitHub:
 
-  <http://github.com/shopify/active_shipping>
+  <http://github.com/Shopify/active_shipping>
 
 You will need to get [Git][] if you don't have it. Then:
 
-  > git clone git://github.com/shopify/active_shipping.git
+  > git clone git://github.com/Shopify/active_shipping.git
+
+(That URL is case-sensitive, so watch out.)
   
 Active Shipping includes an init.rb file. This means that Rails will automatically load it on startup. Check out [git-archive][] for exporting the file tree from your repository to your vendor directory.
 
