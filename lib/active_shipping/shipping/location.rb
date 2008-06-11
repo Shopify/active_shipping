@@ -11,7 +11,8 @@ module ActiveMerchant #:nodoc:
                   :address2,
                   :address3,
                   :phone,
-                  :fax
+                  :fax,
+                  :address_type
       
       alias_method :zip, :postal_code
       alias_method :postal, :postal_code
@@ -31,6 +32,7 @@ module ActiveMerchant #:nodoc:
         @address3 = options[:address3]
         @phone = options[:phone]
         @fax = options[:fax]
+        @address_type = %{residential commercial}.include?(options[:address_type].to_s) ? options[:address_type] : raise ArgumentError.new('address_type must be either "residential" or "commercial"')
       end
       
       def self.from(object, options={})
@@ -44,7 +46,8 @@ module ActiveMerchant #:nodoc:
           :address2 => [:address2],
           :address3 => [:address3],
           :phone => [:phone, :phone_number],
-          :fax => [:fax, :fax_number]
+          :fax => [:fax, :fax_number],
+          :address_type => [:address_type]
         }
         attributes = {}
         hash_access = begin
@@ -61,11 +64,20 @@ module ActiveMerchant #:nodoc:
             end
           end
         end
+        attributes.delete(:address_type) unless %{residential commercial}.include?(attributes[:address_type].to_s)
         self.new(attributes.update(options))
       end
       
       def country_code(format)
         @country.nil? ? nil : @country.code(format).first.value
+      end
+      
+      def residential?
+        @address_type == 'residential'
+      end
+      
+      def commercial?
+        @address_type == 'commercial'
       end
       
       def to_s
