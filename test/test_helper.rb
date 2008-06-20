@@ -20,6 +20,8 @@ module Test
       
       LOCAL_CREDENTIALS = ENV['HOME'] + '/.active_merchant/fixtures.yml' unless defined?(LOCAL_CREDENTIALS)
       DEFAULT_CREDENTIALS = File.dirname(__FILE__) + '/fixtures.yml' unless defined?(DEFAULT_CREDENTIALS)
+      
+      MODEL_FIXTURES = File.dirname(__FILE__) + '/fixtures/' unless defined?(MODEL_FIXTURES)
 
       def all_fixtures
         @@fixtures ||= load_fixtures
@@ -34,6 +36,13 @@ module Test
       def load_fixtures
         file = File.exists?(LOCAL_CREDENTIALS) ? LOCAL_CREDENTIALS : DEFAULT_CREDENTIALS
         yaml_data = YAML.load(File.read(file))
+        
+        model_fixtures = Dir.glob(File.join(MODEL_FIXTURES,'**','*.yml'))
+        model_fixtures.each do |file|
+          name = File.basename(file, '.yml')
+          yaml_data[name] = YAML.load(File.read(file))
+        end
+        
         symbolize_keys(yaml_data)
       
         yaml_data
@@ -48,6 +57,24 @@ module Test
         
         hash.symbolize_keys!
         hash.each{|k,v| symbolize_keys(v)}
+      end
+  
+      def xml_logs(response_object, options={})
+        name = options[:name] || Time.new.strftime('%Y%m%d%H%M%S')
+        carrier_name = @carrier.name rescue ''
+        path = options[:path] || File.join(ENV['HOME'], '.active_merchant', 'shipping', 'logs', carrier_name)
+        File.makedirs(path)
+        methods = {'request' => 'request', 'response' => 'xml'}
+        methods.each do |suffix, method|
+          file = File.join(path, ([name,suffix].join('_') + '.xml'))
+          i = 0
+          while File.exist?(file) do
+            file = File.join(path, ([name + (i += 1).to_s,suffix].join('_') + '.xml'))
+          end
+          File.open(file, 'w+') do |file|
+            file.puts response_object.send(method)
+          end
+        end
       end
     end
   end
@@ -90,6 +117,60 @@ module ActiveMerchant
                                       :zip => '90210',
                                       :phone => '1-310-285-1013',
                                       :fax => '1-310-275-8159'),
+        :real_home_as_commercial => Location.new(
+                                      :country => 'US',
+                                      :city => 'Tampa',
+                                      :state => 'FL',
+                                      :address1 => '7926 Woodvale Circle',
+                                      :zip => '33615',
+                                      :address_type => 'commercial'), # means that UPS will default to commercial if it doesn't know
+        :fake_home_as_commercial => Location.new(
+                                      :country => 'US',
+                                      :state => 'FL',
+                                      :address1 => '123 fake st.',
+                                      :zip => '33615',
+                                      :address_type => 'commercial'),
+        :real_google_as_commercial => Location.new(
+                                      :country => 'US',
+                                      :city => 'Mountain View',
+                                      :state => 'CA',
+                                      :address1 => '1600 Amphitheatre Parkway',
+                                      :zip => '94043',
+                                      :address_type => 'commercial'),
+        :real_google_as_residential => Location.new(
+                                      :country => 'US',
+                                      :city => 'Mountain View',
+                                      :state => 'CA',
+                                      :address1 => '1600 Amphitheatre Parkway',
+                                      :zip => '94043',
+                                      :address_type => 'residential'), # means that will default to residential if it doesn't know
+        :fake_google_as_commercial => Location.new(
+                                      :country => 'US',
+                                      :city => 'Mountain View',
+                                      :state => 'CA',
+                                      :address1 => '123 bogusland dr.',
+                                      :zip => '94043',
+                                      :address_type => 'commercial'),
+        :fake_google_as_residential => Location.new(
+                                      :country => 'US',
+                                      :city => 'Mountain View',
+                                      :state => 'CA',
+                                      :address1 => '123 bogusland dr.',
+                                      :zip => '94043',
+                                      :address_type => 'residential'), # means that will default to residential if it doesn't know
+        :fake_home_as_residential => Location.new(
+                                      :country => 'US',
+                                      :state => 'FL',
+                                      :address1 => '123 fake st.',
+                                      :zip => '33615',
+                                      :address_type => 'residential'),
+        :real_home_as_residential => Location.new(
+                                      :country => 'US',
+                                      :city => 'Tampa',
+                                      :state => 'FL',
+                                      :address1 => '7926 Woodvale Circle',
+                                      :zip => '33615',
+                                      :address_type => 'residential'),
         :london => Location.new(
                                       :country => 'GB',
                                       :city => 'London',

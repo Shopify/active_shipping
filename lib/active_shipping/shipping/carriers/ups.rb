@@ -199,7 +199,7 @@ module ActiveMerchant
               # StateProvinceCode required for negotiated rates but not otherwise, for some reason
             address << XmlNode.new("PostalCode", location.postal_code) unless location.postal_code.blank?
             address << XmlNode.new("CountryCode", location.country_code(:alpha2)) unless location.country_code(:alpha2).blank?
-            address << XmlNode.new("ResidentialAddressIndicator", true) if location.residential?
+            address << XmlNode.new("ResidentialAddressIndicator", true) unless location.commercial? # the default should be that UPS returns residential rates for destinations that it doesn't know about
             # not implemented: Shipment/(Shipper|ShipTo|ShipFrom)/Address/ResidentialAddressIndicator element
           end
         end

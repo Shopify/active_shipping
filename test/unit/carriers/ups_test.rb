@@ -4,8 +4,8 @@ class UPSTest < Test::Unit::TestCase
   include ActiveMerchant::Shipping
   
   def setup
-    @packages               = ActiveMerchant::Shipping::TestFixtures.packages.dup
-    @locations              = ActiveMerchant::Shipping::TestFixtures.locations.dup
+    @packages               = fixtures(:packages)
+    @locations              = fixtures(:locations)
     @carrier                = UPS.new(fixtures(:ups))
   end
   

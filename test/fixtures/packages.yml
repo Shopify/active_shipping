@@ -1,0 +1,132 @@
+:all_imperial: !ruby/object:ActiveMerchant::Shipping::Package 
+  centimetres: 
+  currency: 
+  cylinder: false
+  grams: 
+  inches: 
+  - 1
+  - 8
+  - 12
+  options: 
+    :units: :imperial
+  ounces: 16
+  value: 
+:just_ounces: !ruby/object:ActiveMerchant::Shipping::Package 
+  centimetres: &id001 
+    - 0
+    - 0
+    - 0
+  currency: 
+  cylinder: false
+  grams: 
+  inches: *id001
+  options: 
+    :units: :imperial
+  ounces: 16
+  value: 
+:all_metric: !ruby/object:ActiveMerchant::Shipping::Package 
+  centimetres: 
+  - 2
+  - 20
+  - 40
+  currency: 
+  cylinder: false
+  grams: 1000
+  inches: 
+  options: {}
+
+  ounces: 
+  value: 
+:small_half_pound: !ruby/object:ActiveMerchant::Shipping::Package 
+  centimetres: 
+  currency: 
+  cylinder: false
+  grams: 
+  inches: 
+  - 1
+  - 1
+  - 1
+  options: 
+    :units: :imperial
+  ounces: 8
+  value: 
+:book: !ruby/object:ActiveMerchant::Shipping::Package 
+  centimetres: 
+  - 2
+  - 14
+  - 19
+  currency: 
+  cylinder: false
+  grams: 250
+  inches: 
+  options: {}
+
+  ounces: 
+  value: 
+:big_half_pound: !ruby/object:ActiveMerchant::Shipping::Package 
+  centimetres: 
+  currency: 
+  cylinder: false
+  grams: 
+  inches: 
+  - 24
+  - 24
+  - 36
+  options: 
+    :units: :imperial
+  ounces: 800
+  value: 
+:wii: !ruby/object:ActiveMerchant::Shipping::Package 
+  centimetres: 
+  currency: GBP
+  cylinder: false
+  grams: 
+  inches: 
+  - 4.5
+  - 10
+  - 15
+  options: 
+    :value: 269.99
+    :units: :imperial
+    :currency: GBP
+  ounces: 120.0
+  value: 26999
+:chocolate_stuff: !ruby/object:ActiveMerchant::Shipping::Package 
+  centimetres: 
+  currency: 
+  cylinder: false
+  grams: 
+  inches: 
+  - 2
+  - 6
+  - 12
+  options: 
+    :units: :imperial
+  ounces: 80
+  value: 
+:just_grams: !ruby/object:ActiveMerchant::Shipping::Package 
+  centimetres: &id002 
+    - 0
+    - 0
+    - 0
+  currency: 
+  cylinder: false
+  grams: 1000
+  inches: *id002
+  options: {}
+
+  ounces: 
+  value: 
+:poster: !ruby/object:ActiveMerchant::Shipping::Package 
+  centimetres: 
+  - 10
+  - 10
+  - 93
+  currency: 
+  cylinder: true
+  grams: 100
+  inches: 
+  options: 
+    :cylinder: true
+  ounces: 
+  value: 
