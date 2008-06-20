@@ -22,7 +22,7 @@ class PackageTest < Test::Unit::TestCase
                                           
       @bare_info_package = Package.new(nil,nil)
       
-      @packages = ActiveMerchant::Shipping::TestFixtures.packages.dup
+      @packages = fixtures(:packages)
   end
 
   def test_initialize

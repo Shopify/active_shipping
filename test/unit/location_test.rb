@@ -19,7 +19,8 @@ class LocationTest < Test::Unit::TestCase
               :town => 'Perth',
               :address => '66 Gregory Ave.', 
               :phone => '515-555-1212',
-              :fax_number => 'none to speak of' 
+              :fax_number => 'none to speak of',
+              :address_type => :commercial
             }
     location = Location.from(hash)
     
@@ -30,6 +31,7 @@ class LocationTest < Test::Unit::TestCase
     assert_equal hash[:address], location.address1
     assert_equal hash[:phone], location.phone
     assert_equal hash[:fax_number], location.fax
+    assert_equal hash[:address_type].to_s, location.address_type
   end
   
   def to_s

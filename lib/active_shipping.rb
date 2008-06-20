@@ -27,6 +27,7 @@ $:.unshift File.dirname(__FILE__)
 
 require 'rubygems'
 require 'active_support'
+require 'ftools'
 
 require 'vendor/xml_node/lib/xml_node'
 

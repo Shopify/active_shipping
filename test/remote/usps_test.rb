@@ -4,8 +4,8 @@ class USPSTest < Test::Unit::TestCase
   include ActiveMerchant::Shipping
   
   def setup
-    @packages               = ActiveMerchant::Shipping::TestFixtures.packages.dup
-    @locations              = ActiveMerchant::Shipping::TestFixtures.locations.dup
+    @packages               = fixtures(:packages)
+    @locations              = fixtures(:locations)
     @carrier                = USPS.new(fixtures(:usps))
     
   end

@@ -32,7 +32,8 @@ module ActiveMerchant #:nodoc:
         @address3 = options[:address3]
         @phone = options[:phone]
         @fax = options[:fax]
-        @address_type = %{residential commercial}.include?(options[:address_type].to_s) ? options[:address_type] : raise ArgumentError.new('address_type must be either "residential" or "commercial"')
+        raise ArgumentError.new('address_type must be either "residential" or "commercial"') if options[:address_type] and not (["residential", "commercial", ""]).include?(options[:address_type].to_s)
+        @address_type = options[:address_type].nil? ? nil : options[:address_type].to_s
       end
       
       def self.from(object, options={})
@@ -64,7 +65,7 @@ module ActiveMerchant #:nodoc:
             end
           end
         end
-        attributes.delete(:address_type) unless %{residential commercial}.include?(attributes[:address_type].to_s)
+        attributes.delete(:address_type) unless %w{residential commercial}.include?(attributes[:address_type].to_s)
         self.new(attributes.update(options))
       end
       
@@ -72,13 +73,8 @@ module ActiveMerchant #:nodoc:
         @country.nil? ? nil : @country.code(format).first.value
       end
       
-      def residential?
-        @address_type == 'residential'
-      end
-      
-      def commercial?
-        @address_type == 'commercial'
-      end
+      def residential?; (@address_type == 'residential') end
+      def commercial?; (@address_type == 'commercial') end
       
       def to_s
         prettyprint.gsub(/\n/, ' ')
