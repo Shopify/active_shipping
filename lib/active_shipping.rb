@@ -32,6 +32,7 @@ require 'ftools'
 require 'vendor/xml_node/lib/xml_node'
 
 require 'net/https'
+require 'active_shipping/lib/error'
 require 'active_shipping/lib/requires_parameters'
 require 'active_shipping/lib/posts_data'
 require 'active_shipping/lib/country'

@@ -62,21 +62,51 @@ module ActiveMerchant
         :all => 'ALL'
       }
       
-      # Do these as we find them, I guess...
+      # TODO: get rates for "U.S. possessions and Trust Territories" like Guam, etc. via domestic rates API: http://www.usps.com/ncsc/lookups/abbr_state.txt
+      # TODO: figure out how USPS likes to say "Ivory Coast"
+      #
+      # Country names:
+      # http://pe.usps.gov/text/Imm/immctry.htm
       COUNTRY_NAME_CONVERSIONS = {
-        'United Kingdom' => 'Great Britain'
+        "BA" => "Bosnia-Herzegovina",
+        "CD" => "Congo, Democratic Republic of the",
+        "CG" => "Congo (Brazzaville),Republic of the",
+        "CI" => "Côte d'Ivoire (Ivory Coast)",
+        "CK" => "Cook Islands (New Zealand)",
+        "FK" => "Falkland Islands",
+        "GB" => "Great Britain and Northern Ireland",
+        "GE" => "Georgia, Republic of",
+        "IR" => "Iran",
+        "KN" => "Saint Kitts (St. Christopher and Nevis)",
+        "KP" => "North Korea (Korea, Democratic People's Republic of)",
+        "KR" => "South Korea (Korea, Republic of)",
+        "LA" => "Laos",
+        "LY" => "Libya",
+        "MC" => "Monaco (France)",
+        "MD" => "Moldova",
+        "MK" => "Macedonia, Republic of",
+        "MM" => "Burma",
+        "PN" => "Pitcairn Island",
+        "RU" => "Russia",
+        "SK" => "Slovak Republic",
+        "TK" => "Tokelau (Union) Group (Western Samoa)",
+        "TW" => "Taiwan",
+        "TZ" => "Tanzania",
+        "VA" => "Vatican City",
+        "VG" => "British Virgin Islands",
+        "VN" => "Vietnam",
+        "WF" => "Wallis and Futuna Islands",
+        "WS" => "Western Samoa"
       }
 
-      class <<self
-        def size_code_for(package)
-          total = package.inches(:length) + package.inches(:girth)
-          if total <= 84
-            return 'REGULAR'
-          elsif total <= 108
-            return 'LARGE'
-          else # <= 130
-            return 'OVERSIZE'
-          end
+      def self.size_code_for(package)
+        total = package.inches(:length) + package.inches(:girth)
+        if total <= 84
+          return 'REGULAR'
+        elsif total <= 108
+          return 'LARGE'
+        else # <= 130
+          return 'OVERSIZE'
         end
       end
       
@@ -163,7 +193,7 @@ module ActiveMerchant
       # * the size restrictions are returned AS AN ENGLISH SENTENCE (!?)
       
       def build_world_rate_request(packages, destination_country)
-        country = COUNTRY_NAME_CONVERSIONS[destination_country.name] || destination_country.name
+        country = COUNTRY_NAME_CONVERSIONS[destination_country.code(:alpha2).first.value] || destination_country.name
         request = XmlNode.new('IntlRateRequest', :USERID => @options[:login]) do |rate_request|
           packages.each_index do |id|
             p = packages[id]
@@ -172,7 +202,9 @@ module ActiveMerchant
               package << XmlNode.new('Ounces', [p.ounces,1].max.ceil) #takes an integer for some reason, must be rounded UP
               package << XmlNode.new('MailType', MAIL_TYPES[p.options[:mail_type]] || 'Package')
               package << XmlNode.new('ValueOfContents', p.value / 100.0) if p.value && p.currency == 'USD'
-              package << XmlNode.new('Country', country)
+              package << XmlNode.new('Country') do |node|
+                node.cdata = country
+              end
             end
           end
         end

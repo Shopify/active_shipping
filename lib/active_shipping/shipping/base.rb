@@ -4,7 +4,7 @@ module ActiveMerchant
       mattr_accessor :mode
       self.mode = :production
       
-      ALLCAPS_NAMES = ['ups','usps']
+      ALLCAPS_NAMES = ['ups','usps','dhl'] # is the class name allcaps like USPS or camelcase like FedEx?
       
       def self.carrier(name)
         name = name.to_s.downcase

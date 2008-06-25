@@ -120,4 +120,29 @@ class USPSTest < Test::Unit::TestCase
     end
     assert response.success?, response.message
   end
+  
+  # Uncomment and switch out SPECIAL_COUNTRIES with some other batch to see which
+  # countries are currently working. Commented out here just because it's a lot of
+  # hits to their server at once:
+  
+  # ALL_COUNTRIES = ActiveMerchant::Country.const_get('COUNTRIES').map {|c| c[:alpha2]}
+  # SPECIAL_COUNTRIES = USPS.const_get('COUNTRY_NAME_CONVERSIONS').keys.sort
+  # NORMAL_COUNTRIES = (ALL_COUNTRIES - SPECIAL_COUNTRIES)
+  # 
+  # SPECIAL_COUNTRIES.each do |code|
+  #   unless ActiveMerchant::Country.find(code).name == USPS.const_get('COUNTRY_NAME_CONVERSIONS')[code]
+  #     define_method("test_country_#{code}") do
+  #       response = nil
+  #       begin
+  #         response = @carrier.find_rates( @locations[:beverly_hills],
+  #                                         Location.new(:country => code),
+  #                                         @packages.values_at(:wii),
+  #                                         :test => true)
+  #       rescue Exception => e
+  #         flunk(e.inspect + "\nrequest: " + @carrier.last_request)
+  #       end
+  #       assert_not_equal [], response.rates.length
+  #     end
+  #   end
+  # end
 end
