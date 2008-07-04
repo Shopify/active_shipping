@@ -1,1 +1,2 @@
+* Sync posts_data.rb with ActiveMerchant [cody]
 * Don't use credentials fixtures in local tests [cody]
