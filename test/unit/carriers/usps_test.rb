@@ -6,7 +6,7 @@ class USPSTest < Test::Unit::TestCase
   def setup
     @packages               = fixtures(:packages)
     @locations              = fixtures(:locations)
-    @carrier                = USPS.new(fixtures(:usps))
+    @carrier                = USPS.new(:login => 'login')
     @international_rate_responses = {
       :vanilla => xml_fixture('usps/beverly_hills_to_ottawa_book_rate_response')
     }
@@ -76,16 +76,14 @@ class USPSTest < Test::Unit::TestCase
     p = @packages[:book]
     limits.each do |sentence,hashes|
       dimensions = hashes[0].update(:weight => 50.0)
-      mock_carrier = USPS.new(fixtures(:usps))
       service_hash = build_service_hash(
         :name => hashes[1],
         :max_weight => 50,
         :max_dimensions => sentence )
-      mock_carrier.expects(:package_valid_for_max_dimensions).with(p, dimensions)
-      mock_carrier.send(:package_valid_for_service, p, service_hash)
+      @carrier.expects(:package_valid_for_max_dimensions).with(p, dimensions)
+      @carrier.send(:package_valid_for_service, p, service_hash)
     end
-    
-    mock_carrier = USPS.new(fixtures(:usps))
+  
     service_hash = build_service_hash(
         :name => "flat-rate box",
         :max_weight => 50,
@@ -94,9 +92,9 @@ class USPSTest < Test::Unit::TestCase
     # should test against either kind of flat rate box:
     dimensions = [{:weight => 50.0, :length => 11.0, :width => 8.5, :height => 5.5}, # or...
       {:weight => 50.0, :length => 13.625, :width => 11.875, :height => 3.375}]
-    mock_carrier.expects(:package_valid_for_max_dimensions).with(p, dimensions[0])
-    mock_carrier.expects(:package_valid_for_max_dimensions).with(p, dimensions[1])
-    mock_carrier.send(:package_valid_for_service, p, service_hash)
+    @carrier.expects(:package_valid_for_max_dimensions).with(p, dimensions[0])
+    @carrier.expects(:package_valid_for_max_dimensions).with(p, dimensions[1])
+    @carrier.send(:package_valid_for_service, p, service_hash)
     
   end
   

@@ -6,7 +6,11 @@ class UPSTest < Test::Unit::TestCase
   def setup
     @packages               = fixtures(:packages)
     @locations              = fixtures(:locations)
-    @carrier                = UPS.new(fixtures(:ups))
+    @carrier                = UPS.new(
+                                :key => 'key',
+                                :login => 'login',
+                                :password => 'password'
+                              )
   end
   
   def test_initialize_options_requirements
