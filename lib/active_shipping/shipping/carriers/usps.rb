@@ -162,13 +162,14 @@ module ActiveMerchant
       end
       
       def build_us_rate_request(packages, origin_zip, destination_zip, options={})
+        packages = Array(packages)
         request = XmlNode.new('RateV3Request', :USERID => @options[:login]) do |rate_request|
           packages.each_index do |id|
             p = packages[id]
             rate_request << XmlNode.new('Package', :ID => id.to_s) do |package|
               package << XmlNode.new('Service', US_SERVICES[options[:service] || :all])
-              package << XmlNode.new('ZipOrigination', origin_zip)
-              package << XmlNode.new('ZipDestination', destination_zip)
+              package << XmlNode.new('ZipOrigination', strip_zip(origin_zip))
+              package << XmlNode.new('ZipDestination', strip_zip(destination_zip))
               package << XmlNode.new('Pounds', 0)
               package << XmlNode.new('Ounces', "%0.1f" % [p.ounces,1].max)
               if p.options[:container] and [nil,:all,:express,:priority].include? p.service
@@ -400,6 +401,10 @@ module ActiveMerchant
           http.get "#{test ? TEST_RESOURCE : LIVE_RESOURCE}?API=#{API_CODES[action]}&XML=#{request}"
         end
         response.body
+      end
+      
+      def strip_zip(zip)
+        zip.scan(/\d{5}/).first || zip
       end
       
     end
