@@ -110,6 +110,14 @@ class USPSTest < Test::Unit::TestCase
     
   end
   
+  def test_strip_9_digit_zip_codes
+    request = URI.decode(@carrier.send(:build_us_rate_request, @packages[:book], "90210-1234", "123456789"))
+    assert !(request =~ /\>90210-1234\</)
+    assert request =~ /\>90210\</
+    assert !(request =~ /\>123456789\</)
+    assert request =~ /\>12345\</
+  end
+  
   private
   
   def build_service_hash(options = {})
