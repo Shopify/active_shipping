@@ -123,8 +123,8 @@ class XmlNode
     if block_given?    
       yield self 
     end
-  end  
-  
+  end
+
   def self.parse(xml)
     self.new(REXML::Document.new(xml).root)
   end
@@ -158,8 +158,10 @@ class XmlNode
       if c.is_a?(REXML::CData)
         return @element.replace_child(c,new_cdata)
       end
-    end
+    end    
     @element << new_cdata
+  rescue RuntimeError => e            
+    @element << REXML::Text.new(e.message)
   end
   
   def cdata

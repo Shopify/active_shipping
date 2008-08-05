@@ -1,2 +1,4 @@
+* Update xml_node.rb from XML Node [cody]
+* Update requires_parameters from ActiveMerchant [cody]
 * Sync posts_data.rb with ActiveMerchant [cody]
 * Don't use credentials fixtures in local tests [cody]
