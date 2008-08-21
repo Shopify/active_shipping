@@ -11,7 +11,7 @@ class ResponseTest < Test::Unit::TestCase
   def test_initialize
     response = nil
     assert_nothing_raised do
-      response = Response.new(true, "success!", {:rate => 'Free!'}, :rates => [stub(:service_name => 'Free!', :total_price => 0)], :xml => "<rate>Free!</rate>")
+      response = RateResponse.new(true, "success!", {:rate => 'Free!'}, :rates => [stub(:service_name => 'Free!', :total_price => 0)], :xml => "<rate>Free!</rate>")
     end
     
   end

@@ -175,6 +175,16 @@ module ActiveMerchant
         xml_request.to_xml
       end
       
+      def build_tracking_request(tracking_number)
+        xml_request = XmlNode.new('TrackRequest') do |root_node|
+          root_node << XmlNode.new('Request') do |request|
+            request << XmlNode.new('RequestAction', 'Track')
+            request << XmlNode.new('RequestOption', '1')
+          end
+          root_node << XmlNode.new('TrackingNumber', tracking_number.to_s)
+        end
+      end
+      
       def build_location_node(name,location,options={})
         # not implemented:  * Shipment/Shipper/Name element
         #                   * Shipment/(ShipTo|ShipFrom)/CompanyName element
@@ -228,7 +238,37 @@ module ActiveMerchant
         else
           message = xml_hash['Response']['Error']['ErrorDescription']
         end
-        Response.new(success, message, xml_hash, :rates => rate_estimates, :xml => response, :request => last_request)
+        RateResponse.new(success, message, xml_hash, :rates => rate_estimates, :xml => response, :request => last_request)
+      end
+      
+      def parse_tracking_response(response, options={})
+        xml_hash = Hash.from_xml(response)['TrackResponse']
+        success = xml_hash['Response']['ResponseStatusCode'] == '1'
+        
+        if success
+          tracking_number, origin, destination = nil
+          shipment_events = []
+          
+          first_shipment = xml_hash['Shipment'].is_a?(Array) ? xml_hash['Shipment'].first : xml_hash['Shipment']
+          origin, destination = %w{Shipper ShipTo}.map do |location|
+            location_hash = first_shipment[location]
+            if location_hash && (address_hash = location_hash['Address'])
+              Location.new(
+                :country =>     address_hash['CountryCode'],
+                :postal_code => address_hash['PostalCode'],
+                :province =>    address_hash['StateProvinceCode'],
+                :city =>        address_hash['City'],
+                :address1 =>    address_hash['AddressLine1'],
+                :address2 =>    address_hash['AddressLine2'],
+                :address3 =>    address_hash['AddressLine3']
+              )
+            else
+              nil
+            end
+          end
+        end
+        
+        
       end
       
       def commit(action, request, test = false)
