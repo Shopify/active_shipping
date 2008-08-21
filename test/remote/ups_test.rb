@@ -57,6 +57,24 @@ class UPSTest < Test::Unit::TestCase
     assert_nil package_rate[:rate]
   end
   
+  def test_ottawa_to_us_fails_without_zip
+    assert_raises ResponseError do
+      @carrier.find_rates(@locations[:ottawa],
+                          Location.new(:country => 'US'),
+                          @packages.values_at(:book, :wii),
+                          :test => true)
+    end
+  end
+  
+  def test_ottawa_to_us_succeeds_with_only_zip
+    assert_nothing_raised do
+      @carrier.find_rates(@locations[:ottawa],
+                          Location.new(:country => 'US', :zip => 90210),
+                          @packages.values_at(:book, :wii),
+                          :test => true)
+    end
+  end
+  
   def test_bare_packages
     response = nil
     p = Package.new(0,0)
