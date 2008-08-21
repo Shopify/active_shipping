@@ -26,14 +26,12 @@ module ActiveMerchant #:nodoc:
       attr_reader :params
       attr_reader :message
       attr_reader :test
-      attr_reader :rates
       attr_reader :xml
       attr_reader :request
         
       def initialize(success, message, params = {}, options = {})
         @success, @message, @params = success, message, params.stringify_keys
         @test = options[:test] || false
-        @rates = Array(options[:estimates] || options[:rates] || options[:rate_estimates])
         @xml = options[:xml]
         @request = options[:request]
         raise ResponseError.new(self) unless success
@@ -46,9 +44,6 @@ module ActiveMerchant #:nodoc:
       def test?
         @test ? true : false
       end
-      
-      alias_method :estimates, :rates
-      alias_method :rate_estimates, :rates
       
     end
   end
