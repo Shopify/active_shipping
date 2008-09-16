@@ -9,6 +9,12 @@ class UPSTest < Test::Unit::TestCase
     @carrier = UPS.new(fixtures(:ups))
   end
   
+  def test_tracking
+    assert_nothing_raised do
+      response = @carrier.find_tracking_info('1Z5FX0076803466397')
+    end
+  end
+  
   def test_us_to_uk
     response = nil
     assert_nothing_raised do

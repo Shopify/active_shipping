@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<TrackResponse>
+  <Response>
+    <TransactionReference>
+      <CustomerContext>
+        <InternalKey>guidlikesubstance</InternalKey>
+      </CustomerContext>
+      <XpciVersion>1.0</XpciVersion>
+    </TransactionReference>
+    <ResponseStatusCode>1</ResponseStatusCode>
+    <ResponseStatusDescription>Success</ResponseStatusDescription>
+  </Response>
+  <Shipment>
+    <Shipper>
+      <ShipperNumber>123X67</ShipperNumber>
+    </Shipper>
+    <ShipTo>
+      <Address>
+        <City>Timonium</City>
+        <StateProvinceCode>MD</StateProvinceCode>
+        <CountryCode>US</CountryCode>
+      </Address>
+    </ShipTo>
+    <Service>
+      <Code>03</Code>
+      <Description>Ground</Description>
+    </Service>
+    <Package>
+      <TrackingNumber>1Z9999999999999999</TrackingNumber>
+      <Activity>
+        <ActivityLocation>
+          <Address>
+            <City>Timonium</City>
+            <StateProvinceCode>MD</StateProvinceCode>
+            <CountryCode>US</CountryCode>
+          </Address>
+          <Code>DL</Code>
+          <Description>Delivered</Description>
+        </ActivityLocation>
+        <Status>
+          <StatusType>
+            <Code>XX</Code>
+            <Description>Status XX</Description>
+          </StatusType>
+          <StatusCode>
+            <Code>YY</Code>
+            <Description>Code YY</Description>
+          </StatusCode>
+        </Status>
+      </Activity>
+    </Package>
+  </Shipment>
+</TrackResponse>
