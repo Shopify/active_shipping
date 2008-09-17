@@ -51,4 +51,11 @@ class UPSTest < Test::Unit::TestCase
                    "OUT FOR DELIVERY",
                    "DELIVERED" ], response.shipment_events.map(&:name)
   end
+  
+  def test_add_origin_and_destination_data_to_shipment_events_where_appropriate
+    UPS.any_instance.expects(:commit).returns(@tracking_response)
+    response = @carrier.find_tracking_info('1Z5FX0076803466397')
+    assert_equal '175 AMBASSADOR', response.shipment_events.first.location.address1
+    assert_equal 'K1N5X8', response.shipment_events.last.location.postal_code
+  end
 end

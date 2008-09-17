@@ -279,34 +279,53 @@ module ActiveMerchant
           end
           
           activities = Array(first_package['Activity'])
-          shipment_events = activities.map do |activity|
-            address = activity['ActivityLocation']['Address']
-            location = Location.new(
-              :address1 => address['AddressLine1'],
-              :address2 => address['AddressLine2'],
-              :address3 => address['AddressLine3'],
-              :city => address['City'],
-              :state => address['StateProvinceCode'],
-              :postal_code => address['PostalCode'],
-              :country => address['CountryCode'])
-            status = activity['Status']
-            status_type = status['StatusType'] if status
-            description = status_type['Description'] if status_type
+          unless activities.empty?
+            shipment_events = activities.map do |activity|
+              address = activity['ActivityLocation']['Address']
+              location = Location.new(
+                :address1 => address['AddressLine1'],
+                :address2 => address['AddressLine2'],
+                :address3 => address['AddressLine3'],
+                :city => address['City'],
+                :state => address['StateProvinceCode'],
+                :postal_code => address['PostalCode'],
+                :country => address['CountryCode'])
+              status = activity['Status']
+              status_type = status['StatusType'] if status
+              description = status_type['Description'] if status_type
             
-            # for now, just assume UTC, even though it probably isn't
-            zoneless_time = if activity['Time'] and activity['Date']
-              hour, minute, second = activity['Time'].scan(/\d{2}/)
-              year, month, day = activity['Date'][0..3], activity['Date'][4..5], activity['Date'][6..7]
-              Time.utc(year , month, day, hour, minute, second)
+              # for now, just assume UTC, even though it probably isn't
+              zoneless_time = if activity['Time'] and activity['Date']
+                hour, minute, second = activity['Time'].scan(/\d{2}/)
+                year, month, day = activity['Date'][0..3], activity['Date'][4..5], activity['Date'][6..7]
+                Time.utc(year , month, day, hour, minute, second)
+              end
+              ShipmentEvent.new(description, zoneless_time, location)
             end
-            ShipmentEvent.new(description, zoneless_time, location)
+            
+            shipment_events = shipment_events.sort_by(&:time)
+            
+            if origin
+              first_event = shipment_events[0]
+              same_country = origin.country_code(:alpha2) == first_event.location.country_code(:alpha2)
+              same_or_blank_city = first_event.location.city.blank? or first_event.location.city == origin.city
+              origin_event = ShipmentEvent.new(first_event.name, first_event.time, origin)
+              if same_country and same_or_blank_city
+                shipment_events[0] = origin_event
+              else
+                shipment_events.unshift(origin_event)
+              end
+            end
+            if shipment_events.last.name.downcase == 'delivered'
+              shipment_events[-1] = ShipmentEvent.new(shipment_events.last.name, shipment_events.last.time, destination)
+            end
           end
         end
         
         TrackingResponse.new(success, message, xml_hash,
           :xml => response,
           :request => last_request,
-          :shipment_events => shipment_events.sort_by(&:time),
+          :shipment_events => shipment_events,
           :origin => origin,
           :destination => destination,
           :tracking_number => tracking_number)
