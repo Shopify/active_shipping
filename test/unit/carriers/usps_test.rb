@@ -42,17 +42,11 @@ class USPSTest < Test::Unit::TestCase
     assert_equal expected_xml_hash, actual_xml_hash
     
     assert_not_equal [],response.rates
+    assert_equal response.rates.sort_by(&:price), response.rates
+    assert_equal ["1", "2", "3", "4", "6", "7", "9"], response.rates.map(&:service_code).sort
     
-    assert_equal ["3", "2", "9", "1", "7", "6", "4"], response.rates.map(&:service_code)
-    
-    ordered_service_names = ["USPS First-Class Mail International",
-                             "USPS Priority Mail International",
-                             "USPS Priority Mail International Flat Rate Box",
-                             "USPS Express Mail International (EMS)",
-                             "USPS Global Express Guaranteed Non-Document Non-Rectangular",
-                             "USPS Global Express Guaranteed Non-Document Rectangular",
-                             "USPS Global Express Guaranteed"]
-    assert_equal ordered_service_names, response.rates.map(&:service_name)
+    ordered_service_names = ["USPS Express Mail International (EMS)", "USPS First-Class Mail International", "USPS Global Express Guaranteed", "USPS Global Express Guaranteed Non-Document Non-Rectangular", "USPS Global Express Guaranteed Non-Document Rectangular", "USPS Priority Mail International", "USPS Priority Mail International Flat Rate Box"]
+    assert_equal ordered_service_names, response.rates.map(&:service_name).sort
     
     
     assert_equal [376, 1600, 2300, 2325, 4100, 4100, 4100], response.rates.map(&:total_price)

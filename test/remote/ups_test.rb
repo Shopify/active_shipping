@@ -9,6 +9,12 @@ class UPSTest < Test::Unit::TestCase
     @carrier = UPS.new(fixtures(:ups))
   end
   
+  def test_tracking
+    assert_nothing_raised do
+      response = @carrier.find_tracking_info('1Z5FX0076803466397')
+    end
+  end
+  
   def test_us_to_uk
     response = nil
     assert_nothing_raised do
@@ -55,6 +61,24 @@ class UPSTest < Test::Unit::TestCase
     assert_instance_of Hash, package_rate
     assert_instance_of Package, package_rate[:package]
     assert_nil package_rate[:rate]
+  end
+  
+  def test_ottawa_to_us_fails_without_zip
+    assert_raises ResponseError do
+      @carrier.find_rates(@locations[:ottawa],
+                          Location.new(:country => 'US'),
+                          @packages.values_at(:book, :wii),
+                          :test => true)
+    end
+  end
+  
+  def test_ottawa_to_us_succeeds_with_only_zip
+    assert_nothing_raised do
+      @carrier.find_rates(@locations[:ottawa],
+                          Location.new(:country => 'US', :zip => 90210),
+                          @packages.values_at(:book, :wii),
+                          :test => true)
+    end
   end
   
   def test_bare_packages
