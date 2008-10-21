@@ -404,7 +404,7 @@ module ActiveMerchant
       end
       
       def strip_zip(zip)
-        zip.scan(/\d{5}/).first || zip
+        zip.to_s.scan(/\d{5}/).first || zip
       end
       
     end
