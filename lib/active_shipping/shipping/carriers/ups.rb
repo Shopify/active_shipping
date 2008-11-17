@@ -304,6 +304,8 @@ module ActiveMerchant
               ShipmentEvent.new(description, zoneless_time, location)
             end
             
+            shipment_events = shipment_events.sort_by(&:time)
+            
             if origin
               first_event = shipment_events[0]
               same_country = origin.country_code(:alpha2) == first_event.location.country_code(:alpha2)
@@ -319,7 +321,6 @@ module ActiveMerchant
               shipment_events[-1] = ShipmentEvent.new(shipment_events.last.name, shipment_events.last.time, destination)
             end
           end
-          shipment_events = shipment_events.sort_by(&:time)
         end
         
         TrackingResponse.new(success, message, xml_hash,
