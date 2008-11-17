@@ -254,6 +254,7 @@ module ActiveMerchant
         success = response_hash_success?(xml_hash)
         message = response_hash_message(xml_hash)
         
+        
         if success
           tracking_number, origin, destination = nil
           shipment_events = []
@@ -278,7 +279,7 @@ module ActiveMerchant
             end
           end
           
-          activities = Array(first_package['Activity'])
+          activities = force_array(first_package['Activity'])
           unless activities.empty?
             shipment_events = activities.map do |activity|
               address = activity['ActivityLocation']['Address']
@@ -303,8 +304,6 @@ module ActiveMerchant
               ShipmentEvent.new(description, zoneless_time, location)
             end
             
-            shipment_events = shipment_events.sort_by(&:time)
-            
             if origin
               first_event = shipment_events[0]
               same_country = origin.country_code(:alpha2) == first_event.location.country_code(:alpha2)
@@ -320,6 +319,7 @@ module ActiveMerchant
               shipment_events[-1] = ShipmentEvent.new(shipment_events.last.name, shipment_events.last.time, destination)
             end
           end
+          shipment_events = shipment_events.sort_by(&:time)
         end
         
         TrackingResponse.new(success, message, xml_hash,
@@ -333,6 +333,10 @@ module ActiveMerchant
       
       def first_or_only(xml_hash)
         xml_hash.is_a?(Array) ? xml_hash.first : xml_hash
+      end
+      
+      def force_array(obj)
+        obj.is_a?(Array) ? obj : [obj]
       end
       
       def response_hash_success?(xml_hash)

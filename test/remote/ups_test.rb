@@ -15,6 +15,18 @@ class UPSTest < Test::Unit::TestCase
     end
   end
   
+  def test_tracking_with_bad_number
+    assert_raises ResponseError do
+      response = @carrier.find_tracking_info('1Z12345')
+    end
+  end
+  
+  def test_tracking_with_another_number
+    assert_nothing_raised do
+      response = @carrier.find_tracking_info('1Z67Y4260390005815')
+    end
+  end
+  
   def test_us_to_uk
     response = nil
     assert_nothing_raised do
