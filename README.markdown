@@ -91,6 +91,26 @@ Gem and tarball forthcoming on rubyforge.
     #     ["USPS GXG Envelopes", 9400],
     #     ["USPS Global Express Guaranteed Non-Document Rectangular", 9400],
     #     ["USPS Global Express Guaranteed", 9400]]
+    
+    # FedEx
+    # As of now, ground and express rates require two separate requests. I may combine them into one method call in the future.
+    # Default is FedEx Ground
+    fdx = FedEx.new(:account_number => '999999999', :meter_number => '7777777')
+    
+    # FedEx Ground
+    response = fdx.find_rates(origin, destination, packages, :test => true)
+    response.rates.sort_by(&:price).collect {|rate| [rate.service_name, rate.price]}
+    # => [["FedEx Ground", 588], ["FedEx Ground Home Delivery", 793]]
+    
+    # FedEx Express
+    response = fdx.find_rates(origin, destination, packages, :test => true, :carrier_code => 'fedex_express')
+    response.rates.sort_by(&:price).collect {|rate| [rate.service_name, rate.price]}
+    # => [["FedEx Express Saver", 1492], 
+    # ["FedEx 2 Day", 1689], 
+    # ["FedEx Standard Overnight", 3029], 
+    # ["FedEx Priority Overnight", 6160], 
+    # ["FedEx First Overnight", 6698]]
+    
 
 ## TODO
 
