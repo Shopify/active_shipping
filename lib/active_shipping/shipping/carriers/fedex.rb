@@ -57,7 +57,10 @@ module ActiveMerchant
         'third_party' => 'THIRDPARTY',
         'collect' => 'COLLECT'
       }
-
+      
+      def requirements
+        [:account_number, :meter_number]
+      end
       
       def find_rates(origin, destination, packages, options = {})
         options = @options.update(options)
@@ -80,21 +83,27 @@ module ActiveMerchant
       
       protected
       def build_rate_request(origin, destination, packages, carrier_code, options={})
+        imperial = ['US','LR','MM'].include?(origin.country_code(:alpha2))
+        total_weight = 0.0;
+        packages.each do |package|
+          total_weight += ((imperial ? package.lbs : package.kgs).to_f*1000).round/1000.0
+        end
+        
+        
         xml_request = XmlNode.new('FDXRateAvailableServicesRequest', 'xmlns:api' => 'http://www.fedex.com/fsmapi', 'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance', 'xsi:noNamespaceSchemaLocation' => 'FDXRateAvailableServicesRequest.xsd') do |root_node|
           root_node << build_request_header(carrier_code)
           root_node << XmlNode.new('ShipDate', @options[:ship_date] || Time.now.strftime("%Y-%m-%d"))
           root_node << XmlNode.new('DropoffType', @options[:dropoff_type] || DropoffTypes['regular_pickup'])
           root_node << XmlNode.new('Packaging', @options[:packaging] || PackageTypes['your_packaging'])
-          root_node << XmlNode.new('WeightUnits', @options[:weight_units] || 'LBS')
-          root_node << XmlNode.new('Weight', '10.0')
-          root_node << XmlNode.new('ListRate', 'false')
+          root_node << XmlNode.new('WeightUnits', imperial ? 'LBS' : 'KGS')
+          root_node << XmlNode.new('Weight', [total_weight, 0.1].max)
+          root_node << XmlNode.new('ListRate', @options[:list_rate] || 'false')
           root_node << build_location_node('OriginAddress', origin)
           root_node << build_location_node('DestinationAddress', destination)
           root_node << XmlNode.new('Payment') do |payment_node|
             payment_node << XmlNode.new('PayorType', PaymentTypes[options[:payment_type] || 'sender'])
           end
           root_node << XmlNode.new('PackageCount', packages.count.to_s)
-          
         end
         xml_request.to_xml
       end
