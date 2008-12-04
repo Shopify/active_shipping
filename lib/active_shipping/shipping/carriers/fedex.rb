@@ -59,7 +59,7 @@ module ActiveMerchant
       }
       
       def requirements
-        [:account_number, :meter_number]
+        [:login, :password]
       end
       
       def find_rates(origin, destination, packages, options = {})
@@ -103,15 +103,15 @@ module ActiveMerchant
           root_node << XmlNode.new('Payment') do |payment_node|
             payment_node << XmlNode.new('PayorType', PaymentTypes[options[:payment_type] || 'sender'])
           end
-          root_node << XmlNode.new('PackageCount', packages.count.to_s)
+          root_node << XmlNode.new('PackageCount', packages.length.to_s)
         end
         xml_request.to_xml
       end
       
       def build_request_header(carrier_code)
         xml_request = XmlNode.new('RequestHeader') do |access_request|
-          access_request << XmlNode.new('AccountNumber', @options[:account_number])
-          access_request << XmlNode.new('MeterNumber', @options[:meter_number])
+          access_request << XmlNode.new('AccountNumber', @options[:login])
+          access_request << XmlNode.new('MeterNumber', @options[:password])
           access_request << XmlNode.new('CarrierCode', carrier_code)
         end
         xml_request
