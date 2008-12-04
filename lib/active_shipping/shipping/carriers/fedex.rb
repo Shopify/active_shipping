@@ -5,7 +5,7 @@ module ActiveMerchant
       @@name = "FedEx"
       
       TEST_URL = 'https://gatewaybeta.fedex.com/GatewayDC'
-      LIVE_URL = ''
+      LIVE_URL = 'https://gateway.fedex.com/GatewayDC'
       
       USE_SSL = true
       
@@ -58,6 +58,18 @@ module ActiveMerchant
         'collect' => 'COLLECT'
       }
       
+      PackageIdentifierTypes = {
+        'tracking_number' => 'TRACKING_NUMBER_OR_DOORTAG',
+        'door_tag' => 'TRACKING_NUMBER_OR_DOORTAG',
+        'rma' => 'RMA',
+        'ground_shipment_id' => 'GROUND_SHIPMENT_ID',
+        'ground_invoice_number' => 'GROUND_INVOICE_NUMBER',
+        'ground_customer_reference' => 'GROUND_CUSTOMER_REFERENCE',
+        'ground_po' => 'GROUND_PO',
+        'express_reference' => 'EXPRESS_REFERENCE',
+        'express_mps_master' => 'EXPRESS_MPS_MASTER'
+      }
+      
       def requirements
         [:login, :password]
       end
@@ -80,6 +92,14 @@ module ActiveMerchant
         parse_rate_response(origin, destination, packages, ground_response, express_response, options)
       end
       
+      def find_tracking_info(tracking_number, options={})
+        options = @options.update(options)
+        
+        tracking_request = build_tracking_request(tracking_number, options)
+        response = commit(save_request(tracking_request), (options[:test] || false))
+        puts response
+        parse_tracking_response(response, options)
+      end
       
       protected
       def build_rate_request(origin, destination, packages, carrier_code, options={})
@@ -106,6 +126,22 @@ module ActiveMerchant
           root_node << XmlNode.new('PackageCount', packages.length.to_s)
         end
         xml_request.to_xml
+      end
+      
+      def build_tracking_request(tracking_number, options={})
+        xml_request = XmlNode.new('FDXTrackRequest', 'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance', 'xsi:noNamespaceSchemaLocation' => 'FDXTrackRequest.xsd')
+        xml_request << build_request_header(CarrierCodes[options[:carrier_code]])
+        xml_request << XmlNode.new('PackageIdentifier') do |pkg_xml|
+          pkg_xml << XmlNode.new('Value', tracking_number)
+          pkg_xml << XmlNode.new('Type', PackageIdentifierTypes[options['package_identifier_type'] || 'tracking_number'])
+        end
+        xml_request << XmlNode.new('ShipDateRangeBegin', options['ship_date_range_begin']) if options['ship_date_range_begin']
+        xml_request << XmlNode.new('ShipDateRangeEnd', options['ship_date_range_end']) if options['ship_date_range_end']
+        xml_request << XmlNode.new('ShipDate', options['ship_date']) if options['ship_date']
+        xml_request << XmlNode.new('DetailScans', options['detail_scans'] || 'true')
+        puts xml_request.to_xml
+        xml_request.to_xml
+        # DestinationCountryCode not implemented
       end
       
       def build_request_header(carrier_code)
@@ -152,6 +188,62 @@ module ActiveMerchant
         RateResponse.new(success, message, {}, :rates => rate_estimates)
       end
       
+      def parse_tracking_response(response, options)
+        xml_hash = Hash.from_xml(response)['FDXTrackReply']
+        success = response_hash_success?(xml_hash)
+        message = response_hash_message(xml_hash)
+        
+        if success
+          tracking_number, origin, destination = nil
+          shipment_events = []
+          
+          first_shipment = first_or_only(xml_hash['TrackProfile'])
+          tracking_number = first_shipment['TrackingNumber']
+          
+          destination = %w{DestinationAddress}.map do |location|
+            location_hash = first_shipment[location]
+              Location.new(
+                :country =>     location_hash['CountryCode'],
+                :postal_code => location_hash['PostalCode'],
+                :province =>    location_hash['StateOrProvinceCode'],
+                :city =>        location_hash['City']
+              )
+          end
+          
+          activities = force_array(first_shipment['Scan'])
+          unless activities.empty?
+            shipment_events = activities.map do |activity|
+              location = Location.new(
+                :city => activity['City'],
+                :state => activity['StateOrProvinceCode'],
+                :postal_code => activity['PostalCode'],
+                :country => activity['CountryCode'])
+              status = activity['ScanDescription']
+              status_type = activity['ScanType'] if status
+              description = activity['ScanDescription'] if status_type
+          
+              # for now, just assume UTC, even though it probably isn't
+              time = Time.parse("#{activity['Date']} #{activity['Time']}")
+              zoneless_time = Time.utc(time.year, time.month, time.mday, time.hour, time.min, time.sec)
+              
+              if description.downcase == 'delivered'
+                ShipmentEvent.new(description, zoneless_time, location, "Signed for by: #{first_shipment['SignedForBy']}")
+              else
+                ShipmentEvent.new(description, zoneless_time, location)
+              end
+            end
+            shipment_events = shipment_events.sort_by(&:time)
+          end
+        end
+        
+        TrackingResponse.new(success, message, xml_hash,
+          :xml => response,
+          :request => last_request,
+          :shipment_events => shipment_events,
+          :destination => destination,
+          :tracking_number => tracking_number)
+      end
+      
       def response_hash_success?(xml_hash)
         ! xml_hash['Error'] && ! xml_hash['SoftError']
       end
@@ -171,6 +263,13 @@ module ActiveMerchant
         response.body
       end
     
+      def first_or_only(xml_hash)
+        xml_hash.is_a?(Array) ? xml_hash.first : xml_hash
+      end
+      
+      def force_array(obj)
+        obj.is_a?(Array) ? obj : [obj]
+      end
     end
   end
 end
