@@ -15,22 +15,22 @@ module ActiveMerchant
       }
       
       ServiceTypes = {
-        "FedEx Priority Overnight" => "PRIORITYOVERNIGHT",
-        "FedEx 2 Day" => "FEDEX2DAY",
-        "FedEx Standard Overnight" => "STANDARDOVERNIGHT",
-        "FedEx First Overnight" => "FIRSTOVERNIGHT",
-        "FedEx Express Saver" => "FEDEXEXPRESSSAVER",
-        "FedEx 1 Day Freight" => "FEDEX1DAYFREIGHT",
-        "FedEx 2 Day Freight" => "FEDEX2DAYFREIGHT",
-        "FedEx 3 Day Freight" => "FEDEX3DAYFREIGHT",
-        "FedEx International Priority" => "INTERNATIONALPRIORITY",
-        "FedEx International Economy" => "INTERNATIONALECONOMY",
-        "FedEx International First" => "INTERNATIONALFIRST",
-        "FedEx International Priority Freight" => "INTERNATIONALPRIORITYFREIGHT",
-        "FedEx International Economy Freight" => "INTERNATIONALECONOMYFREIGHT",
-        "FedEx Ground Home Delivery" => "GROUNDHOMEDELIVERY",
-        "FedEx Ground" => "FEDEXGROUND",
-        "FedEx International Ground" => "INTERNATIONALGROUND"
+        "PRIORITYOVERNIGHT" => "FedEx Priority Overnight",
+        "FEDEX2DAY" => "FedEx 2 Day",
+        "STANDARDOVERNIGHT" => "FedEx Standard Overnight",
+        "FIRSTOVERNIGHT" => "FedEx First Overnight",
+        "FEDEXEXPRESSSAVER" => "FedEx Express Saver",
+        "FEDEX1DAYFREIGHT" => "FedEx 1 Day Freight",
+        "FEDEX2DAYFREIGHT" => "FedEx 2 Day Freight",
+        "FEDEX3DAYFREIGHT" => "FedEx 3 Day Freight",
+        "INTERNATIONALPRIORITY" => "FedEx International Priority",
+        "INTERNATIONALECONOMY" => "FedEx International Economy",
+        "INTERNATIONALFIRST" => "FedEx International First",
+        "INTERNATIONALPRIORITYFREIGHT" => "FedEx International Priority Freight",
+        "INTERNATIONALECONOMYFREIGHT" => "FedEx International Economy Freight",
+        "GROUNDHOMEDELIVERY" => "FedEx Ground Home Delivery",
+        "FEDEXGROUND" => "FedEx Ground",
+        "INTERNATIONALGROUND" => "FedEx International Ground"
       }
 
       PackageTypes = {
@@ -62,28 +62,32 @@ module ActiveMerchant
       def find_rates(origin, destination, packages, options = {})
         options = @options.update(options)
         packages = Array(packages)
-        rate_request = build_rate_request(origin, destination, packages, options)
-        response = commit(save_request(rate_request), (options[:test] || false))
-        parse_rate_response(origin, destination, packages, response, options)
+        
+        ground_rate_request = build_rate_request(origin, destination, packages, CarrierCodes['fedex_ground'], options)
+        express_rate_request = build_rate_request(origin, destination, packages, CarrierCodes['fedex_express'], options)
+        
+        ground_response = ''
+        express_response = ''
+        
+        t1 = Thread.new { ground_response = commit(save_request(ground_rate_request), (options[:test] || false)) }
+        t2 = Thread.new { express_response = commit(save_request(express_rate_request), (options[:test] || false)) }
+        
+        t1.join
+        t2.join
+        parse_rate_response(origin, destination, packages, ground_response, express_response, options)
       end
       
       
       protected
-      def build_rate_request(origin, destination, packages, options={})
+      def build_rate_request(origin, destination, packages, carrier_code, options={})
         xml_request = XmlNode.new('FDXRateAvailableServicesRequest', 'xmlns:api' => 'http://www.fedex.com/fsmapi', 'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance', 'xsi:noNamespaceSchemaLocation' => 'FDXRateAvailableServicesRequest.xsd') do |root_node|
-          root_node << build_request_header(CarrierCodes[options[:carrier_code] || "fedex_ground"])
-          # root_node << build_rate_options(packages)
-          
+          root_node << build_request_header(carrier_code)
           root_node << XmlNode.new('ShipDate', @options[:ship_date] || Time.now.strftime("%Y-%m-%d"))
           root_node << XmlNode.new('DropoffType', @options[:dropoff_type] || DropoffTypes['regular_pickup'])
           root_node << XmlNode.new('Packaging', @options[:packaging] || PackageTypes['your_packaging'])
           root_node << XmlNode.new('WeightUnits', @options[:weight_units] || 'LBS')
           root_node << XmlNode.new('Weight', '10.0')
-          
           root_node << XmlNode.new('ListRate', 'false')
-          
-          
-          
           root_node << build_location_node('OriginAddress', origin)
           root_node << build_location_node('DestinationAddress', destination)
           root_node << XmlNode.new('Payment') do |payment_node|
@@ -92,7 +96,6 @@ module ActiveMerchant
           root_node << XmlNode.new('PackageCount', packages.count.to_s)
           
         end
-        puts xml_request.to_xml
         xml_request.to_xml
       end
       
@@ -107,57 +110,45 @@ module ActiveMerchant
       
       def build_location_node(name, location)
         location_node = XmlNode.new(name) do |xml_node|
-          xml_node << XmlNode.new('StateOrProvinceCode', state_or_province(location))
-          xml_node << XmlNode.new('PostalCode', zip_or_postal_code(location))
+          xml_node << XmlNode.new('StateOrProvinceCode', location.state)
+          xml_node << XmlNode.new('PostalCode', location.postal_code)
           xml_node << XmlNode.new("CountryCode", location.country_code(:alpha2)) unless location.country_code(:alpha2).blank?
         end
       end
       
-      def parse_rate_response(origin, destination, packages, response, options)
+      def parse_rate_response(origin, destination, packages, ground_response, express_response, options)
         rates = []
+        rate_estimates = []
+        success, message = nil
+        entries = []
         
-        xml_hash = Hash.from_xml(response)['FDXRateAvailableServicesReply']
-        success = response_hash_success?(xml_hash)
-        message = response_hash_message(xml_hash)
-        
-        if success
-          rate_estimates = []
-          
-          xml_hash['Entry'].each do |rated_shipment|
-            rate_estimates << RateEstimate.new(origin, destination, @@name,
-                                ServiceTypes.invert[rated_shipment['Service']],
-                                :total_price => rated_shipment['EstimatedCharges']['DiscountedCharges']['NetCharge'].to_f,
-                                :currency => rated_shipment['EstimatedCharges']['CurrencyCode'],
-                                :packages => packages)
+        [ground_response, express_response].each do |response|
+          xml_hash = Hash.from_xml(response)['FDXRateAvailableServicesReply']
+          success = response_hash_success?(xml_hash)
+          message = response_hash_message(xml_hash)
+          if success
+            entries << xml_hash['Entry']
+            entries.flatten!
           end
         end
-        RateResponse.new(success, message, xml_hash, :rates => rate_estimates, :xml => response, :request => last_request)
+        
+        entries.each do |rated_shipment|
+          rate_estimates << RateEstimate.new(origin, destination, @@name,
+                              ServiceTypes[rated_shipment['Service']],
+                              :total_price => rated_shipment['EstimatedCharges']['DiscountedCharges']['NetCharge'].to_f,
+                              :currency => rated_shipment['EstimatedCharges']['CurrencyCode'],
+                              :packages => packages)
+        end
+        
+        RateResponse.new(success, message, {}, :rates => rate_estimates)
       end
       
       def response_hash_success?(xml_hash)
-        ! xml_hash['Error']
+        ! xml_hash['Error'] && ! xml_hash['SoftError']
       end
       
       def response_hash_message(xml_hash)
-        response_hash_success?(xml_hash) ? '' : "FedEx Error Code: #{xml_hash['Error']['Code']}: #{xml_hash['Error']['Message']}"
-      end
-      
-      def state_or_province(location)
-        case
-        when location.country == 'US' || location.country == 'USA' then
-          location.state || location.province
-        else
-          location.province || location.state
-        end
-      end
-      
-      def zip_or_postal_code(location)
-        case
-        when location.country == 'US' || location.country == 'USA' then
-          location.zip || location.postal_code
-        else
-          location.postal_code || location.zip
-        end
+        response_hash_success?(xml_hash) ? '' : 'broke' #"FedEx Error Code: #{xml_hash['Error']['Code'] || xml_hash['SoftError']['Code']}: #{xml_hash['Error']['Message'] || xml_hash['SoftError']['Message']}"
       end
       
       def commit(request, test = false)
