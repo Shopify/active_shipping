@@ -96,20 +96,15 @@ Gem and tarball forthcoming on rubyforge.
     # As of now, ground and express rates require two separate requests. I may combine them into one method call in the future.
     # Default is FedEx Ground
     fdx = FedEx.new(:account_number => '999999999', :meter_number => '7777777')
-    
-    # FedEx Ground
     response = fdx.find_rates(origin, destination, packages, :test => true)
     response.rates.sort_by(&:price).collect {|rate| [rate.service_name, rate.price]}
-    # => [["FedEx Ground", 588], ["FedEx Ground Home Delivery", 793]]
-    
-    # FedEx Express
-    response = fdx.find_rates(origin, destination, packages, :test => true, :carrier_code => 'fedex_express')
-    response.rates.sort_by(&:price).collect {|rate| [rate.service_name, rate.price]}
-    # => [["FedEx Express Saver", 1492], 
-    # ["FedEx 2 Day", 1689], 
-    # ["FedEx Standard Overnight", 3029], 
-    # ["FedEx Priority Overnight", 6160], 
-    # ["FedEx First Overnight", 6698]]
+    # => [["FedEx Ground", 977], 
+    # ["FedEx Ground Home Delivery", 1388], 
+    # ["FedEx Express Saver", 2477], 
+    # ["FedEx 2 Day", 2718], 
+    # ["FedEx Standard Overnight", 4978], 
+    # ["FedEx Priority Overnight", 8636], 
+    # ["FedEx First Overnight", 12306]]
     
 
 ## TODO
