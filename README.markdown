@@ -93,9 +93,7 @@ Gem and tarball forthcoming on rubyforge.
     #     ["USPS Global Express Guaranteed", 9400]]
     
     # FedEx
-    # As of now, ground and express rates require two separate requests. I may combine them into one method call in the future.
-    # Default is FedEx Ground
-    fdx = FedEx.new(:account_number => '999999999', :meter_number => '7777777')
+    fdx = FedEx.new(:login => 'Your 9-digit FedEx Account #', :password => 'Your Meter Number')
     response = fdx.find_rates(origin, destination, packages, :test => true)
     response.rates.sort_by(&:price).collect {|rate| [rate.service_name, rate.price]}
     # => [["FedEx Ground", 977], 
@@ -106,6 +104,40 @@ Gem and tarball forthcoming on rubyforge.
     # ["FedEx Priority Overnight", 8636], 
     # ["FedEx First Overnight", 12306]]
     
+    # FedEx Tracking
+    fdx = FedEx.new(:login => '999999999', :password => '7777777')
+    tracking_info = fdx.find_tracking_info('tracking number here', :carrier_code => 'fedex_ground') # Ground package
+    
+    tracking_info.shipment_events.each do |event|
+      puts "#{event.name} at #{event.location.city}, #{event.location.state} on #{event.time}. #{event.message}"
+    end
+    # => Package information transmitted to FedEx at NASHVILLE LOCAL, TN on Thu Oct 23 00:00:00 UTC 2008. 
+    # Picked up by FedEx at NASHVILLE LOCAL, TN on Thu Oct 23 17:30:00 UTC 2008. 
+    # Scanned at FedEx sort facility at NASHVILLE, TN on Thu Oct 23 18:50:00 UTC 2008. 
+    # Departed FedEx sort facility at NASHVILLE, TN on Thu Oct 23 22:33:00 UTC 2008. 
+    # Arrived at FedEx sort facility at KNOXVILLE, TN on Fri Oct 24 02:45:00 UTC 2008. 
+    # Scanned at FedEx sort facility at KNOXVILLE, TN on Fri Oct 24 05:56:00 UTC 2008. 
+    # Delivered at Knoxville, TN on Fri Oct 24 16:45:00 UTC 2008. Signed for by: T.BAKER
+    
+    tracking_info = fdx.find_tracking_info('tracking number here', :carrier_code => 'fedex_express') # Express package
+    
+    tracking_info.shipment_events.each do |event|
+      puts "#{event.name} at #{event.location.city}, #{event.location.state} on #{event.time}. #{event.message}"
+    end
+    # => Picked up by FedEx at NASHVILLE, TN on Wed Dec 03 16:46:00 UTC 2008. 
+    # Package status at MISSISSAUGA, ON on Wed Dec 03 18:00:00 UTC 2008. 
+    # Left FedEx Origin Location at NASHVILLE, TN on Wed Dec 03 20:27:00 UTC 2008. 
+    # Arrived at FedEx Ramp at NASHVILLE, TN on Wed Dec 03 20:43:00 UTC 2008. 
+    # Left FedEx Ramp at NASHVILLE, TN on Wed Dec 03 22:30:00 UTC 2008. 
+    # Arrived at Sort Facility at INDIANAPOLIS, IN on Thu Dec 04 00:31:00 UTC 2008. 
+    # Left FedEx Sort Facility at INDIANAPOLIS, IN on Thu Dec 04 01:14:00 UTC 2008. 
+    # Left FedEx Sort Facility at INDIANAPOLIS, IN on Thu Dec 04 04:48:00 UTC 2008. 
+    # Arrived at FedEx Ramp at MISSISSAUGA, ON on Thu Dec 04 06:26:00 UTC 2008. 
+    # Package status at MISSISSAUGA, ON on Thu Dec 04 07:03:00 UTC 2008. 
+    # Left FedEx Ramp at MISSISSAUGA, ON on Thu Dec 04 07:37:00 UTC 2008. 
+    # Arrived at FedEx Destination Location at TORONTO, ON on Thu Dec 04 08:42:00 UTC 2008. 
+    # On FedEx vehicle for delivery at TORONTO, ON on Thu Dec 04 09:04:00 UTC 2008. 
+    # Delivered to Non-FedEx clearance broker at TORONTO, ON on Thu Dec 04 10:15:00 UTC 2008.
 
 ## TODO
 
