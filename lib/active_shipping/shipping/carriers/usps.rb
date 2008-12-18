@@ -140,7 +140,7 @@ module ActiveMerchant
       end
       
       def find_rates(origin, destination, packages, options = {})
-        options = @options.update(options)
+        options = @options.merge(options)
         
         origin = Location.from(origin)
         destination = Location.from(destination)
@@ -168,13 +168,13 @@ module ActiveMerchant
       def us_rates(origin, destination, packages, options={})
         request = build_us_rate_request(packages, origin.zip, destination.zip, options)
          # never use test mode; rate requests just won't work on test servers
-        parse_response origin, destination, packages, commit(:us_rates,request,false)
+        parse_response origin, destination, packages, commit(:us_rates,request,false), options
       end
       
       def world_rates(origin, destination, packages, options={})
         request = build_world_rate_request(packages, destination.country)
          # never use test mode; rate requests just won't work on test servers
-        parse_response origin, destination, packages, commit(:world_rates,request,false)
+        parse_response origin, destination, packages, commit(:world_rates,request,false), options
       end
       
       # Once the address verification API is implemented, remove this and have valid_credentials? build the request using that instead.
@@ -295,7 +295,7 @@ module ActiveMerchant
         rate_estimates.reject! {|e| e.package_count != packages.length}
         rate_estimates = rate_estimates.sort_by(&:total_price)
         
-        RateResponse.new(success, message, response_hash, :rates => rate_estimates, :xml => response, :request => last_request)
+        RateResponse.new(success, message, response_hash, :rates => rate_estimates, :xml => response, :request => last_request, :log_xml => options[:log_xml])
       end
       
       def rates_from_response_hash(response_hash, packages)
