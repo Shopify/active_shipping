@@ -123,7 +123,6 @@ class UPSTest < Test::Unit::TestCase
       responses[location] = @carrier.find_rates(  @locations[:beverly_hills],
                             @locations[location],
                             @packages.values_at(:chocolate_stuff))
-      #xml_logs responses[location], :name => location.to_s
     end
     
     prices_of = lambda {|sym| responses[sym].rates.map(&:price)}

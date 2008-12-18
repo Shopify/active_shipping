@@ -58,4 +58,32 @@ class UPSTest < Test::Unit::TestCase
     assert_equal '175 AMBASSADOR', response.shipment_events.first.location.address1
     assert_equal 'K1N5X8', response.shipment_events.last.location.postal_code
   end
+  
+  def test_response_parsing
+    mock_response = xml_fixture('ups/test_real_home_as_residential_destination_response')
+    UPS.any_instance.expects(:commit).returns(mock_response)
+    response = @carrier.find_rates( @locations[:beverly_hills],
+                                    @locations[:real_home_as_residential],
+                                    @packages.values_at(:chocolate_stuff))
+    assert_equal [ "UPS Ground",
+                   "UPS Three-Day Select",
+                   "UPS Second Day Air",
+                   "UPS Next Day Air Saver",
+                   "UPS Next Day Air Early A.M.",
+                   "UPS Next Day Air"], response.rates.map(&:service_name)
+    assert_equal [992, 2191, 3007, 5509, 9401, 6124], response.rates.map(&:price)
+  end
+  
+  def test_xml_logging_to_file
+    mock_response = xml_fixture('ups/test_real_home_as_residential_destination_response')
+    UPS.any_instance.expects(:commit).times(2).returns(mock_response)
+    RateResponse.any_instance.expects(:log_xml).with({:name => 'test', :path => '/tmp/logs'}).times(1).returns(true)
+    response = @carrier.find_rates( @locations[:beverly_hills],
+                                    @locations[:real_home_as_residential],
+                                    @packages.values_at(:chocolate_stuff),
+                                    :log_xml => {:name => 'test', :path => '/tmp/logs'})
+    response = @carrier.find_rates( @locations[:beverly_hills],
+                                    @locations[:real_home_as_residential],
+                                    @packages.values_at(:chocolate_stuff))
+  end
 end

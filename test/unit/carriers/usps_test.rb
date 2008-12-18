@@ -112,6 +112,21 @@ class USPSTest < Test::Unit::TestCase
     assert request =~ /\>12345\</
   end
   
+  def test_xml_logging_to_file
+    mock_response = @international_rate_responses[:vanilla]
+    USPS.any_instance.expects(:commit).times(2).returns(mock_response)
+    RateResponse.any_instance.expects(:log_xml).times(1).with({:name => 'test', :path => '/tmp/logs'}).returns(true)
+    @carrier.find_rates(@locations[:beverly_hills],
+                        @locations[:ottawa],
+                        @packages[:book],
+                        :test => true,
+                        :log_xml => {:name => 'test', :path => '/tmp/logs'})
+    @carrier.find_rates(@locations[:beverly_hills],
+                        @locations[:ottawa],
+                        @packages[:book],
+                        :test => true)
+  end
+  
   private
   
   def build_service_hash(options = {})

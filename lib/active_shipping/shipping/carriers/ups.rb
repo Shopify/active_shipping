@@ -77,7 +77,7 @@ module ActiveMerchant
       end
       
       def find_rates(origin, destination, packages, options={})
-        options = @options.update(options)
+        options = @options.merge(options)
         packages = Array(packages)
         access_request = build_access_request
         rate_request = build_rate_request(origin, destination, packages, options)
@@ -246,7 +246,7 @@ module ActiveMerchant
                                 :packages => packages)
           end
         end
-        RateResponse.new(success, message, xml_hash, :rates => rate_estimates, :xml => response, :request => last_request)
+        RateResponse.new(success, message, xml_hash, :rates => rate_estimates, :xml => response, :request => last_request, :log_xml => options[:log_xml])
       end
       
       def parse_tracking_response(response, options={})
