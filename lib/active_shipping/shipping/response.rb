@@ -45,6 +45,24 @@ module ActiveMerchant #:nodoc:
         @test ? true : false
       end
       
+      def log_xml(options={})
+        name = options[:name] || Time.new.strftime('%Y%m%d%H%M%S')
+        carrier_name = @carrier.name rescue ''
+        path = options[:path] || File.join(ENV['HOME'], '.active_merchant', 'shipping', 'logs', carrier_name)
+        File.makedirs(path)
+        methods = {'request' => 'request', 'response' => 'xml'}
+        methods.each do |suffix, method|
+          file = File.join(path, ([name,suffix].join('_') + '.xml'))
+          i = 0
+          while File.exist?(file) do
+            file = File.join(path, ([name + (i += 1).to_s,suffix].join('_') + '.xml'))
+          end
+          File.open(file, 'w+') do |file|
+            file.puts self.send(method)
+          end
+        end
+      end
+      
     end
   end
 end
