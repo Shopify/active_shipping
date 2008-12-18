@@ -1,5 +1,14 @@
 module ActiveMerchant
   module Shipping
+    
+    # After getting an API login from USPS (looks like '123YOURNAME456'),
+    # run the following test:
+    # 
+    # usps = USPS.new(:login => '123YOURNAME456', :test => true)
+    # usps.valid_credentials?
+    #
+    # This will send a test request to the USPS test servers, which they ask you
+    # to do before they put your API key in production mode.
     class USPS < Carrier
       include ActiveMerchant::Shipping
       cattr_reader :name
@@ -134,7 +143,7 @@ module ActiveMerchant
       end
       
       def valid_credentials?
-        # Cannot test with find_rates because the airheads at USPS don't allow that in test mode
+        # Cannot test with find_rates because USPS doesn't allow that in test mode
         test_mode? ? canned_address_verification_works? : super
       end
       
