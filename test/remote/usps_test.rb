@@ -10,6 +10,25 @@ class USPSTest < Test::Unit::TestCase
     
   end
   
+  def test_machinable_rate_discrepancy
+    assert_nothing_raised do
+      default_machinable_response = @carrier.find_rates(
+                                      Location.new(:zip => 83843),
+                                      Location.new(:zip => 70001),
+                                      Package.new(32, [12,6,2], :units => :imperial))
+      assert default_machinable_response.request =~ /<Machinable>TRUE<\/Machinable>/
+      
+      explicit_non_machinable_response = @carrier.find_rates(
+                                      Location.new(:zip => 83843),
+                                      Location.new(:zip => 70001),
+                                      Package.new(32, [12,6,2], :units => :imperial, :machinable => false))
+      assert explicit_non_machinable_response.request =~ /<Machinable>FALSE<\/Machinable>/
+      
+      assert_not_equal default_machinable_response.rates.map(&:price),
+                        explicit_non_machinable_response.rates.map(&:price)
+    end
+  end
+  
   def test_zip_to_zip
     assert_nothing_raised do
       response = @carrier.find_rates( Location.new(:zip => 40524),

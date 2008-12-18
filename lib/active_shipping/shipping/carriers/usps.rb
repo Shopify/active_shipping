@@ -119,6 +119,22 @@ module ActiveMerchant
         end
       end
       
+      # from info at http://www.usps.com/businessmail101/mailcharacteristics/parcels.htm
+      # 
+      # package.options[:books] -- 25 lb. limit instead of 35 for books or other printed matter.
+      #                             Defaults to false.
+      def self.package_machinable?(package, options={})
+        at_least_minimum =  package.inches(:length) >= 6.0 &&
+                            package.inches(:width) >= 3.0 &&
+                            package.inches(:height) >= 0.25 &&
+                            package.ounces >= 6.0
+        at_most_maximum  =  package.inches(:length) <= 34.0 &&
+                            package.inches(:width) <= 17.0 &&
+                            package.inches(:height) <= 17.0 &&
+                            package.pounds <= (package.options[:books] ? 25.0 : 35.0)
+        at_least_minimum && at_most_maximum
+      end
+      
       def requirements
         [:login]
       end
@@ -150,7 +166,7 @@ module ActiveMerchant
       protected
       
       def us_rates(origin, destination, packages, options={})
-        request = build_us_rate_request(packages, origin.zip, destination.zip)
+        request = build_us_rate_request(packages, origin.zip, destination.zip, options)
          # never use test mode; rate requests just won't work on test servers
         parse_response origin, destination, packages, commit(:us_rates,request,false)
       end
@@ -170,11 +186,18 @@ module ActiveMerchant
         response_hash == expected_hash
       end
       
+      # options[:service] --    One of [:first_class, :priority, :express, :bpm, :parcel,
+      #                          :media, :library, :all]. defaults to :all.
+      # options[:container] --  One of [:envelope, :box]. defaults to neither (this field has
+      #                          special meaning in the USPS API).
+      # options[:books] --      Either true or false. Packages of books or other printed matter
+      #                          have a lower weight limit to be considered machinable.
+      # package.options[:machinable] -- Either true or false. Overrides the detection of
+      #                                  "machinability" entirely.
       def build_us_rate_request(packages, origin_zip, destination_zip, options={})
         packages = Array(packages)
         request = XmlNode.new('RateV3Request', :USERID => @options[:login]) do |rate_request|
-          packages.each_index do |id|
-            p = packages[id]
+          packages.each_with_index do |p,id|
             rate_request << XmlNode.new('Package', :ID => id.to_s) do |package|
               package << XmlNode.new('Service', US_SERVICES[options[:service] || :all])
               package << XmlNode.new('ZipOrigination', strip_zip(origin_zip))
@@ -189,7 +212,12 @@ module ActiveMerchant
               package << XmlNode.new('Length', p.inches(:length))
               package << XmlNode.new('Height', p.inches(:height))
               package << XmlNode.new('Girth', p.inches(:girth))
-              package << XmlNode.new('Machinable', (p.options[:machinable] ? true : false).to_s.upcase)
+              is_machinable = if p.options.has_key?(:machinable)
+                p.options[:machinable] ? true : false
+              else
+                USPS.package_machinable?(p)
+              end
+              package << XmlNode.new('Machinable', is_machinable.to_s.upcase)
             end
           end
         end
@@ -201,7 +229,10 @@ module ActiveMerchant
       # * package sizes are not given in the request
       # * services are returned in the response along with restrictions of size
       # * the size restrictions are returned AS AN ENGLISH SENTENCE (!?)
-      
+      #
+      # 
+      # package.options[:mail_type] -- one of [:package, :postcard, :matter_for_the_blind, :envelope].
+      #                                 Defaults to :package.
       def build_world_rate_request(packages, destination_country)
         country = COUNTRY_NAME_CONVERSIONS[destination_country.code(:alpha2).first.value] || destination_country.name
         request = XmlNode.new('IntlRateRequest', :USERID => @options[:login]) do |rate_request|
