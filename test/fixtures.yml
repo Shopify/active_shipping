@@ -1,6 +1,9 @@
 usps: 
-  login: APIKey
-ups: 
-  key: XmlAccessKey
-  login: UPSDotComLogin
-  password: UPSDotComPassword
+  login: '018TAPEO3698'
+ups:
+  key: "3C359BDEC043F324"
+  login: "jimmyebaker"
+  password: "J27374eb"
+fedex:
+  login: '510087666'
+  password: '1250153'
