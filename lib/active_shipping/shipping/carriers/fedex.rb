@@ -249,7 +249,7 @@ module ActiveMerchant
       end
       
       def response_hash_message(xml_hash)
-        response_hash_success?(xml_hash) ? '' : 'broke' #"FedEx Error Code: #{xml_hash['Error']['Code'] || xml_hash['SoftError']['Code']}: #{xml_hash['Error']['Message'] || xml_hash['SoftError']['Message']}"
+        response_hash_success?(xml_hash) ? '' : "FedEx Error Code: #{xml_hash['Error']['Code'] || xml_hash['SoftError']['Code']}: #{xml_hash['Error']['Message'] || xml_hash['SoftError']['Message']}"
       end
       
       def commit(request, test = false)
