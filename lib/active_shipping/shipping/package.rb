@@ -1,6 +1,8 @@
 module ActiveMerchant #:nodoc:
   module Shipping #:nodoc:
     class Package
+      include Quantified
+      
       GRAMS_IN_AN_OUNCE = 28.3495231
       OUNCES_IN_A_GRAM = 0.0352739619
       INCHES_IN_A_CM = 0.393700787
@@ -16,6 +18,7 @@ module ActiveMerchant #:nodoc:
         @options = options
         
         imperial = options[:units] == :imperial
+        @unit_system = imperial ? :imperial : :metric
         dimensions = Array(dimensions)
         
         @ounces,@grams = nil
@@ -85,6 +88,15 @@ module ActiveMerchant #:nodoc:
         measurement.nil? ? @centimetres : measure(measurement, @centimetres)
       end
       alias_method :cm, :centimetres
+      
+      def mass
+        if @unit_system == :metric
+          Mass.new(@grams, :grams)
+        else
+          Mass.new(@ounces, :ounces)
+        end
+      end
+      alias_method :weight, :mass
       
       def self.cents_from(money)
         return nil if money.nil?

@@ -163,6 +163,10 @@ module ActiveMerchant
         test_mode? ? canned_address_verification_works? : super
       end
       
+      def maximum_weight
+        Mass.new(70, :pounds)
+      end
+      
       protected
       
       def us_rates(origin, destination, packages, options={})

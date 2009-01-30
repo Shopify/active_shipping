@@ -4,6 +4,7 @@ module ActiveMerchant
       
       include RequiresParameters
       include PostsData
+      include Quantified
       
       attr_reader :last_request
       attr_accessor :test_mode
@@ -43,6 +44,10 @@ module ActiveMerchant
         false
       else
         true
+      end
+      
+      def maximum_weight
+        Mass.new(150, :pounds)
       end
       
       protected
