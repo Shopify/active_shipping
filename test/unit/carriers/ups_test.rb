@@ -86,4 +86,10 @@ class UPSTest < Test::Unit::TestCase
                                     @locations[:real_home_as_residential],
                                     @packages.values_at(:chocolate_stuff))
   end
+  
+  def test_maximum_weight
+    assert Package.new(150 * 16, [5,5,5], :units => :imperial).mass == @carrier.maximum_weight
+    assert Package.new((150 * 16) + 0.01, [5,5,5], :units => :imperial).mass > @carrier.maximum_weight
+    assert Package.new((150 * 16) - 0.01, [5,5,5], :units => :imperial).mass < @carrier.maximum_weight
+  end
 end

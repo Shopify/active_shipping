@@ -12,7 +12,7 @@ rescue LoadError
   require 'mocha'
 end
 
-#require 'ruby-debug'
+require 'ruby-debug'
 
 
 

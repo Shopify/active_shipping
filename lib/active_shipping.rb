@@ -30,6 +30,9 @@ require 'active_support'
 require 'ftools'
 
 require 'vendor/xml_node/lib/xml_node'
+require 'vendor/quantified/lib/quantified'
+require 'quantified/mass'
+require 'quantified/length'
 
 require 'net/https'
 require 'active_shipping/lib/error'
