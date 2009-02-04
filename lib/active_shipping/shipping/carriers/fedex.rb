@@ -74,6 +74,9 @@ module ActiveMerchant
         [:login, :password]
       end
       
+      def setup
+      end
+      
       def find_rates(origin, destination, packages, options = {})
         options = @options.update(options)
         packages = Array(packages)
@@ -130,7 +133,7 @@ module ActiveMerchant
       
       def build_tracking_request(tracking_number, options={})
         xml_request = XmlNode.new('FDXTrackRequest', 'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance', 'xsi:noNamespaceSchemaLocation' => 'FDXTrackRequest.xsd')
-        xml_request << build_request_header(CarrierCodes[options[:carrier_code]])
+        xml_request << build_request_header(CarrierCodes[options[:carrier_code]] || CarrierCodes['fedex_ground'])
         xml_request << XmlNode.new('PackageIdentifier') do |pkg_xml|
           pkg_xml << XmlNode.new('Value', tracking_number)
           pkg_xml << XmlNode.new('Type', PackageIdentifierTypes[options['package_identifier_type'] || 'tracking_number'])
@@ -144,7 +147,7 @@ module ActiveMerchant
         # DestinationCountryCode not implemented
       end
       
-      def build_request_header(carrier_code)
+      def build_request_header(carrier_code='FDXG')
         xml_request = XmlNode.new('RequestHeader') do |access_request|
           access_request << XmlNode.new('AccountNumber', @options[:login])
           access_request << XmlNode.new('MeterNumber', @options[:password])

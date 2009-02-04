@@ -9,14 +9,6 @@ class FedExTest < Test::Unit::TestCase
     @carrier                = FedEx.new(fixtures(:fedex).merge(:test => true))
   end
   
-  def test_just_country_given
-    assert_nothing_raised do
-      response = @carrier.find_rates( @locations[:beverly_hills],
-                                      Location.new(:country => 'CZ'),
-                                      Package.new(100, [5,10,20]))
-    end
-  end
-  
   def test_us_to_canada
     response = nil
     assert_nothing_raised do
@@ -39,4 +31,10 @@ class FedExTest < Test::Unit::TestCase
     end
   end
 
+  def test_tracking
+    assert_nothing_raised do
+      @carrier.find_tracking_info('077973360403984')
+    end
+  end
+  
 end
