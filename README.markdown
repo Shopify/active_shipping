@@ -14,6 +14,7 @@ Active Shipping is currently being used and improved in a production environment
 ## Supported Shipping Carriers
 
 * [USPS](http://www.usps.com)
+* [FedEx](http://www.fedex.com)
 * more soon!
 
 ## Prerequisites
