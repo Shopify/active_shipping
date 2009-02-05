@@ -16,7 +16,11 @@ class FedExTest < Test::Unit::TestCase
                                   @locations[:ottawa],
                                   @packages.values_at(:wii),
                                   :test => true)
-      assert_not_equal [], response.rates
+      assert !response.rates.blank?
+      response.rates.each do |rate|
+        assert_instance_of String, rate.service_name
+        assert_instance_of Fixnum, rate.price
+      end
     end
   end
   
@@ -27,7 +31,26 @@ class FedExTest < Test::Unit::TestCase
                                   @locations[:beverly_hills],
                                   @packages.values_at(:wii),
                                   :test => true)
-      assert_not_equal [], response.rates
+      assert !response.rates.blank?
+      response.rates.each do |rate|
+        assert_instance_of String, rate.service_name
+        assert_instance_of Fixnum, rate.price
+      end
+    end
+  end
+  
+  def test_ottawa_to_beverly_hills
+    response = nil
+    assert_nothing_raised do
+      response = @carrier.find_rates(  @locations[:ottawa],
+                                  @locations[:beverly_hills],
+                                  @packages.values_at(:book, :wii),
+                                  :test => true)
+      assert !response.rates.blank?
+      response.rates.each do |rate|
+        assert_instance_of String, rate.service_name
+        assert_instance_of Fixnum, rate.price
+      end
     end
   end
 
