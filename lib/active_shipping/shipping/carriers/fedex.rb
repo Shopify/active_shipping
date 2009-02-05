@@ -81,18 +81,11 @@ module ActiveMerchant
         options = @options.update(options)
         packages = Array(packages)
         
-        ground_rate_request = build_rate_request(origin, destination, packages, CarrierCodes['fedex_ground'], options)
-        express_rate_request = build_rate_request(origin, destination, packages, CarrierCodes['fedex_express'], options)
+        rate_request = build_rate_request(origin, destination, packages, nil, options)
         
-        ground_response = ''
-        express_response = ''
+        response = commit(save_request(rate_request), (options[:test] || false))
         
-        t1 = Thread.new { ground_response = commit(save_request(ground_rate_request), (options[:test] || false)) }
-        t2 = Thread.new { express_response = commit(save_request(express_rate_request), (options[:test] || false)) }
-        
-        t1.join
-        t2.join
-        parse_rate_response(origin, destination, packages, ground_response, express_response, options)
+        parse_rate_response(origin, destination, packages, response, options)
       end
       
       def find_tracking_info(tracking_number, options={})
@@ -151,7 +144,9 @@ module ActiveMerchant
         xml_request = XmlNode.new('RequestHeader') do |access_request|
           access_request << XmlNode.new('AccountNumber', @options[:login])
           access_request << XmlNode.new('MeterNumber', @options[:password])
-          access_request << XmlNode.new('CarrierCode', carrier_code)
+          if carrier_code
+            access_request << XmlNode.new('CarrierCode', carrier_code)
+          end
         end
         xml_request
       end
@@ -164,20 +159,18 @@ module ActiveMerchant
         end
       end
       
-      def parse_rate_response(origin, destination, packages, ground_response, express_response, options)
+      def parse_rate_response(origin, destination, packages, response, options)
         rates = []
         rate_estimates = []
         success, message = nil
         entries = []
         
-        [ground_response, express_response].each do |response|
-          xml_hash = Hash.from_xml(response)['FDXRateAvailableServicesReply']
-          success = response_hash_success?(xml_hash)
-          message = response_hash_message(xml_hash)
-          if success
-            entries << xml_hash['Entry']
-            entries.flatten!
-          end
+        xml_hash = Hash.from_xml(response)['FDXRateAvailableServicesReply']
+        success = response_hash_success?(xml_hash)
+        message = response_hash_message(xml_hash)
+        if success
+          entries << xml_hash['Entry']
+          entries.flatten!
         end
         
         entries.each do |rated_shipment|
