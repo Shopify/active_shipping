@@ -93,7 +93,6 @@ module ActiveMerchant
         
         tracking_request = build_tracking_request(tracking_number, options)
         response = commit(save_request(tracking_request), (options[:test] || false))
-        puts response
         parse_tracking_response(response, options)
       end
       
@@ -135,7 +134,6 @@ module ActiveMerchant
         xml_request << XmlNode.new('ShipDateRangeEnd', options['ship_date_range_end']) if options['ship_date_range_end']
         xml_request << XmlNode.new('ShipDate', options['ship_date']) if options['ship_date']
         xml_request << XmlNode.new('DetailScans', options['detail_scans'] || 'true')
-        puts xml_request.to_xml
         xml_request.to_xml
         # DestinationCountryCode not implemented
       end
@@ -176,12 +174,13 @@ module ActiveMerchant
         entries.each do |rated_shipment|
           rate_estimates << RateEstimate.new(origin, destination, @@name,
                               ServiceTypes[rated_shipment['Service']],
+                              :service_code => rated_shipment['Service'],
                               :total_price => rated_shipment['EstimatedCharges']['DiscountedCharges']['NetCharge'].to_f,
                               :currency => rated_shipment['EstimatedCharges']['CurrencyCode'],
                               :packages => packages)
         end
         
-        RateResponse.new(success, message, {}, :rates => rate_estimates)
+        RateResponse.new(success, message, xml_hash, :rates => rate_estimates, :xml => response, :request => last_request, :log_xml => options[:log_xml])
       end
       
       def parse_tracking_response(response, options)

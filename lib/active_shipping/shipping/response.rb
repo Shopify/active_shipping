@@ -56,7 +56,11 @@ module ActiveMerchant #:nodoc:
       #                    created if they don't exist already.
       def log_xml(options={})
         name = options[:name] || Time.new.strftime('%Y%m%d%H%M%S')
-        carrier_name = @carrier.name rescue ''
+        carrier_name = begin
+          self.rates.first.carrier
+        rescue NoMethodError
+          ''
+        end
         path = options[:path] || File.join(ENV['HOME'], '.active_merchant', 'shipping', 'logs', carrier_name)
         File.makedirs(path)
         methods = {'request' => 'request', 'response' => 'xml'}
