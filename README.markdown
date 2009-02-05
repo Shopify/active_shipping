@@ -150,8 +150,10 @@ The nicest way to submit changes would be to set up a GitHub account and fork th
 
 ## Contributors
 
+* James MacAulay (<http://jmacaulay.net>)
 * Tobias Luetke (<http://blog.leetsoft.com>)
 * Cody Fauser (<http://codyfauser.com>)
+* Jimmy Baker (<http://jimmyville.com/>)
 
 ## Legal Mumbo Jumbo
 

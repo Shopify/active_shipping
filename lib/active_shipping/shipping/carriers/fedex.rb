@@ -1,5 +1,11 @@
+# FedEx module by Jimmy Baker
+# http://github.com/jimmyebaker
+
 module ActiveMerchant
   module Shipping
+    
+    # :login is your FedEx account number
+    # :password is your meter number
     class FedEx < Carrier
       cattr_reader :name
       @@name = "FedEx"
