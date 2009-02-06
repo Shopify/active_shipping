@@ -4,8 +4,8 @@ class USPSTest < Test::Unit::TestCase
   include ActiveMerchant::Shipping
   
   def setup
-    @packages               = fixtures(:packages)
-    @locations              = fixtures(:locations)
+    @packages               = TestFixtures.packages
+    @locations              = TestFixtures.locations
     @carrier                = USPS.new(:login => 'login')
     @international_rate_responses = {
       :vanilla => xml_fixture('usps/beverly_hills_to_ottawa_book_rate_response')

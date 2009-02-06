@@ -81,7 +81,8 @@ module ActiveMerchant
         :wii => Package.new((7.5 * 16), [15, 10, 4.5], :units => :imperial, :value => 269.99, :currency => 'GBP'),
         :poster => Package.new(100, [93,10], :cylinder => true),
         :small_half_pound => Package.new(8, [1,1,1], :units => :imperial),
-        :big_half_pound => Package.new((16 * 50), [24,24,36], :units => :imperial)
+        :big_half_pound => Package.new((16 * 50), [24,24,36], :units => :imperial),
+        :chocolate_stuff => Package.new(80, [2,6,12], :units => :imperial)
       }
       
       @@locations = {

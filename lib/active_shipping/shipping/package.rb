@@ -3,38 +3,30 @@ module ActiveMerchant #:nodoc:
     class Package
       include Quantified
       
-      GRAMS_IN_AN_OUNCE = 28.3495231
-      OUNCES_IN_A_GRAM = 0.0352739619
-      INCHES_IN_A_CM = 0.393700787
-      CM_IN_AN_INCH = 2.54
-      
       cattr_accessor :default_options
       attr_reader :options, :value, :currency
       
       # Package.new(100, [10, 20, 30], :units => :metric)
+      # Package.new(Mass.new(100, :grams), [10, 20, 30].map {|m| Length.new(m, :centimetres)})
+      # Package.new(100.grams, [10, 20, 30].map(&:centimetres))
       def initialize(grams_or_ounces, dimensions, options = {})
         options = @@default_options.update(options) if @@default_options
         options.symbolize_keys!
         @options = options
         
-        imperial = options[:units] == :imperial
+        @dimensions = [dimensions].flatten.reject {|d| d.nil?}
+        
+        imperial = (options[:units] == :imperial) ||
+          ([grams_or_ounces, *dimensions].all? {|m| m.respond_to?(:unit) && m.unit.to_sym == :imperial})
+        
         @unit_system = imperial ? :imperial : :metric
-        dimensions = Array(dimensions)
         
-        @ounces,@grams = nil
-        if grams_or_ounces.nil?
-          @grams = @ounces = 0
-        elsif imperial
-          @ounces = grams_or_ounces
-        else
-          @grams = grams_or_ounces
-        end
+        @weight = attribute_from_metric_or_imperial(grams_or_ounces, Mass, :grams, :ounces)
         
-        @inches,@centimetres = nil
-        if dimensions.empty?
-          @inches = @centimetres = [0,0,0]
+        if @dimensions.blank?
+          @dimensions = [Length.new(0, (imperial ? :inches : :centimetres))] * 3
         else
-          process_dimensions(dimensions,imperial)
+          process_dimensions
         end
         
         @value = Package.cents_from(options[:value])
@@ -48,55 +40,51 @@ module ActiveMerchant #:nodoc:
       alias_method :tube?, :cylinder?
       
       def ounces(options={})
-        case options[:type]
-        when *[nil,:actual]: @ounces ||= grams(options) * OUNCES_IN_A_GRAM
-        when *[:volumetric,:dimensional]: @volumetric_ounces ||= grams(options) * OUNCES_IN_A_GRAM
-        when :billable: @billable_ounces ||= [ounces,ounces(:type => :volumetric)].max
-        end
+        weight(options).in_ounces.amount
       end
       alias_method :oz, :ounces
   
       def grams(options={})
-        case options[:type]
-        when *[nil,:actual]: @grams ||= ounces(options) * GRAMS_IN_AN_OUNCE
-        when *[:volumetric,:dimensional]: @volumetric_grams ||= centimetres(:box_volume) / 6.0
-        when :billable: [grams,grams(:type => :volumetric)].max
-        end
+        weight(options).in_grams.amount
       end
       alias_method :g, :grams
   
       def pounds(options={})
-        ounces(options) / 16.0
+        weight(options).in_pounds.amount
       end
       alias_method :lb, :pounds
       alias_method :lbs, :pounds
   
       def kilograms(options={})
-        grams(options) / 1000.0
+        weight(options).in_kilograms.amount
       end
       alias_method :kg, :kilograms
       alias_method :kgs, :kilograms
   
       def inches(measurement=nil)
-        @inches ||= @centimetres.map {|cm| cm * INCHES_IN_A_CM}
+        @inches ||= @dimensions.map {|m| m.in_inches.amount }
         measurement.nil? ? @inches : measure(measurement, @inches)
       end
       alias_method :in, :inches
   
       def centimetres(measurement=nil)
-        @centimetres ||= @inches.map {|inches| inches * CM_IN_AN_INCH}
+        @centimetres ||= @dimensions.map {|m| m.in_centimetres.amount }
         measurement.nil? ? @centimetres : measure(measurement, @centimetres)
       end
       alias_method :cm, :centimetres
       
-      def mass
-        if @unit_system == :metric
-          Mass.new(@grams, :grams)
-        else
-          Mass.new(@ounces, :ounces)
+      def weight(options = {})
+        case options[:type]
+        when *[nil,:actual]: @weight
+        when *[:volumetric,:dimensional]:
+          @volumetric_weight ||= begin
+            m = Mass.new((centimetres(:box_volume) / 6.0), :grams)
+            @unit_system == :imperial ? m.in_ounces : m
+          end
+        when :billable: [weight,weight(:type => :volumetric)].max
         end
       end
-      alias_method :weight, :mass
+      alias_method :mass, :weight
       
       def self.cents_from(money)
         return nil if money.nil?
@@ -116,6 +104,14 @@ module ActiveMerchant #:nodoc:
   
       private
       
+      def attribute_from_metric_or_imperial(obj, klass, metric_unit, imperial_unit)
+        if obj.is_a?(klass)
+          return value
+        else
+          return klass.new(obj, (@unit_system == :imperial ? imperial_unit : metric_unit))
+        end
+      end
+      
       def measure(measurement, ary)
         case measurement
         when Fixnum: ary[measurement]
@@ -129,15 +125,15 @@ module ActiveMerchant #:nodoc:
         end
       end
       
-      def process_dimensions(dimensions, imperial_units)
-        units = imperial_units ? 'inches' : 'centimetres'
-        self.instance_variable_set("@#{units}", dimensions.sort)
-        units_array = self.instance_variable_get("@#{units}")
+      def process_dimensions
+        @dimensions = @dimensions.map do |l|
+          attribute_from_metric_or_imperial(l, Length, :centimetres, :inches)
+        end.sort
         # [1,2] => [1,1,2]
         # [5] => [5,5,5]
         # etc..
-        2.downto(units_array.length) do |n|
-          units_array.unshift(units_array[0])
+        2.downto(@dimensions.length) do |n|
+          @dimensions.unshift(@dimensions[0])
         end
       end
   

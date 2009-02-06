@@ -3,9 +3,9 @@ require File.dirname(__FILE__) + '/../test_helper'
 class PackageTest < Test::Unit::TestCase
   include ActiveMerchant::Shipping
   
-  GRAMS_IN_AN_OUNCE = 28.3495231
-  OUNCES_IN_A_GRAM = 0.0352739619
-  INCHES_IN_A_CM = 0.393700787
+  GRAMS_IN_AN_OUNCE = 28.349523125
+  OUNCES_IN_A_GRAM = 0.0352739619495804
+  INCHES_IN_A_CM = 0.393700787401575
   CM_IN_AN_INCH = 2.54
   
   def setup
@@ -19,10 +19,8 @@ class PackageTest < Test::Unit::TestCase
                           :value => 860,
                           :currency => 'CAD'
                         )
-                                          
-      @bare_info_package = Package.new(nil,nil)
       
-      @packages = fixtures(:packages)
+      @packages = TestFixtures.packages
   end
 
   def test_initialize
@@ -32,7 +30,7 @@ class PackageTest < Test::Unit::TestCase
   end
   
   def test_accessors
-    # :wii => Package.new(:pounds => 7.5, :inches => [15, 10, 4.5], :value => 269.99, :currency => 'GBP')
+    # :wii => Package.new((7.5 * 16), [15, 10, 4.5], :units => :imperial, :value => 269.99, :currency => 'GBP')
     wii = @packages[:wii]
     [:x, :max, :long, :length].each do |sym|
       assert_equal 15, wii.inches(sym)
