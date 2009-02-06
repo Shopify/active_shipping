@@ -135,6 +135,7 @@ module ActiveMerchant
             #                   * Shipment/DocumentsOnly element                      
             
             packages.each do |package|
+              debugger if package.nil?
               
               
               imperial = ['US','LR','MM'].include?(origin.country_code(:alpha2))

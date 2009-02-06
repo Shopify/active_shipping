@@ -4,8 +4,8 @@ class FedExTest < Test::Unit::TestCase
   include ActiveMerchant::Shipping
   
   def setup
-    @packages               = fixtures(:packages)
-    @locations              = fixtures(:locations)
+    @packages               = TestFixtures.packages
+    @locations              = TestFixtures.locations
     @carrier                = FedEx.new(fixtures(:fedex).merge(:test => true))
   end
   
