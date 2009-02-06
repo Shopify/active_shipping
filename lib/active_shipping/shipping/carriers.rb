@@ -8,7 +8,7 @@ module ActiveMerchant
     module Carriers
       class <<self
         def all
-          [BogusCarrier,UPS,USPS]
+          [BogusCarrier, UPS, USPS, FedEx]
         end
       end
     end
