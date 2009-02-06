@@ -127,6 +127,12 @@ class USPSTest < Test::Unit::TestCase
                         :test => true)
   end
   
+  def test_maximum_weight
+    assert Package.new(70 * 16, [5,5,5], :units => :imperial).mass == @carrier.maximum_weight
+    assert Package.new((70 * 16) + 0.01, [5,5,5], :units => :imperial).mass > @carrier.maximum_weight
+    assert Package.new((70 * 16) - 0.01, [5,5,5], :units => :imperial).mass < @carrier.maximum_weight
+  end
+  
   private
   
   def build_service_hash(options = {})
@@ -141,11 +147,5 @@ class USPSTest < Test::Unit::TestCase
          "Ounces"=> options[:ounces] || "9",
          "MaxDimensions"=> options[:max_dimensions] || 
           "Max. length 24\", Max. length, height, depth combined 36\""}
-  end
-  
-  def test_maximum_weight
-    assert Package.new(70 * 16, [5,5,5], :units => :imperial).mass == @carrier.maximum_weight
-    assert Package.new((70 * 16) + 0.01, [5,5,5], :units => :imperial).mass > @carrier.maximum_weight
-    assert Package.new((70 * 16) - 0.01, [5,5,5], :units => :imperial).mass < @carrier.maximum_weight
   end
 end
