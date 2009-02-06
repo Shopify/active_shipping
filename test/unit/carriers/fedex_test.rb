@@ -41,6 +41,7 @@ class FedExTest < Test::Unit::TestCase
   def test_building_request_and_parsing_response
     mock_request = xml_fixture('fedex/ottawa_to_beverly_hills_rate_request')
     mock_response = xml_fixture('fedex/ottawa_to_beverly_hills_rate_response')
+    Time.any_instance.expects(:strftime).with("%Y-%m-%d").returns('2009-02-05')
     FedEx.any_instance.expects(:commit).with {|request, test_mode| Hash.from_xml(request) == Hash.from_xml(mock_request) && test_mode}.returns(mock_response)
     response = @carrier.find_rates( @locations[:ottawa],
                                     @locations[:beverly_hills],
