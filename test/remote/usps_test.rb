@@ -153,6 +153,10 @@ class USPSTest < Test::Unit::TestCase
     assert response.success?, response.message
   end
   
+  def test_valid_credentials
+    assert USPS.new(fixtures(:usps).merge(:test => true)).valid_credentials?
+  end
+  
   # Uncomment and switch out SPECIAL_COUNTRIES with some other batch to see which
   # countries are currently working. Commented out here just because it's a lot of
   # hits to their server at once:

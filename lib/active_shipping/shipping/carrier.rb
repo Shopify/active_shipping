@@ -45,6 +45,10 @@ module ActiveMerchant
       
       protected
       
+      def node_text_or_nil(xml_node)
+        xml_node ? xml_node.text : nil
+      end
+      
       # Override in subclasses for non-U.S.-based carriers.
       def self.default_location
         Location.new( :country => 'US',
