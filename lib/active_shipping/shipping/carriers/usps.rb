@@ -1,3 +1,5 @@
+require 'cgi'
+
 module ActiveMerchant
   module Shipping
     
@@ -173,22 +175,22 @@ module ActiveMerchant
       def us_rates(origin, destination, packages, options={})
         request = build_us_rate_request(packages, origin.zip, destination.zip, options)
          # never use test mode; rate requests just won't work on test servers
-        parse_response origin, destination, packages, commit(:us_rates,request,false), options
+        parse_rate_response origin, destination, packages, commit(:us_rates,request,false), options
       end
       
       def world_rates(origin, destination, packages, options={})
         request = build_world_rate_request(packages, destination.country)
          # never use test mode; rate requests just won't work on test servers
-        parse_response origin, destination, packages, commit(:world_rates,request,false), options
+        parse_rate_response origin, destination, packages, commit(:world_rates,request,false), options
       end
       
       # Once the address verification API is implemented, remove this and have valid_credentials? build the request using that instead.
       def canned_address_verification_works?
         request = "%3CCarrierPickupAvailabilityRequest%20USERID=%22#{@options[:login]}%22%3E%20%0A%3CFirmName%3EABC%20Corp.%3C/FirmName%3E%20%0A%3CSuiteOrApt%3ESuite%20777%3C/SuiteOrApt%3E%20%0A%3CAddress2%3E1390%20Market%20Street%3C/Address2%3E%20%0A%3CUrbanization%3E%3C/Urbanization%3E%20%0A%3CCity%3EHouston%3C/City%3E%20%0A%3CState%3ETX%3C/State%3E%20%0A%3CZIP5%3E77058%3C/ZIP5%3E%20%0A%3CZIP4%3E1234%3C/ZIP4%3E%20%0A%3C/CarrierPickupAvailabilityRequest%3E%0A"
-        expected_hash = {"CarrierPickupAvailabilityResponse"=>{"City"=>"HOUSTON", "Address2"=>"1390 Market Street", "FirmName"=>"ABC Corp.", "State"=>"TX", "Date"=>"3/1/2004", "DayOfWeek"=>"Monday", "Urbanization"=>nil, "ZIP4"=>"1234", "ZIP5"=>"77058", "CarrierRoute"=>"C", "SuiteOrApt"=>"Suite 777"}}
-        xml = commit(:test, request, true)
-        response_hash = Hash.from_xml(xml)
-        response_hash == expected_hash
+        # expected_hash = {"CarrierPickupAvailabilityResponse"=>{"City"=>"HOUSTON", "Address2"=>"1390 Market Street", "FirmName"=>"ABC Corp.", "State"=>"TX", "Date"=>"3/1/2004", "DayOfWeek"=>"Monday", "Urbanization"=>nil, "ZIP4"=>"1234", "ZIP5"=>"77058", "CarrierRoute"=>"C", "SuiteOrApt"=>"Suite 777"}}
+        xml = REXML::Document.new(commit(:test, request, true))
+        xml.get_text('/CarrierPickupAvailabilityResponse/City').to_s == 'HOUSTON' &&
+        xml.get_text('/CarrierPickupAvailabilityResponse/Address2').to_s == '1390 Market Street'
       end
       
       # options[:service] --    One of [:first_class, :priority, :express, :bpm, :parcel,
@@ -257,30 +259,27 @@ module ActiveMerchant
         URI.encode(save_request(request.to_s))
       end
       
-      def parse_response(origin, destination, packages, response, options={})
+      def parse_rate_response(origin, destination, packages, response, options={})
         success = true
         message = ''
         rate_hash = {}
-        response_hash = Hash.from_xml(response)
-        root_node_name = response_hash.keys.first
-        root_node = response_hash[root_node_name]
         
-        root_node['Package'] = [root_node['Package']] unless root_node['Package'].is_a? Array
+        xml = REXML::Document.new(response)
         
-        if root_node_name == 'Error'
+        if error = xml.elements['/Error']
           success = false
-          message = root_node['Description']
+          message = error.elements['Description'].text
         else
-          root_node['Package'].each do |package|
-            if package['Error']
+          xml.elements.each('/*/Package') do |package|
+            if package.elements['Error']
               success = false
-              message = package['Error']['Description']
+              message = package.get_text('Error/Description').to_s
               break
             end
           end
           
           if success
-            rate_hash = rates_from_response_hash(response_hash, packages)
+            rate_hash = rates_from_response_node(xml, packages)
             unless rate_hash
               success = false
               message = "Unknown root node in XML response: '#{root_node_name}'"
@@ -288,8 +287,6 @@ module ActiveMerchant
           end
           
         end
-        
-        
         
         rate_estimates = rate_hash.keys.map do |service_name|
           RateEstimate.new(origin,destination,@@name,"USPS #{service_name}",
@@ -300,81 +297,45 @@ module ActiveMerchant
         rate_estimates.reject! {|e| e.package_count != packages.length}
         rate_estimates = rate_estimates.sort_by(&:total_price)
         
-        RateResponse.new(success, message, response_hash, :rates => rate_estimates, :xml => response, :request => last_request, :log_xml => options[:log_xml])
+        RateResponse.new(success, message, Hash.from_xml(response), :rates => rate_estimates, :xml => response, :request => last_request, :log_xml => options[:log_xml])
       end
       
-      def rates_from_response_hash(response_hash, packages)
+      def rates_from_response_node(response_node, packages)
         rate_hash = {}
-        root_node = response_hash.keys.find {|key| ['IntlRateResponse','RateV3Response'].include? key }
-        return false unless root_node
-        domestic = (root_node == 'RateV3Response')
-        root_node = response_hash[root_node]
+        return false unless (root_node = response_node.elements['/IntlRateResponse | /RateV3Response'])
+        domestic = (root_node.name == 'RateV3Response')
         
-        if domestic
-          service_node, service_code_node, service_name_node, rate_node = 'Postage', 'CLASSID', 'MailService', 'Rate'
-        else
-          service_node, service_code_node, service_name_node, rate_node = 'Service', 'ID', 'SvcDescription', 'Postage'
-        end
+        domestic_elements = ['Postage', 'CLASSID', 'MailService', 'Rate']
+        international_elements = ['Service', 'ID', 'SvcDescription', 'Postage']
+        service_node, service_code_node, service_name_node, rate_node = domestic ? domestic_elements : international_elements
         
-        root_node['Package'] = [root_node['Package']] unless root_node['Package'].is_a? Array
-        
-        
-        root_node['Package'].each do |package_hash|
-          package_index = package_hash['ID'].to_i
+        root_node.each_element('Package') do |package_node|
+          package_index = package_node.attributes['ID'].to_i
           
-          package_hash[service_node] = [package_hash[service_node]] unless package_hash[service_node].is_a? Array
-          
-          package_hash[service_node].each do |service_response_hash|
-            service_name = service_response_hash[service_name_node]
+          package_node.each_element(service_node) do |service_response_node|
+            service_name = service_response_node.get_text(service_name_node).to_s
             
             # aggregate specific package rates into a service-centric RateEstimate
             # first package with a given service name will initialize these;
             # later packages with same service will add to them
             this_service = rate_hash[service_name] ||= {}
-            this_service[:service_code] ||= service_response_hash[service_code_node]
+            this_service[:service_code] ||= service_response_node.attributes[service_code_node]
             package_rates = this_service[:package_rates] ||= []
-            
-            
             this_package_rate = {:package => (this_package = packages[package_index]),
-                             :rate => Package.cents_from(service_response_hash[rate_node].to_f)}
+                                 :rate => Package.cents_from(service_response_node.get_text(rate_node).to_s.to_f)}
             
-            # unless this_service[:options] || domestic
-            #   commitments = service_response_hash['SvcCommitments'].split(/[^\d]/).reject {|str| str.empty?}.map {|c| c.to_i}
-            #   estimated_days = (commitments.empty? ? nil : ((commitments.first)..(commitments.last)))
-            #   this_service[:options] ||= {:estimated_days => estimated_days,
-            #                               :max_dimensions => service_response_hash['MaxDimensions']}
-            # end
-            
-            package_rates << this_package_rate if package_valid_for_service(this_package,service_response_hash)
-            
-            if package_valid_for_service(this_package,service_response_hash)
-            else
-            end
+            package_rates << this_package_rate if package_valid_for_service(this_package,service_response_node)
           end
-          # sorted = package_hash['Service'].sort {|x,y|                 #sort by rate descending
-          #             y['Postage'].to_f <=> x['Postage'].to_f}
-          #           filtered = sorted.map do |s|                                   #map to hashes of the data we want
-          #             if package_valid_for_service(packages[i],s)
-          #               commitments = s['SvcCommitments'].split(/[^\d]/).reject {|str| str.empty?}.map {|c| c.to_i}
-          #               { :name => s['SvcDescription'],
-          #                 :rate => (s['Postage'].to_f * 100).to_i,
-          #                 :estimated_days => (commitments.empty? ? nil : ((commitments.first)..(commitments.last))),
-          #                 :max_dimensions => s['MaxDimensions'] }
-          #             else
-          #               nil
-          #             end
-          #           end
-          #           rates << filtered.compact
         end
         rate_hash
       end
       
-      def package_valid_for_service(package,service_hash)
-        return true if service_hash['MaxWeight'].nil?
-        max_weight = service_hash['MaxWeight'].to_f
-        name = (service_hash['SvcDescription'] || service_hash['MailService']).downcase
+      def package_valid_for_service(package, service_node)
+        return true if service_node.elements['MaxWeight'].nil?
+        max_weight = service_node.get_text('MaxWeight').to_s.to_f
+        name = service_node.get_text('SvcDescription | MailService').to_s.downcase
+        
         if name =~ /flat.rate.box/ #domestic or international flat rate box
-          
           # flat rate dimensions from http://www.usps.com/shipping/flatrate.htm
           return (package_valid_for_max_dimensions(package,
                       :weight => max_weight, #domestic apparently has no weight restriction
@@ -392,22 +353,22 @@ module ActiveMerchant
                       :length => 12.5,
                       :width => 9.5,
                       :height => 0.75)
-        elsif service_hash['MailService'] # domestic non-flat rates
+        elsif service_node.elements['MailService'] # domestic non-flat rates
           return true
         else #international non-flat rates
-          
           # Some sample english that this is required to parse:
           #
           # 'Max. length 46", width 35", height 46" and max. length plus girth 108"'
           # 'Max. length 24", Max. length, height, depth combined 36"'
           # 
-          tokens = service_hash['MaxDimensions'].downcase.split(/[^\d]*"/).reject {|t| t.empty?}
+          sentence = CGI.unescapeHTML(service_node.get_text('MaxDimensions').to_s)
+          tokens = sentence.downcase.split(/[^\d]*"/).reject {|t| t.empty?}
           max_dimensions = {:weight => max_weight}
           single_axis_values = []
           tokens.each do |token|
             axis_sum = [/length/,/width/,/height/,/depth/].sum {|regex| (token =~ regex) ? 1 : 0}
             unless axis_sum == 0
-              value = token[(token =~ /\d+$/)..-1].to_f 
+              value = token[/\d+$/].to_f 
               if axis_sum == 3
                 max_dimensions[:length_plus_width_plus_height] = value
               elsif token =~ /girth/ and axis_sum == 1
