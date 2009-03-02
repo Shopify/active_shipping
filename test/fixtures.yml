@@ -7,3 +7,4 @@ ups:
 fedex:
   login: '510087666'
   password: '1250153'
+  test: true
