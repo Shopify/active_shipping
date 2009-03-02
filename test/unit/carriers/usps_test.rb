@@ -1,12 +1,11 @@
 require File.dirname(__FILE__) + '/../../test_helper'
 
 class USPSTest < Test::Unit::TestCase
-  include ActiveMerchant::Shipping
   
   def setup
-    @packages               = TestFixtures.packages
-    @locations              = TestFixtures.locations
-    @carrier                = USPS.new(:login => 'login')
+    @packages  = TestFixtures.packages
+    @locations = TestFixtures.locations
+    @carrier   = USPS.new(:login => 'login')
     @international_rate_responses = {
       :vanilla => xml_fixture('usps/beverly_hills_to_ottawa_book_rate_response')
     }
@@ -24,13 +23,15 @@ class USPSTest < Test::Unit::TestCase
 
   def test_parse_international_rate_response
     fixture_xml = @international_rate_responses[:vanilla]
-    USPS.any_instance.expects(:commit).returns(fixture_xml)
+    @carrier.expects(:commit).returns(fixture_xml)
     
     response = begin
-      @carrier.find_rates( @locations[:beverly_hills], # imperial (U.S. origin)
-                                  @locations[:ottawa],
-                                  @packages[:book],
-                                  :test => true)
+      @carrier.find_rates(
+        @locations[:beverly_hills], # imperial (U.S. origin)
+        @locations[:ottawa],
+        @packages[:book],
+        :test => true
+      )
     rescue ResponseError => e
       e.response
     end
@@ -114,17 +115,21 @@ class USPSTest < Test::Unit::TestCase
   
   def test_xml_logging_to_file
     mock_response = @international_rate_responses[:vanilla]
-    USPS.any_instance.expects(:commit).times(2).returns(mock_response)
+    @carrier.expects(:commit).times(2).returns(mock_response)
     RateResponse.any_instance.expects(:log_xml).times(1).with({:name => 'test', :path => '/tmp/logs'}).returns(true)
-    @carrier.find_rates(@locations[:beverly_hills],
-                        @locations[:ottawa],
-                        @packages[:book],
-                        :test => true,
-                        :log_xml => {:name => 'test', :path => '/tmp/logs'})
-    @carrier.find_rates(@locations[:beverly_hills],
-                        @locations[:ottawa],
-                        @packages[:book],
-                        :test => true)
+    @carrier.find_rates(
+      @locations[:beverly_hills],
+      @locations[:ottawa],
+      @packages[:book],
+      :test => true,
+      :log_xml => {:name => 'test', :path => '/tmp/logs'}
+    )
+    @carrier.find_rates(
+      @locations[:beverly_hills],
+      @locations[:ottawa],
+      @packages[:book],
+      :test => true
+    )
   end
   
   def test_maximum_weight
