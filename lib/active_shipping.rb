@@ -50,15 +50,3 @@ require 'active_shipping/shipping/rate_estimate'
 require 'active_shipping/shipping/shipment_event'
 require 'active_shipping/shipping/carrier'
 require 'active_shipping/shipping/carriers'
-
-class Hash
-  def crawl_for_key(key_to_find)
-    keys.each do |key|
-      if key == key_to_find
-        return key
-      elsif key.kind_of?(Hash)
-        key.crawl_for_key(key_to_find)
-      end
-    end
-  end
-end
