@@ -10,21 +10,14 @@ module ActiveMerchant
       attr_accessor :test_mode
       alias_method :test_mode?, :test_mode
       
-      # Override 'setup' method instead of 'initialize' in subclasses for most cases.
       # Credentials should be in options hash under keys :login, :password and/or :key.
       def initialize(options = {})
         requirements.each {|key| requires!(options, key)}
         @options = options
         @last_request = nil
         @test_mode = @options[:test]
-        setup
       end
-      
-      # Override to put any initializing code you want in this method; it gets called at the end of initialize.
-      def setup
-        
-      end
-      
+
       # Override to return required keys in options hash for initialize method.
       def requirements
         []

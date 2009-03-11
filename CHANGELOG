@@ -1,3 +1,4 @@
+* Remove unused Carrier#setup method [cody]
 * Don't use Array splat in Regex comparisons in Package [cody]
 * Default the Location to use the :alpha2 country code format [cody]
 * Add configurable timeouts from Active Merchant [cody]
