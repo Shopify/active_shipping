@@ -1,3 +1,4 @@
+* Add support for Shipwire Shipping Rate API [cody]
 * Cleanup package tests [cody]
 * Remove unused Carrier#setup method [cody]
 * Don't use Array splat in Regex comparisons in Package [cody]

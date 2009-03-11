@@ -1,0 +1,7 @@
+<RateResponse>
+  <Status>OK</Status>
+  <Order sequence="1">
+    <Quotes>
+    	</Quotes>
+  </Order>
+</RateResponse>
