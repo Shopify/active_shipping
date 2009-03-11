@@ -117,4 +117,14 @@ class ShipwireTest < Test::Unit::TestCase
       )
     end
   end
+  
+  def test_validate_credentials_with_valid_credentials
+    @carrier.expects(:ssl_post).returns(xml_fixture('shipwire/no_rates_response'))
+    assert @carrier.valid_credentials?
+  end
+  
+  def test_validate_credentials_with_invalid_credentials
+    @carrier.expects(:ssl_post).returns(xml_fixture('shipwire/invalid_credentials_response'))
+    assert !@carrier.valid_credentials?
+  end
 end

@@ -28,6 +28,15 @@ module ActiveMerchant
         commit(origin, destination, options)
       end
       
+      def valid_credentials?
+        location = self.class.default_location
+        find_rates(location, location, Package.new(100, [5,15,30]),
+          :items => [ { :sku => '', :quantity => 1 } ]
+        )
+      rescue ActiveMerchant::Shipping::ResponseError => e
+        e.message != "Could not verify e-mail/password combination"
+      end
+      
       private
       def requirements
         REQUIRED_OPTIONS
