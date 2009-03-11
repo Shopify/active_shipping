@@ -1,3 +1,4 @@
+* Default the Location to use the :alpha2 country code format [cody]
 * Add configurable timeouts from Active Merchant [cody]
 * Update xml_node.rb from XML Node [cody]
 * Update requires_parameters from ActiveMerchant [cody]

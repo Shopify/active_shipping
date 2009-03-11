@@ -69,7 +69,7 @@ module ActiveMerchant #:nodoc:
         self.new(attributes.update(options))
       end
       
-      def country_code(format)
+      def country_code(format = :alpha2)
         @country.nil? ? nil : @country.code(format).first.value
       end
       
