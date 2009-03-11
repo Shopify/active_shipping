@@ -74,4 +74,15 @@ class RemoteShipwireTest < Test::Unit::TestCase
     end
   end
   
+  def test_validate_credentials_with_valid_credentials
+    assert @carrier.valid_credentials?
+  end
+  
+  def test_validate_credentials_with_invalid_credentials
+    shipwire = Shipwire.new(
+      :login => 'your@email.com',
+      :password => 'password'
+    )
+    assert !shipwire.valid_credentials?
+  end
 end

@@ -1,3 +1,4 @@
+* Add support for validating credentials to Shipwire [cody]
 * Add support for ssl_get to PostsData. Update Carriers to use PostsData module. Turn on retry safety for carriers [cody]
 * Add support for Shipwire Shipping Rate API [cody]
 * Cleanup package tests [cody]
