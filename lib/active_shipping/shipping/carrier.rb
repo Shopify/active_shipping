@@ -61,11 +61,6 @@ module ActiveMerchant
       def save_request(r)
         @last_request = r
       end
-      
-      # Override in subclass to use for actual sending of request.
-      def commit(action, request, test = false)
-      end
-      
     end
   end
 end

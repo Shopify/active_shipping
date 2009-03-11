@@ -10,7 +10,8 @@ module ActiveMerchant
     # This will send a test request to the USPS test servers, which they ask you
     # to do before they put your API key in production mode.
     class USPS < Carrier
-      include ActiveMerchant::Shipping
+      self.retry_safe = true
+      
       cattr_reader :name
       @@name = "USPS"
       
@@ -438,13 +439,14 @@ module ActiveMerchant
       end
       
       def commit(action, request, test = false)
-        http = Net::HTTP.new((test ? TEST_DOMAINS[USE_SSL[action]] : LIVE_DOMAIN),
-                              (USE_SSL[action] ? 443 : 80 ))
-        http.use_ssl = USE_SSL[action]
-        response = http.start do |http|
-          http.get "#{test ? TEST_RESOURCE : LIVE_RESOURCE}?API=#{API_CODES[action]}&XML=#{request}"
-        end
-        response.body
+        ssl_get(request_url(action, request, test))
+      end
+      
+      def request_url(action, request, test)
+        scheme = USE_SSL[action] ? 'https://' : 'http://'
+        host = test ? TEST_DOMAINS[USE_SSL[action]] : LIVE_DOMAIN
+        resource = test ? TEST_RESOURCE : LIVE_RESOURCE
+        "#{scheme}#{host}/#{resource}?API=#{API_CODES[action]}&XML=#{request}"
       end
       
       def strip_zip(zip)

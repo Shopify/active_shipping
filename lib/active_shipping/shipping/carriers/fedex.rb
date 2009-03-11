@@ -7,13 +7,13 @@ module ActiveMerchant
     # :login is your FedEx account number
     # :password is your meter number
     class FedEx < Carrier
+      self.retry_safe = true
+      
       cattr_reader :name
       @@name = "FedEx"
       
       TEST_URL = 'https://gatewaybeta.fedex.com/GatewayDC'
       LIVE_URL = 'https://gateway.fedex.com/GatewayDC'
-      
-      USE_SSL = true
       
       CarrierCodes = {
         "fedex_ground" => "FDXG",
@@ -251,14 +251,7 @@ module ActiveMerchant
       end
       
       def commit(request, test = false)
-        uri = URI.parse(test ? TEST_URL : LIVE_URL)
-        http = Net::HTTP.new uri.host, uri.port
-        if USE_SSL
-          http.use_ssl = true
-          http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-        end
-        response = http.post(uri.path, request.gsub("\n",''))
-        response.body
+        ssl_post(test ? TEST_URL : LIVE_URL, request.gsub("\n",''))        
       end
     
       def first_or_only(xml_hash)

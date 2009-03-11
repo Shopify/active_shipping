@@ -1,21 +1,18 @@
 module ActiveMerchant
   module Shipping
     class UPS < Carrier
+      self.retry_safe = true
+      
       cattr_accessor :default_options
       cattr_reader :name
       @@name = "UPS"
       
-      TEST_DOMAIN = 'wwwcie.ups.com'
-      LIVE_DOMAIN = 'www.ups.com'
+      TEST_URL = 'https://wwwcie.ups.com'
+      LIVE_URL = 'https://www.ups.com'
       
       RESOURCES = {
         :rates => '/ups.app/xml/Rate',
         :track => '/ups.app/xml/Track'
-      }
-      
-      USE_SSL = {
-        :rates => true,
-        :track => true
       }
       
       PICKUP_CODES = {
@@ -352,14 +349,7 @@ module ActiveMerchant
       end
       
       def commit(action, request, test = false)
-        http = Net::HTTP.new((test ? TEST_DOMAIN : LIVE_DOMAIN),
-                              (USE_SSL[action] ? 443 : 80 ))
-        http.use_ssl = USE_SSL[action]
-        http.verify_mode = OpenSSL::SSL::VERIFY_NONE if USE_SSL[action]
-        response = http.start do |http|
-          http.post RESOURCES[action], request
-        end
-        response.body
+        ssl_post("#{test ? TEST_URL : LIVE_URL}/#{RESOURCES[action]}", request)
       end
       
       
