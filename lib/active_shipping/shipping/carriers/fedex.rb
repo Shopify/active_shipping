@@ -80,9 +80,6 @@ module ActiveMerchant
         [:login, :password]
       end
       
-      def setup
-      end
-      
       def find_rates(origin, destination, packages, options = {})
         options = @options.update(options)
         packages = Array(packages)
