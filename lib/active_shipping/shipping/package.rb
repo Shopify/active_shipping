@@ -5,7 +5,7 @@ module ActiveMerchant #:nodoc:
       
       cattr_accessor :default_options
       attr_reader :options, :value, :currency
-      
+
       # Package.new(100, [10, 20, 30], :units => :metric)
       # Package.new(Mass.new(100, :grams), [10, 20, 30].map {|m| Length.new(m, :centimetres)})
       # Package.new(100.grams, [10, 20, 30].map(&:centimetres))
@@ -75,13 +75,15 @@ module ActiveMerchant #:nodoc:
       
       def weight(options = {})
         case options[:type]
-        when *[nil,:actual]: @weight
-        when *[:volumetric,:dimensional]:
+        when nil, :actual
+          @weight
+        when :volumetric, :dimensional
           @volumetric_weight ||= begin
             m = Mass.new((centimetres(:box_volume) / 6.0), :grams)
             @unit_system == :imperial ? m.in_ounces : m
           end
-        when :billable: [weight,weight(:type => :volumetric)].max
+        when :billable
+          [ weight, weight(:type => :volumetric) ].max
         end
       end
       alias_method :mass, :weight
@@ -91,14 +93,14 @@ module ActiveMerchant #:nodoc:
         if money.respond_to?(:cents)
           return money.cents
         else
-          return case money
-            when Float
-              (money * 100).to_i
-            when String
-              money =~ /\./ ? (money.to_f * 100).to_i : money.to_i
-            else
-              money.to_i
-            end
+          case money
+          when Float
+            (money * 100).to_i
+          when String
+            money =~ /\./ ? (money.to_f * 100).to_i : money.to_i
+          else
+            money.to_i
+          end
         end
       end
   
@@ -114,14 +116,14 @@ module ActiveMerchant #:nodoc:
       
       def measure(measurement, ary)
         case measurement
-        when Fixnum: ary[measurement]
-        when *[:x,:max,:length,:long]: ary[2]
-        when *[:y,:mid,:width,:wide]: ary[1]
-        when *[:z,:min,:height,:depth,:high,:deep]: ary[0]
-        when *[:girth,:around,:circumference]
+        when Fixnum : ary[measurement] 
+        when :x, :max, :length, :long : ary[2]
+        when :y, :mid, :width, :wide : ary[1]
+        when :z, :min, :height,:depth,:high,:deep : ary[0]
+        when :girth, :around,:circumference
           self.cylinder? ? (Math::PI * (ary[0] + ary[1]) / 2) : (2 * ary[0]) + (2 * ary[1])
-        when :volume: self.cylinder? ? (Math::PI * (ary[0] + ary[1]) / 4)**2 * ary[2] : measure(:box_volume,ary)
-        when :box_volume: ary[0] * ary[1] * ary[2]
+        when :volume : self.cylinder? ? (Math::PI * (ary[0] + ary[1]) / 4)**2 * ary[2] : measure(:box_volume,ary)
+        when :box_volume : ary[0] * ary[1] * ary[2]
         end
       end
       
