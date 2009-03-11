@@ -1,60 +1,120 @@
 require File.dirname(__FILE__) + '/../../test_helper'
 
 class ShipwireTest < Test::Unit::TestCase
-  
-  def setup
-    @packages               = TestFixtures.packages
-    @locations              = TestFixtures.locations
-    @carrier                = Shipwire.new(
-                                :login => 'login',
-                                :password => 'password'
-                              )
 
-    @rate_response = xml_fixture('ups/shipment_from_tiger_direct')
+  def setup
+    @packages  = TestFixtures.packages
+    @locations = TestFixtures.locations
+    @carrier   = Shipwire.new(:login => 'l', :password => 'p')
+    @items = [ { :sku => 'AF0001', :quantity => 1 }, { :sku => 'AF0002', :quantity => 2 } ]
   end
   
-  def test_truth
-    assert true
+  def test_invalid_credentials
+    @carrier.expects(:ssl_post).returns(xml_fixture('shipwire/invalid_credentials_response'))
+    
+    begin
+      @carrier.find_rates(
+        @locations[:ottawa],
+        @locations[:beverly_hills],
+        @packages.values_at(:book, :wii),
+        :order_id => '#1000',
+        :items => @items
+      )
+    rescue ResponseError => e
+      assert_equal "Could not verify e-mail/password combination", e.message
+    end
   end
   
-  #def test_add_origin_and_destination_data_to_shipment_events_where_appropriate
-  #  Shipwire.any_instance.expects(:commit).returns(@tracking_response)
-  #  response = @carrier.find_tracking_info('1Z5FX0076803466397')
-  #  assert_equal '175 AMBASSADOR', response.shipment_events.first.location.address1
-  #  assert_equal 'K1N5X8', response.shipment_events.last.location.postal_code
-  #end
-  #
-  #def test_response_parsing
-  #  mock_response = xml_fixture('ups/test_real_home_as_residential_destination_response')
-  #  Shipwire.any_instance.expects(:commit).returns(mock_response)
-  #  response = @carrier.find_rates( @locations[:beverly_hills],
-  #                                  @locations[:real_home_as_residential],
-  #                                  @packages.values_at(:chocolate_stuff))
-  #  assert_equal [ "Shipwire Ground",
-  #                 "Shipwire Three-Day Select",
-  #                 "Shipwire Second Day Air",
-  #                 "Shipwire Next Day Air Saver",
-  #                 "Shipwire Next Day Air Early A.M.",
-  #                 "Shipwire Next Day Air"], response.rates.map(&:service_name)
-  #  assert_equal [992, 2191, 3007, 5509, 9401, 6124], response.rates.map(&:price)
-  #end
-  #
-  #def test_xml_logging_to_file
-  #  mock_response = xml_fixture('ups/test_real_home_as_residential_destination_response')
-  #  Shipwire.any_instance.expects(:commit).times(2).returns(mock_response)
-  #  RateResponse.any_instance.expects(:log_xml).with({:name => 'test', :path => '/tmp/logs'}).times(1).returns(true)
-  #  response = @carrier.find_rates( @locations[:beverly_hills],
-  #                                  @locations[:real_home_as_residential],
-  #                                  @packages.values_at(:chocolate_stuff),
-  #                                  :log_xml => {:name => 'test', :path => '/tmp/logs'})
-  #  response = @carrier.find_rates( @locations[:beverly_hills],
-  #                                  @locations[:real_home_as_residential],
-  #                                  @packages.values_at(:chocolate_stuff))
-  #end
-  #
-  #def test_maximum_weight
-  #  assert Package.new(150 * 16, [5,5,5], :units => :imperial).mass == @carrier.maximum_weight
-  #  assert Package.new((150 * 16) + 0.01, [5,5,5], :units => :imperial).mass > @carrier.maximum_weight
-  #  assert Package.new((150 * 16) - 0.01, [5,5,5], :units => :imperial).mass < @carrier.maximum_weight
-  #end
+  def test_response_with_no_rates_is_unsuccessful
+    @carrier.expects(:ssl_post).returns(xml_fixture('shipwire/no_rates_response'))
+
+    assert_raises(ResponseError) do
+      response = @carrier.find_rates(
+                   @locations[:ottawa],
+                   @locations[:beverly_hills],
+                   @packages.values_at(:book, :wii),
+                   :order_id => '#1000',
+                   :items => @items
+                 )
+    end
+  end
+  
+  def test_successfully_get_international_rates
+    @carrier.expects(:ssl_post).returns(xml_fixture('shipwire/international_rates_response'))
+    
+    response = @carrier.find_rates(
+                 @locations[:ottawa],
+                 @locations[:london],
+                 @packages.values_at(:book, :wii),
+                 :order_id => '#1000',
+                 :items => @items
+               )
+               
+    assert response.success?
+    
+    assert_equal 1, response.rates.size
+    
+    assert international = response.rates.first
+    assert_equal "INTL", international.service_code
+    assert_equal "UPS", international.carrier
+    assert_equal "UPS Standard", international.service_name
+    assert_equal 2806, international.total_price
+  end
+
+  def test_successfully_get_domestic_rates
+    @carrier.expects(:ssl_post).returns(xml_fixture('shipwire/rates_response'))
+    
+    response = @carrier.find_rates(
+                 @locations[:ottawa],
+                 @locations[:beverly_hills],
+                 @packages.values_at(:book, :wii),
+                 :order_id => '#1000',
+                 :items => @items
+               )
+               
+    assert response.success?
+    
+    assert_equal 3, response.rates.size
+    
+    assert ground  = response.rates.find{|r| r.service_code == "GD" }
+    assert_equal "UPS", ground.carrier
+    assert_equal "UPS Ground", ground.service_name
+    assert_equal 773, ground.total_price
+
+    assert two_day = response.rates.find{|r| r.service_code == "2D" }
+    assert_equal "UPS", two_day.carrier
+    assert_equal "UPS Second Day Air", two_day.service_name
+    assert_equal 1364, two_day.total_price
+        
+    assert one_day = response.rates.find{|r| r.service_code == "1D" }
+    assert_equal "USPS", one_day.carrier
+    assert_equal "USPS Express Mail", one_day.service_name
+    assert_equal 2525, one_day.total_price
+  end
+  
+  def test_gracefully_handle_new_carrier
+    @carrier.expects(:ssl_post).returns(xml_fixture('shipwire/new_carrier_rate_response'))
+    
+    response = @carrier.find_rates(
+                 @locations[:ottawa],
+                 @locations[:beverly_hills],
+                 @packages.values_at(:book, :wii),
+                 :order_id => '#1000',
+                 :items => @items
+               )
+    assert response.success?    
+    assert_equal 1, response.rates.size
+    assert ground = response.rates.first
+    assert_equal "FESCO", ground.carrier
+  end
+  
+  def test_find_rates_requires_items_option
+    assert_raises(ArgumentError) do
+      @carrier.find_rates(
+        @locations[:ottawa],
+        @locations[:beverly_hills],
+        @packages.values_at(:book, :wii)
+      )
+    end
+  end
 end

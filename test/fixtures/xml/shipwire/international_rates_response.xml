@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<RateResponse>
+  <Status>OK</Status>
+  <Order sequence="1">
+    <Quotes>
+      <Quote method="INTL">
+        <Warehouse>UK</Warehouse>
+        <Service>UPS Standard</Service>
+        <Cost currency="USD">28.06</Cost>
+        <DeliveryEstimate>
+          <Minimum units="days">1</Minimum>
+          <Maximum units="days">5</Maximum>
+        </DeliveryEstimate>
+      </Quote>
+    </Quotes>
+  </Order>
+</RateResponse>
