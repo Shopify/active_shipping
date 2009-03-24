@@ -238,7 +238,7 @@ module ActiveMerchant
       end
       
       def response_error_node(document)
-        document.elements['/*/Error|SoftError']
+        document.elements['/*/(Error|SoftError)']
       end
       
       def response_success?(document)
