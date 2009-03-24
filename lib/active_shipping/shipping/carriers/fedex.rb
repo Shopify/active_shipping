@@ -164,77 +164,72 @@ module ActiveMerchant
         rates = []
         rate_estimates = []
         success, message = nil
-        entries = []
         
-        xml_hash = Hash.from_xml(response)['FDXRateAvailableServicesReply']
-        success = response_hash_success?(xml_hash)
-        message = response_hash_message(xml_hash)
-        if success
-          entries << xml_hash['Entry']
-          entries.flatten!
-        end
+        xml = REXML::Document.new(response)
+        root_node = xml.elements['FDXRateAvailableServicesReply']
         
-        entries.each do |rated_shipment|
+        success = response_success?(xml)
+        message = response_message(xml)
+        
+        root_node.elements.each('Entry') do |rated_shipment|
+          service_code = rated_shipment.get_text('Service').to_s
           rate_estimates << RateEstimate.new(origin, destination, @@name,
-                              ServiceTypes[rated_shipment['Service']],
-                              :service_code => rated_shipment['Service'],
-                              :total_price => rated_shipment['EstimatedCharges']['DiscountedCharges']['NetCharge'].to_f,
-                              :currency => rated_shipment['EstimatedCharges']['CurrencyCode'],
+                              ServiceTypes[service_code],
+                              :service_code => service_code,
+                              :total_price => rated_shipment.get_text('EstimatedCharges/DiscountedCharges/NetCharge').to_s.to_f,
+                              :currency => rated_shipment.get_text('EstimatedCharges/CurrencyCode').to_s,
                               :packages => packages)
         end
         
-        RateResponse.new(success, message, xml_hash, :rates => rate_estimates, :xml => response, :request => last_request, :log_xml => options[:log_xml])
+        RateResponse.new(success, message, Hash.from_xml(response), :rates => rate_estimates, :xml => response, :request => last_request, :log_xml => options[:log_xml])
       end
       
       def parse_tracking_response(response, options)
         xml_hash = Hash.from_xml(response)['FDXTrackReply']
-        success = response_hash_success?(xml_hash)
-        message = response_hash_message(xml_hash)
+        xml = REXML::Document.new(response)
+        root_node = xml.elements['FDXTrackReply']
+        
+        success = response_success?(xml)
+        message = response_message(xml)
         
         if success
           tracking_number, origin, destination = nil
           shipment_events = []
           
-          first_shipment = first_or_only(xml_hash['TrackProfile'])
-          tracking_number = first_shipment['TrackingNumber']
+          first_shipment = root_node.elements['TrackProfile']
+          tracking_number = first_shipment.get_text('TrackingNumber').to_s
           
-          destination = %w{DestinationAddress}.map do |location|
-            location_hash = first_shipment[location]
-              Location.new(
-                :country =>     location_hash['CountryCode'],
-                :postal_code => location_hash['PostalCode'],
-                :province =>    location_hash['StateOrProvinceCode'],
-                :city =>        location_hash['City']
+          destination_node = first_shipment.elements['DestinationAddress']
+          destination = Location.new(
+                :country =>     destination_node.get_text('CountryCode').to_s,
+                :postal_code => destination_node.get_text('PostalCode').to_s,
+                :province =>    destination_node.get_text('StateOrProvinceCode').to_s,
+                :city =>        destination_node.get_text('City').to_s
               )
-          end
           
-          activities = force_array(first_shipment['Scan'])
-          unless activities.empty?
-            shipment_events = activities.map do |activity|
-              location = Location.new(
-                :city => activity['City'],
-                :state => activity['StateOrProvinceCode'],
-                :postal_code => activity['PostalCode'],
-                :country => activity['CountryCode'])
-              status = activity['ScanDescription']
-              status_type = activity['ScanType'] if status
-              description = activity['ScanDescription'] if status_type
-          
-              # for now, just assume UTC, even though it probably isn't
-              time = Time.parse("#{activity['Date']} #{activity['Time']}")
-              zoneless_time = Time.utc(time.year, time.month, time.mday, time.hour, time.min, time.sec)
-              
-              if description.downcase == 'delivered'
-                ShipmentEvent.new(description, zoneless_time, location, "Signed for by: #{first_shipment['SignedForBy']}")
-              else
-                ShipmentEvent.new(description, zoneless_time, location)
-              end
+          first_shipment.elements.each('Scan') do |activity|
+            location = Location.new(
+              :city => activity.get_text('City').to_s,
+              :state => activity.get_text('StateOrProvinceCode').to_s,
+              :postal_code => activity.get_text('PostalCode').to_s,
+              :country => activity.get_text('CountryCode').to_s)
+            description = activity.elements['ScanDescription']
+            description = description ? description.get_text.to_s : ''
+            
+            # for now, just assume UTC, even though it probably isn't
+            time = Time.parse("#{activity.get_text('Date').to_s} #{activity.get_text('Time').to_s}")
+            zoneless_time = Time.utc(time.year, time.month, time.mday, time.hour, time.min, time.sec)
+            
+            if description.downcase == 'delivered'
+              shipment_events << ShipmentEvent.new(description, zoneless_time, location, "Signed for by: #{first_shipment.get_text('SignedForBy').to_s}")
+            else
+              shipment_events << ShipmentEvent.new(description, zoneless_time, location)
             end
-            shipment_events = shipment_events.sort_by(&:time)
           end
+          shipment_events = shipment_events.sort_by(&:time)
         end
         
-        TrackingResponse.new(success, message, xml_hash,
+        TrackingResponse.new(success, message, Hash.from_xml(response),
           :xml => response,
           :request => last_request,
           :shipment_events => shipment_events,
@@ -242,24 +237,25 @@ module ActiveMerchant
           :tracking_number => tracking_number)
       end
       
-      def response_hash_success?(xml_hash)
-        ! xml_hash['Error'] && ! xml_hash['SoftError']
+      def response_error_node(document)
+        document.elements['/*/Error|SoftError']
       end
       
-      def response_hash_message(xml_hash)
-        response_hash_success?(xml_hash) ? '' : "FedEx Error Code: #{xml_hash['Error']['Code'] || xml_hash['SoftError']['Code']}: #{xml_hash['Error']['Message'] || xml_hash['SoftError']['Message']}"
+      def response_success?(document)
+        response_error_node(document) ? false : true
+      end
+      
+      def response_message(document)
+        error_node = response_error_node(document)
+        if error_node
+          "FedEx Error Code: #{error_node.get_text('Code').to_s}: #{error_node.get_text('Message').to_s}"
+        else
+          ''
+        end
       end
       
       def commit(request, test = false)
         ssl_post(test ? TEST_URL : LIVE_URL, request.gsub("\n",''))        
-      end
-    
-      def first_or_only(xml_hash)
-        xml_hash.is_a?(Array) ? xml_hash.first : xml_hash
-      end
-      
-      def force_array(obj)
-        obj.is_a?(Array) ? obj : [obj]
       end
     end
   end
