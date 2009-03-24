@@ -238,7 +238,7 @@ module ActiveMerchant
       end
       
       def response_error_node(document)
-        document.elements['/*/(Error|SoftError)']
+        document.elements['/*/Error|/*/SoftError)']
       end
       
       def response_success?(document)
@@ -248,6 +248,8 @@ module ActiveMerchant
       def response_message(document)
         error_node = response_error_node(document)
         if error_node
+          
+        debugger
           "FedEx Error Code: #{error_node.get_text('Code').to_s}: #{error_node.get_text('Message').to_s}"
         else
           ''
