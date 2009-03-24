@@ -1,13 +1,13 @@
 usps: 
-  login: '018TAPEO3698'
-ups:
-  key: "3C359BDEC043F324"
-  login: "jimmyebaker"
-  password: "J27374eb"
+  login: APIKey
+ups: 
+  key: XmlAccessKey
+  login: UPSDotComLogin
+  password: UPSDotComPassword
 fedex:
-  login: '510087666'
-  password: '1250153'
+  login: FedExAccountNumber
+  password: FedExMeterNumber
   test: true
 shipwire:
-  login:
-  password:
+  login: EmailAddress
+  password: Password
