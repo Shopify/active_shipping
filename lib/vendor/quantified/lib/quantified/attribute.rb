@@ -180,12 +180,11 @@ module Quantified
       else
         self.add_numeric_methods
       end
-      unit_name = options[:plural] || sym.to_s.pluralize
-      add_numeric_method_for(unit_name, options) if add_numeric_method
+      add_numeric_method_for(sym.to_s, options) if add_numeric_method
     end
     
     def self.add_conversion_method_for(sym, options={})
-      unit_name = options[:plural] || sym.to_s.pluralize
+      unit_name = sym.to_s
       class_eval do
         define_method("to_#{unit_name}") do
           return self if unit_name == self.unit.to_s
