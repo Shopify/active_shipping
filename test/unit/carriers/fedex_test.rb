@@ -1,8 +1,6 @@
 require File.dirname(__FILE__) + '/../../test_helper'
 
 class FedExTest < Test::Unit::TestCase
-  include ActiveMerchant::Shipping
-  
   def setup
     @packages               = TestFixtures.packages
     @locations              = TestFixtures.locations
@@ -21,9 +19,37 @@ class FedExTest < Test::Unit::TestCase
     assert_nothing_raised { FedEx.new(:login => '999999999', :password => '7777777')}
   end
   
+  def test_invalid_recipient_country
+    @carrier.expects(:commit).returns(xml_fixture('fedex/invalid_recipient_country_response'))
+
+    begin
+      @carrier.find_rates(
+        @locations[:ottawa],                                
+        @locations[:beverly_hills],            
+        @packages.values_at(:book, :wii)
+      )
+    rescue ResponseError => e
+      assert_equal "FedEx Error Code: 61451: Invalid recipient country", e.message
+    end
+  end
+  
+  def test_no_rates_response
+    @carrier.expects(:commit).returns(xml_fixture('fedex/empty_response'))
+
+    begin
+      response = @carrier.find_rates(
+        @locations[:ottawa],                                
+        @locations[:beverly_hills],            
+        @packages.values_at(:book, :wii)
+      )
+    rescue ResponseError => e
+      assert_equal "No shipping rates could be found for the destination address", e.message
+    end
+  end
+  
   def test_find_tracking_info_should_return_a_tracking_response
     @carrier.expects(:commit).returns(@tracking_response)
-    assert_equal 'ActiveMerchant::Shipping::TrackingResponse', @carrier.find_tracking_info('077973360390581').class.name
+    assert_instance_of ActiveMerchant::Shipping::TrackingResponse, @carrier.find_tracking_info('077973360390581')
   end
   
   def test_find_tracking_info_should_parse_response_into_correct_number_of_shipment_events
