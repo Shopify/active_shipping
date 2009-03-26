@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="UTF-8"?><FDXRateAvailableServicesReply xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><ReplyHeader></ReplyHeader><SoftError><Type>01</Type><Code>61451</Code><Message>Invalid recipient country</Message></SoftError></FDXRateAvailableServicesReply>

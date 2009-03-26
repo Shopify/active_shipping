@@ -156,7 +156,7 @@ module ActiveMerchant
         location_node = XmlNode.new(name) do |xml_node|
           xml_node << XmlNode.new('StateOrProvinceCode', location.state)
           xml_node << XmlNode.new('PostalCode', location.postal_code)
-          xml_node << XmlNode.new("CountryCode", location.country_code(:alpha2)) unless location.country_code(:alpha2).blank?
+          xml_node << XmlNode.new("CountryCode", location.country_code(:alpha2))
         end
       end
       
@@ -169,9 +169,11 @@ module ActiveMerchant
         xml_hash = Hash.from_xml(response)['FDXRateAvailableServicesReply']
         success = response_hash_success?(xml_hash)
         message = response_hash_message(xml_hash)
+        
         if success
           entries << xml_hash['Entry']
           entries.flatten!
+          entries.compact!
         end
         
         entries.each do |rated_shipment|
@@ -181,6 +183,11 @@ module ActiveMerchant
                               :total_price => rated_shipment['EstimatedCharges']['DiscountedCharges']['NetCharge'].to_f,
                               :currency => rated_shipment['EstimatedCharges']['CurrencyCode'],
                               :packages => packages)
+        end
+        
+        if rate_estimates.empty?
+          success = false
+          message = "No shipping rates could be found for the destination address" if message.blank?
         end
         
         RateResponse.new(success, message, xml_hash, :rates => rate_estimates, :xml => response, :request => last_request, :log_xml => options[:log_xml])
@@ -239,7 +246,8 @@ module ActiveMerchant
           :request => last_request,
           :shipment_events => shipment_events,
           :destination => destination,
-          :tracking_number => tracking_number)
+          :tracking_number => tracking_number
+        )
       end
       
       def response_hash_success?(xml_hash)
@@ -247,7 +255,11 @@ module ActiveMerchant
       end
       
       def response_hash_message(xml_hash)
-        response_hash_success?(xml_hash) ? '' : "FedEx Error Code: #{xml_hash['Error']['Code'] || xml_hash['SoftError']['Code']}: #{xml_hash['Error']['Message'] || xml_hash['SoftError']['Message']}"
+        if error = xml_hash['Error'] || xml_hash['SoftError']
+         "FedEx Error Code: #{error['Code']}: #{error['Message']}"
+        else
+          ''
+        end
       end
       
       def commit(request, test = false)
