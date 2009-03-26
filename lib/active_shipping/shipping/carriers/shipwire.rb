@@ -6,6 +6,9 @@ module ActiveMerchant
     class Shipwire < Carrier
       self.retry_safe = true
       
+      cattr_reader :name
+      @@name = "Shipwire"
+      
       URL = 'https://www.shipwire.com/exec/RateServices.php'
       SCHEMA_URL = 'http://www.shipwire.com/exec/download/RateRequest.dtd'      
       WAREHOUSES = { 'CHI' => 'Chicago',
