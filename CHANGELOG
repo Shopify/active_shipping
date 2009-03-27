@@ -1,3 +1,4 @@
+* Use :words_connector instead of connector in RequiresParameters [cody]
 * Fix extra slash in UPS endpoints [cody]
 * Add name to Shipwire class [cody]
 * Improve FedEx handling of some error conditions [cody]
