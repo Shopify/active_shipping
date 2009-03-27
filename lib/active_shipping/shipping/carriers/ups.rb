@@ -11,8 +11,8 @@ module ActiveMerchant
       LIVE_URL = 'https://www.ups.com'
       
       RESOURCES = {
-        :rates => '/ups.app/xml/Rate',
-        :track => '/ups.app/xml/Track'
+        :rates => 'ups.app/xml/Rate',
+        :track => 'ups.app/xml/Track'
       }
       
       PICKUP_CODES = {
