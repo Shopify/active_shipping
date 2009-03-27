@@ -156,7 +156,7 @@ module ActiveMerchant
         location_node = XmlNode.new(name) do |xml_node|
           xml_node << XmlNode.new('StateOrProvinceCode', location.state)
           xml_node << XmlNode.new('PostalCode', location.postal_code)
-          xml_node << XmlNode.new("CountryCode", location.country_code(:alpha2)) unless location.country_code(:alpha2).blank?
+          xml_node << XmlNode.new("CountryCode", location.country_code(:alpha2))
         end
       end
       
@@ -181,6 +181,11 @@ module ActiveMerchant
                               :packages => packages)
         end
         
+        if rate_estimates.empty?
+          success = false
+          message = "No shipping rates could be found for the destination address" if message.blank?
+        end        
+
         RateResponse.new(success, message, Hash.from_xml(response), :rates => rate_estimates, :xml => response, :request => last_request, :log_xml => options[:log_xml])
       end
       
@@ -234,7 +239,8 @@ module ActiveMerchant
           :request => last_request,
           :shipment_events => shipment_events,
           :destination => destination,
-          :tracking_number => tracking_number)
+          :tracking_number => tracking_number
+        )
       end
       
       def response_error_node(document)
@@ -248,8 +254,6 @@ module ActiveMerchant
       def response_message(document)
         error_node = response_error_node(document)
         if error_node
-          
-        debugger
           "FedEx Error Code: #{error_node.get_text('Code').to_s}: #{error_node.get_text('Message').to_s}"
         else
           ''
