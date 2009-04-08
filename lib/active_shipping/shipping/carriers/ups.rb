@@ -69,11 +69,14 @@ module ActiveMerchant
       # From http://en.wikipedia.org/w/index.php?title=European_Union&oldid=174718707 (Current as of November 30, 2007)
       EU_COUNTRY_CODES = ["GB", "AT", "BE", "BG", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE"]
       
+      US_TERRITORIES_TREATED_AS_COUNTRIES = ["AS", "FM", "GU", "MH", "MP", "PW", "PR", "VI"]
+      
       def requirements
         [:key, :login, :password]
       end
       
       def find_rates(origin, destination, packages, options={})
+        origin, destination = upsified_location(origin), upsified_location(destination)
         options = @options.merge(options)
         packages = Array(packages)
         access_request = build_access_request
@@ -91,6 +94,19 @@ module ActiveMerchant
       end
       
       protected
+      
+      def upsified_location(location)
+        if location.country_code == 'US' && US_TERRITORIES_TREATED_AS_COUNTRIES.include?(location.state)
+          atts = {:country => location.state}
+          [:zip, :city, :address1, :address2, :address3, :phone, :fax, :address_type].each do |att|
+            atts[att] = location.send(att)
+          end
+          Location.new(atts)
+        else
+          location
+        end
+      end
+      
       def build_access_request
         xml_request = XmlNode.new('AccessRequest') do |access_request|
           access_request << XmlNode.new('AccessLicenseNumber', @options[:key])

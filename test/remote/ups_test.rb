@@ -38,6 +38,18 @@ class UPSTest < Test::Unit::TestCase
     end
   end
   
+  def test_puerto_rico
+    response = nil
+    assert_nothing_raised do
+      response = @carrier.find_rates(
+                   @locations[:beverly_hills],
+                   Location.new(:city => 'Ponce', :country => 'US', :state => 'PR', :zip => '00733-1283'),
+                   @packages.values_at(:big_half_pound),
+                   :test => true
+                 )
+    end
+  end
+  
   def test_just_country_given
     response = @carrier.find_rates( 
                  @locations[:beverly_hills],
