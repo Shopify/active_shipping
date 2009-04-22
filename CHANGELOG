@@ -1,3 +1,4 @@
+* Add support for Guernsey to country.rb [cody]
 * Use :words_connector instead of connector in RequiresParameters [cody]
 * Add name to Shipwire class [cody]
 * Improve FedEx handling of some error conditions [cody]
