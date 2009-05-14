@@ -1,3 +1,4 @@
+* Update Shipwire endpoint hostname [cody]
 * Add missing ISO countries [Edward Ocampo-Gooding]
 * Add support for Guernsey to country.rb [cody]
 * Use :words_connector instead of connector in RequiresParameters [cody]
