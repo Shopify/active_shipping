@@ -1,3 +1,4 @@
+* Remove extra slash from USPS URLs [james]
 * Update Shipwire endpoint hostname [cody]
 * Add missing ISO countries [Edward Ocampo-Gooding]
 * Add support for Guernsey to country.rb [cody]
