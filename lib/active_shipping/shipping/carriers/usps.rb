@@ -18,14 +18,14 @@ module ActiveMerchant
       @@name = "USPS"
       
       LIVE_DOMAIN = 'production.shippingapis.com'
-      LIVE_RESOURCE = '/ShippingAPI.dll'
+      LIVE_RESOURCE = 'ShippingAPI.dll'
       
       TEST_DOMAINS = { #indexed by security; e.g. TEST_DOMAINS[USE_SSL[:rates]]
         true => 'secure.shippingapis.com',
         false => 'testing.shippingapis.com'
       }
       
-      TEST_RESOURCE = '/ShippingAPITest.dll'
+      TEST_RESOURCE = 'ShippingAPITest.dll'
       
       API_CODES = {
         :us_rates => 'RateV3',
