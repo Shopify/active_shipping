@@ -1,3 +1,4 @@
+* Update connection code from ActiveMerchant [cody]
 * Fix space-ridden USPS usernames when validating credentials [james]
 * Remove extra slash from USPS URLs [james]
 * Update Shipwire endpoint hostname [cody]
