@@ -297,7 +297,7 @@ module ActiveMerchant
         rate_estimates.reject! {|e| e.package_count != packages.length}
         rate_estimates = rate_estimates.sort_by(&:total_price)
         
-        RateResponse.new(success, message, Hash.from_xml(response), :rates => rate_estimates, :xml => response, :request => last_request, :log_xml => options[:log_xml])
+        RateResponse.new(success, message, Hash.from_xml(response), :rates => rate_estimates, :xml => response, :request => last_request)
       end
       
       def rates_from_response_node(response_node, packages)

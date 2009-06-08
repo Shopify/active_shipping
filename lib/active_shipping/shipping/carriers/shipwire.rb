@@ -101,8 +101,7 @@ module ActiveMerchant
         RateResponse.new(response["success"], response["message"], response, 
           :xml     => response,
           :rates   => build_rate_estimates(response, origin, destination),
-          :request => last_request,
-          :log_xml => options[:log_xml]
+          :request => last_request
         )
       end
       
