@@ -116,13 +116,11 @@ class USPSTest < Test::Unit::TestCase
   def test_xml_logging_to_file
     mock_response = @international_rate_responses[:vanilla]
     @carrier.expects(:commit).times(2).returns(mock_response)
-    RateResponse.any_instance.expects(:log_xml).times(1).with({:name => 'test', :path => '/tmp/logs'}).returns(true)
     @carrier.find_rates(
       @locations[:beverly_hills],
       @locations[:ottawa],
       @packages[:book],
-      :test => true,
-      :log_xml => {:name => 'test', :path => '/tmp/logs'}
+      :test => true
     )
     @carrier.find_rates(
       @locations[:beverly_hills],

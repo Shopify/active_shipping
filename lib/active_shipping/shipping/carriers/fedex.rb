@@ -186,7 +186,7 @@ module ActiveMerchant
           message = "No shipping rates could be found for the destination address" if message.blank?
         end        
 
-        RateResponse.new(success, message, Hash.from_xml(response), :rates => rate_estimates, :xml => response, :request => last_request, :log_xml => options[:log_xml])
+        RateResponse.new(success, message, Hash.from_xml(response), :rates => rate_estimates, :xml => response, :request => last_request)
       end
       
       def parse_tracking_response(response, options)
