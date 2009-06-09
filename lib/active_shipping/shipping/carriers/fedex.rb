@@ -12,8 +12,8 @@ module ActiveMerchant
       cattr_reader :name
       @@name = "FedEx"
       
-      TEST_URL = 'https://gatewaybeta.fedex.com/GatewayDC'
-      LIVE_URL = 'https://gateway.fedex.com/GatewayDC'
+      TEST_URL = 'https://gatewaybeta.fedex.com:443/xml'
+      LIVE_URL = 'https://gateway.fedex.com:443/xml'
       
       CarrierCodes = {
         "fedex_ground" => "FDXG",
@@ -21,39 +21,45 @@ module ActiveMerchant
       }
       
       ServiceTypes = {
-        "PRIORITYOVERNIGHT" => "FedEx Priority Overnight",
-        "FEDEX2DAY" => "FedEx 2 Day",
-        "STANDARDOVERNIGHT" => "FedEx Standard Overnight",
-        "FIRSTOVERNIGHT" => "FedEx First Overnight",
-        "FEDEXEXPRESSSAVER" => "FedEx Express Saver",
-        "FEDEX1DAYFREIGHT" => "FedEx 1 Day Freight",
-        "FEDEX2DAYFREIGHT" => "FedEx 2 Day Freight",
-        "FEDEX3DAYFREIGHT" => "FedEx 3 Day Freight",
-        "INTERNATIONALPRIORITY" => "FedEx International Priority",
-        "INTERNATIONALECONOMY" => "FedEx International Economy",
-        "INTERNATIONALFIRST" => "FedEx International First",
-        "INTERNATIONALPRIORITYFREIGHT" => "FedEx International Priority Freight",
-        "INTERNATIONALECONOMYFREIGHT" => "FedEx International Economy Freight",
-        "GROUNDHOMEDELIVERY" => "FedEx Ground Home Delivery",
-        "FEDEXGROUND" => "FedEx Ground",
-        "INTERNATIONALGROUND" => "FedEx International Ground"
+        "PRIORITY_OVERNIGHT" => "FedEx Priority Overnight",
+        "PRIORITY_OVERNIGHT_SATURDAY_DELIVERY" => "FedEx Priority Overnight Saturday Delivery",
+        "FEDEX_2_DAY" => "FedEx 2 Day",
+        "FEDEX_2_DAY_SATURDAY_DELIVERY" => "FedEx 2 Day Saturday Delivery",
+        "STANDARD_OVERNIGHT" => "FedEx Standard Overnight",
+        "FIRST_OVERNIGHT" => "FedEx First Overnight",
+        "FEDEX_EXPRESS_SAVER" => "FedEx Express Saver",
+        "FEDEX_1_DAY_FREIGHT" => "FedEx 1 Day Freight",
+        "FEDEX_1_DAY_FREIGHT_SATURDAY_DELIVERY" => "FedEx 1 Day Freight Saturday Delivery",
+        "FEDEX_2_DAY_FREIGHT" => "FedEx 2 Day Freight",
+        "FEDEX_2_DAY_FREIGHT_SATURDAY_DELIVERY" => "FedEx 2 Day Freight Saturday Delivery",
+        "FEDEX_3_DAY_FREIGHT" => "FedEx 3 Day Freight",
+        "FEDEX_3_DAY_FREIGHT_SATURDAY_DELIVERY" => "FedEx 3 Day Freight Saturday Delivery",
+        "INTERNATIONAL_PRIORITY" => "FedEx International Priority",
+        "INTERNATIONAL_PRIORITY_SATURDAY_DELIVERY" => "FedEx International Priority Saturday Delivery",
+        "INTERNATIONAL_ECONOMY" => "FedEx International Economy",
+        "INTERNATIONAL_FIRST" => "FedEx International First",
+        "INTERNATIONAL_PRIORITY_FREIGHT" => "FedEx International Priority Freight",
+        "INTERNATIONAL_ECONOMY_FREIGHT" => "FedEx International Economy Freight",
+        "GROUND_HOME_DELIVERY" => "FedEx Ground Home Delivery",
+        "FEDEX_GROUND" => "FedEx Ground",
+        "INTERNATIONAL_GROUND" => "FedEx International Ground"
       }
 
       PackageTypes = {
-        "fedex_envelope" => "FEDEXENVELOPE",
-        "fedex_pak" => "FEDEXPAK",
-        "fedex_box" => "FEDEXBOX",
-        "fedex_tube" => "FEDEXTUBE",
-        "fedex_10_kg_box" => "FEDEX10KGBOX",
-        "fedex_25_kg_box" => "FEDEX25KGBOX",
-        "your_packaging" => "YOURPACKAGING"
+        "fedex_envelope" => "FEDEX_ENVELOPE",
+        "fedex_pak" => "FEDEX_PAK",
+        "fedex_box" => "FEDEX_BOX",
+        "fedex_tube" => "FEDEX_TUBE",
+        "fedex_10_kg_box" => "FEDEX_10KG_BOX",
+        "fedex_25_kg_box" => "FEDEX_25KG_BOX",
+        "your_packaging" => "YOUR_PACKAGING"
       }
 
       DropoffTypes = {
-        'regular_pickup' => 'REGULARPICKUP',
-        'request_courier' => 'REQUESTCOURIER',
-        'dropbox' => 'DROPBOX',
-        'business_service_center' => 'BUSINESSSERVICECENTER',
+        'regular_pickup' => 'REGULAR_PICKUP',
+        'request_courier' => 'REQUEST_COURIER',
+        'dropbox' => 'DROP_BOX',
+        'business_service_center' => 'BUSINESS_SERVICE_CENTER',
         'station' => 'STATION'
       }
 
@@ -77,16 +83,16 @@ module ActiveMerchant
       }
       
       def requirements
-        [:login, :password]
+        [:api_key, :api_password, :account_number, :meter_number]
       end
       
       def find_rates(origin, destination, packages, options = {})
         options = @options.update(options)
         packages = Array(packages)
         
-        rate_request = build_rate_request(origin, destination, packages, nil, options)
+        rate_request = build_rate_request(origin, destination, packages, options)
         
-        response = commit(save_request(rate_request), (options[:test] || false))
+        response = commit(save_request(rate_request), (options[:test] || false)).gsub(/<(\/)?.*?\:(.*?)>/, '<\1\2>')
         
         parse_rate_response(origin, destination, packages, response, options)
       end
@@ -95,104 +101,147 @@ module ActiveMerchant
         options = @options.update(options)
         
         tracking_request = build_tracking_request(tracking_number, options)
-        response = commit(save_request(tracking_request), (options[:test] || false))
+        response = commit(save_request(tracking_request), (options[:test] || false)).gsub(/<(\/)?.*?\:(.*?)>/, '<\1\2>')
         parse_tracking_response(response, options)
       end
       
       protected
-      def build_rate_request(origin, destination, packages, carrier_code, options={})
+      def build_rate_request(origin, destination, packages, options={})
         imperial = ['US','LR','MM'].include?(origin.country_code(:alpha2))
-        total_weight = 0.0;
-        packages.each do |package|
-          total_weight += ((imperial ? package.lbs : package.kgs).to_f*1000).round/1000.0
-        end
-        
-        
-        xml_request = XmlNode.new('FDXRateAvailableServicesRequest', 'xmlns:api' => 'http://www.fedex.com/fsmapi', 'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance', 'xsi:noNamespaceSchemaLocation' => 'FDXRateAvailableServicesRequest.xsd') do |root_node|
-          root_node << build_request_header(carrier_code)
-          root_node << XmlNode.new('ShipDate', @options[:ship_date] || Time.now.strftime("%Y-%m-%d"))
-          root_node << XmlNode.new('DropoffType', @options[:dropoff_type] || DropoffTypes['regular_pickup'])
-          root_node << XmlNode.new('Packaging', @options[:packaging] || PackageTypes['your_packaging'])
-          root_node << XmlNode.new('WeightUnits', imperial ? 'LBS' : 'KGS')
-          root_node << XmlNode.new('Weight', [total_weight, 0.1].max)
-          root_node << XmlNode.new('ListRate', @options[:list_rate] || 'false')
-          root_node << build_location_node('OriginAddress', origin)
-          root_node << build_location_node('DestinationAddress', destination)
-          root_node << XmlNode.new('Payment') do |payment_node|
-            payment_node << XmlNode.new('PayorType', PaymentTypes[options[:payment_type] || 'sender'])
+
+        xml_request = XmlNode.new('RateRequest', 'xmlns' => 'http://fedex.com/ws/rate/v6') do |root_node|
+          root_node << build_request_header
+
+          # Version
+          root_node << XmlNode.new('Version') do |version_node|
+            version_node << XmlNode.new('ServiceId', 'crs')
+            version_node << XmlNode.new('Major', '6')
+            version_node << XmlNode.new('Intermediate', '0')
+            version_node << XmlNode.new('Minor', '0')
           end
-          root_node << XmlNode.new('PackageCount', packages.length.to_s)
+          
+          # Returns delivery dates
+          root_node << XmlNode.new('ReturnTransitAndCommit', true)
+          # Returns saturday delivery shipping options when available
+          root_node << XmlNode.new('VariableOptions', 'SATURDAY_DELIVERY')
+          
+          root_node << XmlNode.new('RequestedShipment') do |rs|
+            rs << XmlNode.new('ShipTimestamp', Time.now)
+            rs << XmlNode.new('DropoffType', options[:dropoff_type] || 'REGULAR_PICKUP')
+            rs << XmlNode.new('PackagingType', options[:packaging_type] || 'YOUR_PACKAGING')
+            
+            rs << build_location_node('Shipper', (options[:shipper] || origin))
+            rs << build_location_node('Recipient', destination)
+            if options[:shipper] and options[:shipper] != origin
+              rs << build_location_node('Origin', origin)
+            end
+            
+            rs << XmlNode.new('RateRequestTypes', 'ACCOUNT')
+            rs << XmlNode.new('PackageCount', packages.size)
+            packages.each do |pkg|
+              rs << XmlNode.new('RequestedPackages') do |rps|
+                rps << XmlNode.new('Weight') do |tw|
+                  tw << XmlNode.new('Units', imperial ? 'LB' : 'KG')
+                  tw << XmlNode.new('Value', [((imperial ? pkg.lbs : pkg.kgs).to_f*1000).round/1000.0, 0.1].max)
+                end
+                rps << XmlNode.new('Dimensions') do |dimensions|
+                  [:length,:width,:height].each do |axis|
+                    value = ((imperial ? pkg.inches(axis) : pkg.cm(axis)).to_f*1000).round/1000.0 # 3 decimals
+                    dimensions << XmlNode.new(axis.to_s.capitalize, value.to_i)
+                  end
+                  dimensions << XmlNode.new('Units', imperial ? 'IN' : 'CM')
+                end
+              end
+            end
+            
+          end
         end
         xml_request.to_xml
       end
       
       def build_tracking_request(tracking_number, options={})
-        xml_request = XmlNode.new('FDXTrackRequest', 'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance', 'xsi:noNamespaceSchemaLocation' => 'FDXTrackRequest.xsd')
-        xml_request << build_request_header(CarrierCodes[options[:carrier_code]] || CarrierCodes['fedex_ground'])
-        xml_request << XmlNode.new('PackageIdentifier') do |pkg_xml|
-          pkg_xml << XmlNode.new('Value', tracking_number)
-          pkg_xml << XmlNode.new('Type', PackageIdentifierTypes[options['package_identifier_type'] || 'tracking_number'])
+        xml_request = XmlNode.new('TrackRequest', 'xmlns' => 'http://fedex.com/ws/track/v3') do |root_node|
+          root_node << build_request_header
+          
+          # Version
+          root_node << XmlNode.new('Version') do |version_node|
+            version_node << XmlNode.new('ServiceId', 'trck')
+            version_node << XmlNode.new('Major', '3')
+            version_node << XmlNode.new('Intermediate', '0')
+            version_node << XmlNode.new('Minor', '0')
+          end
+          
+          root_node << XmlNode.new('PackageIdentifier') do |package_node|
+            package_node << XmlNode.new('Value', tracking_number)
+            package_node << XmlNode.new('Type', PackageIdentifierTypes[options['package_identifier_type'] || 'tracking_number'])
+          end
+          
+          root_node << XmlNode.new('ShipDateRangeBegin', options['ship_date_range_begin']) if options['ship_date_range_begin']
+          root_node << XmlNode.new('ShipDateRangeEnd', options['ship_date_range_end']) if options['ship_date_range_end']
+          root_node << XmlNode.new('IncludeDetailedScans', 1)
         end
-        xml_request << XmlNode.new('ShipDateRangeBegin', options['ship_date_range_begin']) if options['ship_date_range_begin']
-        xml_request << XmlNode.new('ShipDateRangeEnd', options['ship_date_range_end']) if options['ship_date_range_end']
-        xml_request << XmlNode.new('ShipDate', options['ship_date']) if options['ship_date']
-        xml_request << XmlNode.new('DetailScans', options['detail_scans'] || 'true')
         xml_request.to_xml
-        # DestinationCountryCode not implemented
       end
       
-      def build_request_header(carrier_code='FDXG')
-        xml_request = XmlNode.new('RequestHeader') do |access_request|
-          access_request << XmlNode.new('AccountNumber', @options[:login])
-          access_request << XmlNode.new('MeterNumber', @options[:password])
-          if carrier_code
-            access_request << XmlNode.new('CarrierCode', carrier_code)
+      def build_request_header
+        web_authentication_detail = XmlNode.new('WebAuthenticationDetail') do |wad|
+          wad << XmlNode.new('UserCredential') do |uc|
+            uc << XmlNode.new('Key', @options[:api_key])
+            uc << XmlNode.new('Password', @options[:api_password])
           end
         end
-        xml_request
+        
+        client_detail = XmlNode.new('ClientDetail') do |cd|
+          cd << XmlNode.new('AccountNumber', @options[:account_number])
+          cd << XmlNode.new('MeterNumber', @options[:meter_number])
+        end
+        
+        trasaction_detail = XmlNode.new('TransactionDetail') do |td|
+          td << XmlNode.new('CustomerTransactionId', 'ActiveShipping') # TODO: Need to do something better with this..
+        end
+        
+        [web_authentication_detail, client_detail, trasaction_detail]
       end
-      
+            
       def build_location_node(name, location)
         location_node = XmlNode.new(name) do |xml_node|
-          xml_node << XmlNode.new('StateOrProvinceCode', location.state)
-          xml_node << XmlNode.new('PostalCode', location.postal_code)
-          xml_node << XmlNode.new("CountryCode", location.country_code(:alpha2))
+          xml_node << XmlNode.new('Address') do |address_node|
+            address_node << XmlNode.new('PostalCode', location.postal_code)
+            address_node << XmlNode.new("CountryCode", location.country_code(:alpha2))
+          end
         end
       end
       
       def parse_rate_response(origin, destination, packages, response, options)
-        rates = []
         rate_estimates = []
         success, message = nil
         
         xml = REXML::Document.new(response)
-        root_node = xml.elements['FDXRateAvailableServicesReply']
+        root_node = xml.elements['RateReply']
         
         success = response_success?(xml)
         message = response_message(xml)
         
-        root_node.elements.each('Entry') do |rated_shipment|
-          service_code = rated_shipment.get_text('Service').to_s
+        root_node.elements.each('RateReplyDetails') do |rated_shipment|
+          service_code = rated_shipment.get_text('ServiceType').to_s
+          is_saturday_delivery = rated_shipment.get_text('AppliedOptions').to_s == 'SATURDAY_DELIVERY'
+          service_type = is_saturday_delivery ? "#{rated_shipment.get_text('ServiceType').to_s}_SATURDAY_DELIVERY" : rated_shipment.get_text('ServiceType').to_s
+          
           rate_estimates << RateEstimate.new(origin, destination, @@name,
-                              ServiceTypes[service_code],
+                              ServiceTypes[service_type],
                               :service_code => service_code,
-                              :total_price => rated_shipment.get_text('EstimatedCharges/DiscountedCharges/NetCharge').to_s.to_f,
-                              :currency => rated_shipment.get_text('EstimatedCharges/CurrencyCode').to_s,
-                              :packages => packages)
+                              :total_price => rated_shipment.get_text('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Amount').to_s.to_f,
+                              :currency => rated_shipment.get_text('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Currency').to_s,
+                              :packages => packages,
+                              :delivery_date => rated_shipment.get_text('DeliveryTimestamp').to_s)
         end
         
-        if rate_estimates.empty?
-          success = false
-          message = "No shipping rates could be found for the destination address" if message.blank?
-        end        
-
-        RateResponse.new(success, message, Hash.from_xml(response), :rates => rate_estimates, :xml => response, :request => last_request)
+        RateResponse.new(success, message, Hash.from_xml(response), :rates => rate_estimates, :xml => response, :request => last_request, :log_xml => options[:log_xml])
       end
       
       def parse_tracking_response(response, options)
-        xml_hash = Hash.from_xml(response)['FDXTrackReply']
         xml = REXML::Document.new(response)
-        root_node = xml.elements['FDXTrackReply']
+        root_node = xml.elements['TrackReply']
         
         success = response_success?(xml)
         message = response_message(xml)
@@ -201,35 +250,29 @@ module ActiveMerchant
           tracking_number, origin, destination = nil
           shipment_events = []
           
-          first_shipment = root_node.elements['TrackProfile']
-          tracking_number = first_shipment.get_text('TrackingNumber').to_s
+          tracking_details = root_node.elements['TrackDetails']
+          tracking_number = tracking_details.get_text('TrackingNumber').to_s
           
-          destination_node = first_shipment.elements['DestinationAddress']
+          destination_node = tracking_details.elements['DestinationAddress']
           destination = Location.new(
                 :country =>     destination_node.get_text('CountryCode').to_s,
-                :postal_code => destination_node.get_text('PostalCode').to_s,
                 :province =>    destination_node.get_text('StateOrProvinceCode').to_s,
                 :city =>        destination_node.get_text('City').to_s
               )
           
-          first_shipment.elements.each('Scan') do |activity|
+          tracking_details.elements.each('Events') do |event|
             location = Location.new(
-              :city => activity.get_text('City').to_s,
-              :state => activity.get_text('StateOrProvinceCode').to_s,
-              :postal_code => activity.get_text('PostalCode').to_s,
-              :country => activity.get_text('CountryCode').to_s)
-            description = activity.elements['ScanDescription']
-            description = description ? description.get_text.to_s : ''
+              :city => event.elements['Address'].get_text('City').to_s,
+              :state => event.elements['Address'].get_text('StateOrProvinceCode').to_s,
+              :postal_code => event.elements['Address'].get_text('PostalCode').to_s,
+              :country => event.elements['Address'].get_text('CountryCode').to_s)
+            description = event.get_text('EventDescription').to_s
             
             # for now, just assume UTC, even though it probably isn't
-            time = Time.parse("#{activity.get_text('Date').to_s} #{activity.get_text('Time').to_s}")
+            time = Time.parse("#{event.get_text('Timestamp').to_s}")
             zoneless_time = Time.utc(time.year, time.month, time.mday, time.hour, time.min, time.sec)
             
-            if description.downcase == 'delivered'
-              shipment_events << ShipmentEvent.new(description, zoneless_time, location, "Signed for by: #{first_shipment.get_text('SignedForBy').to_s}")
-            else
-              shipment_events << ShipmentEvent.new(description, zoneless_time, location)
-            end
+            shipment_events << ShipmentEvent.new(description, zoneless_time, location)
           end
           shipment_events = shipment_events.sort_by(&:time)
         end
@@ -242,27 +285,24 @@ module ActiveMerchant
           :tracking_number => tracking_number
         )
       end
-      
-      def response_error_node(document)
-        document.elements['/*/Error|/*/SoftError)']
+            
+      def response_status_node(document)
+        document.elements['/*/Notifications/']
       end
       
       def response_success?(document)
-        response_error_node(document) ? false : true
+        %w{SUCCESS WARNING NOTE}.include? response_status_node(document).get_text('Severity').to_s
       end
       
       def response_message(document)
-        error_node = response_error_node(document)
-        if error_node
-          "FedEx Error Code: #{error_node.get_text('Code').to_s}: #{error_node.get_text('Message').to_s}"
-        else
-          ''
-        end
+        response_node = response_status_node(document)
+        "#{response_status_node(document).get_text('Severity').to_s} - #{response_node.get_text('Code').to_s}: #{response_node.get_text('Message').to_s}"
       end
       
       def commit(request, test = false)
         ssl_post(test ? TEST_URL : LIVE_URL, request.gsub("\n",''))        
       end
+    
     end
   end
 end
