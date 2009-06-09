@@ -1,163 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<FDXTrackReply xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="FDXTrackReply.xsd">
-  <ReplyHeader/>
-  <TrackProfile>
+<TrackReply xmlns:v3="http://fedex.com/ws/track/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+  <HighestSeverity>SUCCESS</HighestSeverity>
+  <Notifications>
+    <Severity>SUCCESS</Severity>
+    <Source>trck</Source>
+    <Code>0</Code>
+    <Message>Request was successfully processed.</Message>
+    <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+  </Notifications>
+  <TransactionDetail>
+    <CustomerTransactionId>ActiveShipping</CustomerTransactionId>
+  </TransactionDetail>
+  <Version>
+    <ServiceId>trck</ServiceId>
+    <Major>3</Major>
+    <Intermediate>0</Intermediate>
+    <Minor>0</Minor>
+  </Version>
+  <DuplicateWaybill>false</DuplicateWaybill>
+  <MoreData>false</MoreData>
+  <TrackDetails>
     <TrackingNumber>931519441327</TrackingNumber>
+    <TrackingNumberUniqueIdentifier>2454804000</TrackingNumberUniqueIdentifier>
+    <StatusCode>DL</StatusCode>
+    <StatusDescription>Delivered</StatusDescription>
     <CarrierCode>FDXE</CarrierCode>
-    <OtherIdentifierCount>1</OtherIdentifierCount>
-    <OtherIdentifier>
+    <OtherIdentifiers>
       <Value>355198</Value>
-      <Type>EXPRESS_REFERENCE</Type>
-    </OtherIdentifier>
-    <ShipDate>2008-12-03</ShipDate>
+      <Type>SHIPPER_REFERENCE</Type>
+    </OtherIdentifiers>
+    <ServiceInfo>International Priority Service</ServiceInfo>
+    <ServiceType>PRIORITY_OVERNIGHT</ServiceType>
+    <PackageSequenceNumber>0</PackageSequenceNumber>
+    <PackageCount>0</PackageCount>
+    <ShipTimestamp>2008-12-03T00:00:00</ShipTimestamp>
     <DestinationAddress>
       <City>TORONTO</City>
       <StateOrProvinceCode>ON</StateOrProvinceCode>
-      <PostalCode>M5A1N4</PostalCode>
       <CountryCode>CA</CountryCode>
+      <Residential>false</Residential>
     </DestinationAddress>
-    <DeliveredDate>2008-12-04</DeliveredDate>
-    <DeliveredTime>10:15:00</DeliveredTime>
-    <SignedForBy>G.GEORGE</SignedForBy>
-    <DeliveredLocationCode>2</DeliveredLocationCode>
-    <DeliveredLocationDescription>Shipping/Receiving</DeliveredLocationDescription>
-    <Service>International Priority Service</Service>
-    <Weight>10.9</Weight>
-    <WeightUnits>LBS</WeightUnits>
-    <PackagingDescription>Your Packaging</PackagingDescription>
-    <PackageSequenceNumber>1</PackageSequenceNumber>
-    <PackageCount>1</PackageCount>
-    <FedExURL>http://fedex.com/Tracking?action=track&amp;language=english&amp;cntry_code=us&amp;initial=x&amp;tracknumbers931519441327</FedExURL>
-    <ScanCount>14</ScanCount>
-    <Scan>
-      <Date>2008-12-04</Date>
-      <Time>10:15:00</Time>
-      <ScanType>20</ScanType>
-      <ScanDescription>Delivered to Non-FedEx clearance broker</ScanDescription>
+    <ActualDeliveryTimestamp>2008-12-04T10:15:00</ActualDeliveryTimestamp>
+    <ActualDeliveryAddress>
       <City>TORONTO</City>
       <StateOrProvinceCode>ON</StateOrProvinceCode>
       <CountryCode>CA</CountryCode>
-    </Scan>
-    <Scan>
-      <Date>2008-12-04</Date>
-      <Time>09:04:00</Time>
-      <ScanType>11</ScanType>
-      <ScanDescription>On FedEx vehicle for delivery</ScanDescription>
-      <City>TORONTO</City>
-      <StateOrProvinceCode>ON</StateOrProvinceCode>
-      <CountryCode>CA</CountryCode>
-    </Scan>
-    <Scan>
-      <Date>2008-12-04</Date>
-      <Time>08:42:00</Time>
-      <ScanType>02</ScanType>
-      <ScanDescription>Arrived at FedEx Destination Location</ScanDescription>
-      <City>TORONTO</City>
-      <StateOrProvinceCode>ON</StateOrProvinceCode>
-      <CountryCode>CA</CountryCode>
-    </Scan>
-    <Scan>
-      <Date>2008-12-04</Date>
-      <Time>07:37:00</Time>
-      <ScanType>22</ScanType>
-      <ScanDescription>Left FedEx Ramp</ScanDescription>
-      <City>MISSISSAUGA</City>
-      <StateOrProvinceCode>ON</StateOrProvinceCode>
-      <CountryCode>CA</CountryCode>
-    </Scan>
-    <Scan>
-      <Date>2008-12-04</Date>
-      <Time>07:03:00</Time>
-      <ScanType>07</ScanType>
-      <ScanDescription>Package status</ScanDescription>
-      <StatusExceptionCode>65</StatusExceptionCode>
-      <StatusExceptionDescription>Released for delivery</StatusExceptionDescription>
-      <City>MISSISSAUGA</City>
-      <StateOrProvinceCode>ON</StateOrProvinceCode>
-      <CountryCode>CA</CountryCode>
-    </Scan>
-    <Scan>
-      <Date>2008-12-04</Date>
-      <Time>06:26:00</Time>
-      <ScanType>24</ScanType>
-      <ScanDescription>Arrived at FedEx Ramp</ScanDescription>
-      <City>MISSISSAUGA</City>
-      <StateOrProvinceCode>ON</StateOrProvinceCode>
-      <CountryCode>CA</CountryCode>
-    </Scan>
-    <Scan>
-      <Date>2008-12-04</Date>
-      <Time>04:48:00</Time>
-      <ScanType>10</ScanType>
-      <ScanDescription>Left FedEx Sort Facility</ScanDescription>
-      <City>INDIANAPOLIS</City>
-      <StateOrProvinceCode>IN</StateOrProvinceCode>
-      <CountryCode>US</CountryCode>
-    </Scan>
-    <Scan>
-      <Date>2008-12-04</Date>
-      <Time>01:14:00</Time>
-      <ScanType>10</ScanType>
-      <ScanDescription>Left FedEx Sort Facility</ScanDescription>
-      <City>INDIANAPOLIS</City>
-      <StateOrProvinceCode>IN</StateOrProvinceCode>
-      <CountryCode>US</CountryCode>
-    </Scan>
-    <Scan>
-      <Date>2008-12-04</Date>
-      <Time>00:31:00</Time>
-      <ScanType>13</ScanType>
-      <ScanDescription>Arrived at Sort Facility</ScanDescription>
-      <City>INDIANAPOLIS</City>
-      <StateOrProvinceCode>IN</StateOrProvinceCode>
-      <CountryCode>US</CountryCode>
-    </Scan>
-    <Scan>
-      <Date>2008-12-03</Date>
-      <Time>22:30:00</Time>
-      <ScanType>22</ScanType>
-      <ScanDescription>Left FedEx Ramp</ScanDescription>
-      <City>NASHVILLE</City>
-      <StateOrProvinceCode>TN</StateOrProvinceCode>
-      <CountryCode>US</CountryCode>
-    </Scan>
-    <Scan>
-      <Date>2008-12-03</Date>
-      <Time>20:43:00</Time>
-      <ScanType>24</ScanType>
-      <ScanDescription>Arrived at FedEx Ramp</ScanDescription>
-      <City>NASHVILLE</City>
-      <StateOrProvinceCode>TN</StateOrProvinceCode>
-      <CountryCode>US</CountryCode>
-    </Scan>
-    <Scan>
-      <Date>2008-12-03</Date>
-      <Time>20:27:00</Time>
-      <ScanType>01</ScanType>
-      <ScanDescription>Left FedEx Origin Location</ScanDescription>
-      <City>NASHVILLE</City>
-      <StateOrProvinceCode>TN</StateOrProvinceCode>
-      <CountryCode>US</CountryCode>
-    </Scan>
-    <Scan>
-      <Date>2008-12-03</Date>
-      <Time>18:00:00</Time>
-      <ScanType>07</ScanType>
-      <ScanDescription>Package status</ScanDescription>
-      <StatusExceptionCode>64</StatusExceptionCode>
-      <StatusExceptionDescription>Paperwork avail. for non-FedEx broker</StatusExceptionDescription>
-      <City>MISSISSAUGA</City>
-      <StateOrProvinceCode>ON</StateOrProvinceCode>
-      <CountryCode>CA</CountryCode>
-    </Scan>
-    <Scan>
-      <Date>2008-12-03</Date>
-      <Time>16:46:00</Time>
-      <ScanType>08</ScanType>
-      <ScanDescription>Picked up by FedEx</ScanDescription>
-      <City>NASHVILLE</City>
-      <StateOrProvinceCode>TN</StateOrProvinceCode>
-      <CountryCode>US</CountryCode>
-    </Scan>
-  </TrackProfile>
-</FDXTrackReply>
+      <Residential>false</Residential>
+    </ActualDeliveryAddress>
+    <DeliveryLocationType>OTHER</DeliveryLocationType>
+    <DeliverySignatureName>G.GEORGE</DeliverySignatureName>
+    <SignatureProofOfDeliveryAvailable>true</SignatureProofOfDeliveryAvailable>
+    <ProofOfDeliveryNotificationsAvailable>false</ProofOfDeliveryNotificationsAvailable>
+    <ExceptionNotificationsAvailable>false</ExceptionNotificationsAvailable>
+    <Events>
+      <Timestamp>2008-12-04T10:15:00</Timestamp>
+      <EventType>DL</EventType>
+      <EventDescription>Delivered</EventDescription>
+      <Address>
+        <City>TORONTO</City>
+        <StateOrProvinceCode>ON</StateOrProvinceCode>
+        <PostalCode>M5A1N4</PostalCode>
+        <CountryCode>CA</CountryCode>
+        <Residential>false</Residential>
+      </Address>
+    </Events>
+  </TrackDetails>
+</TrackReply>

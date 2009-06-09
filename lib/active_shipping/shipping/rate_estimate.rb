@@ -10,6 +10,7 @@ module ActiveMerchant #:nodoc:
       attr_reader :service_code
       attr_reader :currency       # 'USD', 'CAD', etc.
                                   # http://en.wikipedia.org/wiki/ISO_4217
+      attr_reader :delivery_date  # Usually only available for express shipments
         
       def initialize(origin, destination, carrier, service_name, options={})
         @origin, @destination, @carrier, @service_name = origin, destination, carrier, service_name
@@ -21,6 +22,7 @@ module ActiveMerchant #:nodoc:
         end
         @total_price = Package.cents_from(options[:total_price])
         @currency = options[:currency]
+        @delivery_date = options[:delivery_date]
       end
       
       def total_price
