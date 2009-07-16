@@ -6,6 +6,7 @@ class FedExTest < Test::Unit::TestCase
     @packages  = TestFixtures.packages
     @locations = TestFixtures.locations
     @carrier   = FedEx.new(fixtures(:fedex))
+    FedEx.logger = Logger.new('/Users/james/.active_merchant/fedex.log')
   end
     
   def test_us_to_canada
@@ -14,7 +15,8 @@ class FedExTest < Test::Unit::TestCase
       response = @carrier.find_rates(
                    @locations[:beverly_hills],
                    @locations[:ottawa],
-                   @packages.values_at(:wii)
+                   @packages.values_at(:wii),
+                   :test => true
                  )
       assert !response.rates.blank?
       response.rates.each do |rate|
@@ -29,10 +31,12 @@ class FedExTest < Test::Unit::TestCase
       @carrier.find_rates(
         Location.new(:zip => 40524),
         Location.new(:zip => 40515),
-        @packages[:wii]
+        @packages[:wii],
+                   :test => true
       )
     rescue ResponseError => e
-      assert_equal 'FedEx Error Code: 64354: Required element OriginAddress/CountryCode missing.', e.message
+      assert_match /country\s?code/i, e.message
+      assert_match /(missing|invalid)/, e.message
     end
   end
   
@@ -41,7 +45,8 @@ class FedExTest < Test::Unit::TestCase
     response = @carrier.find_rates(
                  @locations[:bare_beverly_hills],
                  @locations[:bare_ottawa],
-                 @packages.values_at(:wii)
+                 @packages.values_at(:wii),
+                   :test => true
                )
 
     assert response.rates.size > 0
@@ -53,10 +58,11 @@ class FedExTest < Test::Unit::TestCase
                    @locations[:bare_beverly_hills],
                    Location.new(:country => 'CA'),
                    @packages.values_at(:wii),
-                   :items => @items
+                   :test => true
                  )
     rescue ResponseError => e
-      assert_equal 'FedEx Error Code: 61530: Invalid Destination/Address/PostalCode.', e.message
+      assert_match /postal code/i, e.message
+      assert_match /(missing|invalid)/i, e.message
     end
   end
   
@@ -66,10 +72,11 @@ class FedExTest < Test::Unit::TestCase
                    @locations[:bare_beverly_hills],
                    Location.new(:country => 'JP', :zip => '108-8361'),
                    @packages.values_at(:wii),
-                   :items => @items
+                   :test => true
                  )
     rescue ResponseError => e
-      assert_equal 'FedEx Error Code: 61451: Invalid recipient country', e.message
+      assert_match /postal code/i, e.message
+      assert_match /(missing|invalid)/i, e.message
     end
   end
   
@@ -79,7 +86,8 @@ class FedExTest < Test::Unit::TestCase
       response = @carrier.find_rates(
                    @locations[:ottawa],
                    @locations[:beverly_hills],
-                   @packages.values_at(:wii)
+                   @packages.values_at(:wii),
+                   :test => true
                  )
       assert !response.rates.blank?
       response.rates.each do |rate|
@@ -95,7 +103,42 @@ class FedExTest < Test::Unit::TestCase
       response = @carrier.find_rates(
                    @locations[:ottawa],
                    @locations[:beverly_hills],
-                   @packages.values_at(:book, :wii)
+                   @packages.values_at(:book, :wii),
+                   :test => true
+                 )
+      assert !response.rates.blank?
+      response.rates.each do |rate|
+        assert_instance_of String, rate.service_name
+        assert_instance_of Fixnum, rate.price
+      end
+    end
+  end
+  
+  def test_ottawa_to_london
+    response = nil
+    assert_nothing_raised do
+      response = @carrier.find_rates(
+                   @locations[:ottawa],
+                   @locations[:london],
+                   @packages.values_at(:book, :wii),
+                   :test => true
+                 )
+      assert !response.rates.blank?
+      response.rates.each do |rate|
+        assert_instance_of String, rate.service_name
+        assert_instance_of Fixnum, rate.price
+      end
+    end
+  end
+  
+  def test_beverly_hills_to_london
+    response = nil
+    assert_nothing_raised do
+      response = @carrier.find_rates(
+                   @locations[:beverly_hills],
+                   @locations[:london],
+                   @packages.values_at(:book, :wii),
+                   :test => true
                  )
       assert !response.rates.blank?
       response.rates.each do |rate|
@@ -107,7 +150,7 @@ class FedExTest < Test::Unit::TestCase
 
   def test_tracking
     assert_nothing_raised do
-      @carrier.find_tracking_info('077973360403984')
+      @carrier.find_tracking_info('077973360403984', :test => true)
     end
   end
   
