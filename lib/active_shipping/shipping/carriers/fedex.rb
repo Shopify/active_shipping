@@ -147,7 +147,7 @@ module ActiveMerchant
                 rps << XmlNode.new('Dimensions') do |dimensions|
                   [:length,:width,:height].each do |axis|
                     value = ((imperial ? pkg.inches(axis) : pkg.cm(axis)).to_f*1000).round/1000.0 # 3 decimals
-                    dimensions << XmlNode.new(axis.to_s.capitalize, value.to_i)
+                    dimensions << XmlNode.new(axis.to_s.capitalize, value.ceil)
                   end
                   dimensions << XmlNode.new('Units', imperial ? 'IN' : 'CM')
                 end
