@@ -156,7 +156,7 @@ module ActiveMerchant
             
           end
         end
-        xml_request.to_xml
+        xml_request.to_s
       end
       
       def build_tracking_request(tracking_number, options={})
@@ -180,7 +180,7 @@ module ActiveMerchant
           root_node << XmlNode.new('ShipDateRangeEnd', options['ship_date_range_end']) if options['ship_date_range_end']
           root_node << XmlNode.new('IncludeDetailedScans', 1)
         end
-        xml_request.to_xml
+        xml_request.to_s
       end
       
       def build_request_header
