@@ -234,8 +234,13 @@ module ActiveMerchant
                               :currency => rated_shipment.get_text('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Currency').to_s,
                               :packages => packages,
                               :delivery_date => rated_shipment.get_text('DeliveryTimestamp').to_s)
+	    end
+		
+        if rate_estimates.empty?
+          success = false
+          message = "No shipping rates could be found for the destination address" if message.blank?
         end
-        
+
         RateResponse.new(success, message, Hash.from_xml(response), :rates => rate_estimates, :xml => response, :request => last_request, :log_xml => options[:log_xml])
       end
       

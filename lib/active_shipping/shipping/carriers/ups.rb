@@ -259,7 +259,7 @@ module ActiveMerchant
                                 :packages => packages)
           end
         end
-        RateResponse.new(success, message, Hash.from_xml(response).values.first, :rates => rate_estimates, :xml => response, :request => last_request, :log_xml => options[:log_xml])
+        RateResponse.new(success, message, Hash.from_xml(response).values.first, :rates => rate_estimates, :xml => response, :request => last_request)
       end
       
       def parse_tracking_response(response, options={})

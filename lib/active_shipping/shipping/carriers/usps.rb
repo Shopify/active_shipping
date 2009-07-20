@@ -18,14 +18,14 @@ module ActiveMerchant
       @@name = "USPS"
       
       LIVE_DOMAIN = 'production.shippingapis.com'
-      LIVE_RESOURCE = '/ShippingAPI.dll'
+      LIVE_RESOURCE = 'ShippingAPI.dll'
       
       TEST_DOMAINS = { #indexed by security; e.g. TEST_DOMAINS[USE_SSL[:rates]]
         true => 'secure.shippingapis.com',
         false => 'testing.shippingapis.com'
       }
       
-      TEST_RESOURCE = '/ShippingAPITest.dll'
+      TEST_RESOURCE = 'ShippingAPITest.dll'
       
       API_CODES = {
         :us_rates => 'RateV3',
@@ -186,7 +186,7 @@ module ActiveMerchant
       
       # Once the address verification API is implemented, remove this and have valid_credentials? build the request using that instead.
       def canned_address_verification_works?
-        request = "%3CCarrierPickupAvailabilityRequest%20USERID=%22#{@options[:login]}%22%3E%20%0A%3CFirmName%3EABC%20Corp.%3C/FirmName%3E%20%0A%3CSuiteOrApt%3ESuite%20777%3C/SuiteOrApt%3E%20%0A%3CAddress2%3E1390%20Market%20Street%3C/Address2%3E%20%0A%3CUrbanization%3E%3C/Urbanization%3E%20%0A%3CCity%3EHouston%3C/City%3E%20%0A%3CState%3ETX%3C/State%3E%20%0A%3CZIP5%3E77058%3C/ZIP5%3E%20%0A%3CZIP4%3E1234%3C/ZIP4%3E%20%0A%3C/CarrierPickupAvailabilityRequest%3E%0A"
+        request = "%3CCarrierPickupAvailabilityRequest%20USERID=%22#{URI.encode(@options[:login])}%22%3E%20%0A%3CFirmName%3EABC%20Corp.%3C/FirmName%3E%20%0A%3CSuiteOrApt%3ESuite%20777%3C/SuiteOrApt%3E%20%0A%3CAddress2%3E1390%20Market%20Street%3C/Address2%3E%20%0A%3CUrbanization%3E%3C/Urbanization%3E%20%0A%3CCity%3EHouston%3C/City%3E%20%0A%3CState%3ETX%3C/State%3E%20%0A%3CZIP5%3E77058%3C/ZIP5%3E%20%0A%3CZIP4%3E1234%3C/ZIP4%3E%20%0A%3C/CarrierPickupAvailabilityRequest%3E%0A"
         # expected_hash = {"CarrierPickupAvailabilityResponse"=>{"City"=>"HOUSTON", "Address2"=>"1390 Market Street", "FirmName"=>"ABC Corp.", "State"=>"TX", "Date"=>"3/1/2004", "DayOfWeek"=>"Monday", "Urbanization"=>nil, "ZIP4"=>"1234", "ZIP5"=>"77058", "CarrierRoute"=>"C", "SuiteOrApt"=>"Suite 777"}}
         xml = REXML::Document.new(commit(:test, request, true))
         xml.get_text('/CarrierPickupAvailabilityResponse/City').to_s == 'HOUSTON' &&
@@ -297,7 +297,7 @@ module ActiveMerchant
         rate_estimates.reject! {|e| e.package_count != packages.length}
         rate_estimates = rate_estimates.sort_by(&:total_price)
         
-        RateResponse.new(success, message, Hash.from_xml(response), :rates => rate_estimates, :xml => response, :request => last_request, :log_xml => options[:log_xml])
+        RateResponse.new(success, message, Hash.from_xml(response), :rates => rate_estimates, :xml => response, :request => last_request)
       end
       
       def rates_from_response_node(response_node, packages)

@@ -9,7 +9,7 @@ module ActiveMerchant
       cattr_reader :name
       @@name = "Shipwire"
       
-      URL = 'https://www.shipwire.com/exec/RateServices.php'
+      URL = 'https://api.shipwire.com/exec/RateServices.php'
       SCHEMA_URL = 'http://www.shipwire.com/exec/download/RateRequest.dtd'      
       WAREHOUSES = { 'CHI' => 'Chicago',
                      'LAX' => 'Los Angeles',
@@ -101,8 +101,7 @@ module ActiveMerchant
         RateResponse.new(response["success"], response["message"], response, 
           :xml     => response,
           :rates   => build_rate_estimates(response, origin, destination),
-          :request => last_request,
-          :log_xml => options[:log_xml]
+          :request => last_request
         )
       end
       

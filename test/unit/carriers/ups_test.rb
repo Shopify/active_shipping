@@ -73,19 +73,6 @@ class UPSTest < Test::Unit::TestCase
     assert_equal [992, 2191, 3007, 5509, 9401, 6124], response.rates.map(&:price)
   end
   
-  def test_xml_logging_to_file
-    mock_response = xml_fixture('ups/test_real_home_as_residential_destination_response')
-    @carrier.expects(:commit).times(2).returns(mock_response)
-    RateResponse.any_instance.expects(:log_xml).with({:name => 'test', :path => '/tmp/logs'}).times(1).returns(true)
-    response = @carrier.find_rates( @locations[:beverly_hills],
-                                    @locations[:real_home_as_residential],
-                                    @packages.values_at(:chocolate_stuff),
-                                    :log_xml => {:name => 'test', :path => '/tmp/logs'})
-    response = @carrier.find_rates( @locations[:beverly_hills],
-                                    @locations[:real_home_as_residential],
-                                    @packages.values_at(:chocolate_stuff))
-  end
-  
   def test_maximum_weight
     assert Package.new(150 * 16, [5,5,5], :units => :imperial).mass == @carrier.maximum_weight
     assert Package.new((150 * 16) + 0.01, [5,5,5], :units => :imperial).mass > @carrier.maximum_weight
