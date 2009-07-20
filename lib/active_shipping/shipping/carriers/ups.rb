@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+
 module ActiveMerchant
   module Shipping
     class UPS < Carrier
@@ -352,9 +354,9 @@ module ActiveMerchant
         origin = origin.country_code(:alpha2)
         
         name = case origin
-        when "CA": CANADA_ORIGIN_SERVICES[code]
-        when "MX": MEXICO_ORIGIN_SERVICES[code]
-        when *EU_COUNTRY_CODES: EU_ORIGIN_SERVICES[code]
+        when "CA" then CANADA_ORIGIN_SERVICES[code]
+        when "MX" then MEXICO_ORIGIN_SERVICES[code]
+        when *EU_COUNTRY_CODES then EU_ORIGIN_SERVICES[code]
         end
         
         name ||= OTHER_NON_US_ORIGIN_SERVICES[code] unless name == 'US'

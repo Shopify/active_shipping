@@ -116,14 +116,14 @@ module ActiveMerchant #:nodoc:
       
       def measure(measurement, ary)
         case measurement
-        when Fixnum : ary[measurement] 
-        when :x, :max, :length, :long : ary[2]
-        when :y, :mid, :width, :wide : ary[1]
-        when :z, :min, :height,:depth,:high,:deep : ary[0]
+        when Fixnum then ary[measurement] 
+        when :x, :max, :length, :long then ary[2]
+        when :y, :mid, :width, :wide then ary[1]
+        when :z, :min, :height,:depth,:high,:deep then ary[0]
         when :girth, :around,:circumference
           self.cylinder? ? (Math::PI * (ary[0] + ary[1]) / 2) : (2 * ary[0]) + (2 * ary[1])
-        when :volume : self.cylinder? ? (Math::PI * (ary[0] + ary[1]) / 4)**2 * ary[2] : measure(:box_volume,ary)
-        when :box_volume : ary[0] * ary[1] * ary[2]
+        when :volume then self.cylinder? ? (Math::PI * (ary[0] + ary[1]) / 4)**2 * ary[2] : measure(:box_volume,ary)
+        when :box_volume then ary[0] * ary[1] * ary[2]
         end
       end
       
