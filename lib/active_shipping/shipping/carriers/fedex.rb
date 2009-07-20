@@ -4,8 +4,10 @@
 module ActiveMerchant
   module Shipping
     
-    # :login is your FedEx account number
-    # :password is your meter number
+    # :key is your developer API key
+    # :password is your API password
+    # :account is your FedEx account number
+    # :login is your meter number
     class FedEx < Carrier
       self.retry_safe = true
       
@@ -83,7 +85,7 @@ module ActiveMerchant
       }
       
       def requirements
-        [:api_key, :api_password, :account_number, :meter_number]
+        [:key, :password, :account, :login]
       end
       
       def find_rates(origin, destination, packages, options = {})
@@ -186,14 +188,14 @@ module ActiveMerchant
       def build_request_header
         web_authentication_detail = XmlNode.new('WebAuthenticationDetail') do |wad|
           wad << XmlNode.new('UserCredential') do |uc|
-            uc << XmlNode.new('Key', @options[:api_key])
-            uc << XmlNode.new('Password', @options[:api_password])
+            uc << XmlNode.new('Key', @options[:key])
+            uc << XmlNode.new('Password', @options[:password])
           end
         end
         
         client_detail = XmlNode.new('ClientDetail') do |cd|
-          cd << XmlNode.new('AccountNumber', @options[:account_number])
-          cd << XmlNode.new('MeterNumber', @options[:meter_number])
+          cd << XmlNode.new('AccountNumber', @options[:account])
+          cd << XmlNode.new('MeterNumber', @options[:login])
         end
         
         trasaction_detail = XmlNode.new('TransactionDetail') do |td|
