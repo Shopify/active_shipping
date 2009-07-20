@@ -113,7 +113,7 @@ module ActiveMerchant
           access_request << XmlNode.new('UserId', @options[:login])
           access_request << XmlNode.new('Password', @options[:password])
         end
-        xml_request.to_xml
+        xml_request.to_s
       end
       
       def build_rate_request(origin, destination, packages, options={})
@@ -195,7 +195,7 @@ module ActiveMerchant
           end
           
         end
-        xml_request.to_xml
+        xml_request.to_s
       end
       
       def build_tracking_request(tracking_number, options={})
@@ -206,7 +206,7 @@ module ActiveMerchant
           end
           root_node << XmlNode.new('TrackingNumber', tracking_number.to_s)
         end
-        xml_request.to_xml
+        xml_request.to_s
       end
       
       def build_location_node(name,location,options={})
