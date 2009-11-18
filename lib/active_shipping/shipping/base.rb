@@ -4,11 +4,8 @@ module ActiveMerchant
       mattr_accessor :mode
       self.mode = :production
       
-      ALLCAPS_NAMES = ['ups','usps','dhl'] # is the class name allcaps like USPS or camelcase like FedEx?
-      
       def self.carrier(name)
-        name = name.to_s.downcase
-        ActiveMerchant::Shipping.const_get(ALLCAPS_NAMES.include?(name) ? name.upcase : name.camelize)
+        ActiveMerchant::Shipping::Carriers.all.find {|c| c.name.downcase == name}
       end
     end
   end
