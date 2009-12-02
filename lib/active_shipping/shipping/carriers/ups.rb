@@ -17,7 +17,7 @@ module ActiveMerchant
         :track => 'ups.app/xml/Track'
       }
       
-      PICKUP_CODES = {
+      PICKUP_CODES = HashWithIndifferentAccess.new({
         :daily_pickup => "01",
         :customer_counter => "03", 
         :one_time_pickup => "06",
@@ -25,7 +25,25 @@ module ActiveMerchant
         :suggested_retail_rates => "11",
         :letter_center => "19",
         :air_service_center => "20"
-      }
+      })
+      
+      CUSTOMER_CLASSIFICATIONS = HashWithIndifferentAccess.new({
+        :wholesale => "01",
+        :occasional => "03", 
+        :retail => "04"
+      })
+      
+      # these are the defaults described in the UPS API docs,
+      # but they don't seem to apply them under all circumstances,
+      # so we need to take matters into our own hands
+      DEFAULT_CUSTOMER_CLASSIFICATIONS = Hash.new do |hash,key|
+        hash[key] = case key.to_sym
+        when :daily_pickup then :wholesale
+        when :customer_counter then :retail
+        else
+          :occasional
+        end
+      end
       
       DEFAULT_SERVICES = {
         "01" => "UPS Next Day Air",
@@ -127,11 +145,18 @@ module ActiveMerchant
             # not implemented: 'Rate' RequestOption to specify a single service query
             # request << XmlNode.new('RequestOption', ((options[:service].nil? or options[:service] == :all) ? 'Shop' : 'Rate'))
           end
-          root_node << XmlNode.new('PickupType') do |pickup_type|
-            pickup_type << XmlNode.new('Code', PICKUP_CODES[options[:pickup_type] || :daily_pickup])
+          
+          pickup_type = options[:pickup_type] || :daily_pickup
+          
+          root_node << XmlNode.new('PickupType') do |pickup_type_node|
+            pickup_type_node << XmlNode.new('Code', PICKUP_CODES[pickup_type])
             # not implemented: PickupType/PickupDetails element
           end
-          # not implemented: CustomerClassification element
+          cc = options[:customer_classification] || DEFAULT_CUSTOMER_CLASSIFICATIONS[pickup_type]
+          root_node << XmlNode.new('CustomerClassification') do |cc_node|
+            cc_node << XmlNode.new('Code', CUSTOMER_CLASSIFICATIONS[cc])
+          end
+          
           root_node << XmlNode.new('Shipment') do |shipment|
             # not implemented: Shipment/Description element
             shipment << build_location_node('Shipper', (options[:shipper] || origin), options)
