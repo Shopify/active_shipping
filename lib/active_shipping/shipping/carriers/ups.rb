@@ -367,7 +367,7 @@ module ActiveMerchant
       end
       
       def response_message(xml)
-        xml.get_text('/*/Response/ResponseStatusDescription | /*/Response/Error/ErrorDescription').to_s
+        xml.get_text('/*/Response/Error/ErrorDescription | /*/Response/ResponseStatusDescription').to_s
       end
       
       def commit(action, request, test = false)
