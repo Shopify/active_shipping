@@ -114,6 +114,26 @@ class UPSTest < Test::Unit::TestCase
     end
   end
   
+  def test_us_to_uk_with_different_pickup_types
+    assert_nothing_raised do
+      daily_response = @carrier.find_rates(
+        @locations[:beverly_hills],
+        @locations[:london],
+        @packages.values_at(:book, :wii),
+        :pickup_type => :daily_pickup,
+        :test => true
+      )
+      one_time_response = @carrier.find_rates(
+        @locations[:beverly_hills],
+        @locations[:london],
+        @packages.values_at(:book, :wii),
+        :pickup_type => :one_time_pickup,
+        :test => true
+      )
+      assert_not_equal daily_response.rates.map(&:price), one_time_response.rates.map(&:price)
+    end
+  end
+  
   def test_bare_packages
     response = nil
     p = Package.new(0,0)
