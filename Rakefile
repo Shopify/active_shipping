@@ -23,6 +23,7 @@ task :test => ['test:units','test:remote']
 
 namespace :test do
   Rake::TestTask.new(:units) do |t|
+    t.libs << "test"
     t.pattern = 'test/unit/**/*_test.rb'
     t.ruby_opts << '-rubygems'
     t.verbose = true
