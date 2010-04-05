@@ -1,50 +1,56 @@
-require 'rubygems'
 require 'rake'
+require 'rake/clean'
 require 'rake/testtask'
-require 'rake/rdoctask'
 require 'rake/gempackagetask'
-require 'rake/contrib/rubyforgepublisher'
 
+desc 'Run unit tests by default (and not remote tests)'
+task :default => 'test:units'
 
-PKG_VERSION = "0.0.1"
-PKG_NAME = "activeshipping"
-PKG_FILE_NAME = "#{PKG_NAME}-#{PKG_VERSION}"
+desc 'Run all tests, including remote tests'
+task :test => ['test:units','test:remote']
 
-PKG_FILES = FileList[
-    "lib/**/*", "examples/**/*", "[A-Z]*", "Rakefile"
-].exclude(/\.svn$/)
+gemspec = eval(File.read('active_shipping.gemspec'))
 
+Rake::GemPackageTask.new(gemspec) do |pkg|
+  pkg.gem_spec = gemspec
+end
 
 desc "Default Task"
 task :default => 'test:units'
 task :test => ['test:units','test:remote']
 
-# Run the unit tests
-
 namespace :test do
   Rake::TestTask.new(:units) do |t|
     t.libs << "test"
     t.pattern = 'test/unit/**/*_test.rb'
-    t.ruby_opts << '-rubygems'
     t.verbose = true
   end
 
   Rake::TestTask.new(:remote) do |t|
+    t.libs << "test"
     t.pattern = 'test/remote/*_test.rb'
-    t.ruby_opts << '-rubygems'
     t.verbose = true
   end
 end
 
-# Genereate the RDoc documentation
-Rake::RDocTask.new do |rdoc|
-  rdoc.rdoc_dir = 'doc'
-  rdoc.title    = "ActiveShipping library"
-  rdoc.options << '--line-numbers' << '--inline-source'
-  rdoc.rdoc_files.include('README', 'CHANGELOG')
-  rdoc.rdoc_files.include('lib/**/*.rb')
+desc "Validate the gemspec"
+task :gemspec do
+  gemspec.validate
 end
 
-task :install => [:package] do
-  `gem install pkg/#{PKG_FILE_NAME}.gem`
+task :package => :gemspec
+
+desc "Build and install the gem"
+task :install => :package do
+  sh %{gem install pkg/#{gemspec.name}-#{gemspec.version}}
+end
+
+desc "Uninstall gem"
+task :uninstall => [ :clean ] do
+  sh %{gem uninstall #{gemspec.name}}
+end
+
+desc "Release #{gemspec.name} gem (#{gemspec.version})"
+task :release => [ :test, :package ] do
+  sh %{gem push pkg/#{gemspec.name}-#{gemspec.version}.gem}
 end

@@ -38,8 +38,6 @@ You will need to get [Git][] if you don't have it. Then:
   
 Active Shipping includes an init.rb file. This means that Rails will automatically load it on startup. Check out [git-archive][] for exporting the file tree from your repository to your vendor directory.
 
-Gem and tarball forthcoming on rubyforge.
-  
 [Git]:http://git.or.cz/
 [git-archive]:http://www.kernel.org/pub/software/scm/git/docs/git-archive.html
 
@@ -144,7 +142,6 @@ Gem and tarball forthcoming on rubyforge.
 
 * proper documentation
 * proper offline testing for carriers in addition to the remote tests
-* package into a gem
 * carrier code template generator
 * more carriers
 * integrate with ActiveMerchant
