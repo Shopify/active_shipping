@@ -5,6 +5,7 @@ module ActiveMerchant
   autoload :ConnectionError,           'active_merchant/common/error'
   autoload :RetriableConnectionError,  'active_merchant/common/error'
   autoload :ResponseError,             'active_merchant/common/error'
+  autoload :ClientCertificateError,    'active_merchant/common/error'
   autoload :PostData,                  'active_merchant/common/post_data'
   autoload :PostsData,                 'active_merchant/common/posts_data'
   autoload :RequiresParameters,        'active_merchant/common/requires_parameters'
