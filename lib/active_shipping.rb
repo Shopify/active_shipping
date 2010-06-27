@@ -37,8 +37,7 @@ require 'quantified/mass'
 require 'quantified/length'
 
 require 'net/https'
-
-require 'active_shipping/common'
+require 'active_merchant/common'
 
 require 'active_shipping/shipping/base'
 require 'active_shipping/shipping/response'

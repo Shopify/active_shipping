@@ -1,8 +1,5 @@
 module ActiveMerchant #:nodoc:
-  
-  class ActiveMerchantError < StandardError #:nodoc:
-  end
-  
+    
   module Shipping #:nodoc:
     
     class Error < ActiveMerchant::ActiveMerchantError
