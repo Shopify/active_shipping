@@ -5,6 +5,9 @@ require 'test/unit'
 require 'active_shipping'
 require 'mocha'
 
+
+XmlNode # trigger autorequire
+
 module Test
   module Unit
     class TestCase
