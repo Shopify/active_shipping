@@ -31,10 +31,8 @@ rescue LoadError => e
   require "active_support/all"
 end
 
-require 'vendor/xml_node/lib/xml_node'
-require 'vendor/quantified/lib/quantified'
-require 'quantified/mass'
-require 'quantified/length'
+autoload :XmlNode, 'vendor/xml_node/lib/xml_node'
+autoload :Quantified, 'vendor/quantified/lib/quantified'
 
 require 'net/https'
 require 'active_merchant/common'
