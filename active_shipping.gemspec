@@ -8,10 +8,10 @@ Gem::Specification.new do |s|
   s.version     = ActiveShipping::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["James MacAulay", "Tobi Lutke", "Cody Fauser", "Jimmy Baker"]
-  s.email       = ["james@jadedpixel.com"]
-  s.homepage    = "http://github.com/shopify/active_merchant"
+  s.email       = ["james@shopify.com"]
+  s.homepage    = "http://github.com/shopify/active_shipping"
   s.summary     = "Shipping API extension for Active Merchant"
-  s.description = "Lists available shipping rates for a particular shipping carrier, origin, destination, and set of packages."
+  s.description = "Get rates and tracking info from various shipping carriers."
 
   s.required_rubygems_version = ">= 1.3.6"
   s.rubyforge_project         = "active_shipping"
