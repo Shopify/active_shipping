@@ -1,0 +1,155 @@
+<?xml version="1.0"?>
+<eparcel>
+  <ratesAndServicesResponse>
+    <statusCode>1</statusCode>
+    <statusMessage>OK</statusMessage>
+    <requestID>7251987</requestID>
+    <handling>3.0</handling>
+    <language>0</language>
+    <product id="1040" sequence="1">
+      <name>Priority Courier</name>
+      <rate>20.17</rate>
+      <shippingDate>2010-08-16</shippingDate>
+      <deliveryDate>2010-08-17</deliveryDate>
+      <deliveryDayOfWeek>3</deliveryDayOfWeek>
+      <nextDayAM>true</nextDayAM>
+      <packingID>P_0</packingID>
+    </product>
+    <product id="1020" sequence="2">
+      <name>Expedited</name>
+      <rate>9.2</rate>
+      <shippingDate>2010-08-16</shippingDate>
+      <deliveryDate>2010-08-17</deliveryDate>
+      <deliveryDayOfWeek>3</deliveryDayOfWeek>
+      <nextDayAM>false</nextDayAM>
+      <packingID>P_0</packingID>
+    </product>
+    <product id="1010" sequence="3">
+      <name>Regular</name>
+      <rate>9.2</rate>
+      <shippingDate>2010-08-16</shippingDate>
+      <deliveryDate>2010-08-18</deliveryDate>
+      <deliveryDayOfWeek>4</deliveryDayOfWeek>
+      <nextDayAM>false</nextDayAM>
+      <packingID>P_0</packingID>
+    </product>
+    <packing>
+      <packingID>P_0</packingID>
+      <box>
+        <name>a box full of stuff</name>
+        <weight>5.0</weight>
+        <expediterWeight>5.0</expediterWeight>
+        <length>4.0</length>
+        <width>3.0</width>
+        <height>2.0</height>
+        <packedItem>
+          <quantity>1</quantity>
+          <description>a box full of stuff</description>
+        </packedItem>
+      </box>
+    </packing>
+    <shippingOptions>
+      <insurance>No</insurance>
+      <deliveryConfirmation>No</deliveryConfirmation>
+      <signature>No</signature>
+    </shippingOptions>
+    <comment/>
+    <nearestPostalOutlet>
+      <postalOutletSequenceNo>1</postalOutletSequenceNo>
+      <distance>0.2</distance>
+      <outletName>C/O: OTTAWA SOUTH PO</outletName>
+      <businessName>7-ELEVEN FOOD STORES #23739</businessName>
+      <postalAddress>
+        <addressLine>1166 BANK ST</addressLine>
+        <postalCode>K1S3X0</postalCode>
+        <municipality>OTTAWA</municipality>
+        <province>ON</province>
+      </postalAddress>
+      <phoneNumber>613-730-3022</phoneNumber>
+      <businessHours>
+        <dayId>1</dayId>
+        <dayOfWeek>SUN</dayOfWeek>
+        <time>07:00-21:00</time>
+      </businessHours>
+      <businessHours>
+        <dayId>2</dayId>
+        <dayOfWeek>MON</dayOfWeek>
+        <time>07:00-21:00</time>
+      </businessHours>
+      <businessHours>
+        <dayId>3</dayId>
+        <dayOfWeek>TUE</dayOfWeek>
+        <time>07:00-21:00</time>
+      </businessHours>
+      <businessHours>
+        <dayId>4</dayId>
+        <dayOfWeek>WED</dayOfWeek>
+        <time>07:00-21:00</time>
+      </businessHours>
+      <businessHours>
+        <dayId>5</dayId>
+        <dayOfWeek>THU</dayOfWeek>
+        <time>07:00-21:00</time>
+      </businessHours>
+      <businessHours>
+        <dayId>6</dayId>
+        <dayOfWeek>FRI</dayOfWeek>
+        <time>07:00-21:00</time>
+      </businessHours>
+      <businessHours>
+        <dayId>7</dayId>
+        <dayOfWeek>SAT</dayOfWeek>
+        <time>07:00-21:00</time>
+      </businessHours>
+    </nearestPostalOutlet>
+    <nearestPostalOutlet>
+      <postalOutletSequenceNo>2</postalOutletSequenceNo>
+      <distance>0.8</distance>
+      <outletName>C/O: BILLINGS PO</outletName>
+      <businessName>DAVIS AGENCY</businessName>
+      <postalAddress>
+        <addressLine>2265 RIVERSIDE DR</addressLine>
+        <postalCode>K1H7X0</postalCode>
+        <municipality>OTTAWA</municipality>
+        <province>ON</province>
+      </postalAddress>
+      <phoneNumber>613-521-8240</phoneNumber>
+      <businessHours>
+        <dayId>1</dayId>
+        <dayOfWeek>SUN</dayOfWeek>
+        <time>07:00-21:00</time>
+      </businessHours>
+      <businessHours>
+        <dayId>2</dayId>
+        <dayOfWeek>MON</dayOfWeek>
+        <time>07:00-21:00</time>
+      </businessHours>
+      <businessHours>
+        <dayId>3</dayId>
+        <dayOfWeek>TUE</dayOfWeek>
+        <time>07:00-21:00</time>
+      </businessHours>
+      <businessHours>
+        <dayId>4</dayId>
+        <dayOfWeek>WED</dayOfWeek>
+        <time>07:00-21:00</time>
+      </businessHours>
+      <businessHours>
+        <dayId>5</dayId>
+        <dayOfWeek>THU</dayOfWeek>
+        <time>07:00-21:00</time>
+      </businessHours>
+      <businessHours>
+        <dayId>6</dayId>
+        <dayOfWeek>FRI</dayOfWeek>
+        <time>07:00-21:00</time>
+      </businessHours>
+      <businessHours>
+        <dayId>7</dayId>
+        <dayOfWeek>SAT</dayOfWeek>
+        <time>07:00-21:00</time>
+      </businessHours>
+    </nearestPostalOutlet>
+  </ratesAndServicesResponse>
+</eparcel>
+<!--END_OF_EPARCEL-->
