@@ -7,3 +7,5 @@ fedex:
 shipwire:
   login: EmailAddress
   password: Password
+canada_post:
+  login: CPC_DEMO_XML
