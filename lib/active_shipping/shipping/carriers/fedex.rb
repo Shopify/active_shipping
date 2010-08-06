@@ -29,6 +29,7 @@ module ActiveMerchant
         "FEDEX_2_DAY_SATURDAY_DELIVERY" => "FedEx 2 Day Saturday Delivery",
         "STANDARD_OVERNIGHT" => "FedEx Standard Overnight",
         "FIRST_OVERNIGHT" => "FedEx First Overnight",
+        "FIRST_OVERNIGHT_SATURDAY_DELIVERY" => "FedEx First Overnight Saturday Delivery",
         "FEDEX_EXPRESS_SAVER" => "FedEx Express Saver",
         "FEDEX_1_DAY_FREIGHT" => "FedEx 1 Day Freight",
         "FEDEX_1_DAY_FREIGHT_SATURDAY_DELIVERY" => "FedEx 1 Day Freight Saturday Delivery",
@@ -83,6 +84,13 @@ module ActiveMerchant
         'express_reference' => 'EXPRESS_REFERENCE',
         'express_mps_master' => 'EXPRESS_MPS_MASTER'
       }
+
+      def self.service_name_for_code(service_code)
+        ServiceTypes[service_code] || begin
+          name = service_code.downcase.split('_').collect{|word| word.capitalize }.join(' ')
+          "FedEx #{name.sub(/Fedex /, '')}"
+        end
+      end
       
       def requirements
         [:key, :password, :account, :login]
@@ -227,10 +235,10 @@ module ActiveMerchant
         root_node.elements.each('RateReplyDetails') do |rated_shipment|
           service_code = rated_shipment.get_text('ServiceType').to_s
           is_saturday_delivery = rated_shipment.get_text('AppliedOptions').to_s == 'SATURDAY_DELIVERY'
-          service_type = is_saturday_delivery ? "#{rated_shipment.get_text('ServiceType').to_s}_SATURDAY_DELIVERY" : rated_shipment.get_text('ServiceType').to_s
+          service_type = is_saturday_delivery ? "#{service_code}_SATURDAY_DELIVERY" : service_code
           
           rate_estimates << RateEstimate.new(origin, destination, @@name,
-                              ServiceTypes[service_type],
+                              self.class.service_name_for_code(service_type),
                               :service_code => service_code,
                               :total_price => rated_shipment.get_text('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Amount').to_s.to_f,
                               :currency => rated_shipment.get_text('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Currency').to_s,

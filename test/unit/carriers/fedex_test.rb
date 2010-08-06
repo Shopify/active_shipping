@@ -75,4 +75,17 @@ class FedExTest < Test::Unit::TestCase
     assert_instance_of Package, package_rate[:package]
     assert_nil package_rate[:rate]
   end
+  
+  def test_service_name_for_code
+    FedEx::ServiceTypes.each do |capitalized_name, readable_name|
+      assert_equal readable_name, FedEx.service_name_for_code(capitalized_name)
+    end
+  end
+  
+  def test_service_name_for_code_handles_yet_unknown_codes
+    assert_equal "FedEx Express Saver Saturday Delivery", FedEx.service_name_for_code('FEDEX_EXPRESS_SAVER_SATURDAY_DELIVERY')
+    assert_equal "FedEx Some Weird Rate", FedEx.service_name_for_code('SOME_WEIRD_RATE')
+  end
+  
+  
 end
