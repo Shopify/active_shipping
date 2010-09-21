@@ -1,3 +1,4 @@
+* Add carrier CanadaPost [william]
 * Update FedEx rates and added ability to auto-generate rate name from code that gets returned by FedEx [dennis]
 * Assume test_helper is in load path when running tests [cody]
 * Add support Kunaki rating service [cody]
