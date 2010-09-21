@@ -15,6 +15,7 @@ Active Shipping is currently being used and improved in a production environment
 
 * [USPS](http://www.usps.com)
 * [FedEx](http://www.fedex.com)
+* [Canada Post](http://www.canadapost.ca)
 * more soon!
 
 ## Prerequisites
@@ -41,6 +42,8 @@ Active Shipping includes an init.rb file. This means that Rails will automatical
 [git-archive]:http://www.kernel.org/pub/software/scm/git/docs/git-archive.html
 
 ## Sample Usage
+
+### Compare rates from different carriers
 
     require 'active_shipping'
     include ActiveMerchant::Shipping
@@ -79,21 +82,10 @@ Active Shipping includes an init.rb file. This means that Rails will automatical
     #     ["USPS Global Express Guaranteed Non-Document Rectangular", 9400],
     #     ["USPS Global Express Guaranteed", 9400]]
     
-    # FedEx
-    fdx = FedEx.new(:login => 'Your 9-digit FedEx Account #', :password => 'Your Meter Number')
-    response = fdx.find_rates(origin, destination, packages, :test => true)
-    response.rates.sort_by(&:price).collect {|rate| [rate.service_name, rate.price]}
-    # => [["FedEx Ground", 977], 
-    # ["FedEx Ground Home Delivery", 1388], 
-    # ["FedEx Express Saver", 2477], 
-    # ["FedEx 2 Day", 2718], 
-    # ["FedEx Standard Overnight", 4978], 
-    # ["FedEx Priority Overnight", 8636], 
-    # ["FedEx First Overnight", 12306]]
-    
-    # FedEx Tracking
-    fdx = FedEx.new(:login => '999999999', :password => '7777777')
-    tracking_info = fdx.find_tracking_info('tracking number here', :carrier_code => 'fedex_ground') # Ground package
+### Track a FedEx package
+
+    fedex = FedEx.new(:login => '999999999', :password => '7777777')
+    tracking_info = fedex.find_tracking_info('tracking-number', :carrier_code => 'fedex_ground') # Ground package
     
     tracking_info.shipment_events.each do |event|
       puts "#{event.name} at #{event.location.city}, #{event.location.state} on #{event.time}. #{event.message}"
@@ -105,34 +97,12 @@ Active Shipping includes an init.rb file. This means that Rails will automatical
     # Arrived at FedEx sort facility at KNOXVILLE, TN on Fri Oct 24 02:45:00 UTC 2008. 
     # Scanned at FedEx sort facility at KNOXVILLE, TN on Fri Oct 24 05:56:00 UTC 2008. 
     # Delivered at Knoxville, TN on Fri Oct 24 16:45:00 UTC 2008. Signed for by: T.BAKER
-    
-    tracking_info = fdx.find_tracking_info('tracking number here', :carrier_code => 'fedex_express') # Express package
-    
-    tracking_info.shipment_events.each do |event|
-      puts "#{event.name} at #{event.location.city}, #{event.location.state} on #{event.time}. #{event.message}"
-    end
-    # => Picked up by FedEx at NASHVILLE, TN on Wed Dec 03 16:46:00 UTC 2008. 
-    # Package status at MISSISSAUGA, ON on Wed Dec 03 18:00:00 UTC 2008. 
-    # Left FedEx Origin Location at NASHVILLE, TN on Wed Dec 03 20:27:00 UTC 2008. 
-    # Arrived at FedEx Ramp at NASHVILLE, TN on Wed Dec 03 20:43:00 UTC 2008. 
-    # Left FedEx Ramp at NASHVILLE, TN on Wed Dec 03 22:30:00 UTC 2008. 
-    # Arrived at Sort Facility at INDIANAPOLIS, IN on Thu Dec 04 00:31:00 UTC 2008. 
-    # Left FedEx Sort Facility at INDIANAPOLIS, IN on Thu Dec 04 01:14:00 UTC 2008. 
-    # Left FedEx Sort Facility at INDIANAPOLIS, IN on Thu Dec 04 04:48:00 UTC 2008. 
-    # Arrived at FedEx Ramp at MISSISSAUGA, ON on Thu Dec 04 06:26:00 UTC 2008. 
-    # Package status at MISSISSAUGA, ON on Thu Dec 04 07:03:00 UTC 2008. 
-    # Left FedEx Ramp at MISSISSAUGA, ON on Thu Dec 04 07:37:00 UTC 2008. 
-    # Arrived at FedEx Destination Location at TORONTO, ON on Thu Dec 04 08:42:00 UTC 2008. 
-    # On FedEx vehicle for delivery at TORONTO, ON on Thu Dec 04 09:04:00 UTC 2008. 
-    # Delivered to Non-FedEx clearance broker at TORONTO, ON on Thu Dec 04 10:15:00 UTC 2008.
 
 ## TODO
 
 * proper documentation
-* proper offline testing for carriers in addition to the remote tests
 * carrier code template generator
 * more carriers
-* integrate with ActiveMerchant
 * support more features for existing carriers
 * bin-packing algorithm (preferably implemented in ruby)
 * order tracking
@@ -152,6 +122,7 @@ The nicest way to submit changes would be to set up a GitHub account and fork th
 * Tobias Luetke (<http://blog.leetsoft.com>)
 * Cody Fauser (<http://codyfauser.com>)
 * Jimmy Baker (<http://jimmyville.com/>)
+* William Lang (<http://williamlang.net/>)
 
 ## Legal Mumbo Jumbo
 
