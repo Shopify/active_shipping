@@ -111,7 +111,7 @@ module ActiveMerchant #:nodoc:
       
       def attribute_from_metric_or_imperial(obj, klass, metric_unit, imperial_unit)
         if obj.is_a?(klass)
-          return value
+          return obj
         else
           return klass.new(obj, (@unit_system == :imperial ? imperial_unit : metric_unit))
         end

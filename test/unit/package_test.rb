@@ -62,4 +62,9 @@ class PackageTest < Test::Unit::TestCase
     assert_equal 'GBP', wii.currency
     assert_equal 26999, wii.value
   end
+
+  def test_package_from_mass
+    pkg = Package.new(Quantified::Mass.new(10, :pounds), [])
+    assert_equal 10, pkg.weight
+  end
 end
