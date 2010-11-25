@@ -8,7 +8,7 @@ class NewZealandPostTest < Test::Unit::TestCase
     @carrier  = NewZealandPost.new(login)
 
     @response = xml_fixture('newzealandpost/example_response')
-    # @bad_response = xml_fixture('newzealandpost/example_response_error')
+    @bad_response = xml_fixture('newzealandpost/example_response_error')
 
     @origin      = {:postal_code => "6011"}
     @destination = {:postal_code => "6012"}
@@ -18,10 +18,7 @@ class NewZealandPostTest < Test::Unit::TestCase
                                 :units => :metric)]
   end
 
-  def test_parse_response
-  end
-
-  def test_build_rectangular_request_params
+  def test_build_request_rectangular
     params = @carrier.send(:build_rectangular_request_params, @origin, @destination, @line_items)
 
     assert_equal '123', params[:api_key]
@@ -33,4 +30,32 @@ class NewZealandPostTest < Test::Unit::TestCase
     assert_equal '6012', params[:postcode_dest]
   end
 
+  def test_build_request_cyclinder
+  end
+
+  def test_build_request_multiple_rectangular
+  end
+
+  def test_parse_response
+  end
+
+  def test_response_success_with_successful_response
+    xml = REXML::Document.new(@response)
+    assert_equal true, @carrier.send(:response_success?, xml)
+  end
+
+  def test_response_success_with_bad_response
+    xml = REXML::Document.new(@bad_response)
+    assert_equal false, @carrier.send(:response_success?, xml)
+  end
+
+  def test_response_message_with_successful_response
+    xml = REXML::Document.new(@response)
+    assert_equal 'Success', @carrier.send(:response_message, xml)
+  end
+
+  def test_response_message_with_bad_response
+    xml = REXML::Document.new(@bad_response)
+    assert_equal 'weight Must be less than 25 Kg', @carrier.send(:response_message, xml)
+  end
 end
