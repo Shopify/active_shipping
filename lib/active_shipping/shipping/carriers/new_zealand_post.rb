@@ -1,3 +1,5 @@
+require 'ruby-debug'
+
 module ActiveMerchant
   module Shipping
     class NewZealandPost < Carrier
@@ -32,7 +34,27 @@ module ActiveMerchant
                       :zip => '6012',
                       :phone => '')
       end
-
+      
+      private
+      
+      def build_rectangular_request_params(origin, destination, line_items = [], options = {})
+        params = {
+          :postcode_src => origin[:postal_code],
+          :postcode_dest => destination[:postal_code],
+          :api_key => @options[:api_key]
+        }
+        
+        combine_line_items(line_items).merge(params)
+      end
+      
+      def combine_line_items(line_items)
+        {
+          :height => line_items.first.centimetres(:height).to_s,
+          :thickness => line_items.first.centimetres(:width).to_s,
+          :length => line_items.first.centimetres(:length).to_s,
+          :weight =>"%.1f" % (line_items.first.weight.amount / 1000.0)
+        }
+      end
     end
   end
 end
