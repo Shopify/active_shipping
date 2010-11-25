@@ -1,4 +1,4 @@
-usps: 
+usps:
   login: APIKey
 fedex:
   login: FedExAccountNumber
@@ -9,3 +9,5 @@ shipwire:
   password: Password
 canada_post:
   login: CPC_DEMO_XML
+new_zealand_post:
+  api_key: 123
