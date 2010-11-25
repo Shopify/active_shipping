@@ -1,6 +1,6 @@
-usps: 
+usps:
   login: APIKey
-ups: 
+ups:
   key: XmlAccessKey
   login: UPSDotComLogin
   password: UPSDotComPassword
@@ -13,3 +13,5 @@ shipwire:
   password: Password
 canada_post:
   login: CPC_DEMO_XML
+new_zealand_post:
+  api_key: 123
