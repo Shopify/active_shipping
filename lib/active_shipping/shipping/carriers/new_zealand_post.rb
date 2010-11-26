@@ -4,8 +4,10 @@ module ActiveMerchant
   module Shipping
     class NewZealandPost < Carrier
 
-      class NewZealandPostRateResponse < RateResponse
-      end
+      # class NewZealandPostRateResponse < RateResponse
+      # end
+      
+      @@name = "NewZealandPost"
 
       URL = "http://workshop.nzpost.co.nz/api/v1/rate.xml"
 
@@ -50,22 +52,35 @@ module ActiveMerchant
         combine_line_items(line_items).merge(params)
       end
 
-      def combine_line_items(line_items)
+      def combine_line_items(line_items) 
         {
-          :height => line_items.first.centimetres(:height).to_s,
-          :thickness => line_items.first.centimetres(:width).to_s,
-          :length => line_items.first.centimetres(:length).to_s,
+          :height => "#{line_items.first.centimetres(:height) * 10}",
+          :thickness => "#{line_items.first.centimetres(:width) * 10}",
+          :length => "#{line_items.first.centimetres(:length) * 10}",
           :weight =>"%.1f" % (line_items.first.weight.amount / 1000.0)
         }
       end
 
       def parse_rate_response(origin, destination, packages, response, options={})
-        # xml = REXML::Document.new(response)
-        # if success = response_success?(xml)
-        #   rate_estimates = []
-        #   xml.elements.each('hash/products-by-service') do ||
-        #   end
-        # end
+        xml = REXML::Document.new(response)
+        if response_success?(xml)
+          rate_estimates = []
+          xml.elements.each('hash/products/product') do |prod|
+            rate_estimates << RateEstimate.new(origin, 
+                                               destination,
+                                               @@name,
+                                               prod.get_text('service-group-description').to_s,
+                                               :total_price => prod.get_text('cost').to_s.to_f,
+                                               :currency => 'NZD',
+                                               :service_code => prod.get_text('service').to_s,
+                                               :packages => packages)
+          end
+          
+          RateResponse.new(true, "Success", Hash.from_xml(response), :rates => rate_estimates, :xml => response)
+        else
+          error_message = response_message(response_message)
+          RateResponse.new(false, error_message, Hash.from_xml(response), :rates => rate_estimates, :xml => response)
+        end
       end
 
       def response_success?(xml)
