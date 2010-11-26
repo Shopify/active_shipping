@@ -10,8 +10,8 @@ class NewZealandPostTest < Test::Unit::TestCase
     @response = xml_fixture('newzealandpost/example_response')
     @bad_response = xml_fixture('newzealandpost/example_response_error')
 
-    @origin      = {:postal_code => "6011"}
-    @destination = {:postal_code => "6012"}
+    @origin      = Location.new(:postal_code => "6011")
+    @destination = Location.new(:postal_code => "6012")
     @line_items  = [Package.new(400,
                                 [25, 15, 2],
                                 :description => "Edmonds Cookbook",

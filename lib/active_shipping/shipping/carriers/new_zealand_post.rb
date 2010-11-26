@@ -18,7 +18,11 @@ module ActiveMerchant
 
       # Override with whatever you need to get the rates
       def find_rates(origin, destination, packages, options = {})
-
+        packages = Array(packages)
+        request_hash = build_rectangular_request_params(origin, destination, packages, options)
+        url = URL + '?' + request_hash.to_param
+        xml_response = ssl_get(url)
+        parse_rate_response(origin, destination, packages, xml_response, options)
       end
 
       def maximum_weight
@@ -27,25 +31,17 @@ module ActiveMerchant
 
       protected
 
-      def node_text_or_nil(xml_node)
-        xml_node ? xml_node.text : nil
-      end
-
       # Override in subclasses for non-U.S.-based carriers.
       def self.default_location
-        Location.new( :country => 'NZ',
-                      :city => 'Wellington',
-                      :address1 => '455 Rexford Dr',
-                      :zip => '6012',
-                      :phone => '')
+        Location.new(:postal_code => '6011')
       end
 
       private
 
       def build_rectangular_request_params(origin, destination, line_items = [], options = {})
         params = {
-          :postcode_src => origin[:postal_code],
-          :postcode_dest => destination[:postal_code],
+          :postcode_src => origin.postal_code,
+          :postcode_dest => destination.postal_code,
           :api_key => @options[:api_key]
         }
 
@@ -78,7 +74,7 @@ module ActiveMerchant
           
           RateResponse.new(true, "Success", Hash.from_xml(response), :rates => rate_estimates, :xml => response)
         else
-          error_message = response_message(response_message)
+          error_message = response_message(xml)
           RateResponse.new(false, error_message, Hash.from_xml(response), :rates => rate_estimates, :xml => response)
         end
       end
