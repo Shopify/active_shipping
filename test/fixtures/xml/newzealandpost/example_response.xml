@@ -1,422 +1,242 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<hash>
-  <status>success</status>
-  <defaulting-to-nationwide type="boolean">false</defaulting-to-nationwide>
-  <products-by-service>
-    <parcel-post-tracking type="array">
-      <parcel-post-tracking>
-        <cost>4.20</cost>
-        <speed-description>1-3 Working days Moday to Friday</speed-description>
-        <weight type="float">0.4</weight>
-        <product-url nil="true"></product-url>
-        <product-max-dimensions>165*235*70 3000gms</product-max-dimensions>
-        <length type="integer">25</length>
-        <code>PCB3C5</code>
-        <height type="integer">15</height>
-        <packaging>postage_only</packaging>
-        <description>C5 70mm Thick</description>
-        <label-url>https://www.nzpost.co.nz/cart/checkout</label-url>
-        <service>parcel_post_tracking</service>
-        <thickness type="integer">2</thickness>
-      </parcel-post-tracking>
-      <parcel-post-tracking>
-        <cost>4.50</cost>
-        <speed-description>1-3 Working days Moday to Friday</speed-description>
-        <weight type="float">0.4</weight>
-        <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-        <product-max-dimensions>125*230*70 3000gms</product-max-dimensions>
-        <length type="integer">25</length>
-        <code>PICFDLE</code>
-        <height type="integer">15</height>
-        <packaging>flat</packaging>
-        <description>DLE Flat Bag</description>
-        <label-url nil="true"></label-url>
-        <service>parcel_post_tracking</service>
-        <thickness type="integer">2</thickness>
-      </parcel-post-tracking>
-      <parcel-post-tracking>
-        <cost>5.50</cost>
-        <speed-description>1-3 Working days Moday to Friday</speed-description>
-        <weight type="float">0.4</weight>
-        <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-        <product-max-dimensions>185*270*70 3000gms</product-max-dimensions>
-        <length type="integer">25</length>
-        <code>PICBC5</code>
-        <height type="integer">15</height>
-        <packaging>bubble</packaging>
-        <description>C5 Bubble Bag</description>
-        <label-url nil="true"></label-url>
-        <service>parcel_post_tracking</service>
-        <thickness type="integer">2</thickness>
-      </parcel-post-tracking>
-    </parcel-post-tracking>
-    <parcel-post-po-box-priority type="array">
-      <parcel-post-po-box-priority>
-        <cost>4.00</cost>
-        <speed-description>Next working day</speed-description>
-        <weight type="float">0.4</weight>
-        <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-        <product-max-dimensions>185*270*70 3000gms</product-max-dimensions>
-        <length type="integer">25</length>
-        <code>PIXFC5</code>
-        <height type="integer">15</height>
-        <packaging>flat</packaging>
-        <description>C5 Flat Bag</description>
-        <label-url nil="true"></label-url>
-        <service>parcel_post_po_box_priority</service>
-        <thickness type="integer">2</thickness>
-      </parcel-post-po-box-priority>
-    </parcel-post-po-box-priority>
-    <parcel-post type="array">
-      <parcel-post>
-        <cost>2.40</cost>
-        <speed-description>1-3 Working days Moday to Saturday</speed-description>
-        <weight type="float">0.4</weight>
-        <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-        <product-max-dimensions>130*235*70 1500gms</product-max-dimensions>
-        <length type="integer">25</length>
-        <code>PKTDLE</code>
-        <height type="integer">15</height>
-        <packaging>postage_included_envelopes</packaging>
-        <description>DLE Postage Included Envelopes</description>
-        <label-url nil="true"></label-url>
-        <service>parcel_post</service>
-        <thickness type="integer">2</thickness>
-      </parcel-post>
-      <parcel-post>
-        <cost>2.40</cost>
-        <speed-description>1-3 Working days Moday to Saturday</speed-description>
-        <weight type="float">0.4</weight>
-        <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-        <product-max-dimensions>130*235*70 1500gms</product-max-dimensions>
-        <length type="integer">25</length>
-        <code>PKPDLE</code>
-        <height type="integer">15</height>
-        <packaging>permitpost</packaging>
-        <description>DLE </description>
-        <label-url nil="true"></label-url>
-        <service>parcel_post</service>
-        <thickness type="integer">2</thickness>
-      </parcel-post>
-      <parcel-post>
-        <cost>4.00</cost>
-        <speed-description>1-3 Working days Moday to Saturday</speed-description>
-        <weight type="float">0.4</weight>
-        <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-        <product-max-dimensions>185*270*70 1500gms</product-max-dimensions>
-        <length type="integer">25</length>
-        <code>PIKFC5</code>
-        <height type="integer">15</height>
-        <packaging>flat</packaging>
-        <description>C5 Flat Bag</description>
-        <label-url nil="true"></label-url>
-        <service>parcel_post</service>
-        <thickness type="integer">2</thickness>
-      </parcel-post>
-      <parcel-post>
-        <cost>4.50</cost>
-        <speed-description>1-3 Working days Moday to Saturday</speed-description>
-        <weight type="float">0.4</weight>
-        <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-        <product-max-dimensions>185*270*70 1500gms</product-max-dimensions>
-        <length type="integer">25</length>
-        <code>PIKBC5</code>
-        <height type="integer">15</height>
-        <packaging>bubble</packaging>
-        <description>C5 Bubble Bag</description>
-        <label-url nil="true"></label-url>
-        <service>parcel_post</service>
-        <thickness type="integer">2</thickness>
-      </parcel-post>
-    </parcel-post>
-    <parcel-post-fast type="array">
-      <parcel-post-fast>
-        <cost>3.00</cost>
-        <speed-description>Next working day Moday to Saturday</speed-description>
-        <weight type="float">0.4</weight>
-        <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-        <product-max-dimensions>130*235*70 1500gms</product-max-dimensions>
-        <length type="integer">25</length>
-        <code>PKTDLE, PKTEF</code>
-        <height type="integer">15</height>
-        <packaging>postage_included_envelopes</packaging>
-        <description>DLE Postage Included Envelopes</description>
-        <label-url nil="true"></label-url>
-        <service>parcel_post_fast</service>
-        <thickness type="integer">2</thickness>
-      </parcel-post-fast>
-      <parcel-post-fast>
-        <cost>3.00</cost>
-        <speed-description>Next working day Moday to Saturday</speed-description>
-        <weight type="float">0.4</weight>
-        <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-        <product-max-dimensions>130*235*70 1500gms</product-max-dimensions>
-        <length type="integer">25</length>
-        <code>PKFDLE</code>
-        <height type="integer">15</height>
-        <packaging>permitpost</packaging>
-        <description>DLE </description>
-        <label-url nil="true"></label-url>
-        <service>parcel_post_fast</service>
-        <thickness type="integer">2</thickness>
-      </parcel-post-fast>
-      <parcel-post-fast>
-        <cost>4.60</cost>
-        <speed-description>Next working day Moday to Saturday</speed-description>
-        <weight type="float">0.4</weight>
-        <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-        <product-max-dimensions>185*270*70 1500gms</product-max-dimensions>
-        <length type="integer">25</length>
-        <code>PIFFC5</code>
-        <height type="integer">15</height>
-        <packaging>flat</packaging>
-        <description>C5 Flat Bag</description>
-        <label-url nil="true"></label-url>
-        <service>parcel_post_fast</service>
-        <thickness type="integer">2</thickness>
-      </parcel-post-fast>
-      <parcel-post-fast>
-        <cost>5.10</cost>
-        <speed-description>Next working day Moday to Saturday</speed-description>
-        <weight type="float">0.4</weight>
-        <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-        <product-max-dimensions>185*270*70 1500gms</product-max-dimensions>
-        <length type="integer">25</length>
-        <code>PIFBC5</code>
-        <height type="integer">15</height>
-        <packaging>bubble</packaging>
-        <description>C5 Bubble Bag</description>
-        <label-url nil="true"></label-url>
-        <service>parcel_post_fast</service>
-        <thickness type="integer">2</thickness>
-      </parcel-post-fast>
-    </parcel-post-fast>
-    <parcel-post-tracked-zonal type="array">
-      <parcel-post-tracked-zonal>
-        <cost>5.50</cost>
-        <speed-description>Next working day</speed-description>
-        <weight type="float">0.4</weight>
-        <product-url nil="true"></product-url>
-        <product-max-dimensions>15000*15000*15000 25000gms</product-max-dimensions>
-        <length type="integer">25</length>
-        <code>PCBXT</code>
-        <height type="integer">15</height>
-        <packaging>postage_only</packaging>
-        <description>Across town</description>
-        <label-url>https://www.nzpost.co.nz/cart/checkout</label-url>
-        <service>parcel_post_tracked_zonal</service>
-        <thickness type="integer">2</thickness>
-      </parcel-post-tracked-zonal>
-    </parcel-post-tracked-zonal>
-  </products-by-service>
-  <products type="array">
-    <product>
-      <cost>2.40</cost>
-      <speed-description>1-3 Working days Moday to Saturday</speed-description>
-      <weight type="float">0.4</weight>
-      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-      <product-max-dimensions>130*235*70 1500gms</product-max-dimensions>
-      <length type="integer">25</length>
-      <code>PKTDLE</code>
-      <height type="integer">15</height>
-      <packaging>postage_included_envelopes</packaging>
-      <description>DLE Postage Included Envelopes</description>
-      <label-url nil="true"></label-url>
-      <service>parcel_post</service>
-      <thickness type="integer">2</thickness>
-    </product>
-    <product>
-      <cost>3.00</cost>
-      <speed-description>Next working day Moday to Saturday</speed-description>
-      <weight type="float">0.4</weight>
-      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-      <product-max-dimensions>130*235*70 1500gms</product-max-dimensions>
-      <length type="integer">25</length>
-      <code>PKTDLE, PKTEF</code>
-      <height type="integer">15</height>
-      <packaging>postage_included_envelopes</packaging>
-      <description>DLE Postage Included Envelopes</description>
-      <label-url nil="true"></label-url>
-      <service>parcel_post_fast</service>
-      <thickness type="integer">2</thickness>
-    </product>
-    <product>
-      <cost>2.40</cost>
-      <speed-description>1-3 Working days Moday to Saturday</speed-description>
-      <weight type="float">0.4</weight>
-      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-      <product-max-dimensions>130*235*70 1500gms</product-max-dimensions>
-      <length type="integer">25</length>
-      <code>PKPDLE</code>
-      <height type="integer">15</height>
-      <packaging>permitpost</packaging>
-      <description>DLE </description>
-      <label-url nil="true"></label-url>
-      <service>parcel_post</service>
-      <thickness type="integer">2</thickness>
-    </product>
-    <product>
-      <cost>3.00</cost>
-      <speed-description>Next working day Moday to Saturday</speed-description>
-      <weight type="float">0.4</weight>
-      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-      <product-max-dimensions>130*235*70 1500gms</product-max-dimensions>
-      <length type="integer">25</length>
-      <code>PKFDLE</code>
-      <height type="integer">15</height>
-      <packaging>permitpost</packaging>
-      <description>DLE </description>
-      <label-url nil="true"></label-url>
-      <service>parcel_post_fast</service>
-      <thickness type="integer">2</thickness>
-    </product>
-    <product>
-      <cost>4.00</cost>
-      <speed-description>1-3 Working days Moday to Saturday</speed-description>
-      <weight type="float">0.4</weight>
-      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-      <product-max-dimensions>185*270*70 1500gms</product-max-dimensions>
-      <length type="integer">25</length>
-      <code>PIKFC5</code>
-      <height type="integer">15</height>
-      <packaging>flat</packaging>
-      <description>C5 Flat Bag</description>
-      <label-url nil="true"></label-url>
-      <service>parcel_post</service>
-      <thickness type="integer">2</thickness>
-    </product>
-    <product>
-      <cost>4.50</cost>
-      <speed-description>1-3 Working days Moday to Saturday</speed-description>
-      <weight type="float">0.4</weight>
-      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-      <product-max-dimensions>185*270*70 1500gms</product-max-dimensions>
-      <length type="integer">25</length>
-      <code>PIKBC5</code>
-      <height type="integer">15</height>
-      <packaging>bubble</packaging>
-      <description>C5 Bubble Bag</description>
-      <label-url nil="true"></label-url>
-      <service>parcel_post</service>
-      <thickness type="integer">2</thickness>
-    </product>
-    <product>
-      <cost>4.60</cost>
-      <speed-description>Next working day Moday to Saturday</speed-description>
-      <weight type="float">0.4</weight>
-      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-      <product-max-dimensions>185*270*70 1500gms</product-max-dimensions>
-      <length type="integer">25</length>
-      <code>PIFFC5</code>
-      <height type="integer">15</height>
-      <packaging>flat</packaging>
-      <description>C5 Flat Bag</description>
-      <label-url nil="true"></label-url>
-      <service>parcel_post_fast</service>
-      <thickness type="integer">2</thickness>
-    </product>
-    <product>
-      <cost>5.10</cost>
-      <speed-description>Next working day Moday to Saturday</speed-description>
-      <weight type="float">0.4</weight>
-      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-      <product-max-dimensions>185*270*70 1500gms</product-max-dimensions>
-      <length type="integer">25</length>
-      <code>PIFBC5</code>
-      <height type="integer">15</height>
-      <packaging>bubble</packaging>
-      <description>C5 Bubble Bag</description>
-      <label-url nil="true"></label-url>
-      <service>parcel_post_fast</service>
-      <thickness type="integer">2</thickness>
-    </product>
-    <product>
-      <cost>4.20</cost>
-      <speed-description>1-3 Working days Moday to Friday</speed-description>
-      <weight type="float">0.4</weight>
-      <product-url nil="true"></product-url>
-      <product-max-dimensions>165*235*70 3000gms</product-max-dimensions>
-      <length type="integer">25</length>
-      <code>PCB3C5</code>
-      <height type="integer">15</height>
-      <packaging>postage_only</packaging>
-      <description>C5 70mm Thick</description>
-      <label-url>https://www.nzpost.co.nz/cart/checkout</label-url>
-      <service>parcel_post_tracking</service>
-      <thickness type="integer">2</thickness>
-    </product>
-    <product>
-      <cost>4.50</cost>
-      <speed-description>1-3 Working days Moday to Friday</speed-description>
-      <weight type="float">0.4</weight>
-      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-      <product-max-dimensions>125*230*70 3000gms</product-max-dimensions>
-      <length type="integer">25</length>
-      <code>PICFDLE</code>
-      <height type="integer">15</height>
-      <packaging>flat</packaging>
-      <description>DLE Flat Bag</description>
-      <label-url nil="true"></label-url>
-      <service>parcel_post_tracking</service>
-      <thickness type="integer">2</thickness>
-    </product>
-    <product>
-      <cost>5.50</cost>
-      <speed-description>1-3 Working days Moday to Friday</speed-description>
-      <weight type="float">0.4</weight>
-      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-      <product-max-dimensions>185*270*70 3000gms</product-max-dimensions>
-      <length type="integer">25</length>
-      <code>PICBC5</code>
-      <height type="integer">15</height>
-      <packaging>bubble</packaging>
-      <description>C5 Bubble Bag</description>
-      <label-url nil="true"></label-url>
-      <service>parcel_post_tracking</service>
-      <thickness type="integer">2</thickness>
-    </product>
-    <product>
-      <cost>5.50</cost>
-      <speed-description>Next working day</speed-description>
-      <weight type="float">0.4</weight>
-      <product-url nil="true"></product-url>
-      <product-max-dimensions>15000*15000*15000 25000gms</product-max-dimensions>
-      <length type="integer">25</length>
-      <code>PCBXT</code>
-      <height type="integer">15</height>
-      <packaging>postage_only</packaging>
-      <description>Across town</description>
-      <label-url>https://www.nzpost.co.nz/cart/checkout</label-url>
-      <service>parcel_post_tracked_zonal</service>
-      <thickness type="integer">2</thickness>
-    </product>
-    <product>
-      <cost>4.00</cost>
-      <speed-description>Next working day</speed-description>
-      <weight type="float">0.4</weight>
-      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url>
-      <product-max-dimensions>185*270*70 3000gms</product-max-dimensions>
-      <length type="integer">25</length>
-      <code>PIXFC5</code>
-      <height type="integer">15</height>
-      <packaging>flat</packaging>
-      <description>C5 Flat Bag</description>
-      <label-url nil="true"></label-url>
-      <service>parcel_post_po_box_priority</service>
-      <thickness type="integer">2</thickness>
-    </product>
-  </products>
-  <large-delivery-type type="symbol">across_town</large-delivery-type>
-  <params>
-    <format>xml</format>
-    <thickness>2</thickness>
-    <postcode-dest>6012</postcode-dest>
-    <weight>0.4</weight>
-    <api-key>123</api-key>
-    <action>rate</action>
-    <height>25</height>
-    <length>15</length>
-    <controller>api</controller>
-    <postcode-src>6011</postcode-src>
-  </params>
-</hash>
+<?xml version="1.0" encoding="UTF-8"?> 
+<hash> 
+  <large-delivery-type type="symbol">across_town</large-delivery-type> 
+  <status>success</status> 
+  <defaulting-to-nationwide type="boolean">false</defaulting-to-nationwide> 
+  <params> 
+    <format>xml</format> 
+    <thickness>150</thickness> 
+    <postcode-dest>6012</postcode-dest> 
+    <weight>0.4</weight> 
+    <api-key>123</api-key> 
+    <action>rate</action> 
+    <height>20</height> 
+    <length>250</length> 
+    <controller>api</controller> 
+    <postcode-src>6011</postcode-src> 
+  </params> 
+  <products type="array"> 
+    <product> 
+      <thickness type="integer">20</thickness> 
+      <priority>parcel_post</priority> 
+      <service>parcel_post</service> 
+      <length type="integer">250</length> 
+      <code>PKTC4</code> 
+      <cost>4.20</cost> 
+      <weight type="float">0.4</weight> 
+      <height type="integer">150</height> 
+      <description>C4 Postage Included Envelopes</description> 
+      <speed-description>1-3 Working days Moday to Saturday</speed-description> 
+      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url> 
+      <product-max-dimensions>260*325*70 1500gms</product-max-dimensions> 
+      <service-group-description>Parcel Post</service-group-description> 
+      <packaging>postage_included_envelopes</packaging> 
+      <label-url nil="true"></label-url> 
+    </product> 
+    <product> 
+      <thickness type="integer">20</thickness> 
+      <priority>parcel_post_fast</priority> 
+      <service>parcel_post_fast</service> 
+      <length type="integer">250</length> 
+      <code>PKTC4, PKTE</code> 
+      <cost>4.80</cost> 
+      <weight type="float">0.4</weight> 
+      <height type="integer">150</height> 
+      <description>C4 Postage Included Envelopes</description> 
+      <speed-description>Next working day Moday to Saturday</speed-description> 
+      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url> 
+      <product-max-dimensions>260*325*70 1500gms</product-max-dimensions> 
+      <service-group-description>Parcel Post Fast</service-group-description> 
+      <packaging>postage_included_envelopes</packaging> 
+      <label-url nil="true"></label-url> 
+    </product> 
+    <product> 
+      <thickness type="integer">20</thickness> 
+      <priority>parcel_post</priority> 
+      <service>parcel_post</service> 
+      <length type="integer">250</length> 
+      <code>PKPC4</code> 
+      <cost>4.20</cost> 
+      <weight type="float">0.4</weight> 
+      <height type="integer">150</height> 
+      <description>C4 </description> 
+      <speed-description>1-3 Working days Moday to Saturday</speed-description> 
+      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url> 
+      <product-max-dimensions>260*325*70 1500gms</product-max-dimensions> 
+      <service-group-description>Parcel Post</service-group-description> 
+      <packaging>permitpost</packaging> 
+      <label-url nil="true"></label-url> 
+    </product> 
+    <product> 
+      <thickness type="integer">20</thickness> 
+      <priority>parcel_post_fast</priority> 
+      <service>parcel_post_fast</service> 
+      <length type="integer">250</length> 
+      <code>PKFC4</code> 
+      <cost>4.80</cost> 
+      <weight type="float">0.4</weight> 
+      <height type="integer">150</height> 
+      <description>C4 </description> 
+      <speed-description>Next working day Moday to Saturday</speed-description> 
+      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url> 
+      <product-max-dimensions>260*325*70 1500gms</product-max-dimensions> 
+      <service-group-description>Parcel Post Fast</service-group-description> 
+      <packaging>permitpost</packaging> 
+      <label-url nil="true"></label-url> 
+    </product> 
+    <product> 
+      <thickness type="integer">20</thickness> 
+      <priority>parcel_post</priority> 
+      <service>parcel_post</service> 
+      <length type="integer">250</length> 
+      <code>PIKFC5</code> 
+      <cost>4.00</cost> 
+      <weight type="float">0.4</weight> 
+      <height type="integer">150</height> 
+      <description>C5 Flat Bag</description> 
+      <speed-description>1-3 Working days Moday to Saturday</speed-description> 
+      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url> 
+      <product-max-dimensions>185*270*70 1500gms</product-max-dimensions> 
+      <service-group-description>Parcel Post</service-group-description> 
+      <packaging>flat</packaging> 
+      <label-url nil="true"></label-url> 
+    </product> 
+    <product> 
+      <thickness type="integer">20</thickness> 
+      <priority>parcel_post</priority> 
+      <service>parcel_post</service> 
+      <length type="integer">250</length> 
+      <code>PIKBC5</code> 
+      <cost>4.50</cost> 
+      <weight type="float">0.4</weight> 
+      <height type="integer">150</height> 
+      <description>C5 Bubble Bag</description> 
+      <speed-description>1-3 Working days Moday to Saturday</speed-description> 
+      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url> 
+      <product-max-dimensions>185*270*70 1500gms</product-max-dimensions> 
+      <service-group-description>Parcel Post</service-group-description> 
+      <packaging>bubble</packaging> 
+      <label-url nil="true"></label-url> 
+    </product> 
+    <product> 
+      <thickness type="integer">20</thickness> 
+      <priority>parcel_post_fast</priority> 
+      <service>parcel_post_fast</service> 
+      <length type="integer">250</length> 
+      <code>PIFFC5</code> 
+      <cost>4.60</cost> 
+      <weight type="float">0.4</weight> 
+      <height type="integer">150</height> 
+      <description>C5 Flat Bag</description> 
+      <speed-description>Next working day Moday to Saturday</speed-description> 
+      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url> 
+      <product-max-dimensions>185*270*70 1500gms</product-max-dimensions> 
+      <service-group-description>Parcel Post Fast</service-group-description> 
+      <packaging>flat</packaging> 
+      <label-url nil="true"></label-url> 
+    </product> 
+    <product> 
+      <thickness type="integer">20</thickness> 
+      <priority>parcel_post_fast</priority> 
+      <service>parcel_post_fast</service> 
+      <length type="integer">250</length> 
+      <code>PIFBC5</code> 
+      <cost>5.10</cost> 
+      <weight type="float">0.4</weight> 
+      <height type="integer">150</height> 
+      <description>C5 Bubble Bag</description> 
+      <speed-description>Next working day Moday to Saturday</speed-description> 
+      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url> 
+      <product-max-dimensions>185*270*70 1500gms</product-max-dimensions> 
+      <service-group-description>Parcel Post Fast</service-group-description> 
+      <packaging>bubble</packaging> 
+      <label-url nil="true"></label-url> 
+    </product> 
+    <product> 
+      <thickness type="integer">20</thickness> 
+      <priority>parcel_post_tracked</priority> 
+      <service>parcel_post_tracked</service> 
+      <length type="integer">250</length> 
+      <code>PCB3C4</code> 
+      <cost>5.40</cost> 
+      <weight type="float">0.4</weight> 
+      <height type="integer">150</height> 
+      <description>C4 Postage Only</description> 
+      <speed-description>parcel_post_tracked</speed-description> 
+      <product-url nil="true"></product-url> 
+      <product-max-dimensions>260*325*70 3000gms</product-max-dimensions> 
+      <service-group-description>Parcel Post Tracked</service-group-description> 
+      <packaging>postage_only</packaging> 
+      <label-url>https://www.nzpost.co.nz/cart/checkout</label-url> 
+    </product> 
+    <product> 
+      <thickness type="integer">20</thickness> 
+      <priority>parcel_post_tracked</priority> 
+      <service>parcel_post_tracked</service> 
+      <length type="integer">250</length> 
+      <code>PICFC5</code> 
+      <cost>5.00</cost> 
+      <weight type="float">0.4</weight> 
+      <height type="integer">150</height> 
+      <description>C5 Flat Bag</description> 
+      <speed-description>parcel_post_tracked</speed-description> 
+      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url> 
+      <product-max-dimensions>185*270*70 3000gms</product-max-dimensions> 
+      <service-group-description>Parcel Post Tracked</service-group-description> 
+      <packaging>flat</packaging> 
+      <label-url nil="true"></label-url> 
+    </product> 
+    <product> 
+      <thickness type="integer">20</thickness> 
+      <priority>parcel_post_tracked</priority> 
+      <service>parcel_post_tracked</service> 
+      <length type="integer">250</length> 
+      <code>PICBC5</code> 
+      <cost>5.50</cost> 
+      <weight type="float">0.4</weight> 
+      <height type="integer">150</height> 
+      <description>C5 Bubble Bag</description> 
+      <speed-description>parcel_post_tracked</speed-description> 
+      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url> 
+      <product-max-dimensions>185*270*70 3000gms</product-max-dimensions> 
+      <service-group-description>Parcel Post Tracked</service-group-description> 
+      <packaging>bubble</packaging> 
+      <label-url nil="true"></label-url> 
+    </product> 
+    <product> 
+      <thickness type="integer">20</thickness> 
+      <priority>parcel_post_tracked_zonal</priority> 
+      <service>parcel_post_tracked_zonal</service> 
+      <length type="integer">250</length> 
+      <code>PCBXT</code> 
+      <cost>5.50</cost> 
+      <weight type="float">0.4</weight> 
+      <height type="integer">150</height> 
+      <description>Across town</description> 
+      <speed-description>Next working day</speed-description> 
+      <product-url nil="true"></product-url> 
+      <product-max-dimensions>15000*15000*15000 25000gms</product-max-dimensions> 
+      <service-group-description>Parcel Post Tracked Zonal</service-group-description> 
+      <packaging>postage_only</packaging> 
+      <label-url>https://www.nzpost.co.nz/cart/checkout</label-url> 
+    </product> 
+    <product> 
+      <thickness type="integer">20</thickness> 
+      <priority>parcel_post_po_box_priority</priority> 
+      <service>parcel_post_po_box_priority</service> 
+      <length type="integer">250</length> 
+      <code>PIXFC5</code> 
+      <cost>4.00</cost> 
+      <weight type="float">0.4</weight> 
+      <height type="integer">150</height> 
+      <description>C5 Flat Bag</description> 
+      <speed-description>Next working day</speed-description> 
+      <product-url>http://www.nzpost.co.nz/products-services/postage-packaging/bags/parcelpost-fast/10-x-c5-flat-parcelpost-fast-postage-includ</product-url> 
+      <product-max-dimensions>185*270*70 3000gms</product-max-dimensions> 
+      <service-group-description>Parcel Post Po Box Priority</service-group-description> 
+      <packaging>flat</packaging> 
+      <label-url nil="true"></label-url> 
+    </product> 
+  </products> 
+</hash> 
+
