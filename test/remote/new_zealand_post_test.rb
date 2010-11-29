@@ -21,7 +21,6 @@ class NewZealandPostTest < Test::Unit::TestCase
     assert response.success?
     assert response.rates.any?
     assert response.rates.first.is_a?(RateEstimate)
-    assert_equal "dummy", response
   end
 
   def test_failure_rates_request
