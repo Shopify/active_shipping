@@ -16,18 +16,20 @@ class NewZealandPostTest < Test::Unit::TestCase
     response = @carrier.find_rates(@locations[:wellington],
                                    @locations[:wellington],
                                    @packages.values_at(:book, :wii))
-    
+
     assert response.is_a?(RateResponse)
     assert response.success?
     assert response.rates.any?
     assert response.rates.first.is_a?(RateEstimate)
+    assert_equal "dummy", response
   end
 
   def test_failure_rates_request
     begin
-      @carrier.find_rates(@locations[:wellington],
-                          @locations[:wellington],
-                          @packages[:shipping_container])
+      @carrier.find_rates(
+                   @locations[:wellington],
+                   @locations[:wellington],
+                   @packages[:shipping_container])
                    
       flunk "expected an ActiveMerchant::Shipping::ResponseError to be raised"
     rescue ActiveMerchant::Shipping::ResponseError => e
