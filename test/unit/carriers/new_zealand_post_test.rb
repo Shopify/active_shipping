@@ -15,11 +15,16 @@ class NewZealandPostTest < Test::Unit::TestCase
     @line_items  = [Package.new(400,
                                 [25, 15, 2],
                                 :description => "Edmonds Cookbook",
+                                :units => :metric),
+                    Package.new(300,
+                                [85, 55],
+                                :cylinder => true,
+                                :description => "Movie Poster",
                                 :units => :metric)]
   end
 
   def test_build_request_rectangular
-    params = @carrier.send(:build_rectangular_request_params, @origin, @destination, @line_items.first)
+    params = @carrier.send(:build_rectangular_request_params, @origin, @destination, @line_items[0])
 
     assert_equal '123', params[:api_key]
     assert_equal '250', params[:length]
@@ -30,29 +35,35 @@ class NewZealandPostTest < Test::Unit::TestCase
     assert_equal '6012', params[:postcode_dest]
   end
 
-  def test_build_request_cyclinder
+  def test_build_request_cylinder
+    params = @carrier.send(:build_tube_request_params, @origin, @destination, @line_items[1])
+
+    assert_equal '123', params[:api_key]
+    assert_equal '850', params[:length]
+    assert_equal '550', params[:diameter]
+    assert_equal '0.3', params[:weight]
+    assert_equal '6011', params[:postcode_src]
+    assert_equal '6012', params[:postcode_dest]
   end
 
-  def test_build_request_multiple_rectangular
-  end
 
-  #def test_parse_response
-    #rate_response = @carrier.send(:parse_rate_response, @origin, @destination, @line_items, @response)
-    #assert_not_nil rate_response
-    #assert_equal 13, rate_response.rates.size
+  def test_parse_response
+    rate_response = @carrier.send(:parse_rate_response, @origin, @destination, @line_items, @response)
+    assert_not_nil rate_response
+    assert_equal 13, rate_response.rates.size
     
-    ## test first element
-    #first_element = rate_response.rates.first
-    #assert_equal 420, first_element.price
-    #assert_equal 'parcel_post', first_element.service_code
-    #assert_equal 'Parcel Post', first_element.service_name
+    # test first element
+    first_element = rate_response.rates.first
+    assert_equal 420, first_element.price
+    assert_equal 'parcel_post', first_element.service_code
+    assert_equal 'Parcel Post', first_element.service_name
     
-    ## test last element
-    #last_element = rate_response.rates.last
-    #assert_equal 400, last_element.price
-    #assert_equal 'parcel_post_po_box_priority', last_element.service_code
-    #assert_equal 'Parcel Post Po Box Priority', last_element.service_name
-  #end
+    # test last element
+    last_element = rate_response.rates.last
+    assert_equal 400, last_element.price
+    assert_equal 'parcel_post_po_box_priority', last_element.service_code
+    assert_equal 'Parcel Post Po Box Priority', last_element.service_name
+  end
 
   def test_response_success_with_successful_response
     xml = REXML::Document.new(@response)
