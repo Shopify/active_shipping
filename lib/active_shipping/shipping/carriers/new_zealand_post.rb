@@ -19,38 +19,14 @@ module ActiveMerchant
       # Override with whatever you need to get the rates
       def find_rates(origin, destination, packages, options = {})
         packages = Array(packages)
-        cost_estimates = {}
+        rate_responses = []
         packages.each do |package|
           request_hash = build_rectangular_request_params(origin, destination, package, options)
           url = URL + '?' + request_hash.to_param
-          @response = ssl_get(url)
-          xml = REXML::Document.new(@response)
-          if response_success?(xml)
-            xml.elements.each('hash/products/product') do |prod|
-              service_code = prod.get_text('service').to_s
-              (cost_estimates[service_code.to_sym] ||= []) << {:cost => prod.get_text('cost').to_s.to_f,
-                :service_group_description => prod.get_text('service-group-description')}
-            end
-          else
-            error_message = response_message(xml)
-            return RateResponse.new(false, error_message, Hash.from_xml(@response), :rates => [], :xml => @response)
-          end
+          response = ssl_get(url)
+          rate_responses << parse_rate_response(origin, destination, package, response, options)
         end
-
-        #if there isnt a shipping option for every package, ignore that
-        #shipping option
-        cost_estimates.delete_if{ |k,v| v.size != packages.size }
-        rate_estimates = []
-        cost_estimates.each do |service_code,costs|
-          cost = costs.inject(0){ |sum, c| sum = sum + c[:cost] }
-          service_group_description = costs.first[:service_group_description]
-          rate_estimates << RateEstimate.new(origin, destination, @@name, service_group_description,
-                                             :total_price => cost,
-                                             :currency => 'NZD',
-                                             :service_code => service_code,
-                                             :packages => packages)
-        end
-        RateResponse.new(true, "Success", Hash.from_xml(@response), :rates => rate_estimates, :xml => @response)
+        combine_rate_responses(rate_responses, packages)
       end
 
       def maximum_weight
@@ -78,27 +54,61 @@ module ActiveMerchant
         }
       end
 
-      #def parse_rate_response(origin, destination, packages, response, options={})
-        #xml = REXML::Document.new(response)
-        #if response_success?(xml)
-          #rate_estimates = []
-          #xml.elements.each('hash/products/product') do |prod|
-            #rate_estimates << RateEstimate.new(origin, 
-                                               #destination,
-                                               #@@name,
-                                               #prod.get_text('service-group-description').to_s,
-                                               #:total_price => prod.get_text('cost').to_s.to_f,
-                                               #:currency => 'NZD',
-                                               #:service_code => prod.get_text('service').to_s,
-                                               #:packages => packages)
-          #end
+      def parse_rate_response(origin, destination, packages, response, options={})
+        xml = REXML::Document.new(response)
+        if response_success?(xml)
+          rate_estimates = []
+          xml.elements.each('hash/products/product') do |prod|
+            rate_estimates << RateEstimate.new(origin, 
+                                               destination,
+                                               @@name,
+                                               prod.get_text('service-group-description').to_s,
+                                               :total_price => prod.get_text('cost').to_s.to_f,
+                                               :currency => 'NZD',
+                                               :service_code => prod.get_text('service').to_s,
+                                               :packages => packages)
+          end
           
-          #RateResponse.new(true, "Success", Hash.from_xml(response), :rates => rate_estimates, :xml => response)
-        #else
-          #error_message = response_message(xml)
-          #RateResponse.new(false, error_message, Hash.from_xml(response), :rates => rate_estimates, :xml => response)
-        #end
-      #end
+          RateResponse.new(true, "Success", Hash.from_xml(response), :rates => rate_estimates, :xml => response)
+        else
+          error_message = response_message(xml)
+          RateResponse.new(false, error_message, Hash.from_xml(response), :rates => rate_estimates, :xml => response)
+        end
+      end
+
+      def combine_rate_responses(rate_responses, packages)
+
+        #if there are any failed responses, return on that response
+        rate_responses.each do |r|
+          return r if !r.success?
+        end
+
+
+        #group rate estimates by delivery type so that we can exclude any incomplete delviery types
+        rate_estimate_delivery_types = {}
+        rate_responses.each do |rr|
+          rr.rate_estimates.each do |re|
+            (rate_estimate_delivery_types[re.service_code] ||= []) << re
+          end
+        end
+        rate_estimate_delivery_types.delete_if{ |type, re| re.size != packages.size }
+
+        #combine cost estimates for remaining packages
+        combined_rate_estimates = []
+        rate_estimate_delivery_types.each do |type, re|
+          total_price = re.sum(&:total_price)
+          r = re.first
+          combined_rate_estimates << RateEstimate.new(r.origin, r.destination, r.carrier,
+                                                     r.service_name,
+                                                     :total_price => total_price,
+                                                     :currency => r.currency,
+                                                     :service_code => r.service_code,
+                                                     :packages => packages)
+        end
+
+        RateResponse.new(true, "Success", {}, :rates => combined_rate_estimates)
+
+      end
 
       def response_success?(xml)
         xml.get_text('hash/status').to_s == 'success'
