@@ -21,7 +21,11 @@ module ActiveMerchant
         packages = Array(packages)
         rate_responses = []
         packages.each do |package|
-          request_hash = build_rectangular_request_params(origin, destination, package, options)
+          if package.tube?
+            request_hash = build_tube_request_params(origin, destination, package, options)
+          else
+            request_hash = build_rectangular_request_params(origin, destination, package, options)
+          end
           url = URL + '?' + request_hash.to_param
           response = ssl_get(url)
           rate_responses << parse_rate_response(origin, destination, package, response, options)
@@ -54,7 +58,18 @@ module ActiveMerchant
         }
       end
 
-      def parse_rate_response(origin, destination, packages, response, options={})
+      def build_tube_request_params(origin, destination,  package, options = {})
+        params = {
+          :postcode_src => origin.postal_code,
+          :postcode_dest => destination.postal_code,
+          :api_key => @options[:api_key],
+          :diameter => "#{package.centimetres(:width) * 10}",
+          :length => "#{package.centimetres(:length) * 10}",
+          :weight => "%.1f" % (package.weight.amount / 1000.0)
+        }
+      end
+
+      def parse_rate_response(origin, destination, package, response, options={})
         xml = REXML::Document.new(response)
         if response_success?(xml)
           rate_estimates = []
@@ -66,7 +81,7 @@ module ActiveMerchant
                                                :total_price => prod.get_text('cost').to_s.to_f,
                                                :currency => 'NZD',
                                                :service_code => prod.get_text('service').to_s,
-                                               :packages => packages)
+                                               :package => package)
           end
           
           RateResponse.new(true, "Success", Hash.from_xml(response), :rates => rate_estimates, :xml => response)
@@ -77,12 +92,10 @@ module ActiveMerchant
       end
 
       def combine_rate_responses(rate_responses, packages)
-
         #if there are any failed responses, return on that response
         rate_responses.each do |r|
           return r if !r.success?
         end
-
 
         #group rate estimates by delivery type so that we can exclude any incomplete delviery types
         rate_estimate_delivery_types = {}
@@ -105,9 +118,7 @@ module ActiveMerchant
                                                      :service_code => r.service_code,
                                                      :packages => packages)
         end
-
         RateResponse.new(true, "Success", {}, :rates => combined_rate_estimates)
-
       end
 
       def response_success?(xml)
