@@ -48,21 +48,22 @@ class NewZealandPostTest < Test::Unit::TestCase
 
 
   def test_parse_response
-    rate_response = @carrier.send(:parse_rate_response, @origin, @destination, @line_items, @response)
+    @carrier.expects(:ssl_get).returns(@response)
+    rate_response = @carrier.find_rates(@origin, @destination, @line_items[0])
     assert_not_nil rate_response
-    assert_equal 13, rate_response.rates.size
+    assert_equal 2, rate_response.rates.size
     
     # test first element
     first_element = rate_response.rates.first
-    assert_equal 420, first_element.price
-    assert_equal 'parcel_post', first_element.service_code
-    assert_equal 'Parcel Post', first_element.service_name
+    assert_equal 550, first_element.price
+    assert_equal 'PCBXT', first_element.service_code
+    assert_equal 'Parcel Post Tracked Zonal', first_element.service_name
     
     # test last element
     last_element = rate_response.rates.last
-    assert_equal 400, last_element.price
-    assert_equal 'parcel_post_po_box_priority', last_element.service_code
-    assert_equal 'Parcel Post Po Box Priority', last_element.service_name
+    assert_equal 540, last_element.price
+    assert_equal 'PCB3C4', last_element.service_code
+    assert_equal 'Parcel Post Tracked', last_element.service_name
   end
 
   def test_response_success_with_successful_response

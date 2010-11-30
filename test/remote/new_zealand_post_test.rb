@@ -49,20 +49,20 @@ class NewZealandPostTest < Test::Unit::TestCase
 
 
     wii_rates, book_rates, combined_rates = {}, {}, {}
-    response_wii.rate_estimates.each{ |r| wii_rates[r.service_name] = r.total_price }
-    response_book.rate_estimates.each{ |r| book_rates[r.service_name] = r.total_price }
-    response_combined.rate_estimates.each{ |r| combined_rates[r.service_name] = r.total_price }
+    response_wii.rate_estimates.each{ |r| wii_rates[r.service_code] = r.total_price }
+    response_book.rate_estimates.each{ |r| book_rates[r.service_code] = r.total_price }
+    response_combined.rate_estimates.each{ |r| combined_rates[r.service_code] = r.total_price }
 
     # every item in combined rates is made up of entries from the other two rates
-    combined_rates.each do |service_name, total_price|
-      assert_equal (wii_rates[service_name] + book_rates[service_name]), total_price
+    combined_rates.each do |service_code, total_price|
+      assert_equal (wii_rates[service_code] + book_rates[service_code]), total_price
     end
 
     # the size of the elements common between wii and book rates is the size of the 
     # combined rates hash.
     assert_equal (wii_rates.keys & book_rates.keys).count, combined_rates.size
 
-    # uncomment this test for visual display of combining rates
+    #uncomment this test for visual display of combining rates
     #puts "\nWii:"
     #response_wii.rate_estimates.each{ |r| puts "\nTotal Price: #{r.total_price}\nService Name: #{r.service_name}" }
     #puts "\nBook:"
