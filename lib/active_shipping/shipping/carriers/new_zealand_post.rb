@@ -74,14 +74,16 @@ module ActiveMerchant
         if response_success?(xml)
           rate_estimates = []
           xml.elements.each('hash/products/product') do |prod|
-            rate_estimates << RateEstimate.new(origin, 
-                                               destination,
-                                               @@name,
-                                               prod.get_text('service-group-description').to_s,
-                                               :total_price => prod.get_text('cost').to_s.to_f,
-                                               :currency => 'NZD',
-                                               :service_code => prod.get_text('service').to_s,
-                                               :package => package)
+            if( prod.get_text('packaging') == 'postage_only' )
+              rate_estimates << RateEstimate.new(origin, 
+                                                 destination,
+                                                 @@name,
+                                                 prod.get_text('service-group-description').to_s,
+                                                 :total_price => prod.get_text('cost').to_s.to_f,
+                                                 :currency => 'NZD',
+                                                 :service_code => prod.get_text('code').to_s,
+                                                 :package => package)
+            end
           end
           
           RateResponse.new(true, "Success", Hash.from_xml(response), :rates => rate_estimates, :xml => response)
