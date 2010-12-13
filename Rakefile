@@ -38,6 +38,7 @@ task :gemspec do
   gemspec.validate
 end
 
+desc "Update common files from active_merchant directory"
 task :update_common do 
   STDERR.puts "Updating common include from ../active_merchant. Please make sure this is up-to-date"
   system("diff -u lib/active_merchant/common.rb ../active_merchant/lib/active_merchant/common.rb | patch -p0")
