@@ -70,7 +70,7 @@ module ActiveMerchant #:nodoc:
       end
       
       def country_code(format = :alpha2)
-        @country.nil? ? nil : @country.code(format).first.value
+        @country.nil? ? nil : @country.code(format).value
       end
       
       def residential?; (@address_type == 'residential') end
