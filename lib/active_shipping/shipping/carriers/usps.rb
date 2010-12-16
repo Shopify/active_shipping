@@ -242,7 +242,7 @@ module ActiveMerchant
       # package.options[:mail_type] -- one of [:package, :postcard, :matter_for_the_blind, :envelope].
       #                                 Defaults to :package.
       def build_world_rate_request(packages, destination_country)
-        country = COUNTRY_NAME_CONVERSIONS[destination_country.code(:alpha2).first.value] || destination_country.name
+        country = COUNTRY_NAME_CONVERSIONS[destination_country.code(:alpha2).value] || destination_country.name
         request = XmlNode.new('IntlRateRequest', :USERID => @options[:login]) do |rate_request|
           packages.each_index do |id|
             p = packages[id]
