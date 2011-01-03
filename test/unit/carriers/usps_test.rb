@@ -136,6 +136,42 @@ class USPSTest < Test::Unit::TestCase
     assert Package.new((70 * 16) - 0.01, [5,5,5], :units => :imperial).mass < @carrier.maximum_weight
   end
   
+  def test_updated_rate_name_format_with_unescaped_html
+    mock_response = xml_fixture('usps/2011_rates_response')
+    @carrier.expects(:commit).returns(mock_response)
+    rates_response = @carrier.find_rates(
+      @locations[:beverly_hills],
+      @locations[:ottawa],
+      @packages[:book],
+      :test => true
+    )
+    rate_names = [
+      'USPS Express Mail',
+      'USPS Express Mail Flat Rate Envelope',
+      'USPS Express Mail Flat Rate Envelope Hold For Pickup',
+      'USPS Express Mail Hold For Pickup',
+      'USPS Express Mail Legal Flat Rate Envelope',
+      'USPS Express Mail Legal Flat Rate Envelope Hold For Pickup',
+      'USPS Express Mail Sunday/Holiday Delivery',
+      'USPS Express Mail Sunday/Holiday Delivery Flat Rate Envelope',
+      'USPS Express Mail Sunday/Holiday Delivery Legal Flat Rate Envelope',
+      'USPS Library Mail',
+      'USPS Media Mail',
+      'USPS Parcel Post',
+      'USPS Priority Mail',
+      'USPS Priority Mail Flat Rate Envelope',
+      'USPS Priority Mail Gift Card Flat Rate Envelope',
+      'USPS Priority Mail Large Flat Rate Box',
+      'USPS Priority Mail Legal Flat Rate Envelope',
+      'USPS Priority Mail Medium Flat Rate Box',
+      'USPS Priority Mail Padded Flat Rate Envelope',
+      'USPS Priority Mail Small Flat Rate Box',
+      'USPS Priority Mail Small Flat Rate Envelope',
+      'USPS Priority Mail Window Flat Rate Envelope'
+    ]
+    assert_equal rate_names, rates_response.rates.collect(&:service_name).sort
+  end
+  
   private
   
   def build_service_node(options = {})
