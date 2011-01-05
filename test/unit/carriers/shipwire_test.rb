@@ -127,4 +127,34 @@ class ShipwireTest < Test::Unit::TestCase
     @carrier.expects(:ssl_post).returns(xml_fixture('shipwire/invalid_credentials_response'))
     assert !@carrier.valid_credentials?
   end
+  
+  def test_rate_request_includes_address_name_if_provided
+    name = CGI.escape("<Name>Bob Bobsen</Name>")
+    @carrier.expects(:ssl_post).with(anything, includes(name)).returns(xml_fixture('shipwire/rates_response'))
+    
+    response = @carrier.find_rates(
+                 @locations[:ottawa],
+                 @locations[:new_york_with_name],
+                 @packages.values_at(:book, :wii),
+                 :order_id => '#1000',
+                 :items => @items
+               )
+
+    assert response.success?
+  end
+  
+  def test_rate_request_does_not_include_address_name_element_if_not_provided
+    name = CGI.escape("<Name>")
+    @carrier.expects(:ssl_post).with(anything, Not(regexp_matches(Regexp.new(name)))).returns(xml_fixture('shipwire/rates_response'))
+    
+    response = @carrier.find_rates(
+                 @locations[:ottawa],
+                 @locations[:new_york],
+                 @packages.values_at(:book, :wii),
+                 :order_id => '#1000',
+                 :items => @items
+               )
+
+    assert response.success?
+  end
 end
