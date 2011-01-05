@@ -43,4 +43,14 @@ class LocationTest < Test::Unit::TestCase
     expected = "110 Laurier Avenue West\nOttawa, ON, K1P 1J1\nCanada\nPhone: 1-613-580-2400\nFax: 1-613-580-2495"
     assert_equal expected, @locations[:ottawa].inspect
   end
+  
+  def test_includes_name
+    location = Location.from(:name => "Bob Bobsen")
+    assert_equal "Bob Bobsen", location.name
+  end
+  
+  def test_name_is_nil_if_not_provided
+    location = Location.from({})
+    assert_nil location.name
+  end
 end

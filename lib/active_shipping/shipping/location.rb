@@ -7,6 +7,7 @@ module ActiveMerchant #:nodoc:
                   :postal_code,
                   :province,
                   :city,
+                  :name,
                   :address1,
                   :address2,
                   :address3,
@@ -27,6 +28,7 @@ module ActiveMerchant #:nodoc:
         @postal_code = options[:postal_code] || options[:postal] || options[:zip]
         @province = options[:province] || options[:state] || options[:territory] || options[:region]
         @city = options[:city]
+        @name = options[:name]
         @address1 = options[:address1]
         @address2 = options[:address2]
         @address3 = options[:address3]
@@ -39,6 +41,7 @@ module ActiveMerchant #:nodoc:
       def self.from(object, options={})
         return object if object.is_a? ActiveMerchant::Shipping::Location
         attr_mappings = {
+          :name => [:name],
           :country => [:country_code, :country],
           :postal_code => [:postal_code, :zip, :postal],
           :province => [:province_code, :state_code, :territory_code, :region_code, :province, :state, :territory, :region],
@@ -82,7 +85,7 @@ module ActiveMerchant #:nodoc:
       
       def prettyprint
         chunks = []
-        chunks << [@address1,@address2,@address3].reject {|e| e.blank?}.join("\n")
+        chunks << [@name, @address1,@address2,@address3].reject {|e| e.blank?}.join("\n")
         chunks << [@city,@province,@postal_code].reject {|e| e.blank?}.join(', ')
         chunks << @country
         chunks.reject {|e| e.blank?}.join("\n")
