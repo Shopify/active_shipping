@@ -161,8 +161,16 @@ module ActiveMerchant
                                       :state => 'NY',
                                       :address1 => '780 3rd Avenue',
                                       :address2 => 'Suite  2601',
-                                      :zip => '10017')
+                                      :zip => '10017'),
                                       
+        :new_york_with_name => Location.new(
+                                      :name => "Bob Bobsen",
+                                      :country => 'US',
+                                      :city => 'New York',
+                                      :state => 'NY',
+                                      :address1 => '780 3rd Avenue',
+                                      :address2 => 'Suite  2601',
+                                      :zip => '10017')
       }
       
     end
