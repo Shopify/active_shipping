@@ -136,12 +136,12 @@ class USPSTest < Test::Unit::TestCase
     assert Package.new((70 * 16) - 0.01, [5,5,5], :units => :imperial).mass < @carrier.maximum_weight
   end
   
-  def test_updated_rate_name_format_with_unescaped_html
-    mock_response = xml_fixture('usps/2011_rates_response')
+  def test_updated_domestic_rate_name_format_with_unescaped_html
+    mock_response = xml_fixture('usps/2011_domestic_rates_response')
     @carrier.expects(:commit).returns(mock_response)
     rates_response = @carrier.find_rates(
       @locations[:beverly_hills],
-      @locations[:ottawa],
+      @locations[:new_york],
       @packages[:book],
       :test => true
     )
@@ -168,6 +168,32 @@ class USPSTest < Test::Unit::TestCase
       'USPS Priority Mail Small Flat Rate Box',
       'USPS Priority Mail Small Flat Rate Envelope',
       'USPS Priority Mail Window Flat Rate Envelope'
+    ]
+    assert_equal rate_names, rates_response.rates.collect(&:service_name).sort
+  end
+  
+  def test_updated_international_rate_name_format_with_trailing_asterisks
+    mock_response = xml_fixture('usps/2011_international_rates_response')
+    @carrier.expects(:commit).returns(mock_response)
+    rates_response = @carrier.find_rates(
+      @locations[:beverly_hills],
+      @locations[:ottawa],
+      @packages[:all_imperial],
+      :test => true
+    )
+    rate_names = [
+      "USPS Express Mail International",
+      "USPS First-Class Mail International Large Envelope",
+      "USPS First-Class Mail International Package",
+      "USPS Global Express Guaranteed (GXG)",
+      "USPS Global Express Guaranteed Non-Document Non-Rectangular",
+      "USPS Global Express Guaranteed Non-Document Rectangular",
+      "USPS Priority Mail International",
+      "USPS Priority Mail International DVD Flat Rate Box",
+      "USPS Priority Mail International Large Flat Rate Box",
+      "USPS Priority Mail International Large Video Flat Rate Box",
+      "USPS Priority Mail International Medium Flat Rate Box",
+      "USPS Priority Mail International Small Flat Rate Box"
     ]
     assert_equal rate_names, rates_response.rates.collect(&:service_name).sort
   end
