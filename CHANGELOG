@@ -1,3 +1,5 @@
+* Include address name for rate requests to Shipwire if provided [dennis]
+* Add support for address name to Location [dennis]
 * Add fix for updated USPS API to strip any encoded html and trailing asterisks from rate names [dennis]
 * Add carrier CanadaPost [william]
 * Update FedEx rates and added ability to auto-generate rate name from code that gets returned by FedEx [dennis]

@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["James MacAulay", "Tobi Lutke", "Cody Fauser", "Jimmy Baker"]
   s.email       = ["james@shopify.com"]
-  s.version     = '0.9.5'
+  s.version     = '0.9.6'
   s.homepage    = "http://github.com/shopify/active_shipping"
   s.summary     = "Shipping API extension for Active Merchant"
   s.description = "Get rates and tracking info from various shipping carriers."
