@@ -74,7 +74,11 @@ module ActiveMerchant
 
       def add_address(xml, destination)
         xml.tag! 'AddressInfo', :type => 'Ship' do
-          xml.tag! 'Name', destination.name unless destination.name.blank?
+          if destination.name.present?
+            xml.tag! 'Name' do
+              xml.tag! 'Full', destination.name
+            end
+          end
           xml.tag! 'Address1', destination.address1
           xml.tag! 'Address2', destination.address2 unless destination.address2.blank?
           xml.tag! 'Address3', destination.address3 unless destination.address3.blank?
