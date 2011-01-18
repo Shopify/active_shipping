@@ -211,8 +211,7 @@ class USPSTest < Test::Unit::TestCase
       service_node << XmlNode.new('MailType', options[:mail_type] || "Package")
       service_node << XmlNode.new('Postage', options[:postage] || "3.76")
       service_node << XmlNode.new('Ounces', options[:ounces] || "9")
-      service_node << XmlNode.new('MaxDimensions', options[:max_dimensions] || 
-          "Max. length 24\", Max. length, height, depth combined 36\"")
+      service_node << XmlNode.new('MaxDimensions', options[:max_dimensions].dup || "Max. length 24\", Max. length, height, depth combined 36\"")
     end.to_xml_element
   end
   

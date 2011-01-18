@@ -97,6 +97,10 @@ class CanadaPostTest < Test::Unit::TestCase
     assert_nil @carrier.send(:date_for, nil)
   end
   
+  def test_date_for_invalid_string_in_ruby_19
+    assert_nil @carrier.send(:date_for, "Up to 2 weeks") if RUBY_VERSION.include?('1.9')
+  end
+  
   def test_build_line_items
     xml_line_items = @carrier.send(:build_line_items, @line_items)
     assert_instance_of XmlNode, xml_line_items
