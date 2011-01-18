@@ -206,8 +206,9 @@ module ActiveMerchant
       end
       
       def date_for(string)
-        return if !string
-        return Time.parse(string)
+        string && Time.parse(string)
+      rescue ArgumentError
+        nil
       end
 
       def response_success?(xml)
