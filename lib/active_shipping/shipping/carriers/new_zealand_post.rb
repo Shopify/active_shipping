@@ -13,7 +13,7 @@ module ActiveMerchant
 
       # Override to return required keys in options hash for initialize method.
       def requirements
-        [:api_key]
+        [:key]
       end
 
       # Override with whatever you need to get the rates
@@ -50,7 +50,7 @@ module ActiveMerchant
         params = {
           :postcode_src => origin.postal_code,
           :postcode_dest => destination.postal_code,
-          :api_key => @options[:api_key],
+          :api_key => @options[:key],
           :height => "#{package.centimetres(:height) * 10}",
           :thickness => "#{package.centimetres(:width) * 10}",
           :length => "#{package.centimetres(:length) * 10}",
@@ -62,7 +62,7 @@ module ActiveMerchant
         params = {
           :postcode_src => origin.postal_code,
           :postcode_dest => destination.postal_code,
-          :api_key => @options[:api_key],
+          :api_key => @options[:key],
           :diameter => "#{package.centimetres(:width) * 10}",
           :length => "#{package.centimetres(:length) * 10}",
           :weight => "%.1f" % (package.weight.amount / 1000.0)
