@@ -3,9 +3,7 @@ require 'test_helper'
 class NewZealandPostTest < Test::Unit::TestCase
 
   def setup
-    login = fixtures(:new_zealand_post)
-
-    @carrier  = NewZealandPost.new(login)
+    @carrier  = NewZealandPost.new(:key => '123')
 
     @response = xml_fixture('newzealandpost/example_response')
     @bad_response = xml_fixture('newzealandpost/example_response_error')
