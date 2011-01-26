@@ -74,7 +74,8 @@ module ActiveMerchant
         :poster => Package.new(100, [93,10], :cylinder => true),
         :small_half_pound => Package.new(8, [1,1,1], :units => :imperial),
         :big_half_pound => Package.new((16 * 50), [24,24,36], :units => :imperial),
-        :chocolate_stuff => Package.new(80, [2,6,12], :units => :imperial)
+        :chocolate_stuff => Package.new(80, [2,6,12], :units => :imperial),
+        :shipping_container => Package.new(2200000, [2440, 2600, 6058], :description => '20 ft Standard Container', :units => :metric)
       }
       
       @@locations = {
@@ -162,7 +163,6 @@ module ActiveMerchant
                                       :address1 => '780 3rd Avenue',
                                       :address2 => 'Suite  2601',
                                       :zip => '10017'),
-                                      
         :new_york_with_name => Location.new(
                                       :name => "Bob Bobsen",
                                       :country => 'US',
@@ -170,7 +170,13 @@ module ActiveMerchant
                                       :state => 'NY',
                                       :address1 => '780 3rd Avenue',
                                       :address2 => 'Suite  2601',
-                                      :zip => '10017')
+                                      :zip => '10017'),
+        :wellington => Location.new(
+                                      :country => 'NZ',
+                                      :city => 'Wellington',
+                                      :address1 => '85 Victoria St',
+                                      :address2 => 'Te Aro',
+                                      :postal_code => '6011')
       }
       
     end
