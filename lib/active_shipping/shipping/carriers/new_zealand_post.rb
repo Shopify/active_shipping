@@ -7,7 +7,8 @@ module ActiveMerchant
       # class NewZealandPostRateResponse < RateResponse
       # end
       
-      @@name = "NewZealandPost"
+      cattr_reader :name
+      @@name = "New Zealand Post"
 
       URL = "http://workshop.nzpost.co.nz/api/v1/rate.xml"
 
