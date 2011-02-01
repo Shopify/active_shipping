@@ -1,5 +1,3 @@
-require 'ruby-debug'
-
 module ActiveMerchant
   module Shipping
     class NewZealandPost < Carrier
