@@ -122,7 +122,7 @@ module ActiveMerchant
             request << XmlNode.new('merchantCPCID', @options[:login])
             request << XmlNode.new('fromPostalCode', origin.postal_code)
             request << XmlNode.new('turnAroundTime', options[:turn_around_time] ? options[:turn_around_time] : DEFAULT_TURN_AROUND_TIME)
-            request << XmlNode.new('itemsPrice', line_items.sum(&:value))
+            request << XmlNode.new('itemsPrice', dollar_amount(line_items.sum(&:value)))
 
             #line items
             request << build_line_items(line_items)
@@ -249,6 +249,10 @@ module ActiveMerchant
         end
         
         xml_line_items
+      end
+      
+      def dollar_amount(cents)
+        "%0.2f" % (cents / 100.0)
       end
     end
   end
