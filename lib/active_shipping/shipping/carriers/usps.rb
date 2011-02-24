@@ -250,7 +250,9 @@ module ActiveMerchant
               package << XmlNode.new('Pounds', 0)
               package << XmlNode.new('Ounces', [p.ounces,1].max.ceil) #takes an integer for some reason, must be rounded UP
               package << XmlNode.new('MailType', MAIL_TYPES[p.options[:mail_type]] || 'Package')
-              package << XmlNode.new('ValueOfContents', p.value / 100.0) if p.value && p.currency == 'USD'
+              if p.value && (p.value > 0) && (p.currency == 'USD')
+                package << XmlNode.new('ValueOfContents', p.value / 100.0)
+              end
               package << XmlNode.new('Country') do |node|
                 node.cdata = country
               end
