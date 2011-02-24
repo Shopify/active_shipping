@@ -16,6 +16,27 @@ class USPSTest < Test::Unit::TestCase
   # TODO: test_build_us_rate_request
   # TODO: test_build_world_rate_request
   
+  def test_build_world_rate_request
+    expected_request = "<IntlRateRequest USERID='login'><Package ID='0'><Pounds>0</Pounds><Ounces>9</Ounces><MailType>Package</MailType><Country><![CDATA[Canada]]></Country></Package></IntlRateRequest>"
+    @carrier.expects(:commit).with(:world_rates, URI.encode(expected_request), false).returns(expected_request)
+    @carrier.expects(:parse_rate_response)
+    @carrier.find_rates(@locations[:beverly_hills], @locations[:ottawa], @packages[:book], :test => true)
+  end
+  
+  def test_build_world_rate_request_with_package_value
+    expected_request = "<IntlRateRequest USERID='login'><Package ID='0'><Pounds>0</Pounds><Ounces>120</Ounces><MailType>Package</MailType><ValueOfContents>269.99</ValueOfContents><Country><![CDATA[Canada]]></Country></Package></IntlRateRequest>"
+    @carrier.expects(:commit).with(:world_rates, URI.encode(expected_request), false).returns(expected_request)
+    @carrier.expects(:parse_rate_response)
+    @carrier.find_rates(@locations[:beverly_hills], @locations[:ottawa], @packages[:american_wii], :test => true)
+  end
+  
+  def test_build_world_rate_request_does_not_send_zero_values
+    expected_request = "<IntlRateRequest USERID='login'><Package ID='0'><Pounds>0</Pounds><Ounces>120</Ounces><MailType>Package</MailType><Country><![CDATA[Canada]]></Country></Package></IntlRateRequest>"
+    @carrier.expects(:commit).with(:world_rates, URI.encode(expected_request), false).returns(expected_request)
+    @carrier.expects(:parse_rate_response)
+    @carrier.find_rates(@locations[:beverly_hills], @locations[:ottawa], @packages[:worthless_wii], :test => true)
+  end
+  
   def test_initialize_options_requirements
     assert_raises ArgumentError do USPS.new end
     assert_nothing_raised { USPS.new(:login => 'blah')}

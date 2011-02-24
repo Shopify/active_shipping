@@ -71,6 +71,8 @@ module ActiveMerchant
         :all_metric => Package.new(1000, [2,20,40]),
         :book => Package.new(250, [14, 19, 2]),
         :wii => Package.new((7.5 * 16), [15, 10, 4.5], :units => :imperial, :value => 269.99, :currency => 'GBP'),
+        :american_wii => Package.new((7.5 * 16), [15, 10, 4.5], :units => :imperial, :value => 269.99, :currency => 'USD'),
+        :worthless_wii => Package.new((7.5 * 16), [15, 10, 4.5], :units => :imperial, :value => 0.0, :currency => 'USD'),
         :poster => Package.new(100, [93,10], :cylinder => true),
         :small_half_pound => Package.new(8, [1,1,1], :units => :imperial),
         :big_half_pound => Package.new((16 * 50), [24,24,36], :units => :imperial),
