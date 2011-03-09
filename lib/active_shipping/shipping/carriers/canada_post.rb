@@ -79,6 +79,11 @@ module ActiveMerchant
        '-50000' => "Internal problem - Please contact Sell Online Help Desk"
       }
       
+      NON_ISO_COUNTRY_NAMES = {
+        'Russian Federation' => 'Russia'
+      }
+
+
       def requirements
         [:login]
       end
@@ -131,7 +136,7 @@ module ActiveMerchant
             #NOTE: These tags MUST be after line items
             request << XmlNode.new('city', destination.city)
             request << XmlNode.new('provOrState', destination.province)
-            request << XmlNode.new('country', destination.country)
+            request << XmlNode.new('country', handle_non_iso_country_names(destination.country))
             request << XmlNode.new('postalCode', destination.postal_code)
           end
         end
@@ -253,6 +258,10 @@ module ActiveMerchant
       
       def dollar_amount(cents)
         "%0.2f" % (cents / 100.0)
+      end
+      
+      def handle_non_iso_country_names(country)
+        NON_ISO_COUNTRY_NAMES[country.to_s] || country
       end
     end
   end

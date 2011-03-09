@@ -108,4 +108,11 @@ class CanadaPostTest < Test::Unit::TestCase
     xml_string = xml_line_items.to_s
     assert_match /a box full of stuff/, xml_string
   end
+  
+  def test_non_iso_country_names
+    @destination[:country] = 'RU'
+    
+    @carrier.expects(:ssl_post).with(anything, regexp_matches(%r{<country>Russia</country>})).returns(@response)
+    rate_estimates = @carrier.find_rates(@origin, @destination, @line_items)
+  end
 end
