@@ -144,8 +144,6 @@
       <v3:EventType>OC</v3:EventType>
       <v3:EventDescription>Shipment information sent to FedEx</v3:EventDescription>
       <v3:Address>
-        <v3:PostalCode>37211</v3:PostalCode>
-        <v3:CountryCode>US</v3:CountryCode>
         <v3:Residential>false</v3:Residential>
       </v3:Address>
     </v3:Events>

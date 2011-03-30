@@ -33,13 +33,21 @@ class FedExTest < Test::Unit::TestCase
   def test_find_tracking_info_should_parse_response_into_correct_number_of_shipment_events
     @carrier.expects(:commit).returns(xml_fixture('fedex/tracking_response'))
     response = @carrier.find_tracking_info('077973360403984', :test => true)
-    assert_equal 7, response.shipment_events.size
+    assert_equal 6, response.shipment_events.size
   end
   
   def test_find_tracking_info_should_return_shipment_events_in_ascending_chronological_order
     @carrier.expects(:commit).returns(xml_fixture('fedex/tracking_response'))
     response = @carrier.find_tracking_info('077973360403984', :test => true)
     assert_equal response.shipment_events.map(&:time).sort, response.shipment_events.map(&:time)
+  end
+  
+  def test_find_tracking_info_should_not_include_events_without_an_address
+    @carrier.expects(:commit).returns(xml_fixture('fedex/tracking_response'))
+    assert_nothing_raised do
+      response = @carrier.find_tracking_info('077973360403984', :test => true)
+      assert_nil response.shipment_events.find{|event| event.name == 'Shipment information sent to FedEx' }
+    end
   end
   
   def test_building_request_and_parsing_response
