@@ -6,35 +6,23 @@ class USPSTest < Test::Unit::TestCase
     @packages  = TestFixtures.packages
     @locations = TestFixtures.locations
     @carrier   = USPS.new(:login => 'login')
-    @international_rate_responses = {
-      :vanilla => xml_fixture('usps/beverly_hills_to_ottawa_book_rate_response')
-    }
-
   end
   
   # TODO: test_parse_domestic_rate_response
   # TODO: test_build_us_rate_request
-  # TODO: test_build_world_rate_request
   
   def test_build_world_rate_request
-    expected_request = "<IntlRateRequest USERID='login'><Package ID='0'><Pounds>0</Pounds><Ounces>9</Ounces><MailType>Package</MailType><Country><![CDATA[Canada]]></Country></Package></IntlRateRequest>"
+    expected_request = "<IntlRateV2Request USERID='login'><Package ID='0'><Pounds>0</Pounds><Ounces>9</Ounces><MailType>Package</MailType><GXG><POBoxFlag>N</POBoxFlag><GiftFlag>N</GiftFlag></GXG><ValueOfContents>0.0</ValueOfContents><Country><![CDATA[Canada]]></Country><Container>RECTANGULAR</Container><Size>REGULAR</Size><Width>5.51181102362205</Width><Length>7.48031496062992</Length><Height>0.78740157480315</Height><Girth>12.5984251968504</Girth></Package></IntlRateV2Request>"
     @carrier.expects(:commit).with(:world_rates, URI.encode(expected_request), false).returns(expected_request)
     @carrier.expects(:parse_rate_response)
     @carrier.find_rates(@locations[:beverly_hills], @locations[:ottawa], @packages[:book], :test => true)
   end
   
   def test_build_world_rate_request_with_package_value
-    expected_request = "<IntlRateRequest USERID='login'><Package ID='0'><Pounds>0</Pounds><Ounces>120</Ounces><MailType>Package</MailType><ValueOfContents>269.99</ValueOfContents><Country><![CDATA[Canada]]></Country></Package></IntlRateRequest>"
+    expected_request = "<IntlRateV2Request USERID='login'><Package ID='0'><Pounds>0</Pounds><Ounces>120</Ounces><MailType>Package</MailType><GXG><POBoxFlag>N</POBoxFlag><GiftFlag>N</GiftFlag></GXG><ValueOfContents>269.99</ValueOfContents><Country><![CDATA[Canada]]></Country><Container>RECTANGULAR</Container><Size>REGULAR</Size><Width>10</Width><Length>15</Length><Height>4.5</Height><Girth>29.0</Girth></Package></IntlRateV2Request>"
     @carrier.expects(:commit).with(:world_rates, URI.encode(expected_request), false).returns(expected_request)
     @carrier.expects(:parse_rate_response)
     @carrier.find_rates(@locations[:beverly_hills], @locations[:ottawa], @packages[:american_wii], :test => true)
-  end
-  
-  def test_build_world_rate_request_does_not_send_zero_values
-    expected_request = "<IntlRateRequest USERID='login'><Package ID='0'><Pounds>0</Pounds><Ounces>120</Ounces><MailType>Package</MailType><Country><![CDATA[Canada]]></Country></Package></IntlRateRequest>"
-    @carrier.expects(:commit).with(:world_rates, URI.encode(expected_request), false).returns(expected_request)
-    @carrier.expects(:parse_rate_response)
-    @carrier.find_rates(@locations[:beverly_hills], @locations[:ottawa], @packages[:worthless_wii], :test => true)
   end
   
   def test_initialize_options_requirements
@@ -43,14 +31,14 @@ class USPSTest < Test::Unit::TestCase
   end
 
   def test_parse_international_rate_response
-    fixture_xml = @international_rate_responses[:vanilla]
+    fixture_xml = xml_fixture('usps/beverly_hills_to_ottawa_american_wii_rate_response')
     @carrier.expects(:commit).returns(fixture_xml)
     
     response = begin
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
         @locations[:ottawa],
-        @packages[:book],
+        @packages[:american_wii],
         :test => true
       )
     rescue ResponseError => e
@@ -64,14 +52,15 @@ class USPSTest < Test::Unit::TestCase
     assert_equal expected_xml_hash, actual_xml_hash
     
     assert_not_equal [],response.rates
-    assert_equal response.rates.sort_by(&:price), response.rates
-    assert_equal ["1", "2", "3", "4", "6", "7", "9"], response.rates.map(&:service_code).sort
     
-    ordered_service_names = ["USPS Express Mail International (EMS)", "USPS First-Class Mail International", "USPS Global Express Guaranteed", "USPS Global Express Guaranteed Non-Document Non-Rectangular", "USPS Global Express Guaranteed Non-Document Rectangular", "USPS Priority Mail International", "USPS Priority Mail International Flat Rate Box"]
+    assert_equal [3420, 5835, 8525, 8525], response.rates.map(&:price)
+    assert_equal [1, 2, 4, 12], response.rates.map(&:service_code).map(&:to_i).sort
+    
+    ordered_service_names = ["USPS Express Mail International",
+      "USPS GXG Envelopes",
+      "USPS Global Express Guaranteed (GXG)",
+      "USPS Priority Mail International"]
     assert_equal ordered_service_names, response.rates.map(&:service_name).sort
-    
-    
-    assert_equal [376, 1600, 2300, 2325, 4100, 4100, 4100], response.rates.map(&:total_price)
   end
   
   def test_parse_max_dimension_sentences
@@ -134,23 +123,6 @@ class USPSTest < Test::Unit::TestCase
     assert request =~ /\>12345\</
   end
   
-  def test_xml_logging_to_file
-    mock_response = @international_rate_responses[:vanilla]
-    @carrier.expects(:commit).times(2).returns(mock_response)
-    @carrier.find_rates(
-      @locations[:beverly_hills],
-      @locations[:ottawa],
-      @packages[:book],
-      :test => true
-    )
-    @carrier.find_rates(
-      @locations[:beverly_hills],
-      @locations[:ottawa],
-      @packages[:book],
-      :test => true
-    )
-  end
-  
   def test_maximum_weight
     assert Package.new(70 * 16, [5,5,5], :units => :imperial).mass == @carrier.maximum_weight
     assert Package.new((70 * 16) + 0.01, [5,5,5], :units => :imperial).mass > @carrier.maximum_weight
@@ -158,7 +130,7 @@ class USPSTest < Test::Unit::TestCase
   end
   
   def test_updated_domestic_rate_name_format_with_unescaped_html
-    mock_response = xml_fixture('usps/2011_domestic_rates_response')
+    mock_response = xml_fixture('usps/beverly_hills_to_new_york_book_rate_response')
     @carrier.expects(:commit).returns(mock_response)
     rates_response = @carrier.find_rates(
       @locations[:beverly_hills],
@@ -176,6 +148,8 @@ class USPSTest < Test::Unit::TestCase
       'USPS Express Mail Sunday/Holiday Delivery',
       'USPS Express Mail Sunday/Holiday Delivery Flat Rate Envelope',
       'USPS Express Mail Sunday/Holiday Delivery Legal Flat Rate Envelope',
+      'USPS First-Class Mail Large Envelope',
+      'USPS First-Class Mail Package',
       'USPS Library Mail',
       'USPS Media Mail',
       'USPS Parcel Post',
@@ -189,32 +163,6 @@ class USPSTest < Test::Unit::TestCase
       'USPS Priority Mail Small Flat Rate Box',
       'USPS Priority Mail Small Flat Rate Envelope',
       'USPS Priority Mail Window Flat Rate Envelope'
-    ]
-    assert_equal rate_names, rates_response.rates.collect(&:service_name).sort
-  end
-  
-  def test_updated_international_rate_name_format_with_trailing_asterisks
-    mock_response = xml_fixture('usps/2011_international_rates_response')
-    @carrier.expects(:commit).returns(mock_response)
-    rates_response = @carrier.find_rates(
-      @locations[:beverly_hills],
-      @locations[:ottawa],
-      @packages[:all_imperial],
-      :test => true
-    )
-    rate_names = [
-      "USPS Express Mail International",
-      "USPS First-Class Mail International Large Envelope",
-      "USPS First-Class Mail International Package",
-      "USPS Global Express Guaranteed (GXG)",
-      "USPS Global Express Guaranteed Non-Document Non-Rectangular",
-      "USPS Global Express Guaranteed Non-Document Rectangular",
-      "USPS Priority Mail International",
-      "USPS Priority Mail International DVD Flat Rate Box",
-      "USPS Priority Mail International Large Flat Rate Box",
-      "USPS Priority Mail International Large Video Flat Rate Box",
-      "USPS Priority Mail International Medium Flat Rate Box",
-      "USPS Priority Mail International Small Flat Rate Box"
     ]
     assert_equal rate_names, rates_response.rates.collect(&:service_name).sort
   end
@@ -237,8 +185,8 @@ class USPSTest < Test::Unit::TestCase
   end
   
   def build_service_hash(options = {})
-    {"Pounds"=> options[:pounds] || "0",                                                                         # 8
-         "SvcCommitments"=> options[:svc_commitments] || "Varies",                                                            
+    {"Pounds"=> options[:pounds] || "0",
+         "SvcCommitments"=> options[:svc_commitments] || "Varies",
          "Country"=> options[:country] || "CANADA",
          "ID"=> options[:id] || "3",
          "MaxWeight"=> options[:max_weight] || "64",

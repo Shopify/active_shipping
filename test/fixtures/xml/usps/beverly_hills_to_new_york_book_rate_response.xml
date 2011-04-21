@@ -1,25 +1,24 @@
 <?xml version="1.0"?>
-<RateV3Response>
+<RateV4Response>
   <Package ID="0">
-    <ZipOrigination>83843</ZipOrigination>
-    <ZipDestination>70001</ZipDestination>
+    <ZipOrigination>90210</ZipOrigination>
+    <ZipDestination>10017</ZipDestination>
     <Pounds>0</Pounds>
-    <Ounces>32.0</Ounces>
-    <Container/>
+    <Ounces>8.8</Ounces>
     <Size>REGULAR</Size>
-    <Machinable>FALSE</Machinable>
+    <Machinable>TRUE</Machinable>
     <Zone>8</Zone>
     <Postage CLASSID="3">
       <MailService>Express Mail&amp;lt;sup&amp;gt;&amp;amp;reg;&amp;lt;/sup&amp;gt;</MailService>
-      <Rate>34.70</Rate>
+      <Rate>31.60</Rate>
     </Postage>
     <Postage CLASSID="2">
       <MailService>Express Mail&amp;lt;sup&amp;gt;&amp;amp;reg;&amp;lt;/sup&amp;gt; Hold For Pickup</MailService>
-      <Rate>34.70</Rate>
+      <Rate>31.60</Rate>
     </Postage>
     <Postage CLASSID="23">
       <MailService>Express Mail&amp;lt;sup&amp;gt;&amp;amp;reg;&amp;lt;/sup&amp;gt; Sunday/Holiday Delivery</MailService>
-      <Rate>47.20</Rate>
+      <Rate>44.10</Rate>
     </Postage>
     <Postage CLASSID="13">
       <MailService>Express Mail&amp;lt;sup&amp;gt;&amp;amp;reg;&amp;lt;/sup&amp;gt; Flat Rate Envelope</MailService>
@@ -47,7 +46,7 @@
     </Postage>
     <Postage CLASSID="1">
       <MailService>Priority Mail&amp;lt;sup&amp;gt;&amp;amp;reg;&amp;lt;/sup&amp;gt;</MailService>
-      <Rate>10.20</Rate>
+      <Rate>5.95</Rate>
     </Postage>
     <Postage CLASSID="22">
       <MailService>Priority Mail&amp;lt;sup&amp;gt;&amp;amp;reg;&amp;lt;/sup&amp;gt; Large Flat Rate Box</MailService>
@@ -85,17 +84,25 @@
       <MailService>Priority Mail&amp;lt;sup&amp;gt;&amp;amp;reg;&amp;lt;/sup&amp;gt; Window Flat Rate Envelope</MailService>
       <Rate>4.95</Rate>
     </Postage>
+    <Postage CLASSID="0">
+      <MailService>First-Class Mail&amp;lt;sup&amp;gt;&amp;amp;reg;&amp;lt;/sup&amp;gt; Package</MailService>
+      <Rate>2.73</Rate>
+    </Postage>
+    <Postage CLASSID="0">
+      <MailService>First-Class Mail&amp;lt;sup&amp;gt;&amp;amp;reg;&amp;lt;/sup&amp;gt; Large Envelope</MailService>
+      <Rate>2.48</Rate>
+    </Postage>
     <Postage CLASSID="4">
       <MailService>Parcel Post&amp;lt;sup&amp;gt;&amp;amp;reg;&amp;lt;/sup&amp;gt;</MailService>
-      <Rate>8.09</Rate>
+      <Rate>5.41</Rate>
     </Postage>
     <Postage CLASSID="6">
       <MailService>Media Mail&amp;lt;sup&amp;gt;&amp;amp;reg;&amp;lt;/sup&amp;gt;</MailService>
-      <Rate>2.77</Rate>
+      <Rate>2.41</Rate>
     </Postage>
     <Postage CLASSID="7">
       <MailService>Library Mail</MailService>
-      <Rate>2.63</Rate>
+      <Rate>2.29</Rate>
     </Postage>
   </Package>
-</RateV3Response>
+</RateV4Response>

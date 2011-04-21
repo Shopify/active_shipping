@@ -29,8 +29,8 @@ module ActiveMerchant
       TEST_RESOURCE = 'ShippingAPITest.dll'
       
       API_CODES = {
-        :us_rates => 'RateV3',
-        :world_rates => 'IntlRate',
+        :us_rates => 'RateV4',
+        :world_rates => 'IntlRateV2',
         :test => 'CarrierPickupAvailability'
       }
       USE_SSL = {
@@ -180,7 +180,7 @@ module ActiveMerchant
       end
       
       def world_rates(origin, destination, packages, options={})
-        request = build_world_rate_request(packages, destination.country)
+        request = build_world_rate_request(packages, destination)
          # never use test mode; rate requests just won't work on test servers
         parse_rate_response origin, destination, packages, commit(:world_rates,request,false), options
       end
@@ -204,7 +204,7 @@ module ActiveMerchant
       #                                  "machinability" entirely.
       def build_us_rate_request(packages, origin_zip, destination_zip, options={})
         packages = Array(packages)
-        request = XmlNode.new('RateV3Request', :USERID => @options[:login]) do |rate_request|
+        request = XmlNode.new('RateV4Request', :USERID => @options[:login]) do |rate_request|
           packages.each_with_index do |p,id|
             rate_request << XmlNode.new('Package', :ID => id.to_s) do |package|
               package << XmlNode.new('Service', US_SERVICES[options[:service] || :all])
@@ -212,9 +212,7 @@ module ActiveMerchant
               package << XmlNode.new('ZipDestination', strip_zip(destination_zip))
               package << XmlNode.new('Pounds', 0)
               package << XmlNode.new('Ounces', "%0.1f" % [p.ounces,1].max)
-              if p.options[:container] and [nil,:all,:express,:priority].include? p.service
-                package << XmlNode.new('Container', CONTAINERS[p.options[:container]])
-              end
+              package << XmlNode.new('Container', CONTAINERS[p.options[:container]])
               package << XmlNode.new('Size', USPS.size_code_for(p))
               package << XmlNode.new('Width', p.inches(:width))
               package << XmlNode.new('Length', p.inches(:length))
@@ -241,21 +239,32 @@ module ActiveMerchant
       # 
       # package.options[:mail_type] -- one of [:package, :postcard, :matter_for_the_blind, :envelope].
       #                                 Defaults to :package.
-      def build_world_rate_request(packages, destination_country)
-        country = COUNTRY_NAME_CONVERSIONS[destination_country.code(:alpha2).value] || destination_country.name
-        request = XmlNode.new('IntlRateRequest', :USERID => @options[:login]) do |rate_request|
+      def build_world_rate_request(packages, destination)
+        country = COUNTRY_NAME_CONVERSIONS[destination.country.code(:alpha2).value] || destination.country.name
+        request = XmlNode.new('IntlRateV2Request', :USERID => @options[:login]) do |rate_request|
           packages.each_index do |id|
             p = packages[id]
             rate_request << XmlNode.new('Package', :ID => id.to_s) do |package|
               package << XmlNode.new('Pounds', 0)
               package << XmlNode.new('Ounces', [p.ounces,1].max.ceil) #takes an integer for some reason, must be rounded UP
               package << XmlNode.new('MailType', MAIL_TYPES[p.options[:mail_type]] || 'Package')
-              if p.value && (p.value > 0) && (p.currency == 'USD')
-                package << XmlNode.new('ValueOfContents', p.value / 100.0)
+              if p.value && p.value > 0 && p.currency && p.currency != 'USD'
+                raise ArgumentError, "USPS needs package values in USD"
               end
+              package << XmlNode.new('GXG') do |gxg|
+                gxg << XmlNode.new('POBoxFlag', destination.po_box? ? 'Y' : 'N')
+                gxg << XmlNode.new('GiftFlag', p.gift? ? 'Y' : 'N')
+              end
+              package << XmlNode.new('ValueOfContents', (p.value || 0) / 100.0)
               package << XmlNode.new('Country') do |node|
                 node.cdata = country
               end
+              package << XmlNode.new('Container', p.cylinder? ? 'NONRECTANGULAR' : 'RECTANGULAR')
+              package << XmlNode.new('Size', USPS.size_code_for(p))
+              package << XmlNode.new('Width', [p.inches(:width), 0.01].max)
+              package << XmlNode.new('Length', [p.inches(:length), 0.01].max)
+              package << XmlNode.new('Height', [p.inches(:height), 0.01].max)
+              package << XmlNode.new('Girth', [p.inches(:girth), 0.01].max)
             end
           end
         end
@@ -285,41 +294,49 @@ module ActiveMerchant
             rate_hash = rates_from_response_node(xml, packages)
             unless rate_hash
               success = false
-              message = "Unknown root node in XML response: '#{root_node_name}'"
+              message = "Unknown root node in XML response: '#{xml.root.name}'"
             end
           end
           
         end
         
-        rate_estimates = rate_hash.keys.map do |service_name|
-          RateEstimate.new(origin,destination,@@name,"USPS #{service_name}",
-                                    :package_rates => rate_hash[service_name][:package_rates],
-                                    :service_code => rate_hash[service_name][:service_code],
-                                    :currency => 'USD')
+        if success
+          rate_estimates = rate_hash.keys.map do |service_name|
+            RateEstimate.new(origin,destination,@@name,"USPS #{service_name}",
+                                      :package_rates => rate_hash[service_name][:package_rates],
+                                      :service_code => rate_hash[service_name][:service_code],
+                                      :currency => 'USD')
+          end
+          rate_estimates.reject! {|e| e.package_count != packages.length}
+          rate_estimates = rate_estimates.sort_by(&:total_price)
         end
-        rate_estimates.reject! {|e| e.package_count != packages.length}
-        rate_estimates = rate_estimates.sort_by(&:total_price)
         
         RateResponse.new(success, message, Hash.from_xml(response), :rates => rate_estimates, :xml => response, :request => last_request)
       end
       
       def rates_from_response_node(response_node, packages)
         rate_hash = {}
-        return false unless (root_node = response_node.elements['/IntlRateResponse | /RateV3Response'])
-        domestic = (root_node.name == 'RateV3Response')
+        return false unless (root_node = response_node.elements['/IntlRateV2Response | /RateV4Response'])
+        domestic = (root_node.name == 'RateV4Response')
         
         domestic_elements = ['Postage', 'CLASSID', 'MailService', 'Rate']
         international_elements = ['Service', 'ID', 'SvcDescription', 'Postage']
         service_node, service_code_node, service_name_node, rate_node = domestic ? domestic_elements : international_elements
         
         root_node.each_element('Package') do |package_node|
-          package_index = package_node.attributes['ID'].to_i
+          this_package = packages[package_node.attributes['ID'].to_i]
           
           package_node.each_element(service_node) do |service_response_node|
             service_name = service_response_node.get_text(service_name_node).to_s
 
-            # workaround for USPS messing up and including unescaped html and asterisks in their rate names since Jan 2, 2011
-            service_name.gsub!(/&amp;lt;sup&amp;gt;&amp;amp;reg;&amp;lt;\/sup&amp;gt;|\*+$/, '')
+            # strips the double-escaped HTML for trademark symbols from service names
+            service_name.gsub!(/&amp;lt;\S*&amp;gt;/,'')
+            # ...leading "USPS"
+            service_name.gsub!(/^USPS/,'')
+            # ...trailing asterisks
+            service_name.gsub!(/\*+$/,'')
+            # ...surrounding spaces
+            service_name.strip!
 
             # aggregate specific package rates into a service-centric RateEstimate
             # first package with a given service name will initialize these;
@@ -327,7 +344,7 @@ module ActiveMerchant
             this_service = rate_hash[service_name] ||= {}
             this_service[:service_code] ||= service_response_node.attributes[service_code_node]
             package_rates = this_service[:package_rates] ||= []
-            this_package_rate = {:package => (this_package = packages[package_index]),
+            this_package_rate = {:package => this_package,
                                  :rate => Package.cents_from(service_response_node.get_text(rate_node).to_s.to_f)}
             
             package_rates << this_package_rate if package_valid_for_service(this_package,service_response_node)
