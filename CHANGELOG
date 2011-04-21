@@ -1,3 +1,9 @@
+2011/04/21:
+* USPS updated to use new APIs [james]
+* new :gift boolean option for Package [james]
+* Location's :address_type can be "po_box" [james]
+
+Earlier:
 * New Zealand Post [AbleTech]
 * Include address name for rate requests to Shipwire if provided [dennis]
 * Add support for address name to Location [dennis]
