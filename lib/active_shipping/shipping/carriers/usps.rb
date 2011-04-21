@@ -214,10 +214,10 @@ module ActiveMerchant
               package << XmlNode.new('Ounces', "%0.1f" % [p.ounces,1].max)
               package << XmlNode.new('Container', CONTAINERS[p.options[:container]])
               package << XmlNode.new('Size', USPS.size_code_for(p))
-              package << XmlNode.new('Width', p.inches(:width))
-              package << XmlNode.new('Length', p.inches(:length))
-              package << XmlNode.new('Height', p.inches(:height))
-              package << XmlNode.new('Girth', p.inches(:girth))
+              package << XmlNode.new('Width', "%0.2f" % p.inches(:width))
+              package << XmlNode.new('Length', "%0.2f" % p.inches(:length))
+              package << XmlNode.new('Height', "%0.2f" % p.inches(:height))
+              package << XmlNode.new('Girth', "%0.2f" % p.inches(:girth))
               is_machinable = if p.options.has_key?(:machinable)
                 p.options[:machinable] ? true : false
               else
@@ -263,10 +263,10 @@ module ActiveMerchant
               end
               package << XmlNode.new('Container', p.cylinder? ? 'NONRECTANGULAR' : 'RECTANGULAR')
               package << XmlNode.new('Size', USPS.size_code_for(p))
-              package << XmlNode.new('Width', [p.inches(:width), 0.01].max)
-              package << XmlNode.new('Length', [p.inches(:length), 0.01].max)
-              package << XmlNode.new('Height', [p.inches(:height), 0.01].max)
-              package << XmlNode.new('Girth', [p.inches(:girth), 0.01].max)
+              package << XmlNode.new('Width', "%0.2f" % [p.inches(:width), 0.01].max)
+              package << XmlNode.new('Length', "%0.2f" % [p.inches(:length), 0.01].max)
+              package << XmlNode.new('Height', "%0.2f" % [p.inches(:height), 0.01].max)
+              package << XmlNode.new('Girth', "%0.2f" % [p.inches(:girth), 0.01].max)
             end
           end
         end
