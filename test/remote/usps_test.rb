@@ -8,27 +8,6 @@ class USPSTest < Test::Unit::TestCase
     @carrier   = USPS.new(fixtures(:usps))
   end
   
-  def test_machinable_rate_discrepancy
-    assert_nothing_raised do
-      default_machinable_response = @carrier.find_rates(
-                                      Location.new(:zip => 83843),
-                                      Location.new(:zip => 70001),
-                                      Package.new(32, [12,6,2], :units => :imperial)
-                                    )
-      assert default_machinable_response.request =~ /<Machinable>TRUE<\/Machinable>/
-      
-      explicit_non_machinable_response = @carrier.find_rates(
-                                           Location.new(:zip => 83843),
-                                           Location.new(:zip => 70001),
-                                           Package.new(32, [12,6,2], :units => :imperial, :machinable => false)
-                                         )
-      assert explicit_non_machinable_response.request =~ /<Machinable>FALSE<\/Machinable>/
-      
-      assert_not_equal default_machinable_response.rates.map(&:price),
-                        explicit_non_machinable_response.rates.map(&:price)
-    end
-  end
-  
   def test_zip_to_zip
     assert_nothing_raised do
       response = @carrier.find_rates(
@@ -55,20 +34,20 @@ class USPSTest < Test::Unit::TestCase
       response = @carrier.find_rates(
                    @locations[:beverly_hills],
                    @locations[:ottawa],
-                   @packages.values_at(:wii),
+                   @packages.values_at(:american_wii),
                    :test => true
                  )
     assert_not_equal [], response.rates.length
     end
   end
   
-  def test_domestic_rates_thoroughly
+  def test_domestic_rates
     response = nil
     assert_nothing_raised do
       response = @carrier.find_rates(
                    @locations[:new_york],
                    @locations[:beverly_hills],
-                   @packages.values_at(:book,:wii),
+                   @packages.values_at(:book, :american_wii),
                    :test => true
                  )
     end
@@ -86,7 +65,7 @@ class USPSTest < Test::Unit::TestCase
     assert_instance_of String, rate.service_name
     assert_instance_of String, rate.service_code
     assert_instance_of Array, rate.package_rates
-    assert_equal @packages.values_at(:book, :wii), rate.packages
+    assert_equal @packages.values_at(:book, :american_wii), rate.packages
     
     package_rate = rate.package_rates.first
     assert_instance_of Hash, package_rate
@@ -99,14 +78,14 @@ class USPSTest < Test::Unit::TestCase
     
   end
   
-  def test_international_thoroughly
+  def test_international_rates
     
     response = nil
     assert_nothing_raised do
       response = @carrier.find_rates(
                    @locations[:beverly_hills],
                    @locations[:ottawa],
-                   @packages.values_at(:book, :wii),
+                   @packages.values_at(:book, :american_wii),
                    :test => true
                  )
     end
@@ -125,7 +104,7 @@ class USPSTest < Test::Unit::TestCase
     assert_instance_of String, rate.service_name
     assert_instance_of String, rate.service_code
     assert_instance_of Array, rate.package_rates
-    assert_equal @packages.values_at(:book, :wii), rate.packages
+    assert_equal @packages.values_at(:book, :american_wii), rate.packages
     
     package_rate = rate.package_rates.first
     assert_instance_of Hash, package_rate
@@ -137,14 +116,28 @@ class USPSTest < Test::Unit::TestCase
     
   end
   
-  def test_bare_packages
+  def test_bare_packages_domestic
     response = nil
-    p = Package.new(0,0)
+    response = begin
+      @carrier.find_rates(
+        @locations[:beverly_hills], # imperial (U.S. origin)
+        @locations[:new_york],
+        Package.new(0,0),
+        :test => true
+      )
+    rescue ResponseError => e
+      e.response
+    end
+    assert response.success?, response.message
+  end
+  
+  def test_bare_packages_international
+    response = nil
     response = begin
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
         @locations[:ottawa],
-        p,
+        Package.new(0,0),
         :test => true
       )
     rescue ResponseError => e
@@ -172,7 +165,7 @@ class USPSTest < Test::Unit::TestCase
   #       begin
   #         response = @carrier.find_rates( @locations[:beverly_hills],
   #                                         Location.new(:country => code),
-  #                                         @packages.values_at(:wii),
+  #                                         @packages.values_at(:american_wii),
   #                                         :test => true)
   #       rescue Exception => e
   #         flunk(e.inspect + "\nrequest: " + @carrier.last_request)
