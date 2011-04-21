@@ -32,12 +32,15 @@ module ActiveMerchant #:nodoc:
         @value = Package.cents_from(options[:value])
         @currency = options[:currency] || (options[:value].currency if options[:value].respond_to?(:currency))
         @cylinder = (options[:cylinder] || options[:tube]) ? true : false
+        @gift = options[:gift] ? true : false
       end
   
       def cylinder?
         @cylinder
       end
       alias_method :tube?, :cylinder?
+      
+      def gift?; @gift end
       
       def ounces(options={})
         weight(options).in_ounces.amount
