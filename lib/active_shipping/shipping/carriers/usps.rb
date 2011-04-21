@@ -248,14 +248,16 @@ module ActiveMerchant
               package << XmlNode.new('Pounds', 0)
               package << XmlNode.new('Ounces', [p.ounces,1].max.ceil) #takes an integer for some reason, must be rounded UP
               package << XmlNode.new('MailType', MAIL_TYPES[p.options[:mail_type]] || 'Package')
-              if p.value && p.value > 0 && p.currency && p.currency != 'USD'
-                raise ArgumentError, "USPS needs package values in USD"
-              end
               package << XmlNode.new('GXG') do |gxg|
                 gxg << XmlNode.new('POBoxFlag', destination.po_box? ? 'Y' : 'N')
                 gxg << XmlNode.new('GiftFlag', p.gift? ? 'Y' : 'N')
               end
-              package << XmlNode.new('ValueOfContents', (p.value || 0) / 100.0)
+              value = if p.value && p.value > 0 && p.currency && p.currency != 'USD'
+                0.0
+              else
+                (p.value || 0) / 100.0
+              end
+              package << XmlNode.new('ValueOfContents', value)
               package << XmlNode.new('Country') do |node|
                 node.cdata = country
               end
