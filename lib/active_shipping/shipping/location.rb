@@ -1,6 +1,7 @@
 module ActiveMerchant #:nodoc:
   module Shipping #:nodoc:
     class Location
+      ADDRESS_TYPES = %w{residential commercial po_box}
       
       attr_reader :options,
                   :country,
@@ -34,8 +35,12 @@ module ActiveMerchant #:nodoc:
         @address3 = options[:address3]
         @phone = options[:phone]
         @fax = options[:fax]
-        raise ArgumentError.new('address_type must be either "residential" or "commercial"') if options[:address_type] and not (["residential", "commercial", ""]).include?(options[:address_type].to_s)
-        @address_type = options[:address_type].nil? ? nil : options[:address_type].to_s
+        if options[:address_type].present?
+          @address_type = options[:address_type].to_s
+          unless ADDRESS_TYPES.include?(@address_type)
+            raise ArgumentError.new("address_type must be one of #{ADDRESS_TYPES.map(&:inspect).join(', ')}")
+          end
+        end
       end
       
       def self.from(object, options={})
@@ -68,7 +73,7 @@ module ActiveMerchant #:nodoc:
             end
           end
         end
-        attributes.delete(:address_type) unless %w{residential commercial}.include?(attributes[:address_type].to_s)
+        attributes.delete(:address_type) unless ADDRESS_TYPES.include?(attributes[:address_type].to_s)
         self.new(attributes.update(options))
       end
       
@@ -76,8 +81,9 @@ module ActiveMerchant #:nodoc:
         @country.nil? ? nil : @country.code(format).value
       end
       
-      def residential?; (@address_type == 'residential') end
-      def commercial?; (@address_type == 'commercial') end
+      def residential?; @address_type == 'residential' end
+      def commercial?; @address_type == 'commercial' end
+      def po_box?; @address_type == 'po_box' end
       
       def to_s
         prettyprint.gsub(/\n/, ' ')
