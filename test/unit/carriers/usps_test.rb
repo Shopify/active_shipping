@@ -8,6 +8,12 @@ class USPSTest < Test::Unit::TestCase
     @carrier   = USPS.new(:login => 'login')
   end
   
+  def test_size_codes
+    assert_equal 'REGULAR', USPS.size_code_for(Package.new(2, [1,12,1], :units => :imperial))
+    assert_equal 'LARGE', USPS.size_code_for(Package.new(2, [12.1,1,1], :units => :imperial))
+    assert_equal 'LARGE', USPS.size_code_for(Package.new(2, [1000,1000,1000], :units => :imperial))
+  end
+  
   # TODO: test_parse_domestic_rate_response
   # TODO: test_build_us_rate_request
   
@@ -19,7 +25,7 @@ class USPSTest < Test::Unit::TestCase
   end
   
   def test_build_world_rate_request_with_package_value
-    expected_request = "<IntlRateV2Request USERID='login'><Package ID='0'><Pounds>0</Pounds><Ounces>120</Ounces><MailType>Package</MailType><GXG><POBoxFlag>N</POBoxFlag><GiftFlag>N</GiftFlag></GXG><ValueOfContents>269.99</ValueOfContents><Country><![CDATA[Canada]]></Country><Container>RECTANGULAR</Container><Size>REGULAR</Size><Width>10.00</Width><Length>15.00</Length><Height>4.50</Height><Girth>29.00</Girth></Package></IntlRateV2Request>"
+    expected_request = "<IntlRateV2Request USERID='login'><Package ID='0'><Pounds>0</Pounds><Ounces>120</Ounces><MailType>Package</MailType><GXG><POBoxFlag>N</POBoxFlag><GiftFlag>N</GiftFlag></GXG><ValueOfContents>269.99</ValueOfContents><Country><![CDATA[Canada]]></Country><Container>RECTANGULAR</Container><Size>LARGE</Size><Width>10.00</Width><Length>15.00</Length><Height>4.50</Height><Girth>29.00</Girth></Package></IntlRateV2Request>"
     @carrier.expects(:commit).with(:world_rates, URI.encode(expected_request), false).returns(expected_request)
     @carrier.expects(:parse_rate_response)
     @carrier.find_rates(@locations[:beverly_hills], @locations[:ottawa], @packages[:american_wii], :test => true)

@@ -113,13 +113,10 @@ module ActiveMerchant
       }
 
       def self.size_code_for(package)
-        total = package.inches(:length) + package.inches(:girth)
-        if total <= 84
-          return 'REGULAR'
-        elsif total <= 108
-          return 'LARGE'
-        else # <= 130
-          return 'OVERSIZE'
+        if package.inches(:max) <= 12
+          'REGULAR'
+        else
+          'LARGE'
         end
       end
       
