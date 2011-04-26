@@ -10,4 +10,4 @@ shipwire:
 canada_post:
   login: CPC_DEMO_XML
 new_zealand_post:
-  api_key: '123'
+  key: '4d9dc0f0-dda0-012e-066f-000c29b44ac0'

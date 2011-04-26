@@ -51,6 +51,10 @@ module Test
         open(File.join(File.dirname(__FILE__),'fixtures','xml',"#{path}.xml")) {|f| f.read}
       end
       
+      def json_fixture(path) # where path is like 'usps/beverly_hills_to_ottawa_response'
+        open(File.join(File.dirname(__FILE__),'fixtures','json',"#{path}.json")) {|f| f.read}
+      end
+      
       def symbolize_keys(hash)
         return unless hash.is_a?(Hash)
         
@@ -71,17 +75,20 @@ module ActiveMerchant
       @@packages = {
         :just_ounces => Package.new(16, nil, :units => :imperial),
         :just_grams => Package.new(1000, nil),
+        :just_zero_grams => Package.new(0, nil),
         :all_imperial => Package.new(16, [1,8,12], :units => :imperial),
         :all_metric => Package.new(1000, [2,20,40]),
         :book => Package.new(250, [14, 19, 2]),
         :wii => Package.new((7.5 * 16), [15, 10, 4.5], :units => :imperial, :value => 269.99, :currency => 'GBP'),
         :american_wii => Package.new((7.5 * 16), [15, 10, 4.5], :units => :imperial, :value => 269.99, :currency => 'USD'),
+        :new_zealand_wii => Package.new((7.5 * 16), [15, 10, 4.5], :units => :imperial, :value => 269.99, :currency => 'NZD'),
         :worthless_wii => Package.new((7.5 * 16), [15, 10, 4.5], :units => :imperial, :value => 0.0, :currency => 'USD'),
         :poster => Package.new(100, [93,10], :cylinder => true),
         :small_half_pound => Package.new(8, [1,1,1], :units => :imperial),
         :big_half_pound => Package.new((16 * 50), [24,24,36], :units => :imperial),
         :chocolate_stuff => Package.new(80, [2,6,12], :units => :imperial),
-        :shipping_container => Package.new(2200000, [2440, 2600, 6058], :description => '20 ft Standard Container', :units => :metric)
+        :shipping_container => Package.new(2200000, [2440, 2600, 6058], :description => '20 ft Standard Container', :units => :metric),
+        :largest_gold_bar => Package.new(250000, [ 45.5, 22.5, 17 ], :value => 15300000)
       }
       
       @@locations = {
@@ -182,7 +189,12 @@ module ActiveMerchant
                                       :city => 'Wellington',
                                       :address1 => '85 Victoria St',
                                       :address2 => 'Te Aro',
-                                      :postal_code => '6011')
+                                      :postal_code => '6011'),
+        :auckland => Location.new(
+                                      :country => 'NZ',
+                                      :city => 'Auckland',
+                                      :address1 => '192 Victoria St West',
+                                      :postal_code => '1010')
       }
       
     end
