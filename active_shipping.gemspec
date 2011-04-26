@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   s.add_dependency('i18n')
   s.add_dependency('active_utils', '>= 1.0.1')
   s.add_dependency('builder')
+  s.add_dependency('json', '>= 1.5.1') if RUBY_VERSION =~ /^1\.8\./
 
   s.add_development_dependency('rake')
   s.add_development_dependency('mocha')
