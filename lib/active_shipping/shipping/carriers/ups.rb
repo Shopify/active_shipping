@@ -26,13 +26,13 @@ module ActiveMerchant
         :letter_center => "19",
         :air_service_center => "20"
       })
-      
+
       CUSTOMER_CLASSIFICATIONS = HashWithIndifferentAccess.new({
         :wholesale => "01",
         :occasional => "03", 
         :retail => "04"
       })
-      
+
       # these are the defaults described in the UPS API docs,
       # but they don't seem to apply them under all circumstances,
       # so we need to take matters into our own hands
@@ -85,7 +85,15 @@ module ActiveMerchant
       OTHER_NON_US_ORIGIN_SERVICES = {
         "07" => "UPS Express"
       }
-      
+
+      STATUS_CODES = HashWithIndifferentAccess.new({
+        'I' => 'In Transit',
+        'D' => 'Delivered',
+        'X' => 'Exception',
+        'P' => 'Pickup',
+        'M' => 'Manifest Pickup'
+      })
+
       # From http://en.wikipedia.org/w/index.php?title=European_Union&oldid=174718707 (Current as of November 30, 2007)
       EU_COUNTRY_CODES = ["GB", "AT", "BE", "BG", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE"]
       
@@ -292,17 +300,33 @@ module ActiveMerchant
         message = response_message(xml)
         
         if success
-          tracking_number, origin, destination = nil
+          tracking_number, origin, destination, status_code, status_description = nil
+          is_delivered, has_exception = false
+          exception_event = nil
           shipment_events = []
+          status = {}
           
           first_shipment = xml.elements['/*/Shipment']
           first_package = first_shipment.elements['Package']
           tracking_number = first_shipment.get_text('ShipmentIdentificationNumber | Package/TrackingNumber').to_s
           
+          # Build status hash
+          status_code = first_package.get_text('Activity/Status/StatusType/Code').to_s
+          status_description = STATUS_CODES[status_code]
+          status = {:code => status_code, :description => status_description}
+
+          case status[:code]
+          when 'D'
+            is_delivered = true
+          when 'X'
+            # A shipment exception has occured
+            has_exception = true
+          end
+
           origin, destination = %w{Shipper ShipTo}.map do |location|
             location_from_address_node(first_shipment.elements["#{location}/Address"])
           end
-          
+
           activities = first_package.get_elements('Activity')
           unless activities.empty?
             shipment_events = activities.map do |activity|
@@ -331,16 +355,23 @@ module ActiveMerchant
                 shipment_events.unshift(origin_event)
               end
             end
-            if shipment_events.last.name.downcase == 'delivered'
+            # Has the shipment been delivered?
+            if is_delivered
               shipment_events[-1] = ShipmentEvent.new(shipment_events.last.name, shipment_events.last.time, destination)
+            elsif has_exception
+              exception_event = shipment_events[-1]
             end
           end
           
         end
         TrackingResponse.new(success, message, Hash.from_xml(response).values.first,
+          :carrier => :ups,
           :xml => response,
           :request => last_request,
           :shipment_events => shipment_events,
+          :delivered => delivered,
+          :exception => exception,
+          :exception_event => exception_event,
           :origin => origin,
           :destination => destination,
           :tracking_number => tracking_number)
