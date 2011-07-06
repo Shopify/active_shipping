@@ -85,6 +85,10 @@ module ActiveMerchant
         'express_mps_master' => 'EXPRESS_MPS_MASTER'
       }
 
+      TRACKING_STATUS_CODES = HashWithIndifferentAccess.new({
+        'DL' => 'Delivered'
+      })
+
       def self.service_name_for_code(service_code)
         ServiceTypes[service_code] || begin
           name = service_code.downcase.split('_').collect{|word| word.capitalize }.join(' ')
@@ -258,12 +262,25 @@ module ActiveMerchant
         message = response_message(xml)
         
         if success
-          tracking_number, origin, destination = nil
+          tracking_number, origin, destination, status_code, status_description = nil
+          is_delivered, has_exception = false
+          exception_event = nil
           shipment_events = []
-          
+          status = {}
+
           tracking_details = root_node.elements['TrackDetails']
           tracking_number = tracking_details.get_text('TrackingNumber').to_s
           
+          status_code = tracking_details.get_text('StatusCode').to_s
+          status_description = tracking_details.get_text('StatusDescription').to_s
+          status = {:code => status_code, :description => status_description }
+
+          case status[:code]
+          when 'DL'
+            is_delivered = true
+            #TODO: Add Exception check
+          end
+
           destination_node = tracking_details.elements['DestinationAddress']
           destination = Location.new(
                 :country =>     destination_node.get_text('CountryCode').to_s,
@@ -290,12 +307,21 @@ module ActiveMerchant
             shipment_events << ShipmentEvent.new(description, zoneless_time, location)
           end
           shipment_events = shipment_events.sort_by(&:time)
+
+          # Does the shipment have an exception?
+          if has_exception
+            exception_event = shipment_events[-1]
+          end
+
+
         end
         
         TrackingResponse.new(success, message, Hash.from_xml(response),
+          :carrier => :fedex,
           :xml => response,
           :request => last_request,
           :shipment_events => shipment_events,
+          
           :destination => destination,
           :tracking_number => tracking_number
         )
