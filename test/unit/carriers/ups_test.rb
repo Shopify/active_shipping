@@ -26,6 +26,28 @@ class UPSTest < Test::Unit::TestCase
     assert_equal 'ActiveMerchant::Shipping::TrackingResponse', @carrier.find_tracking_info('1Z5FX0076803466397').class.name
   end
   
+  def test_find_tracking_info_should_mark_shipment_as_delivered
+    @carrier.expects(:commit).returns(@tracking_response)
+    assert_equal true, @carrier.find_tracking_info('1Z5FX0076803466397').delivered?
+  end
+
+  def test_find_tracking_info_should_return_correct_carrier
+    @carrier.expects(:commit).returns(@tracking_response)
+    assert_equal :ups, @carrier.find_tracking_info('1Z5FX0076803466397').carrier
+  end
+
+  def test_find_tracking_info_should_return_correct_carrier_name
+    @carrier.expects(:commit).returns(@tracking_response)
+    assert_equal 'UPS', @carrier.find_tracking_info('1Z5FX0076803466397').carrier_name
+  end
+
+  def test_find_tracking_info_should_record_status_code_and_description
+    @carrier.expects(:commit).returns(@tracking_response)
+    response = @carrier.find_tracking_info('1Z5FX0076803466397')
+    assert_equal 'd', response.status[:code].downcase
+    assert_equal 'delivered', response.status[:description].downcase
+  end
+
   def test_find_tracking_info_should_parse_response_into_correct_number_of_shipment_events
     @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('1Z5FX0076803466397')

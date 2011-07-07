@@ -3,6 +3,7 @@ module ActiveMerchant #:nodoc:
     
     class TrackingResponse < Response
       attr_reader :carrier # symbol
+      attr_reader :carrier_name # string
       attr_reader :delivered # boolean
       attr_reader :exception # boolean
       attr_reader :exception_event # hash of the offending ShipmentEvent
@@ -12,7 +13,9 @@ module ActiveMerchant #:nodoc:
       attr_reader :origin, :destination
       
       def initialize(success, message, params = {}, options = {})
-        @carrier = options[:carrier]
+        @carrier = options[:carrier].parameterize.to_sym
+        @carrier_name = options[:carrier]
+
         @delivered = options[:delivered]
         @exception, @exception_event = options[:exception], options[:exception_event]
         @status = options[:status]
@@ -21,7 +24,7 @@ module ActiveMerchant #:nodoc:
         @origin, @destination = options[:origin], options[:destination]
         super
       end
-      
+
       def latest_event
         @shipment_events.last
       end

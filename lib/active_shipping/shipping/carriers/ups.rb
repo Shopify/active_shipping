@@ -86,7 +86,7 @@ module ActiveMerchant
         "07" => "UPS Express"
       }
 
-      STATUS_CODES = HashWithIndifferentAccess.new({
+      TRACKING_STATUS_CODES = HashWithIndifferentAccess.new({
         'I' => 'In Transit',
         'D' => 'Delivered',
         'X' => 'Exception',
@@ -301,26 +301,27 @@ module ActiveMerchant
         
         if success
           tracking_number, origin, destination, status_code, status_description = nil
-          is_delivered, has_exception = false
+          delivered, exception = false
           exception_event = nil
           shipment_events = []
           status = {}
-          
+
           first_shipment = xml.elements['/*/Shipment']
           first_package = first_shipment.elements['Package']
           tracking_number = first_shipment.get_text('ShipmentIdentificationNumber | Package/TrackingNumber').to_s
           
           # Build status hash
-          status_code = first_package.get_text('Activity/Status/StatusType/Code').to_s
-          status_description = STATUS_CODES[status_code]
+          status_node = first_package.elements['Activity/Status/StatusType']
+          status_code = status_node.get_text('Code').to_s
+          status_description = status_node.get_text('Description').to_s
           status = {:code => status_code, :description => status_description}
 
           case status[:code]
           when 'D'
-            is_delivered = true
+            delivered = true
           when 'X'
             # A shipment exception has occured
-            has_exception = true
+            exception = true
           end
 
           origin, destination = %w{Shipper ShipTo}.map do |location|
@@ -356,18 +357,19 @@ module ActiveMerchant
               end
             end
             # Has the shipment been delivered?
-            if is_delivered
+            if delivered
               shipment_events[-1] = ShipmentEvent.new(shipment_events.last.name, shipment_events.last.time, destination)
-            elsif has_exception
+            elsif exception
               exception_event = shipment_events[-1]
             end
           end
           
         end
         TrackingResponse.new(success, message, Hash.from_xml(response).values.first,
-          :carrier => :ups,
+          :carrier => @@name,
           :xml => response,
           :request => last_request,
+          :status => status,
           :shipment_events => shipment_events,
           :delivered => delivered,
           :exception => exception,
