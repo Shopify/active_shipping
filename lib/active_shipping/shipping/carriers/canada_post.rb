@@ -155,12 +155,11 @@ module ActiveMerchant
           xml.elements.each('eparcel/ratesAndServicesResponse/product') do |product|
             service_name = (@options[:french] ? @@name_french : @@name) + product.get_text('name').to_s
             service_code = product.attribute('id').to_s
-            delivery_date = date_for(product.get_text('deliveryDate').to_s)
 
             rate_estimates << RateEstimate.new(origin, destination, @@name, service_name,
               :service_code => service_code,
               :total_price => product.get_text('rate').to_s,
-              :delivery_date => delivery_date,
+              :delivery_date => product.get_text('deliveryDate').to_s,
               :currency => 'CAD'
             )
           end
@@ -208,12 +207,6 @@ module ActiveMerchant
         end
 
         CanadaPostRateResponse.new(success, message, Hash.from_xml(response), :rates => rate_estimates, :xml => response, :boxes => boxes, :postal_outlets => postal_outlets)
-      end
-      
-      def date_for(string)
-        string && Time.parse(string)
-      rescue ArgumentError
-        nil
       end
 
       def response_success?(xml)

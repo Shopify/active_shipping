@@ -76,6 +76,7 @@ class FedExTest < Test::Unit::TestCase
     assert_instance_of String, rate.service_name
     assert_instance_of String, rate.service_code
     assert_instance_of Array, rate.package_rates
+    assert_instance_of Time, rate.delivery_date
     assert_equal @packages.values_at(:book, :wii), rate.packages
     
     package_rate = rate.package_rates.first

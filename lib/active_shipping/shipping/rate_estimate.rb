@@ -22,7 +22,7 @@ module ActiveMerchant #:nodoc:
         end
         @total_price = Package.cents_from(options[:total_price])
         @currency = options[:currency]
-        @delivery_date = options[:delivery_date]
+        @delivery_date = date_for(options[:delivery_date])
       end
       
       def total_price
@@ -48,7 +48,13 @@ module ActiveMerchant #:nodoc:
       def package_count
         package_rates.length
       end
-      
+
+      private
+      def date_for(date)
+        date && Time.parse(date.to_s)
+      rescue ArgumentError
+        nil
+      end
     end
   end
 end
