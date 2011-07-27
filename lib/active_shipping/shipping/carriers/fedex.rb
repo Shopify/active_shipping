@@ -244,7 +244,7 @@ module ActiveMerchant
                               :total_price => rated_shipment.get_text('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Amount').to_s.to_f,
                               :currency => currency,
                               :packages => packages,
-                              :delivery_date => rated_shipment.get_text('DeliveryTimestamp').to_s)
+                              :delivery_range => [rated_shipment.get_text('DeliveryTimestamp').to_s] * 2)
 	    end
 		
         if rate_estimates.empty?
