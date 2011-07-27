@@ -114,4 +114,17 @@ class FedExTest < Test::Unit::TestCase
       assert_equal 'GBP', rate.currency
     end
   end
+
+  def test_delivery_range_based_on_delivery_date
+    mock_response = xml_fixture('fedex/ottawa_to_beverly_hills_rate_response').gsub('CAD', 'UKL')
+
+    @carrier.expects(:commit).returns(mock_response)
+    rate_estimates = @carrier.find_rates( @locations[:ottawa],
+                                    @locations[:beverly_hills],
+                                    @packages.values_at(:book, :wii), :test => true)
+
+    delivery_date = Date.new(2011, 7, 29)
+    assert_equal delivery_date, rate_estimates.rates[0].delivery_date
+    assert_equal [delivery_date] * 2, rate_estimates.rates[0].delivery_range
+  end
 end

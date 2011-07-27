@@ -42,6 +42,7 @@ INTERNATIONAL_FIRST; INTERNATIONAL_PRIORITY; INTERNATIONAL_ECONOMY; ; ; ; ; ; ; 
     <v6:ServiceType>FEDEX_GROUND</v6:ServiceType>
     <v6:PackagingType>YOUR_PACKAGING</v6:PackagingType>
     <v6:DeliveryStation>CCDA </v6:DeliveryStation>
+    <v6:DeliveryTimestamp>2011-07-29</v6:DeliveryTimestamp>
     <v6:CommitDetails>
       <v6:ServiceType>FEDEX_GROUND</v6:ServiceType>
       <v6:TransitTime>FIVE_DAYS</v6:TransitTime>

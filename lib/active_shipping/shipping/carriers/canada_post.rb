@@ -159,8 +159,8 @@ module ActiveMerchant
             rate_estimates << RateEstimate.new(origin, destination, @@name, service_name,
               :service_code => service_code,
               :total_price => product.get_text('rate').to_s,
-              :delivery_date => product.get_text('deliveryDate').to_s,
-              :currency => 'CAD'
+              :currency => 'CAD',
+              :delivery_range => [product.get_text('deliveryDate').to_s] * 2
             )
           end
 

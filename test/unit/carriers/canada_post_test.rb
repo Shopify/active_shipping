@@ -107,4 +107,15 @@ class CanadaPostTest < Test::Unit::TestCase
     @carrier.expects(:ssl_post).with(anything, regexp_matches(%r{<country>Russia</country>})).returns(@response)
     rate_estimates = @carrier.find_rates(@origin, @destination, @line_items)
   end
+
+  def test_delivery_range_based_on_delivery_date
+    Date.expects(:today).returns(Date.new(2010, 8, 3)).at_least_once
+    @carrier.expects(:ssl_post).returns(@response)
+    rate_estimates = @carrier.find_rates(@origin, @destination, @line_items)
+
+    delivery_date = Date.new(2010, 8, 4)
+    assert_equal [delivery_date] * 2, rate_estimates.rates[0].delivery_range
+    assert_equal [delivery_date] * 2, rate_estimates.rates[1].delivery_range
+    assert_equal [delivery_date + 2.days] * 2, rate_estimates.rates[2].delivery_range
+  end
 end
