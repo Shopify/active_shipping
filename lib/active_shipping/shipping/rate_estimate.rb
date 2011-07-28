@@ -51,7 +51,7 @@ module ActiveMerchant #:nodoc:
 
       private
       def date_for(date)
-        date && Time.parse(date.to_s)
+        date && DateTime.parse(date.to_s)
       rescue ArgumentError
         nil
       end
