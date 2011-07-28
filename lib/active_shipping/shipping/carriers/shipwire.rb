@@ -37,7 +37,7 @@ module ActiveMerchant
           :items => [ { :sku => '', :quantity => 1 } ]
         )
       rescue ActiveMerchant::Shipping::ResponseError => e
-        e.message != "Could not verify e-mail/password combination"
+        e.message != "Could not verify Username/EmailAddress and Password combination"
       end
       
       private
