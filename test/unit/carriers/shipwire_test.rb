@@ -21,7 +21,7 @@ class ShipwireTest < Test::Unit::TestCase
         :items => @items
       )
     rescue ResponseError => e
-      assert_equal "Could not verify e-mail/password combination", e.message
+      assert_equal "Could not verify Username/EmailAddress and Password combination", e.message
     end
   end
   
