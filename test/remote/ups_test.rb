@@ -5,24 +5,24 @@ class UPSTest < Test::Unit::TestCase
   def setup
     @packages  = TestFixtures.packages
     @locations = TestFixtures.locations
-    @carrier   = UPS.new(fixtures(:ups))
+    @carrier   = UPS.new(fixtures(:ups).merge(:test => true))
   end
   
   def test_tracking
     assert_nothing_raised do
-      response = @carrier.find_tracking_info('1Z5FX0076803466397')
+      response = @carrier.find_tracking_info('1Z12345E0291980793')
     end
   end
   
   def test_tracking_with_bad_number
     assert_raises ResponseError do
-      response = @carrier.find_tracking_info('1Z12345')
+      response = @carrier.find_tracking_info('1Z12345E029198079')
     end
   end
   
   def test_tracking_with_another_number
     assert_nothing_raised do
-      response = @carrier.find_tracking_info('1Z67Y4260390005815')
+      response = @carrier.find_tracking_info('1Z12345E6692804405')
     end
   end
   
