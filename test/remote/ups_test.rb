@@ -156,16 +156,14 @@ class UPSTest < Test::Unit::TestCase
     end
     assert response.success?, response.message
   end
-  
-  def test_different_rates_for_residential_and_commercial_destinations
+
+  def test_different_rates_based_on_address_type
     responses = {}
     locations = [
-      :real_home_as_residential, :real_home_as_commercial,
       :fake_home_as_residential, :fake_home_as_commercial,
-      :real_google_as_residential, :real_google_as_commercial,
       :fake_google_as_residential, :fake_google_as_commercial
       ]
-      
+
     locations.each do |location|
       responses[location] = @carrier.find_rates(
                               @locations[:beverly_hills],
@@ -173,35 +171,10 @@ class UPSTest < Test::Unit::TestCase
                               @packages.values_at(:chocolate_stuff)
                             )
     end
-    
+
     prices_of = lambda {|sym| responses[sym].rates.map(&:price)}
-    
-    # this is how UPS does things...
-    # if it's a real residential address and UPS knows it, then they return
-    # residential rates whether or not we have the ResidentialAddressIndicator:
-    assert_equal prices_of.call(:real_home_as_residential), prices_of.call(:real_home_as_commercial)
-    
-    # if UPS doesn't know about the address, and we HAVE the ResidentialAddressIndicator,
-    # then UPS will default to residential rates:
-    assert_equal prices_of.call(:real_home_as_residential), prices_of.call(:fake_home_as_residential)
-    
-    # if UPS doesn't know about the address, and we DON'T have the ResidentialAddressIndicator,
-    # then UPS will default to commercial rates:
+
     assert_not_equal prices_of.call(:fake_home_as_residential), prices_of.call(:fake_home_as_commercial)
-    assert prices_of.call(:fake_home_as_residential).first > prices_of.call(:fake_home_as_commercial).first
-    
-    
-    # if it's a real commercial address and UPS knows it, then they return
-    # commercial rates whether or not we have the ResidentialAddressIndicator:
-    assert_equal prices_of.call(:real_google_as_commercial), prices_of.call(:real_google_as_residential)
-    
-    # if UPS doesn't know about the address, and we DON'T have the ResidentialAddressIndicator,
-    # then UPS will default to commercial rates:
-    assert_equal prices_of.call(:real_google_as_commercial), prices_of.call(:fake_google_as_commercial)
-    
-    # if UPS doesn't know about the address, and we HAVE the ResidentialAddressIndicator,
-    # then UPS will default to residential rates:
     assert_not_equal prices_of.call(:fake_google_as_commercial), prices_of.call(:fake_google_as_residential)
-    assert prices_of.call(:fake_home_as_residential).first > prices_of.call(:fake_home_as_commercial).first
   end
 end
