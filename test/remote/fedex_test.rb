@@ -132,4 +132,10 @@ class FedExTest < Test::Unit::TestCase
     end
   end
   
+  def test_tracking_with_bad_number
+    assert_raises ResponseError do
+      response = @carrier.find_tracking_info('12345')
+    end
+  end
+
 end

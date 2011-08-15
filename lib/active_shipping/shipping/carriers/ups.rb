@@ -87,11 +87,11 @@ module ActiveMerchant
       }
 
       TRACKING_STATUS_CODES = HashWithIndifferentAccess.new({
-        'I' => 'In Transit',
-        'D' => 'Delivered',
-        'X' => 'Exception',
-        'P' => 'Pickup',
-        'M' => 'Manifest Pickup'
+        'I' => :in_transit,
+        'D' => :delivered,
+        'X' => :exception,
+        'P' => :pickup,
+        'M' => :manifest_pickup
       })
 
       # From http://en.wikipedia.org/w/index.php?title=European_Union&oldid=174718707 (Current as of November 30, 2007)
@@ -314,15 +314,7 @@ module ActiveMerchant
           status_node = first_package.elements['Activity/Status/StatusType']
           status_code = status_node.get_text('Code').to_s
           status_description = status_node.get_text('Description').to_s
-          status = {:code => status_code, :description => status_description}
-
-          case status[:code]
-          when 'D'
-            delivered = true
-          when 'X'
-            # A shipment exception has occured
-            exception = true
-          end
+          status = TRACKING_STATUS_CODES[status_code]
 
           origin, destination = %w{Shipper ShipTo}.map do |location|
             location_from_address_node(first_shipment.elements["#{location}/Address"])
@@ -357,10 +349,8 @@ module ActiveMerchant
               end
             end
             # Has the shipment been delivered?
-            if delivered
-              shipment_events[-1] = ShipmentEvent.new(shipment_events.last.name, shipment_events.last.time, destination)
-            elsif exception
-              exception_event = shipment_events[-1]
+            if status == :delivered
+              #shipment_events[-1] = ShipmentEvent.new(shipment_events.last.name, shipment_events.last.time, destination)
             end
           end
           
@@ -370,6 +360,8 @@ module ActiveMerchant
           :xml => response,
           :request => last_request,
           :status => status,
+          :status_code => status_code,
+          :status_description => status_description,
           :shipment_events => shipment_events,
           :delivered => delivered,
           :exception => exception,

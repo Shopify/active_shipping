@@ -85,8 +85,40 @@ module ActiveMerchant
         'express_mps_master' => 'EXPRESS_MPS_MASTER'
       }
 
+      # FedEx tracking codes as described in the FedEx Tracking Service WSDL Guide
+      # All delays also have been marked as exceptions
       TRACKING_STATUS_CODES = HashWithIndifferentAccess.new({
-        'DL' => 'Delivered'
+        'AA' => :at_airport,
+        'AD' => :at_delivery,
+        'AF' => :at_fedex_facility,
+        'AR' => :at_fedex_facility,
+        'AP' => :at_pickup,
+        'CA' => :canceled,
+        'CH' => :location_changed,
+        'DE' => :exception,
+        'DL' => :delivered,
+        'DP' => :departed_fedex_location,
+        'DR' => :vehicle_furnished_not_used,
+        'DS' => :vehicle_dispatched,
+        'DY' => :exception,
+        'EA' => :exception,
+        'ED' => :enroute_to_delivery,
+        'EO' => :enroute_to_origin_airport,
+        'EP' => :enroute_to_pickup,
+        'FD' => :at_fedex_destination,
+        'HL' => :held_at_location,
+        'IT' => :in_transit,
+        'LO' => :left_origin,
+        'OC' => :order_created,
+        'OD' => :out_for_delivery,
+        'PF' => :plane_in_flight,
+        'PL' => :plane_landed,
+        'PU' => :picked_up,
+        'RS' => :return_to_shipper,
+        'SE' => :exception,
+        'SF' => :at_sort_facility,
+        'SP' => :split_status,
+        'TR' => :transfer
       })
 
       def self.service_name_for_code(service_code)
@@ -268,23 +300,15 @@ module ActiveMerchant
         
         if success
           tracking_number, origin, destination, status_code, status_description = nil
-          is_delivered, has_exception = false
-          exception_event = nil
           shipment_events = []
-          status = {}
+          status, status_code, status_description = nil
 
           tracking_details = root_node.elements['TrackDetails']
           tracking_number = tracking_details.get_text('TrackingNumber').to_s
           
           status_code = tracking_details.get_text('StatusCode').to_s
           status_description = tracking_details.get_text('StatusDescription').to_s
-          status = {:code => status_code, :description => status_description }
-
-          case status[:code]
-          when 'DL'
-            is_delivered = true
-            #TODO: Add Exception check
-          end
+          status = TRACKING_STATUS_CODES[status_code]
 
           destination_node = tracking_details.elements['DestinationAddress']
           destination = Location.new(
@@ -313,20 +337,17 @@ module ActiveMerchant
           end
           shipment_events = shipment_events.sort_by(&:time)
 
-          # Does the shipment have an exception?
-          if has_exception
-            exception_event = shipment_events[-1]
-          end
-
-
         end
         
         TrackingResponse.new(success, message, Hash.from_xml(response),
           :carrier => @@name,
           :xml => response,
           :request => last_request,
+          :status => status,
+          :status_code => status_code,
+          :status_description => status_description,
           :shipment_events => shipment_events,
-          
+          :origin => origin,
           :destination => destination,
           :tracking_number => tracking_number
         )
