@@ -37,7 +37,7 @@ module ActiveMerchant
           :items => [ { :sku => '', :quantity => 1 } ]
         )
       rescue ActiveMerchant::Shipping::ResponseError => e
-        e.message != "Could not verify e-mail/password combination"
+        e.message != "Could not verify Username/EmailAddress and Password combination"
       end
       
       private
@@ -113,9 +113,11 @@ module ActiveMerchant
       def build_rate_estimates(response, origin, destination)
         response["rates"].collect do |quote|
           RateEstimate.new(origin, destination, carrier_for(quote["service"]), quote["service"],
-            :service_code  => quote["method"],
-            :total_price   => quote["cost"],
-            :currency      => quote["currency"]
+            :service_code    => quote["method"],
+            :total_price     => quote["cost"],
+            :currency        => quote["currency"],
+            :delivery_range  => [ timestamp_from_business_day(quote["delivery_min"]),
+                                  timestamp_from_business_day(quote["delivery_max"]) ]
           )
         end
       end
@@ -139,6 +141,10 @@ module ActiveMerchant
           rate["service"]   = parse_child_text(e, "Service")
           rate["cost"]      = parse_child_text(e, "Cost")
           rate["currency"]  = parse_child_attribute(e, "Cost", "currency")
+          if delivery_estimate = e.elements["DeliveryEstimate"]
+            rate["delivery_min"]  = parse_child_text(delivery_estimate, "Minimum").to_i
+            rate["delivery_max"]  = parse_child_text(delivery_estimate, "Maximum").to_i
+          end
           response["rates"] << rate
         end
 
@@ -166,7 +172,18 @@ module ActiveMerchant
         if element = parent.elements[name]
           element.attributes[attribute]
         end
-      end      
+      end
+
+      def timestamp_from_business_day(days)
+        return unless days
+        date = DateTime.now
+        days.times do
+          begin
+            date = date + 1
+          end until ![0,6].include?(date.wday)
+        end
+        date
+      end
     end
   end
 end

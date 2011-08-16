@@ -10,7 +10,7 @@ module ActiveMerchant
       @@name = "UPS"
       
       TEST_URL = 'https://wwwcie.ups.com'
-      LIVE_URL = 'https://www.ups.com'
+      LIVE_URL = 'https://onlinetools.ups.com'
       
       RESOURCES = {
         :rates => 'ups.app/xml/Rate',

@@ -11,6 +11,7 @@ module ActiveMerchant #:nodoc:
       attr_reader :currency       # 'USD', 'CAD', etc.
                                   # http://en.wikipedia.org/wiki/ISO_4217
       attr_reader :delivery_date  # Usually only available for express shipments
+      attr_reader :delivery_range # Min and max delivery estimate in days
         
       def initialize(origin, destination, carrier, service_name, options={})
         @origin, @destination, @carrier, @service_name = origin, destination, carrier, service_name
@@ -22,9 +23,10 @@ module ActiveMerchant #:nodoc:
         end
         @total_price = Package.cents_from(options[:total_price])
         @currency = options[:currency]
-        @delivery_date = options[:delivery_date]
+        @delivery_range = options[:delivery_range] ? options[:delivery_range].map { |date| date_for(date) }.compact : []
+        @delivery_date = @delivery_range.last
       end
-      
+
       def total_price
         begin
           @total_price || @package_rates.sum {|p| p[:rate]}
@@ -48,7 +50,13 @@ module ActiveMerchant #:nodoc:
       def package_count
         package_rates.length
       end
-      
+
+      private
+      def date_for(date)
+        date && DateTime.parse(date.to_s)
+      rescue ArgumentError
+        nil
+      end
     end
   end
 end
