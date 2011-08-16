@@ -350,7 +350,7 @@ module ActiveMerchant
             end
             # Has the shipment been delivered?
             if status == :delivered
-              #shipment_events[-1] = ShipmentEvent.new(shipment_events.last.name, shipment_events.last.time, destination)
+              shipment_events[-1] = ShipmentEvent.new(shipment_events.last.name, shipment_events.last.time, destination)
             end
           end
           
