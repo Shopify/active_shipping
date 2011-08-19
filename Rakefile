@@ -1,23 +1,7 @@
-require 'rake'
-require 'rake/clean'
+require 'bundler'
+Bundler::GemHelper.install_tasks
+
 require 'rake/testtask'
-require 'rake/gempackagetask'
-
-desc 'Run unit tests by default (and not remote tests)'
-task :default => 'test:units'
-
-desc 'Run all tests, including remote tests'
-task :test => ['test:units','test:remote']
-
-gemspec = eval(File.read('active_shipping.gemspec'))
-
-Rake::GemPackageTask.new(gemspec) do |pkg|
-  pkg.gem_spec = gemspec
-end
-
-desc "Default Task"
-task :default => 'test:units'
-task :test => ['test:units','test:remote']
 
 namespace :test do
   Rake::TestTask.new(:units) do |t|
@@ -33,32 +17,8 @@ namespace :test do
   end
 end
 
-desc "Validate the gemspec"
-task :gemspec do
-  gemspec.validate
-end
+desc "Default Task"
+task :default => 'test:units'
 
-desc "Update common files from active_merchant directory"
-task :update_common do 
-  STDERR.puts "Updating common include from ../active_merchant. Please make sure this is up-to-date"
-  system("diff -u lib/active_merchant/common.rb ../active_merchant/lib/active_merchant/common.rb | patch -p0")
-  system("diff -ur lib/active_merchant/common ../active_merchant/lib/active_merchant/common | patch -p0")  
-  STDERR.puts "done.."
-end
-
-task :package => :gemspec
-
-desc "Build and install the gem"
-task :install => :package do
-  sh %{gem install pkg/#{gemspec.name}-#{gemspec.version}}
-end
-
-desc "Uninstall gem"
-task :uninstall => [ :clean ] do
-  sh %{gem uninstall #{gemspec.name}}
-end
-
-desc "Release #{gemspec.name} gem (#{gemspec.version})"
-task :release => [ :test, :package ] do
-  sh %{gem push pkg/#{gemspec.name}-#{gemspec.version}.gem}
-end
+desc "Run the unit and remote tests"
+task :test => ['test:units','test:remote']
