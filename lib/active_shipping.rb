@@ -35,7 +35,7 @@ autoload :XmlNode, 'vendor/xml_node/lib/xml_node'
 autoload :Quantified, 'vendor/quantified/lib/quantified'
 
 require 'net/https'
-require 'active_merchant/common'
+require 'active_utils'
 
 require 'active_shipping/shipping/base'
 require 'active_shipping/shipping/response'
