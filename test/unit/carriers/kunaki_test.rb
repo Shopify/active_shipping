@@ -48,6 +48,6 @@ class KunakiTest < Test::Unit::TestCase
     assert_equal "USPS", rate.carrier
     assert_equal 800, rate.total_price
     assert_equal ["UPS 2nd Day Air", "UPS Ground", "UPS Next Day Air Saver", "USPS Priority Mail"], response.rates.collect(&:service_name).sort
-    assert_equal [800, 1234, 2186, 3604], response.rates.collect(&:total_price).sort
+    assert_equal [800, 1234, 2186, 3605], response.rates.collect(&:total_price).sort
   end
 end
