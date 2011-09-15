@@ -131,6 +131,7 @@ class FedExTest < Test::Unit::TestCase
       @carrier.find_tracking_info('077973360403984', :test => true)
     end
   end
+<<<<<<< HEAD
   
   def test_tracking_with_bad_number
     assert_raises ResponseError do
@@ -139,3 +140,21 @@ class FedExTest < Test::Unit::TestCase
   end
 
 end
+=======
+
+  def test_different_rates_for_commercial
+    residential_response = @carrier.find_rates(
+                             @locations[:beverly_hills],
+                             @locations[:ottawa],
+                             @packages.values_at(:chocolate_stuff)
+                           )
+    commercial_response  = @carrier.find_rates(
+                             @locations[:beverly_hills],
+                             Location.from(@locations[:ottawa].to_hash, :address_type => :commercial),
+                             @packages.values_at(:chocolate_stuff)
+                           )
+
+    assert_not_equal residential_response.rates.map(&:price), commercial_response.rates.map(&:price)
+  end
+end
+>>>>>>> FedEx: Pass Residential true unless localtion is commerial
