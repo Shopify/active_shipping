@@ -36,7 +36,6 @@
       <Address>
         <PostalCode>90210</PostalCode>
         <CountryCode>US</CountryCode>
-        <Residential>true</Residential>
       </Address>
     </Recipient>
     <RateRequestTypes>ACCOUNT</RateRequestTypes>

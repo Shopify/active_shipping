@@ -53,4 +53,12 @@ class LocationTest < Test::Unit::TestCase
     location = Location.from({})
     assert_nil location.name
   end
+
+  def test_location_with_company_name
+    location = Location.from(:company => "Mine")
+    assert_equal "Mine", location.company_name
+
+    location = Location.from(:company_name => "Mine")
+    assert_equal "Mine", location.company_name
+  end
 end
