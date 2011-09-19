@@ -37,14 +37,9 @@ module ActiveMerchant #:nodoc:
         @address3 = options[:address3]
         @phone = options[:phone]
         @fax = options[:fax]
-        if options[:address_type].present?
-          @address_type = options[:address_type].to_s
-          unless ADDRESS_TYPES.include?(@address_type)
-            raise ArgumentError.new("address_type must be one of #{ADDRESS_TYPES.map(&:inspect).join(', ')}")
-          end
-        end
-
         @company_name = options[:company_name] || options[:company]
+
+        self.address_type = options[:address_type]
       end
       
       def self.from(object, options={})
@@ -90,6 +85,11 @@ module ActiveMerchant #:nodoc:
       def commercial?; @address_type == 'commercial' end
       def po_box?; @address_type == 'po_box' end
 
+      def address_type=(value)
+        return unless value.present?
+        raise ArgumentError.new("address_type must be one of #{ADDRESS_TYPES.join(', ')}") unless ADDRESS_TYPES.include?(value.to_s)
+        @address_type = value.to_s
+      end
 
       def to_hash
         {

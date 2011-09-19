@@ -61,4 +61,22 @@ class LocationTest < Test::Unit::TestCase
     location = Location.from(:company_name => "Mine")
     assert_equal "Mine", location.company_name
   end
+
+  def test_set_address_type
+    location = @locations[:ottawa]
+    assert !location.commercial?
+
+    location.address_type = :commercial
+    assert location.commercial?
+  end
+
+  def test_set_address_type_invalid
+    location = @locations[:ottawa]
+
+    assert_raises ArgumentError do
+      location.address_type = :new_address_type
+    end
+
+    assert_not_equal "new_address_type", location.address_type
+  end
 end
