@@ -305,6 +305,7 @@ module ActiveMerchant
           exception_event = nil
           shipment_events = []
           status = {}
+          scheduled_delivery_date = nil
 
           first_shipment = xml.elements['/*/Shipment']
           first_package = first_shipment.elements['Package']
@@ -318,6 +319,14 @@ module ActiveMerchant
 
           origin, destination = %w{Shipper ShipTo}.map do |location|
             location_from_address_node(first_shipment.elements["#{location}/Address"])
+          end
+
+          # Get scheduled delivery date
+          unless status == :delivered
+            scheduled_delivery_date = parse_ups_datetime({
+              :date => first_shipment.get_text('ScheduledDeliveryDate'),
+              :time => nil
+              })
           end
 
           activities = first_package.get_elements('Activity')
@@ -362,6 +371,7 @@ module ActiveMerchant
           :status => status,
           :status_code => status_code,
           :status_description => status_description,
+          :scheduled_delivery_date => scheduled_delivery_date,
           :shipment_events => shipment_events,
           :delivered => delivered,
           :exception => exception,
@@ -384,6 +394,18 @@ module ActiveMerchant
               )
       end
       
+      def parse_ups_datetime(options = {})
+        time, date = options[:time].to_s, options[:date].to_s
+        if time.nil?
+          hour, minute, second = 0
+        else
+          hour, minute, second = time.scan(/\d{2}/)
+        end
+        year, month, day = date[0..3], date[4..5], date[6..7]
+
+        Time.utc(year, month, day, hour, minute, second)
+      end
+
       def response_success?(xml)
         xml.get_text('/*/Response/ResponseStatusCode').to_s == '1'
       end
