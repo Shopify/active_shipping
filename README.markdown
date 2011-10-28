@@ -83,6 +83,10 @@ Active Shipping is currently being used and improved in a production environment
 
 After installing dependencies with `bundle install`, you can run the unit tests with `rake test:units` and the remote tests with `rake test:remote`. The unit tests mock out requests and responses so that everything runs locally, while the remote tests actually hit the carrier servers. For the remote tests, you'll need valid test credentials for any carriers' tests you want to run. The credentials should go in ~/.active_merchant/fixtures.yml, and the format of that file can be seen in the included [fixtures.yml](https://github.com/Shopify/active_shipping/blob/master/test/fixtures.yml).
 
+## Contributing
+
+Yes, please! Take a look at the tests and the implementation of the Carrier class to see how the basics work. At some point soon there will be a carrier template generator along the lines of the gateway generator included in Active Merchant, but carrier.rb outlines most of what's necessary. The other main classes that would be good to familiarize yourself with are Location, Package, and Response.
+
 For the features you add, you should have both unit tests and remote tests. It's probably best to start with the remote tests, and then log those requests and responses and use them as the mocks for the unit tests. You can see how this works with the USPS tests right now:
 
 https://github.com/Shopify/active_shipping/blob/master/test/remote/usps_test.rb
@@ -95,12 +99,7 @@ To log requests and responses, just set the `logger` on your carrier class to so
 
 (This logging functionality is provided by the [`PostsData` module](https://github.com/Shopify/active_utils/blob/master/lib/active_utils/common/posts_data.rb) in the `active_utils` dependency.)
 
-
-## Contributing
-
-Yes, please! Take a look at the tests and the implementation of the Carrier class to see how the basics work. At some point soon there will be a carrier template generator along the lines of the gateway generator included in Active Merchant, but carrier.rb outlines most of what's necessary. The other main classes that would be good to familiarize yourself with are Location, Package, and Response.
-
-After you've made your well-tested changes in your github fork, make a pull request and we'll take it from there!
+After you've pushed your well-tested changes to your github fork, make a pull request and we'll take it from there!
 
 ## Contributors
 
