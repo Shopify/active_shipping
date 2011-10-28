@@ -1,14 +1,11 @@
 # Active Shipping
 
-This library is meant to interface with the web services of various shipping carriers. The goal is to abstract the features that are most frequently used into a pleasant and consistent Ruby API. Active Shipping is an extension of [Active Merchant][], and as such, it borrows heavily from conventions used in the latter.
+This library interfaces with the web services of various shipping carriers. The goal is to abstract the features that are most frequently used into a pleasant and consistent Ruby API. Active Shipping is an extension of [Active Merchant][], and as such, it borrows heavily from conventions used in the latter.
 
-We are starting out by only implementing the ability to list available shipping rates for a particular origin, destination, and set of packages. Further development could take advantage of other common features of carriers' web services such as tracking orders and printing labels.
-
-Active Shipping is currently being used and improved in a production environment for the e-commerce application [Shopify][]. Development is being done by [James MacAulay][] (<james@jadedpixel.com>). Discussion is welcome in the [Active Merchant Google Group][discuss].
+Active Shipping is currently being used and improved in a production environment for [Shopify][]. Development is being done by the Shopify integrations team (<integrations-team@shopify.com>). Discussion is welcome in the [Active Merchant Google Group][discuss].
 
 [Active Merchant]:http://www.activemerchant.org
 [Shopify]:http://www.shopify.com
-[James MacAulay]:http://jmacaulay.net
 [discuss]:http://groups.google.com/group/activemerchant
 
 ## Supported Shipping Carriers
@@ -20,28 +17,11 @@ Active Shipping is currently being used and improved in a production environment
 * [New Zealand Post](http://www.nzpost.co.nz)
 * more soon!
 
-## Prerequisites
+## Installation
 
-* [active_support](http://github.com/rails/rails/tree/master/activesupport)
-* [xml_node](http://github.com/tobi/xml_node/) (right now a version of it is actually included in this library, so you don't need to worry about it yet)
-* [mocha](http://mocha.rubyforge.org/) for the tests
+    gem install active_shipping
 
-## Download & Installation
-
-Currently this library is available on GitHub:
-
-  <http://github.com/Shopify/active_shipping>
-
-You will need to get [Git][] if you don't have it. Then:
-
-  > git clone git://github.com/Shopify/active_shipping.git
-
-(That URL is case-sensitive, so watch out.)
-  
-Active Shipping includes an init.rb file. This means that Rails will automatically load it on startup. Check out [git-archive][] for exporting the file tree from your repository to your vendor directory.
-
-[Git]:http://git.or.cz/
-[git-archive]:http://www.kernel.org/pub/software/scm/git/docs/git-archive.html
+...or add it to your [Gemfile](http://gembundler.com/).
 
 ## Sample Usage
 
@@ -111,23 +91,28 @@ Active Shipping includes an init.rb file. This means that Rails will automatical
     # Scanned at FedEx sort facility at KNOXVILLE, TN on Fri Oct 24 05:56:00 UTC 2008. 
     # Delivered at Knoxville, TN on Fri Oct 24 16:45:00 UTC 2008. Signed for by: T.BAKER
 
-## TODO
+## Running the tests
 
-* proper documentation
-* carrier code template generator
-* more carriers
-* support more features for existing carriers
-* bin-packing algorithm (preferably implemented in ruby)
-* order tracking
-* label printing
+After installing dependencies with `bundle install`, you can run the unit tests with `rake test:units` and the remote tests with `rake test:remote`. The unit tests mock out requests and responses so that everything runs locally, while the remote tests actually hit the carrier servers. For the remote tests, you'll need valid test credentials for any carriers' tests you want to run. The credentials should go in ~/.active_merchant/fixtures.yml, and the format of that file can be seen in the included [fixtures.yml](https://github.com/Shopify/active_shipping/blob/master/test/fixtures.yml).
+
+For the features you add, you should have both unit tests and remote tests. It's probably best to start with the remote tests, and then log those requests and responses and use them as the mocks for the unit tests. You can see how this works with the USPS tests right now:
+
+https://github.com/Shopify/active_shipping/blob/master/test/remote/usps_test.rb
+https://github.com/Shopify/active_shipping/blob/master/test/unit/carriers/usps_test.rb
+https://github.com/Shopify/active_shipping/tree/master/test/fixtures/xml/usps
+
+To log requests and responses, just set the `logger` on your carrier class to some kind of `Logger` object:
+
+    USPS.logger = Logger.new($stdout)
+
+(This logging functionality is provided by the [`PostsData` module](https://github.com/Shopify/active_utils/blob/master/lib/active_utils/common/posts_data.rb) in the `active_utils` dependency.)
+
 
 ## Contributing
 
 Yes, please! Take a look at the tests and the implementation of the Carrier class to see how the basics work. At some point soon there will be a carrier template generator along the lines of the gateway generator included in Active Merchant, but carrier.rb outlines most of what's necessary. The other main classes that would be good to familiarize yourself with are Location, Package, and Response.
 
-The nicest way to submit changes would be to set up a GitHub account and fork this project, then initiate a pull request when you want your changes looked at. You can also make a patch (preferably with [git-diff][]) and email to james@jadedpixel.com.
-
-[git-diff]:http://www.kernel.org/pub/software/scm/git/docs/git-diff.html
+After you've made your well-tested changes in your github fork, make a pull request and we'll take it from there!
 
 ## Contributors
 
