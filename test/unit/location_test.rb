@@ -79,4 +79,23 @@ class LocationTest < Test::Unit::TestCase
 
     assert_not_equal "new_address_type", location.address_type
   end
+
+  def test_to_hash_attributes
+    assert_equal %w(address1 address2 address3 address_type city company_name country fax name phone postal_code province), @locations[:ottawa].to_hash.stringify_keys.keys.sort
+  end
+
+  def test_to_json
+    location_json = @locations[:ottawa].to_json
+    assert_equal @locations[:ottawa].to_hash, ActiveSupport::JSON.decode(location_json).symbolize_keys
+  end
+
+  def test_default_to_xml
+    location_xml = @locations[:ottawa].to_xml
+    assert_equal @locations[:ottawa].to_hash, Hash.from_xml(location_xml)["location"].symbolize_keys
+  end
+
+  def test_custom_root_to_xml
+    location_xml = @locations[:ottawa].to_xml(:root => "destination")
+    assert_equal @locations[:ottawa].to_hash, Hash.from_xml(location_xml)["destination"].symbolize_keys
+  end
 end

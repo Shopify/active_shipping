@@ -107,7 +107,12 @@ module ActiveMerchant #:nodoc:
           :company_name => company_name
         }
       end
-      
+
+      def to_xml(options={})
+        options[:root] ||= "location"
+        to_hash.to_xml(options)
+      end
+
       def to_s
         prettyprint.gsub(/\n/, ' ')
       end
