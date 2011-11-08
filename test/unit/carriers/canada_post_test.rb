@@ -118,4 +118,12 @@ class CanadaPostTest < Test::Unit::TestCase
     assert_equal [delivery_date] * 2, rate_estimates.rates[1].delivery_range
     assert_equal [delivery_date + 2.days] * 2, rate_estimates.rates[2].delivery_range
   end
+
+  def test_delivery_range_with_invalid_date
+    @response = xml_fixture('canadapost/example_response_with_strange_delivery_date')
+    @carrier.expects(:ssl_post).returns(@response)
+    rate_estimates = @carrier.find_rates(@origin, @destination, @line_items)
+
+    assert_equal [], rate_estimates.rates[0].delivery_range
+  end
 end
