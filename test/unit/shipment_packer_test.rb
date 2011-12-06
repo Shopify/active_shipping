@@ -97,4 +97,28 @@ class ShipmentPackerTest < Test::Unit::TestCase
     assert_equal 'USD', packages[0].currency
     assert_equal 'USD', packages[1].currency
   end
+
+  def test_symbolize_item_keys
+    string_key_items          = [ {'grams' => 1, 'quantity' => 1, 'price' => 1.0} ]
+    indifferent_access_items  = [ {'grams' => 1, 'quantity' => 1, 'price' => 1.0}.with_indifferent_access ]
+
+    [string_key_items, indifferent_access_items].each do |items|
+      packages = ShipmentPacker.pack(items, @dimensions, 1, 'USD')
+      assert_equal 1, packages.size
+
+      package = packages.first
+      assert_equal 1, package.weight
+      assert_equal 100, package.value
+    end
+  end
+
+  def test_cast_quantity_and_grams_to_int
+    items = [ {:grams => '1', :quantity => '1', :price => '1.0'} ]
+
+    packages = ShipmentPacker.pack(items, @dimensions, 1, 'USD')
+
+    package = packages.first
+    assert_equal 1, package.weight
+    assert_equal 100, package.value
+  end
 end

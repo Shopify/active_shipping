@@ -10,8 +10,7 @@ module ActiveMerchant
       # maximum_weight  - maximum weight in grams
       # currency        - ISO currency code
       def self.pack(items, dimensions, maximum_weight, currency)
-        items.each(&:symbolize_keys!)
-        items = items.collect{ |item| [item] * item[:quantity] }.flatten
+        items = items.map(&:symbolize_keys).map { |item| [item] * item[:quantity].to_i }.flatten
         packages = []
         state = :package_empty
 
@@ -22,7 +21,7 @@ module ActiveMerchant
             state = :filling_package
           when :filling_package
             item = items.shift
-            item_weight, item_price = item[:grams], Package.cents_from(item[:price])
+            item_weight, item_price = item[:grams].to_i, Package.cents_from(item[:price])
 
             if item_weight > maximum_weight
               raise OverweightItem, "The item with weight of #{item_weight}g is heavier than the allowable package weight of #{maximum_weight}g"
