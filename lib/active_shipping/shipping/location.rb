@@ -14,13 +14,15 @@ module ActiveMerchant #:nodoc:
                   :address3,
                   :phone,
                   :fax,
-                  :address_type
+                  :address_type,
+                  :company_name
       
       alias_method :zip, :postal_code
       alias_method :postal, :postal_code
       alias_method :state, :province
       alias_method :territory, :province
       alias_method :region, :province
+      alias_method :company, :company_name
       
       def initialize(options = {})
         @country = (options[:country].nil? or options[:country].is_a?(ActiveMerchant::Country)) ?
@@ -35,12 +37,9 @@ module ActiveMerchant #:nodoc:
         @address3 = options[:address3]
         @phone = options[:phone]
         @fax = options[:fax]
-        if options[:address_type].present?
-          @address_type = options[:address_type].to_s
-          unless ADDRESS_TYPES.include?(@address_type)
-            raise ArgumentError.new("address_type must be one of #{ADDRESS_TYPES.map(&:inspect).join(', ')}")
-          end
-        end
+        @company_name = options[:company_name] || options[:company]
+
+        self.address_type = options[:address_type]
       end
       
       def self.from(object, options={})
@@ -56,7 +55,8 @@ module ActiveMerchant #:nodoc:
           :address3 => [:address3],
           :phone => [:phone, :phone_number],
           :fax => [:fax, :fax_number],
-          :address_type => [:address_type]
+          :address_type => [:address_type],
+          :company_name => [:company, :company_name]
         }
         attributes = {}
         hash_access = begin
@@ -84,7 +84,35 @@ module ActiveMerchant #:nodoc:
       def residential?; @address_type == 'residential' end
       def commercial?; @address_type == 'commercial' end
       def po_box?; @address_type == 'po_box' end
-      
+
+      def address_type=(value)
+        return unless value.present?
+        raise ArgumentError.new("address_type must be one of #{ADDRESS_TYPES.join(', ')}") unless ADDRESS_TYPES.include?(value.to_s)
+        @address_type = value.to_s
+      end
+
+      def to_hash
+        {
+          :country => country_code,
+          :postal_code => postal_code,
+          :province => province,
+          :city => city,
+          :name => name,
+          :address1 => address1,
+          :address2 => address2,
+          :address3 => address3,
+          :phone => phone,
+          :fax => fax,
+          :address_type => address_type,
+          :company_name => company_name
+        }
+      end
+
+      def to_xml(options={})
+        options[:root] ||= "location"
+        to_hash.to_xml(options)
+      end
+
       def to_s
         prettyprint.gsub(/\n/, ' ')
       end

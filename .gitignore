@@ -4,3 +4,4 @@ sample.rb
 *.orig
 pkg
 .dotest
+Gemfile.lock

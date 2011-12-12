@@ -17,8 +17,12 @@ Gem::Specification.new do |s|
   s.rubyforge_project         = "active_shipping"
 
   s.add_dependency('activesupport', '>= 2.3.5')
+  s.add_dependency('i18n')
+  s.add_dependency('active_utils', '>= 1.0.1')
+  s.add_dependency('builder')
 
-  s.add_development_dependency "mocha"
+  s.add_development_dependency('rake')
+  s.add_development_dependency('mocha')
 
   s.files        = Dir.glob("lib/**/*") + %w(MIT-LICENSE README.markdown CHANGELOG)
   s.require_path = 'lib'

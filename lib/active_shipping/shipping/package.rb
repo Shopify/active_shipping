@@ -98,9 +98,9 @@ module ActiveMerchant #:nodoc:
         else
           case money
           when Float
-            (money * 100).to_i
+            (money * 100).round
           when String
-            money =~ /\./ ? (money.to_f * 100).to_i : money.to_i
+            money =~ /\./ ? (money.to_f * 100).round : money.to_i
           else
             money.to_i
           end

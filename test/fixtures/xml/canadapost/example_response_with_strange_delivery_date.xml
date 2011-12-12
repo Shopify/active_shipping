@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+<!DOCTYPE eparcel [
+<!-- EVERY REQUEST CONTAIN THE eparcel TAG -->
+<!ELEMENT eparcel (ratesAndServicesResponse)>
+<!-- *********************************************************  -->
+<!-- * Standard response for request for rates and services  *  -->
+<!-- *********************************************************  -->
+<!ELEMENT ratesAndServicesResponse (statusCode , statusMessage+ , requestID , handling , language , product+ , packing* , emptySpace* , shippingOptions , comment , nearestPostalOutlet*)>
+<!ELEMENT statusCode (#PCDATA)>
+<!ELEMENT statusMessage (#PCDATA)>
+<!ELEMENT requestID (#PCDATA)>
+<!ELEMENT handling (#PCDATA)>
+<!ELEMENT language (#PCDATA)>
+<!ELEMENT product (name , rate , shippingDate , deliveryDate , deliveryDayOfWeek , nextDayAM? , packingID)>
+<!ATTLIST product id CDATA #REQUIRED>
+<!ATTLIST product sequence CDATA #REQUIRED>
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT rate (#PCDATA)>
+<!ELEMENT shippingDate (#PCDATA)>
+<!ELEMENT deliveryDate (#PCDATA)>
+<!ELEMENT deliveryDayOfWeek (#PCDATA)>
+<!ELEMENT nextDayAM (#PCDATA)>
+<!ELEMENT packingID (#PCDATA)>
+<!ELEMENT packing (packingID , box+)>
+<!ELEMENT box (name , weight , expediterWeight , length , width , height , packedItem+)>
+<!ELEMENT weight (#PCDATA)>
+<!ELEMENT expediterWeight (#PCDATA)>
+<!ELEMENT length (#PCDATA)>
+<!ELEMENT width (#PCDATA)>
+<!ELEMENT height (#PCDATA)>
+<!ELEMENT packedItem (quantity , description)>
+<!ELEMENT quantity (#PCDATA)>
+<!ELEMENT description (#PCDATA)>
+<!ELEMENT emptySpace (length , width , height , weight)>
+<!ELEMENT shippingOptions (insurance , deliveryConfirmation , signature , flexiblePaymentAvailable?)>
+<!ELEMENT insurance (#PCDATA)>
+<!ELEMENT deliveryConfirmation (#PCDATA)>
+<!ELEMENT signature (#PCDATA)>
+<!ELEMENT flexiblePaymentAvailable EMPTY>
+<!ELEMENT comment (#PCDATA)>
+<!-- *********************************************************  -->
+<!-- * 'nearestPostalOutlet'  is optional and is returned    *  -->
+<!-- * only if the merchant profile has this option enabled  *  -->
+<!-- *********************************************************  -->
+<!ELEMENT nearestPostalOutlet (postalOutletSequenceNo , distance , outletName , businessName , postalAddress , phoneNumber , businessHours+)>
+<!ELEMENT postalOutletSequenceNo (#PCDATA)>
+<!ELEMENT distance (#PCDATA)>
+<!ELEMENT outletName (#PCDATA)>
+<!ELEMENT businessName (#PCDATA)>
+<!ELEMENT postalAddress (addressLine+ , postalCode , municipality , province?)>
+<!ELEMENT addressLine (#PCDATA)>
+<!ELEMENT postalCode (#PCDATA)>
+<!ELEMENT municipality (#PCDATA)>
+<!ELEMENT province (#PCDATA)>
+<!ELEMENT phoneNumber (#PCDATA)>
+<!ELEMENT businessHours (dayId , dayOfWeek , time)>
+<!ELEMENT dayId (#PCDATA)>
+<!ELEMENT dayOfWeek (#PCDATA)>
+<!ELEMENT time (#PCDATA)>
+]>
+<eparcel>
+  <ratesAndServicesResponse>
+    <statusCode>1</statusCode>
+    <statusMessage>OK</statusMessage>
+    <requestID>6877575</requestID>
+    <handling>0.0</handling>
+    <language>0</language>
+    <product id="1040" sequence="1">
+      <name>Priority Courier</name>
+      <rate>40.28</rate>
+      <shippingDate>2010-08-03</shippingDate>
+      <deliveryDate>1 to 3 months</deliveryDate>
+      <deliveryDayOfWeek>4</deliveryDayOfWeek>
+      <nextDayAM>true</nextDayAM>
+      <packingID>P_0</packingID>
+    </product>
+    <product id="1020" sequence="2">
+      <name>Expedited</name>
+      <rate>17.16</rate>
+      <shippingDate>2010-08-03</shippingDate>
+      <deliveryDate>1 to 3 months</deliveryDate>
+      <deliveryDayOfWeek>4</deliveryDayOfWeek>
+      <nextDayAM>false</nextDayAM>
+      <packingID>P_0</packingID>
+    </product>
+    <product id="1010" sequence="3">
+      <name>Regular</name>
+      <rate>17.16</rate>
+      <shippingDate>2010-08-03</shippingDate>
+      <deliveryDate>1 to 3 months</deliveryDate>
+      <deliveryDayOfWeek>6</deliveryDayOfWeek>
+      <nextDayAM>false</nextDayAM>
+      <packingID>P_0</packingID>
+    </product>
+    <packing>
+      <packingID>P_0</packingID>
+      <box>
+        <name>Small Box</name>
+        <weight>1.691</weight>
+        <expediterWeight>1.691</expediterWeight>
+        <length>25.0</length>
+        <width>17.0</width>
+        <height>16.0</height>
+        <packedItem>
+          <quantity>1</quantity>
+          <description>KAO Diskettes</description>
+        </packedItem>
+      </box>
+      <box>
+        <name>My Ready To Ship Item</name>
+        <weight>2.0</weight>
+        <expediterWeight>1.5</expediterWeight>
+        <length>30.0</length>
+        <width>20.0</width>
+        <height>20.0</height>
+        <packedItem>
+          <quantity>1</quantity>
+          <description>My Ready To Ship Item</description>
+        </packedItem>
+      </box>
+    </packing>
+    <shippingOptions>
+      <insurance>No</insurance>
+      <deliveryConfirmation>No</deliveryConfirmation>
+      <signature>No</signature>
+    </shippingOptions>
+    <comment/>
+  </ratesAndServicesResponse>
+</eparcel>
+<!--END_OF_EPARCEL-->
