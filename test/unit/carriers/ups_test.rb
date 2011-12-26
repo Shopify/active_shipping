@@ -56,6 +56,20 @@ class UPSTest < Test::Unit::TestCase
     assert_equal 'delivered', @carrier.find_tracking_info('1Z5FX0076803466397').status_description.downcase
   end
 
+  def test_find_tracking_info_should_return_destination_address
+    @carrier.expects(:commit).returns(@tracking_response)
+    result = @carrier.find_tracking_info('1Z5FX0076803466397')
+    assert_equal 'ottawa', result.destination.city.downcase
+    assert_equal 'ON', result.destination.state
+  end
+
+  def test_find_tracking_info_should_return_origin_address
+    @carrier.expects(:commit).returns(@tracking_response)
+    result = @carrier.find_tracking_info('1Z5FX0076803466397')
+    assert_equal 'naperville', result.origin.city.downcase
+    assert_equal 'IL', result.origin.state
+  end
+
   def test_find_tracking_info_should_parse_response_into_correct_number_of_shipment_events
     @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('1Z5FX0076803466397')
