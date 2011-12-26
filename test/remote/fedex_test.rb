@@ -131,7 +131,7 @@ class FedExTest < Test::Unit::TestCase
       @carrier.find_tracking_info('077973360403984', :test => true)
     end
   end
-  
+
   def test_tracking_with_bad_number
     assert_raises ResponseError do
       response = @carrier.find_tracking_info('12345')
@@ -153,4 +153,3 @@ class FedExTest < Test::Unit::TestCase
     assert_not_equal residential_response.rates.map(&:price), commercial_response.rates.map(&:price)
   end
 end
->>>>>>> 5fa2892259eb85c1a42514f3bfb2410d585fcd5f
