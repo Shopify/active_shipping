@@ -61,6 +61,20 @@ class FedExTest < Test::Unit::TestCase
     assert_equal 'delivered', @carrier.find_tracking_info('1Z5FX0076803466397').status_description.downcase
   end
 
+  def test_find_tracking_info_should_return_destination_address
+    @carrier.expects(:commit).returns(@tracking_response)
+    result = @carrier.find_tracking_info('077973360403984')
+    assert_equal 'sacramento', result.destination.city.downcase
+    assert_equal 'CA', result.destination.state
+  end
+
+  def test_find_tracking_info_should_return_origin_address
+    @carrier.expects(:commit).returns(@tracking_response)
+    result = @carrier.find_tracking_info('077973360403984')
+    assert_equal 'nashville', result.origin.city.downcase
+    assert_equal 'TN', result.origin.state
+  end
+
   def test_find_tracking_info_should_parse_response_into_correct_number_of_shipment_events
     @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('077973360403984', :test => true)
@@ -72,7 +86,7 @@ class FedExTest < Test::Unit::TestCase
     response = @carrier.find_tracking_info('077973360403984', :test => true)
     assert_equal response.shipment_events.map(&:time).sort, response.shipment_events.map(&:time)
   end
-  
+
   def test_find_tracking_info_should_not_include_events_without_an_address
     @carrier.expects(:commit).returns(@tracking_response)
     assert_nothing_raised do

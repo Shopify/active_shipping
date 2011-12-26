@@ -312,6 +312,13 @@ module ActiveMerchant
           status_description = tracking_details.get_text('StatusDescription').to_s
           status = TRACKING_STATUS_CODES[status_code]
 
+          origin_node = tracking_details.elements['OriginLocationAddress']
+          origin = Location.new(
+                :country =>     origin_node.get_text('CountryCode').to_s,
+                :province =>    origin_node.get_text('StateOrProvinceCode').to_s,
+                :city =>        origin_node.get_text('City').to_s
+          )
+
           destination_node = tracking_details.elements['DestinationAddress']
           destination = Location.new(
                 :country =>     destination_node.get_text('CountryCode').to_s,
