@@ -357,8 +357,14 @@ module ActiveMerchant
                 shipment_events.unshift(origin_event)
               end
             end
+
+
+
             # Has the shipment been delivered?
             if status == :delivered
+              if !destination
+                destination = shipment_events[-1].location
+              end
               shipment_events[-1] = ShipmentEvent.new(shipment_events.last.name, shipment_events.last.time, destination)
             end
           end

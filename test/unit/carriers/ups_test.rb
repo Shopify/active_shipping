@@ -63,6 +63,14 @@ class UPSTest < Test::Unit::TestCase
     assert_equal 'ON', result.destination.state
   end
 
+  def test_find_tracking_info_should_return_destination_address_for_abbreviated_response
+    tracking_response = xml_fixture('ups/delivered_shipment_without_events_tracking_response')
+    @carrier.expects(:commit).returns(tracking_response)
+    result = @carrier.find_tracking_info('1Z5FX0076803466397')
+    assert_equal 'cypress', result.destination.city.downcase
+    assert_equal 'TX', result.destination.state
+  end
+
   def test_find_tracking_info_should_return_origin_address
     @carrier.expects(:commit).returns(@tracking_response)
     result = @carrier.find_tracking_info('1Z5FX0076803466397')
