@@ -346,7 +346,7 @@ module ActiveMerchant
             
             shipment_events = shipment_events.sort_by(&:time)
             
-            if origin
+            if origin && !(shipment_events.count == 1 && status == :delivered)
               first_event = shipment_events[0]
               same_country = origin.country_code(:alpha2) == first_event.location.country_code(:alpha2)
               same_or_blank_city = first_event.location.city.blank? or first_event.location.city == origin.city
@@ -357,8 +357,6 @@ module ActiveMerchant
                 shipment_events.unshift(origin_event)
               end
             end
-
-
 
             # Has the shipment been delivered?
             if status == :delivered
