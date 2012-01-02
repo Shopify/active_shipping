@@ -99,10 +99,10 @@ module ActiveMerchant
       
       def self.default_location
         {
-          :country => 'CA',
-          :province => 'ON',
-          :city => 'Ottawa',
-          :address1 => '61A York St',
+          :country     => 'CA',
+          :province    => 'ON',
+          :city        => 'Ottawa',
+          :address1    => '61A York St',
           :postal_code => 'K1N5T2'
         }
       end

@@ -33,8 +33,18 @@ module ActiveMerchant #:nodoc:
         @currency = options[:currency] || (options[:value].currency if options[:value].respond_to?(:currency))
         @cylinder = (options[:cylinder] || options[:tube]) ? true : false
         @gift = options[:gift] ? true : false
+        @oversized = options[:oversized] ? true : false
+        @unpackaged = options[:unpackaged] ? true : false
       end
   
+      def unpackaged?
+        @unpackaged
+      end
+
+      def oversized?
+        @oversized
+      end
+    
       def cylinder?
         @cylinder
       end

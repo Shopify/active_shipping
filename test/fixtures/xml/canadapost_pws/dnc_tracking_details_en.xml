@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tracking-detail xmlns="http://www.canadapost.ca/ws/track">
+  <pin>1680678172650919</pin>
+  <active-exists>1</active-exists>
+  <archive-exists/>
+  <changed-expected-date/>
+  <destination-postal-id>K0B1R0</destination-postal-id>
+  <expected-delivery-date>2011-01-12</expected-delivery-date>
+  <changed-expected-delivery-reason/>
+  <mailed-by-customer-number>0001680678</mailed-by-customer-number>
+  <mailed-on-behalf-of-customer-number>0001680678</mailed-on-behalf-of-customer-number>
+  <original-pin/>
+  <service-name>Xpresspost</service-name>
+  <service-name-2>Xpresspost</service-name-2>
+  <customer-ref-1/>
+  <customer-ref-2/>
+  <return-pin/>
+  <signature-image-exists>false</signature-image-exists>
+  <suppress-signature>true</suppress-signature>
+  <delivery-options>
+    <item>
+      <delivery-option/>
+      <delivery-option-description/>
+    </item>
+  </delivery-options>
+  <significant-events>
+    <occurrence>
+      <event-identifier>1498</event-identifier>
+      <event-date>2011-01-27</event-date>
+      <event-time>14:02:29</event-time>
+      <event-time-zone>EST</event-time-zone>
+      <event-description>Item successfully delivered</event-description>
+      <signatory-name/>
+      <event-site>VANKLEEK HILL</event-site>
+      <event-province>ON</event-province>
+      <event-retail-location-id/>
+      <event-retail-name/>
+    </occurrence>
+    <occurrence>
+      <event-identifier>0156</event-identifier>
+      <event-date>2011-01-18</event-date>
+      <event-time>07:57:50</event-time>
+      <event-time-zone>EST</event-time-zone>
+      <event-description>Final Notice; Item will be returned to sender if not collected within 10 days</event-description>
+      <signatory-name/>
+      <event-site>VANKLEEK HILL</event-site>
+      <event-province>ON</event-province>
+      <event-retail-location-id>0000315052</event-retail-location-id>
+      <event-retail-name>VANKLEEK HILL PO</event-retail-name>
+    </occurrence>
+    <occurrence>
+      <event-identifier>1479</event-identifier>
+      <event-date>2011-01-11</event-date>
+      <event-time>11:59:59</event-time>
+      <event-time-zone>EST</event-time-zone>
+      <event-description>Attempted delivery. Notice card left indicating where item can be picked up.</event-description>
+      <signatory-name/>
+      <event-site>VANKLEEK HILL</event-site>
+      <event-province>ON</event-province>
+      <event-retail-location-id/>
+      <event-retail-name/>
+    </occurrence>
+    <occurrence>
+      <event-identifier>1701</event-identifier>
+      <event-date>2011-01-11</event-date>
+      <event-time>11:55:51</event-time>
+      <event-time-zone>EST</event-time-zone>
+      <event-description>Item available for pickup at Post Office</event-description>
+      <signatory-name/>
+      <event-site>VANKLEEK HILL</event-site>
+      <event-province>ON</event-province>
+      <event-retail-location-id/>
+      <event-retail-name/>
+    </occurrence>
+    <occurrence>
+      <event-identifier>0100</event-identifier>
+      <event-date>2011-01-10</event-date>
+      <event-time>18:54:00</event-time>
+      <event-time-zone>EST</event-time-zone>
+      <event-description>Item processed at postal facility</event-description>
+      <signatory-name/>
+      <event-site>MISSISSAUGA</event-site>
+      <event-province>ON</event-province>
+      <event-retail-location-id/>
+      <event-retail-name/>
+    </occurrence>
+    <occurrence>
+      <event-identifier>2300</event-identifier>
+      <event-date>2011-01-10</event-date>
+      <event-time>17:41:50</event-time>
+      <event-time-zone>EST</event-time-zone>
+      <event-description>Item picked up by Canada Post</event-description>
+      <signatory-name/>
+      <event-site>MISSISSAUGA</event-site>
+      <event-province>ON</event-province>
+      <event-retail-location-id/>
+      <event-retail-name/>
+    </occurrence>
+    <occurrence>
+      <event-identifier>3000</event-identifier>
+      <event-date>2011-01-10</event-date>
+      <event-time>15:00:00</event-time>
+      <event-time-zone>EST</event-time-zone>
+      <event-description>Order information received by Canada Post</event-description>
+      <signatory-name/>
+      <event-site>MISSISSAUGA</event-site>
+      <event-province>ON</event-province>
+      <event-retail-location-id/>
+      <event-retail-name/>
+    </occurrence>
+  </significant-events>
+</tracking-detail>
