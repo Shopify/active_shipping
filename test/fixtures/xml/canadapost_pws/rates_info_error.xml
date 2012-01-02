@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<messages xmlns="http://www.canadapost.ca/ws/messages">
+  <message>
+    <code>AA004</code>
+    <description>You cannot mail on behalf of the requested customer.</description>
+  </message>
+</messages>

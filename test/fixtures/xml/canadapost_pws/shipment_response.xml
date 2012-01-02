@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<non-contract-shipment-info xmlns="http://www.canadapost.ca/ws/ncshipment">
+
+  <shipment-id>406951321983787352</shipment-id>
+  <tracking-pin>11111118901234</tracking-pin>
+  <links>
+    <link rel="self"
+    href="https://ct.soa-gw.canadapost.ca/rs/0008035576/ncshipment/406951321983787352"
+    media-type="application/vnd.cpc.ncshipment+xml" />
+    <link rel="details"
+    href="https://ct.soa-gw.canadapost.ca/rs/0008035576/ncshipment/406951321983787352/details"
+    media-type="application/vnd.cpc.ncshipment+xml" />
+    <link rel="receipt"
+    href="https://ct.soa-gw.canadapost.ca/rs/0008035576/ncshipment/406951321983787352/receipt"
+    media-type="application/vnd.cpc.ncshipment+xml" />
+    <link rel="label"
+    href="https://ct.soa-gw.canadapost.ca/ers/artifact/c70da5ed5a0d2c32/20238/0"
+    media-type="application/pdf" index="0" />
+  </links>
+</non-contract-shipment-info>

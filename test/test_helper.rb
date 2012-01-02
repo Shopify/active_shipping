@@ -9,6 +9,7 @@ require 'test/unit'
 require 'active_shipping'
 require 'mocha'
 require 'timecop'
+require 'nokogiri'
 
 
 XmlNode # trigger autorequire
@@ -36,7 +37,6 @@ module Test
       def load_fixtures
         file = File.exists?(LOCAL_CREDENTIALS) ? LOCAL_CREDENTIALS : DEFAULT_CREDENTIALS
         yaml_data = YAML.load(File.read(file))
-        
         model_fixtures = Dir.glob(File.join(MODEL_FIXTURES,'**','*.yml'))
         model_fixtures.each do |file|
           name = File.basename(file, '.yml')
@@ -62,7 +62,10 @@ module Test
         hash.symbolize_keys!
         hash.each{|k,v| symbolize_keys(v)}
       end
-      
+
+      def file_fixture(filename)
+        File.open("test/fixtures/files/#{filename}", "rb") { |f| f.read }
+      end
     end
   end
 end
@@ -71,7 +74,7 @@ module ActiveMerchant
   module Shipping
     module TestFixtures
       
-      mattr_reader :packages, :locations
+      mattr_reader :packages, :locations, :line_items1
       
       @@packages = {
         :just_ounces => Package.new(16, nil, :units => :imperial),
@@ -198,6 +201,41 @@ module ActiveMerchant
                                       :address1 => '192 Victoria St West',
                                       :postal_code => '1010')
       }
+
+      @@line_items1 = [
+        {
+          :fulfillment_service => "manual",
+          :fulfillment_status => nil,
+          :grams => 200,
+          :id => "466157049",
+          :price => 199.00,
+          :product_id => "632910392",
+          :quantity => 1,
+          :requires_shipping => true,
+          :sku => "IPOD2008GREEN",
+          :title => "IPod Nano - 8gb",
+          :variant_id => "39072856",
+          :variant_title => "green",
+          :vendor => nil,
+          :name => "IPod Nano - 8gb - green"
+        },
+        {
+          :fulfillment_service => "manual",
+          :fulfillment_status => nil,
+          :grams => 200,
+          :id => "703073504",
+          :price => 199.00,
+          :product_id => "632910392",
+          :quantity => 1,
+          :requires_shipping => true,
+          :sku => "IPOD2008BLACK",
+          :title => "IPod Nano - 8gb",
+          :variant_id => "457924702",
+          :variant_title => "black",
+          :vendor => nil,
+          :name => "IPod Nano - 8gb - black"
+        }
+      ]
       
     end
   end
