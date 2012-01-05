@@ -294,6 +294,7 @@ module ActiveMerchant
       end
       
       def parse_tracking_response(response, options)
+        #Rails.logger.debug(response)
         xml = REXML::Document.new(response)
         root_node = xml.elements['TrackReply']
         
@@ -328,6 +329,11 @@ module ActiveMerchant
           end
           
           destination_node = tracking_details.elements['DestinationAddress']
+
+          if destination_node.nil?
+            destination_node = tracking_details.elements['ActualDeliveryAddress']
+          end
+
           destination = Location.new(
                 :country =>     destination_node.get_text('CountryCode').to_s,
                 :province =>    destination_node.get_text('StateOrProvinceCode').to_s,
