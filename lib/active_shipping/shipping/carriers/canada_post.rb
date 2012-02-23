@@ -153,7 +153,7 @@ module ActiveMerchant
         boxes = []
         if success
           xml.elements.each('eparcel/ratesAndServicesResponse/product') do |product|
-            service_name = (@options[:french] ? @@name_french : @@name) + product.get_text('name').to_s
+            service_name = (@options[:french] ? @@name_french : @@name) + " " + product.get_text('name').to_s
             service_code = product.attribute('id').to_s
 
             rate_estimates << RateEstimate.new(origin, destination, @@name, service_name,
