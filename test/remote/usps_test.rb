@@ -8,6 +8,18 @@ class USPSTest < Test::Unit::TestCase
     @carrier   = USPS.new(fixtures(:usps))
   end
   
+  def test_tracking
+    assert_nothing_raised do
+      @carrier.find_tracking_info('EJ958083578US', :test => true)
+    end
+  end
+  
+  def test_tracking_with_bad_number
+    assert_raises ResponseError do
+      response = @carrier.find_tracking_info('abc123xyz')
+    end
+  end
+
   def test_zip_to_zip
     assert_nothing_raised do
       response = @carrier.find_rates(

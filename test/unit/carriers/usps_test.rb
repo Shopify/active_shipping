@@ -1,13 +1,97 @@
 require 'test_helper'
 
 class USPSTest < Test::Unit::TestCase
-  
+
   def setup
     @packages  = TestFixtures.packages
     @locations = TestFixtures.locations
     @carrier   = USPS.new(:login => 'login')
+    @tracking_response = xml_fixture('usps/tracking_response')
+    @tracking_response_failure = xml_fixture('usps/tracking_response_failure')
+  end
+
+  def test_tracking_failure_should_raise_exception
+    @carrier.expects(:commit).returns(@tracking_response_failure)
+    assert_raises ResponseError do
+      @carrier.find_tracking_info('abc123xyz', :test => true)
+    end
+  end
+
+  def test_find_tracking_info_should_handle_not_found_error
+    @carrier.expects(:commit).returns(xml_fixture('usps/tracking_response_test_error'))
+    assert_raises ResponseError do
+      @carrier.find_tracking_info('9102901000462189604217', :test => true)
+    end
+  end
+
+  def test_find_tracking_info_should_return_a_tracking_response
+    @carrier.expects(:commit).returns(@tracking_response)
+    assert_instance_of ActiveMerchant::Shipping::TrackingResponse, @carrier.find_tracking_info('9102901000462189604217', :test => true)
+    @carrier.expects(:commit).returns(@tracking_response)
+    assert_equal 'ActiveMerchant::Shipping::TrackingResponse', @carrier.find_tracking_info('EJ958083578US').class.name
+  end
+
+  def test_find_tracking_info_should_parse_response_into_correct_number_of_shipment_events
+    @carrier.expects(:commit).returns(@tracking_response)
+    response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
+    assert_equal 7, response.shipment_events.size
   end
   
+  def test_find_tracking_info_should_return_shipment_events_in_ascending_chronological_order
+    @carrier.expects(:commit).returns(@tracking_response)
+    response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
+    assert_equal response.shipment_events.map(&:time).sort, response.shipment_events.map(&:time)
+  end
+  
+  def test_find_tracking_info_should_have_correct_timestamps_for_shipment_events
+    @carrier.expects(:commit).returns(@tracking_response)
+    response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
+    assert_equal ['2012-01-22 16:30:00 UTC',
+                 '2012-01-22 17:00:00 UTC',
+                 '2012-01-23 02:49:00 UTC',
+                 '2012-01-24 07:45:00 UTC',
+                 '2012-01-26 11:21:00 UTC',
+                 '2012-01-27 08:03:00 UTC',
+                 '2012-01-27 08:13:00 UTC'], response.shipment_events.map{ |e| e.time.strftime('%Y-%m-%d %H:%M:00 %Z') }
+  end
+
+  def test_find_tracking_info_should_have_correct_names_for_shipment_events
+    @carrier.expects(:commit).returns(@tracking_response)
+    response = @carrier.find_tracking_info('9102901000462189604217')
+    assert_equal ["PICKED UP BY SHIPPING PARTNER",
+                 "ARRIVED SHIPPING PARTNER FACILITY",
+                 "DEPARTED SHIPPING PARTNER FACILITY",
+                 "DEPARTED SHIPPING PARTNER FACILITY",
+                 "ARRIVAL AT POST OFFICE",
+                 "SORTING COMPLETE",
+                 "OUT FOR DELIVERY"], response.shipment_events.map(&:name)
+  end
+
+  def test_find_tracking_info_should_have_correct_locations_for_shipment_events
+    @carrier.expects(:commit).returns(@tracking_response)
+    response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
+    assert_equal ["PHOENIX, AZ, 85043",
+                 "PHOENIX, AZ, 85043",
+                 "PHOENIX, AZ, 85043",
+                 "GRAND PRAIRIE, TX, 75050",
+                 "DES MOINES, IA, 50311",
+                 "DES MOINES, IA, 50311",
+                 "DES MOINES, IA, 50311"], response.shipment_events.map{|e| e.location}.map{|l| "#{l.city}, #{l.state}, #{l.postal_code}"}
+  end
+
+  def test_find_tracking_info_destination
+    # USPS API doesn't tell where it's going
+    @carrier.expects(:commit).returns(@tracking_response)
+    response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
+    assert_equal response.destination, nil
+  end
+
+  def test_find_tracking_info_tracking_number
+    @carrier.expects(:commit).returns(@tracking_response)
+    response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
+    assert_equal response.tracking_number, '9102901000462189604217'
+  end
+
   def test_size_codes
     assert_equal 'REGULAR', USPS.size_code_for(Package.new(2, [1,12,1], :units => :imperial))
     assert_equal 'LARGE', USPS.size_code_for(Package.new(2, [12.1,1,1], :units => :imperial))
@@ -50,7 +134,6 @@ class USPSTest < Test::Unit::TestCase
     rescue ResponseError => e
       e.response
     end
-    
     
     expected_xml_hash = Hash.from_xml(fixture_xml)
     actual_xml_hash = Hash.from_xml(response.xml)
