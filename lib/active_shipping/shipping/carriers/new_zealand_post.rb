@@ -2,138 +2,268 @@ module ActiveMerchant
   module Shipping
     class NewZealandPost < Carrier
 
-      # class NewZealandPostRateResponse < RateResponse
-      # end
-      
       cattr_reader :name
       @@name = "New Zealand Post"
 
-      URL = "http://workshop.nzpost.co.nz/api/v1/rate.xml"
+      URL = "http://api.nzpost.co.nz/ratefinder"
 
-      # Override to return required keys in options hash for initialize method.
       def requirements
         [:key]
       end
 
-      # Override with whatever you need to get the rates
       def find_rates(origin, destination, packages, options = {})
-        packages = Array(packages)
-        rate_responses = []
-        packages.each do |package|
-          if package.tube?
-            request_hash = build_tube_request_params(origin, destination, package, options)
-          else
-            request_hash = build_rectangular_request_params(origin, destination, package, options)
-          end
-          url = URL + '?' + request_hash.to_param
-          response = ssl_get(url)
-          rate_responses << parse_rate_response(origin, destination, package, response, options)
-        end
-        combine_rate_responses(rate_responses, packages)
-      end
-
-      def maximum_weight
-        Mass.new(20, :kilograms)
+        options = @options.merge(options)
+        request = RateRequest.from(origin, destination, packages, options)
+        request.raw_responses = commit(request.urls) if request.new_zealand_origin?
+        request.rate_response
       end
 
       protected
 
-      # Override in subclasses for non-U.S.-based carriers.
+      def commit(urls)
+        save_request(urls).map { |url| ssl_get(url) }
+      end
+
       def self.default_location
-        Location.new(:postal_code => '6011')
+        Location.new({
+          :country => "NZ",
+          :city => "Wellington",
+          :address1 => "22 Waterloo Quay",
+          :address2 => "Pipitea",
+          :postal_code => "6011"
+        })
       end
 
-      private
+      class NewZealandPostRateResponse < RateResponse
 
-      def build_rectangular_request_params(origin, destination,  package, options = {})
-        params = {
-          :postcode_src => origin.postal_code,
-          :postcode_dest => destination.postal_code,
-          :api_key => @options[:key],
-          :height => "#{package.centimetres(:height) * 10}",
-          :thickness => "#{package.centimetres(:width) * 10}",
-          :length => "#{package.centimetres(:length) * 10}",
-          :weight =>"%.1f" % (package.weight.amount / 1000.0)
-        }
+        attr_reader :raw_responses
+
+        def initialize(success, message, params = {}, options = {})
+          @raw_responses = options[:raw_responses]
+          super
+        end
       end
 
-      def build_tube_request_params(origin, destination,  package, options = {})
-        params = {
-          :postcode_src => origin.postal_code,
-          :postcode_dest => destination.postal_code,
-          :api_key => @options[:key],
-          :diameter => "#{package.centimetres(:width) * 10}",
-          :length => "#{package.centimetres(:length) * 10}",
-          :weight => "%.1f" % (package.weight.amount / 1000.0)
-        }
-      end
+      class RateRequest
 
-      def parse_rate_response(origin, destination, package, response, options={})
-        xml = REXML::Document.new(response)
-        if response_success?(xml)
-          rate_estimates = []
-          xml.elements.each('hash/products/product') do |prod|
-            if( prod.get_text('packaging') == 'postage_only' )
-              rate_estimates << RateEstimate.new(origin, 
-                                                 destination,
-                                                 @@name,
-                                                 prod.get_text('service-group-description').to_s,
-                                                 :total_price => prod.get_text('cost').to_s.to_f,
-                                                 :currency => 'NZD',
-                                                 :service_code => prod.get_text('code').to_s,
-                                                 :package => package)
-            end
+        attr_reader :urls
+        attr_writer :raw_responses
+
+        def self.from(*args)
+          return International.new(*args) unless domestic?(args[0..1])
+          Domestic.new(*args)
+        end
+
+        def initialize(origin, destination, packages, options)
+          @origin = Location.from(origin)
+          @destination = Location.from(destination)
+          @packages = Array(packages).map { |package| NewZealandPostPackage.new(package, api) }
+          @params = { :format => "json", :api_key => options[:key] }
+          @test = options[:test]
+          @rates = @responses = @raw_responses = []
+          @urls = @packages.map { |package| url(package) }
+        end
+
+        def rate_response
+          @rates = rates
+          NewZealandPostRateResponse.new(true, "success", response_params, response_options)
+        rescue => error
+          NewZealandPostRateResponse.new(false, error.message, response_params, response_options)
+        end
+
+        def new_zealand_origin?
+          self.class.new_zealand?(@origin)
+        end
+
+        protected
+
+        def self.new_zealand?(location)
+          [ 'NZ', nil ].include?(Location.from(location).country_code)
+        end
+
+        def self.domestic?(locations)
+          locations.select { |location| new_zealand?(location) }.size == 2
+        end
+
+        def response_options
+          {
+            :rates => @rates,
+            :raw_responses => @raw_responses,
+            :request => @urls,
+            :test => @test
+          }
+        end
+
+        def response_params
+          { :responses => @responses }
+        end
+
+        def rate_options(products)
+          {
+            :total_price => products.sum { |product| price(product) },
+            :currency => "NZD",
+            :service_code => products.first["code"]
+          }
+        end
+
+        def rates
+          rates_hash.map do |service, products|
+            RateEstimate.new(@origin, @destination, NewZealandPost.name, service, rate_options(products))
           end
-          
-          RateResponse.new(true, "Success", Hash.from_xml(response), :rates => rate_estimates, :xml => response)
-        else
-          error_message = response_message(xml)
-          RateResponse.new(false, error_message, Hash.from_xml(response), :rates => rate_estimates, :xml => response)
-        end
-      end
-
-      def combine_rate_responses(rate_responses, packages)
-        #if there are any failed responses, return on that response
-        rate_responses.each do |r|
-          return r if !r.success?
         end
 
-        #group rate estimates by delivery type so that we can exclude any incomplete delviery types
-        rate_estimate_delivery_types = {}
-        rate_responses.each do |rr|
-          rr.rate_estimates.each do |re|
-            (rate_estimate_delivery_types[re.service_code] ||= []) << re
+        def rates_hash
+          products_hash.select { |service, products| products.size == @packages.size }
+        end
+
+        def products_hash
+          product_arrays.flatten.group_by { |product| service_name(product) }
+        end
+
+        def product_arrays
+          responses.map do |response|
+            raise(response["message"]) unless response["status"] == "success"
+            response["products"]
           end
         end
-        rate_estimate_delivery_types.delete_if{ |type, re| re.size != packages.size }
 
-        #combine cost estimates for remaining packages
-        combined_rate_estimates = []
-        rate_estimate_delivery_types.each do |type, re|
-          total_price = re.sum(&:total_price)
-          r = re.first
-          combined_rate_estimates << RateEstimate.new(r.origin, r.destination, r.carrier,
-                                                     r.service_name,
-                                                     :total_price => total_price,
-                                                     :currency => r.currency,
-                                                     :service_code => r.service_code,
-                                                     :packages => packages)
+        def responses
+          @responses = @raw_responses.map { |response| parse_response(response) }
         end
-        RateResponse.new(true, "Success", {}, :rates => combined_rate_estimates)
+
+        def parse_response(response)
+          JSON.parse(response)
+        end
+
+        def url(package)
+          "#{URL}/#{api}?#{params(package).to_query}"
+        end
+
+        def params(package)
+          @params.merge(api_params).merge(package.params)
+        end
+
       end
 
-      def response_success?(xml)
-        xml.get_text('hash/status').to_s == 'success'
-      end
+      class Domestic < RateRequest
+        def service_name(product)
+          [ product["service_group_description"], product["description"] ].join(" ")
+        end
+        
+        def api
+          :domestic
+        end
 
-      def response_message(xml)
-        if response_success?(xml)
-          'Success'
-        else
-          xml.get_text('hash/message').to_s
+        def api_params
+          {
+            :postcode_src => @origin.postal_code,
+            :postcode_dest => @destination.postal_code,
+            :carrier => "all"
+          }
+        end
+
+        def price(product)
+          product["cost"].to_f
         end
       end
 
+      class International < RateRequest
+
+        def rates
+          raise "New Zealand Post packages must originate in New Zealand" unless new_zealand_origin?
+          super
+        end
+
+        def service_name(product)
+          [ product["group"], product["name"] ].join(" ")
+        end
+        
+        def api
+          :international
+        end
+
+        def api_params
+          { :country_code => @destination.country_code }
+        end
+        
+        def price(product)
+          product["price"].to_f
+        end
+      end
+
+      class NewZealandPostPackage
+
+        def initialize(package, api)
+          @package = package
+          @api = api
+          @params = { :weight => weight, :length => length }
+        end
+
+        def params
+          @params.merge(api_params).merge(shape_params)
+        end
+
+        protected
+
+        def weight
+          @package.kg
+        end
+
+        def length
+          mm(:length)
+        end
+
+        def height
+          mm(:height)
+        end
+
+        def width
+          mm(:width)
+        end
+
+        def shape
+          return :cylinder if @package.cylinder?
+          :cuboid
+        end
+
+        def api_params
+          send("#{@api}_params")
+        end
+
+        def international_params
+          { :value => value }
+        end
+
+        def domestic_params
+          {}
+        end
+
+        def shape_params
+          send("#{shape}_params")
+        end
+
+        def cuboid_params
+          { :height => height, :thickness => width }
+        end
+
+        def cylinder_params
+          { :diameter => width }
+        end
+
+        def mm(measurement)
+          @package.cm(measurement) * 10
+        end
+
+        def value
+          return 0 unless @package.value && currency == "NZD"
+          @package.value / 100
+        end
+
+        def currency
+          @package.currency || "NZD"
+        end
+
+      end
     end
   end
 end
