@@ -318,7 +318,7 @@ module ActiveMerchant
       
       def response_message(document)
         response_node = response_status_node(document)
-        "#{response_status_node(document).get_text('Severity').to_s} - #{response_node.get_text('Code').to_s}: #{response_node.get_text('Message').to_s}"
+        "#{response_status_node(document).get_text('Severity')} - #{response_node.get_text('Code')}: #{response_node.get_text('Message')}"
       end
       
       def commit(request, test = false)
