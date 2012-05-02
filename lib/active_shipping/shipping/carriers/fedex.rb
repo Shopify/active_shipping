@@ -86,10 +86,7 @@ module ActiveMerchant
       }
 
       def self.service_name_for_code(service_code)
-        ServiceTypes[service_code] || begin
-          name = service_code.downcase.split('_').collect{|word| word.capitalize }.join(' ')
-          "FedEx #{name.sub(/Fedex /, '')}"
-        end
+        ServiceTypes[service_code] || "FedEx #{service_code.titleize.sub(/Fedex /, '')}"
       end
       
       def requirements
