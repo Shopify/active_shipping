@@ -11,6 +11,7 @@ class UPSTest < Test::Unit::TestCase
                    :password => 'password'
                  )
     @tracking_response = xml_fixture('ups/shipment_from_tiger_direct')
+
   end
   
   def test_initialize_options_requirements
@@ -45,7 +46,7 @@ class UPSTest < Test::Unit::TestCase
     @carrier.expects(:commit).returns(@tracking_response)
     assert_equal :delivered, @carrier.find_tracking_info('1Z5FX0076803466397').status
   end
-  
+
   def test_find_tracking_info_should_return_correct_status_code
     @carrier.expects(:commit).returns(@tracking_response)
     assert_equal 'd', @carrier.find_tracking_info('1Z5FX0076803466397').status_code.downcase
@@ -54,6 +55,12 @@ class UPSTest < Test::Unit::TestCase
   def test_find_tracking_info_should_return_correct_status_description
     @carrier.expects(:commit).returns(@tracking_response)
     assert_equal 'delivered', @carrier.find_tracking_info('1Z5FX0076803466397').status_description.downcase
+  end
+
+  def test_find_tracking_info_should_have_an_out_for_delivery_status
+    out_for_delivery_tracking_response = xml_fixture('ups/out_for_delivery_shipment')
+    @carrier.expects(:commit).returns(out_for_delivery_tracking_response)
+    assert_equal :out_for_delivery, @carrier.find_tracking_info('1Z5FX0076803466397').status
   end
 
   def test_find_tracking_info_should_return_destination_address
@@ -102,7 +109,8 @@ class UPSTest < Test::Unit::TestCase
                    "OUT FOR DELIVERY",
                    "DELIVERED" ], response.shipment_events.map(&:name)
   end
-  
+
+
   def test_add_origin_and_destination_data_to_shipment_events_where_appropriate
     @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('1Z5FX0076803466397')

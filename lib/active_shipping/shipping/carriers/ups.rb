@@ -317,6 +317,10 @@ module ActiveMerchant
           status_description = status_node.get_text('Description').to_s
           status = TRACKING_STATUS_CODES[status_code]
 
+          if status_description =~ /out.*delivery/i
+            status = :out_for_delivery
+          end
+
           origin, destination = %w{Shipper ShipTo}.map do |location|
             location_from_address_node(first_shipment.elements["#{location}/Address"])
           end
