@@ -99,19 +99,19 @@ class LocationTest < Test::Unit::TestCase
     assert_equal @locations[:ottawa].to_hash, Hash.from_xml(location_xml)["destination"].symbolize_keys
   end
 
-  # def test_zip_plus_4_with_no_dash
-  #   zip = "33333"
-  #   plus_4 = "1234"
-  #   zip_plus_4 = "#{zip}-#{plus_4}"
-  #   location = Location.from(:zip => zip+plus_4)
-  #   assert_equal zip_plus_4, location.zip_plus_4
-  # end
+  def test_zip_plus_4_with_no_dash
+    zip = "33333"
+    plus_4 = "1234"
+    zip_plus_4 = "#{zip}-#{plus_4}"
+    location = Location.from(:zip => "#{zip}#{plus_4}")
+    assert_equal zip_plus_4, location.zip_plus_4
+  end
 
-  # def test_zip_plus_4_with_dash
-  #   zip = "33333"
-  #   plus_4 = "1234"
-  #   zip_plus_4 = "#{zip}-#{plus_4}"
-  #   location = Location.from(:zip => zip_plus_4)
-  #   assert_equal zip_plus_4, location.zip_plus_4
-  # end
+  def test_zip_plus_4_with_dash
+    zip = "33333"
+    plus_4 = "1234"
+    zip_plus_4 = "#{zip}-#{plus_4}"
+    location = Location.from(:zip => zip_plus_4)
+    assert_equal zip_plus_4, location.zip_plus_4
+  end
 end
