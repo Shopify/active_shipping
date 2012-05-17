@@ -5,7 +5,7 @@ class FedExTest < Test::Unit::TestCase
     @packages               = TestFixtures.packages
     @locations              = TestFixtures.locations
     @carrier                = FedEx.new(:key => '1111', :password => '2222', :account => '3333', :login => '4444')
-    @tracking_response = xml_fixture('fedex/tracking_response')
+    @tracking_response      = xml_fixture('fedex/tracking_response')
   end
   
   def test_initialize_options_requirements
@@ -67,14 +67,6 @@ class FedExTest < Test::Unit::TestCase
     assert_equal 'sacramento', result.destination.city.downcase
     assert_equal 'CA', result.destination.state
   end
-
-  # def test_find_tracking_info_should_recover_from_no_destinationaddress_node
-  #   tracking_response = xml_fixture('fedex/tracking_response_delivery_with_signature')
-  #   @carrier.expects(:commit).returns(tracking_response)
-  #   result = @carrier.find_tracking_info('857371454789156')
-  #   assert_equal 'cypress', result.destination.city.downcase
-  #   assert_equal 'TX', result.destination.state
-  # end
 
   def test_find_tracking_info_should_return_origin_address
     @carrier.expects(:commit).returns(@tracking_response)

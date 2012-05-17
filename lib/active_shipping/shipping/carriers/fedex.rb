@@ -291,7 +291,6 @@ module ActiveMerchant
       end
       
       def parse_tracking_response(response, options)
-        #Rails.logger.debug(response)
         xml = REXML::Document.new(response)
         root_node = xml.elements['TrackReply']
         
@@ -311,16 +310,15 @@ module ActiveMerchant
           status = TRACKING_STATUS_CODES[status_code]
 
           begin
-
-          origin_node = tracking_details.elements['OriginLocationAddress']
+            origin_node = tracking_details.elements['OriginLocationAddress']
           
-          if origin_node
-            origin = Location.new(
-                  :country =>     origin_node.get_text('CountryCode').to_s,
-                  :province =>    origin_node.get_text('StateOrProvinceCode').to_s,
-                  :city =>        origin_node.get_text('City').to_s
-            )
-          end
+            if origin_node
+              origin = Location.new(
+                    :country =>     origin_node.get_text('CountryCode').to_s,
+                    :province =>    origin_node.get_text('StateOrProvinceCode').to_s,
+                    :city =>        origin_node.get_text('City').to_s
+              )
+            end
           rescue NoMethodError
             raise NoMethodError.new(response)
           end

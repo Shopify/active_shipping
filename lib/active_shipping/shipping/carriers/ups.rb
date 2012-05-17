@@ -354,6 +354,9 @@ module ActiveMerchant
             
             shipment_events = shipment_events.sort_by(&:time)
             
+            # UPS will sometimes archive a shipment, stripping all shipment activity except for the delivery 
+            # event (see test/fixtures/xml/delivered_shipment_without_events_tracking_response.xml for an example).
+            # This adds an origin event to the shipment activity in such cases.
             if origin && !(shipment_events.count == 1 && status == :delivered)
               first_event = shipment_events[0]
               same_country = origin.country_code(:alpha2) == first_event.location.country_code(:alpha2)
