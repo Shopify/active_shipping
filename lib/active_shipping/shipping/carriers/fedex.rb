@@ -122,10 +122,7 @@ module ActiveMerchant
       })
 
       def self.service_name_for_code(service_code)
-        ServiceTypes[service_code] || begin
-          name = service_code.downcase.split('_').collect{|word| word.capitalize }.join(' ')
-          "FedEx #{name.sub(/Fedex /, '')}"
-        end
+        ServiceTypes[service_code] || "FedEx #{service_code.titleize.sub(/Fedex /, '')}"
       end
       
       def requirements
@@ -386,7 +383,7 @@ module ActiveMerchant
       
       def response_message(document)
         response_node = response_status_node(document)
-        "#{response_status_node(document).get_text('Severity').to_s} - #{response_node.get_text('Code').to_s}: #{response_node.get_text('Message').to_s}"
+        "#{response_status_node(document).get_text('Severity')} - #{response_node.get_text('Code')}: #{response_node.get_text('Message')}"
       end
       
       def commit(request, test = false)

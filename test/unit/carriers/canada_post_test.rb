@@ -109,7 +109,6 @@ class CanadaPostTest < Test::Unit::TestCase
   end
 
   def test_delivery_range_based_on_delivery_date
-    Date.expects(:today).returns(Date.new(2010, 8, 3)).at_least_once
     @carrier.expects(:ssl_post).returns(@response)
     rate_estimates = @carrier.find_rates(@origin, @destination, @line_items)
 
