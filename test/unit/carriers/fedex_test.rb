@@ -172,6 +172,26 @@ class FedExTest < Test::Unit::TestCase
     end
   end
 
+  def test_returns_sgd_instead_of_sid_currency_for_signapore_rates
+    mock_response = xml_fixture('fedex/ottawa_to_beverly_hills_rate_response').gsub('CAD', 'SID')
+    Time.any_instance.expects(:to_xml_value).returns("2009-07-20T12:01:55-04:00")
+    
+    @carrier.expects(:commit).returns(mock_response)
+    response = @carrier.find_rates( @locations[:ottawa],
+                                    @locations[:beverly_hills],
+                                    @packages.values_at(:book, :wii), :test => true)
+    assert_equal ["FedEx Ground"], response.rates.map(&:service_name)
+    assert_equal [3836], response.rates.map(&:price)
+    
+    assert response.success?, response.message
+    assert_not_equal [], response.rates
+    
+    response.rates.each do |rate|
+      assert_equal 'FedEx', rate.carrier
+      assert_equal 'SGD', rate.currency
+    end
+  end
+
   def test_delivery_range_based_on_delivery_date
     mock_response = xml_fixture('fedex/ottawa_to_beverly_hills_rate_response').gsub('CAD', 'UKL')
 
