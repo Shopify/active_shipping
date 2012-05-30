@@ -236,7 +236,7 @@ module ActiveMerchant
           is_saturday_delivery = rated_shipment.get_text('AppliedOptions').to_s == 'SATURDAY_DELIVERY'
           service_type = is_saturday_delivery ? "#{service_code}_SATURDAY_DELIVERY" : service_code
           
-          currency = handle_uk_currency(rated_shipment.get_text('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Currency').to_s)
+          currency = handle_incorrect_currency_codes(rated_shipment.get_text('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Currency').to_s)
           rate_estimates << RateEstimate.new(origin, destination, @@name,
                               self.class.service_name_for_code(service_type),
                               :service_code => service_code,
@@ -322,8 +322,14 @@ module ActiveMerchant
         ssl_post(test ? TEST_URL : LIVE_URL, request.gsub("\n",''))        
       end
       
-      def handle_uk_currency(currency)
-        currency =~ /UKL/i ? 'GBP' : currency
+      def handle_incorrect_currency_codes(currency)
+        if currency =~ /UKL/i
+          'GBP'
+        elsif currency =~ /SID/i
+          'SGD'
+        else
+          currency
+        end
       end
     end
   end
