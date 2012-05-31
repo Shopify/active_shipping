@@ -323,12 +323,10 @@ module ActiveMerchant
       end
       
       def handle_incorrect_currency_codes(currency)
-        if currency =~ /UKL/i
-          'GBP'
-        elsif currency =~ /SID/i
-          'SGD'
-        else
-          currency
+        case currency
+        when /UKL/i then 'GBP'
+        when /SID/i then 'SGD'
+        else currency
         end
       end
     end
