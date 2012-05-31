@@ -5,6 +5,7 @@ class FedExTest < Test::Unit::TestCase
     @packages               = TestFixtures.packages
     @locations              = TestFixtures.locations
     @carrier                = FedEx.new(:key => '1111', :password => '2222', :account => '3333', :login => '4444')
+    @tracking_response      = xml_fixture('fedex/tracking_response')
   end
   
   def test_initialize_options_requirements
@@ -26,24 +27,68 @@ class FedExTest < Test::Unit::TestCase
   # end
   
   def test_find_tracking_info_should_return_a_tracking_response
-    @carrier.expects(:commit).returns(xml_fixture('fedex/tracking_response'))
+    @carrier.expects(:commit).returns(@tracking_response)
     assert_instance_of ActiveMerchant::Shipping::TrackingResponse, @carrier.find_tracking_info('077973360403984', :test => true)
   end
   
+  def test_find_tracking_info_should_mark_shipment_as_delivered
+    @carrier.expects(:commit).returns(@tracking_response)
+    assert_equal true, @carrier.find_tracking_info('077973360403984').delivered?
+  end
+
+  def test_find_tracking_info_should_return_correct_carrier
+    @carrier.expects(:commit).returns(@tracking_response)
+    assert_equal :fedex, @carrier.find_tracking_info('077973360403984').carrier
+  end
+
+  def test_find_tracking_info_should_return_correct_carrier_name
+    @carrier.expects(:commit).returns(@tracking_response)
+    assert_equal 'FedEx', @carrier.find_tracking_info('077973360403984').carrier_name
+  end
+
+  def test_find_tracking_info_should_return_correct_status
+    @carrier.expects(:commit).returns(@tracking_response)
+    assert_equal :delivered, @carrier.find_tracking_info('077973360403984').status
+  end
+  
+  def test_find_tracking_info_should_return_correct_status_code
+    @carrier.expects(:commit).returns(@tracking_response)
+    assert_equal 'dl', @carrier.find_tracking_info('077973360403984').status_code.downcase
+  end
+
+  def test_find_tracking_info_should_return_correct_status_description
+    @carrier.expects(:commit).returns(@tracking_response)
+    assert_equal 'delivered', @carrier.find_tracking_info('1Z5FX0076803466397').status_description.downcase
+  end
+
+  def test_find_tracking_info_should_return_destination_address
+    @carrier.expects(:commit).returns(@tracking_response)
+    result = @carrier.find_tracking_info('077973360403984')
+    assert_equal 'sacramento', result.destination.city.downcase
+    assert_equal 'CA', result.destination.state
+  end
+
+  def test_find_tracking_info_should_return_origin_address
+    @carrier.expects(:commit).returns(@tracking_response)
+    result = @carrier.find_tracking_info('077973360403984')
+    assert_equal 'nashville', result.origin.city.downcase
+    assert_equal 'TN', result.origin.state
+  end
+
   def test_find_tracking_info_should_parse_response_into_correct_number_of_shipment_events
-    @carrier.expects(:commit).returns(xml_fixture('fedex/tracking_response'))
+    @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('077973360403984', :test => true)
     assert_equal 6, response.shipment_events.size
   end
   
   def test_find_tracking_info_should_return_shipment_events_in_ascending_chronological_order
-    @carrier.expects(:commit).returns(xml_fixture('fedex/tracking_response'))
+    @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('077973360403984', :test => true)
     assert_equal response.shipment_events.map(&:time).sort, response.shipment_events.map(&:time)
   end
-  
+
   def test_find_tracking_info_should_not_include_events_without_an_address
-    @carrier.expects(:commit).returns(xml_fixture('fedex/tracking_response'))
+    @carrier.expects(:commit).returns(@tracking_response)
     assert_nothing_raised do
       response = @carrier.find_tracking_info('077973360403984', :test => true)
       assert_nil response.shipment_events.find{|event| event.name == 'Shipment information sent to FedEx' }
