@@ -134,8 +134,8 @@ module ActiveMerchant #:nodoc:
 
       # Returns the postal code as a properly formatted Zip+4 code, e.g. "77095-2233"
       def zip_plus_4
-        if /(?<zip>\d{5})(?<plus_4>\d{4})/ =~ @postal_code
-          return "#{zip}-#{plus_4}"
+        if /(\d{5})(\d{4})/ =~ @postal_code
+          return "#{$1}-#{$2}"
         elsif /\d{5}-\d{4}/ =~ @postal_code
           return @postal_code
         else
