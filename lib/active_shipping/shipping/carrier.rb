@@ -65,6 +65,17 @@ module ActiveMerchant
       def save_request(r)
         @last_request = r
       end
+
+      def timestamp_from_business_day(days)
+        return unless days
+        date = DateTime.now
+        days.times do
+          begin
+            date = date + 1
+          end until ![0,6].include?(date.wday)
+        end
+        date
+      end
     end
   end
 end
