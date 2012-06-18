@@ -284,7 +284,7 @@ module ActiveMerchant
           xml.elements.each('/*/RatedShipment') do |rated_shipment|
             service_code = rated_shipment.get_text('Service/Code').to_s
             days_to_delivery = rated_shipment.get_text('GuaranteedDaysToDelivery').to_s.to_i
-            delivery_date  = days_to_delivery >= 1 ? days_to_delivery.days.from_now.strftime("%Y-%m-%d") : nil
+            days_to_delivery = nil if days_to_delivery == 0
 
             rate_estimates << RateEstimate.new(origin, destination, @@name,
                                 service_name_for(origin, service_code),
@@ -292,7 +292,7 @@ module ActiveMerchant
                                 :currency => rated_shipment.get_text('TotalCharges/CurrencyCode').to_s,
                                 :service_code => service_code,
                                 :packages => packages,
-                                :delivery_range => [delivery_date])
+                                :delivery_range => [timestamp_from_business_day(days_to_delivery)])
           end
         end
         RateResponse.new(success, message, Hash.from_xml(response).values.first, :rates => rate_estimates, :xml => response, :request => last_request)

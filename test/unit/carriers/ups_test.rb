@@ -131,14 +131,23 @@ class UPSTest < Test::Unit::TestCase
                    "UPS Next Day Air Early A.M.",
                    "UPS Next Day Air"], response.rates.map(&:service_name)
     assert_equal [992, 2191, 3007, 5509, 9401, 6124], response.rates.map(&:price)
-    
-    date_test = [nil, 3, 2, 1, 1, 1].map do |days| 
-      DateTime.strptime(days.days.from_now.strftime("%Y-%m-%d"), "%Y-%m-%d") if days
+  end
+
+  def test_delivery_range_takes_weekend_into_consideration
+    mock_response = xml_fixture('ups/test_real_home_as_residential_destination_response')
+    @carrier.expects(:commit).returns(mock_response)
+    response = @carrier.find_rates( @locations[:beverly_hills],
+                                    @locations[:real_home_as_residential],
+                                    @packages.values_at(:chocolate_stuff))
+
+    DateTime.stubs(:now => DateTime.new(2012, 6, 15))
+    date_test = [nil, 3, 2, 1, 1, 1].map do |days|
+      DateTime.now + days + 3 if days
     end
-    
+
     assert_equal date_test, response.rates.map(&:delivery_date)
   end
-  
+
   def test_maximum_weight
     assert Package.new(150 * 16, [5,5,5], :units => :imperial).mass == @carrier.maximum_weight
     assert Package.new((150 * 16) + 0.01, [5,5,5], :units => :imperial).mass > @carrier.maximum_weight
