@@ -140,10 +140,11 @@ class UPSTest < Test::Unit::TestCase
                                     @locations[:real_home_as_residential],
                                     @packages.values_at(:chocolate_stuff))
 
-    DateTime.stubs(:now => DateTime.new(2012, 6, 15))
+    Timecop.freeze(DateTime.new(2012, 6, 15))
     date_test = [nil, 3, 2, 1, 1, 1].map do |days|
       DateTime.now + days + 3 if days
     end
+    Timecop.return
 
     assert_equal date_test, response.rates.map(&:delivery_date)
   end
