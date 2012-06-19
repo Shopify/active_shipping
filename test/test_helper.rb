@@ -10,7 +10,7 @@ require 'active_shipping'
 require 'mocha'
 require 'timecop'
 require 'nokogiri'
-
+require 'ruby-debug'
 
 XmlNode # trigger autorequire
 
@@ -203,38 +203,8 @@ module ActiveMerchant
       }
 
       @@line_items1 = [
-        {
-          :fulfillment_service => "manual",
-          :fulfillment_status => nil,
-          :grams => 200,
-          :id => "466157049",
-          :price => 199.00,
-          :product_id => "632910392",
-          :quantity => 1,
-          :requires_shipping => true,
-          :sku => "IPOD2008GREEN",
-          :title => "IPod Nano - 8gb",
-          :variant_id => "39072856",
-          :variant_title => "green",
-          :vendor => nil,
-          :name => "IPod Nano - 8gb - green"
-        },
-        {
-          :fulfillment_service => "manual",
-          :fulfillment_status => nil,
-          :grams => 200,
-          :id => "703073504",
-          :price => 199.00,
-          :product_id => "632910392",
-          :quantity => 1,
-          :requires_shipping => true,
-          :sku => "IPOD2008BLACK",
-          :title => "IPod Nano - 8gb",
-          :variant_id => "457924702",
-          :variant_title => "black",
-          :vendor => nil,
-          :name => "IPod Nano - 8gb - black"
-        }
+        PackageItem.new("IPod Nano - 8gb - green", 200, 199.00, 1, {:sku => "IPOD2008GREEN", :hs_code => "1234.12.12.12"}),
+        PackageItem.new("IPod Nano - 8gb - black", 200, 199.00, 1, {:sku => "IPOD2008GREEN", :hs_code => "1234.12.12.12"})
       ]
       
     end

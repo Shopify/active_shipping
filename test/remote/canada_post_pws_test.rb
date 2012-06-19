@@ -4,7 +4,7 @@ class CanadaPostPWSTest < Test::Unit::TestCase
   
   def setup
 
-    login = fixtures(:canada_post_pws)
+    @login = fixtures(:canada_post_pws)
     
     # 100 grams, 93 cm long, 10 cm diameter, cylinders have different volume calculations
     # @pkg1 = Package.new(1000, [93,10], :value => 10.00)
@@ -12,8 +12,7 @@ class CanadaPostPWSTest < Test::Unit::TestCase
 
     @line_item1 = TestFixtures.line_items1
 
-    @shipping_opts1 = {:delivery_confirm => true, :cod => :true, :cod_amount => 50.00, :cod_includes_shipping => true, 
-                       :cod_method_of_payment => 'CSH', :insurance => true, :insurance_amount => 100.00, 
+    @shipping_opts1 = {:delivery_confirm => true, :cod => true, :cod_amount => 500.00, :insurance => true, :insurance_amount => 100.00, 
                        :signature_required => true, :pa18 => true}
 
     @home_params = {
@@ -73,7 +72,7 @@ class CanadaPostPWSTest < Test::Unit::TestCase
       :country     => 'JP'      
     }
 
-    @cp = CanadaPostPWS.new(login.merge(:endpoint => "https://ct.soa-gw.canadapost.ca/"))
+    @cp = CanadaPostPWS.new(@login.merge(:endpoint => "https://ct.soa-gw.canadapost.ca/"))
     @cp.logger = Logger.new(STDOUT)
 
     @DEFAULT_RESPONSE = {
@@ -85,10 +84,24 @@ class CanadaPostPWSTest < Test::Unit::TestCase
   end
 
   def test_rates
-    opts = {:customer_number => "0008035576"}
+    opts = {:customer_number => @login[:customer_number]}
     rates = @cp.find_rates(@home_params, @dom_params, [@pkg1], opts)
     assert_equal RateResponse, rates.class
     assert_equal RateEstimate, rates.rates.first.class
+  end
+
+  def test_rates_with_insurance_changes_price
+    opts = {:customer_number => @login[:customer_number]}
+    rates = @cp.find_rates(@home_params, @dom_params, [@pkg1], opts)
+    insured_rates = @cp.find_rates(@home_params, @dom_params, [@pkg1], opts.merge(@shipping_opts1))
+    assert_not_equal rates.rates.first.price, insured_rates.rates.first.price
+  end
+
+  def test_rates_with_invalid_customer_raises_exception
+    opts = {:customer_number => "0000000000", :service => "DOM.XP"}
+    assert_raise ResponseError do
+      @cp.find_rates(@home_params, @dom_params, [@pkg1], opts)
+    end
   end
 
   def test_tracking
@@ -101,7 +114,7 @@ class CanadaPostPWSTest < Test::Unit::TestCase
   end
 
   def test_create_shipment
-    opts = {:customer_number => "0008035576", :service => "DOM.XP"}
+    opts = {:customer_number => @login[:customer_number], :service => "DOM.XP"}
     response = @cp.create_shipment(@home_params, @dom_params, @pkg1, @line_item1, opts)
     assert response.is_a?(CPPWSShippingResponse)
     assert_equal @DEFAULT_RESPONSE[:shipping_id], response.shipping_id
@@ -110,9 +123,9 @@ class CanadaPostPWSTest < Test::Unit::TestCase
   end
 
   def test_create_shipment_with_options
-    opts = {:customer_number => "0008035576", :service => "DOM.XP"}
+    opts = {:customer_number => @login[:customer_number], :service => "USA.EP"}
     opts.merge! @shipping_opts1
-    response = @cp.create_shipment(@home_params, @dom_params, @pkg1, @line_item1, opts)
+    response = @cp.create_shipment(@home_params, @dest_params, @pkg1, @line_item1, opts)
     assert response.is_a?(CPPWSShippingResponse)
     assert_equal @DEFAULT_RESPONSE[:shipping_id], response.shipping_id
     assert_equal @DEFAULT_RESPONSE[:tracking_number], response.tracking_number
@@ -124,6 +137,13 @@ class CanadaPostPWSTest < Test::Unit::TestCase
     response = @cp.retrieve_shipping_label(shipping_response)
     assert_not_nil response
     assert_equal "%PDF", response[0...4]
+  end
+
+  def test_create_shipment_with_invalid_customer_raises_exception
+    opts = {:customer_number => "0000000000", :service => "DOM.XP"}
+    assert_raise ResponseError do
+      @cp.create_shipment(@home_params, @dom_params, @pkg1, @line_item1, opts)
+    end
   end
 
 end
