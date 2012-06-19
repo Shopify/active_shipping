@@ -32,6 +32,10 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
     }
     @dest = Location.new(@dest_params)
 
+    @shipping_opts1 = {:delivery_confirm => true, :cod => :true, :cod_amount => 50.00, :cod_includes_shipping => true, 
+                       :cod_method_of_payment => 'CSH', :insurance => true, :insurance_amount => 100.00, 
+                       :signature_required => true, :pa18 => true}
+
     @cp = CanadaPostPWS.new(login)
     @cp.logger = Logger.new(STDOUT)
     @french_cp = CanadaPostPWS.new(login.merge(:language => 'fr'))
@@ -69,7 +73,11 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
 
   def test_find_rates_with_error
     response = xml_fixture('canadapost_pws/rates_info_error')
-    CanadaPostPWS.any_instance.expects(:ssl_post).returns(response)
+    http_response = mock()
+    http_response.stubs(:code).returns('400')
+    http_response.stubs(:body).returns(response)
+    response_error = ActiveMerchant::ResponseError.new(http_response)
+    @cp.expects(:ssl_post).raises(response_error)
 
     exception = assert_raises ActiveMerchant::Shipping::ResponseError do 
       @cp.find_rates(@home_params, @dest_params, [@pkg1, @pkg2], @default_options)
@@ -195,6 +203,14 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
     doc = Nokogiri::HTML(xml)
 
     assert_equal 'true', doc.xpath('//parcel-characteristics/unpackaged').first.content
+  end
+
+  def test_build_rates_request_with_zero_weight
+    options = @default_options.merge(@shipping_opts1)
+    line_items = [Package.new(0, [93,10]), Package.new(0, [10,10])]
+    request = @cp.build_rates_request(@home_params, @dest_params, line_items, options)
+    doc = Nokogiri::HTML(request)
+    assert_equal '0.001', doc.xpath('//parcel-characteristics/weight').first.content
   end
 
   # parse response

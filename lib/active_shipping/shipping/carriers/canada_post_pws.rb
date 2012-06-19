@@ -48,6 +48,9 @@ module ActiveMerchant
                           :signature_required, :pa18, :pa19, :hfp, :dns, :lad, :d2po, 
                           :rase, :rts, :aban]
 
+      RATES_OPTIONS = [:delivery_confirm, :cod, :cod_amount, :insurance, :insurance_amount, 
+                          :signature_required, :pa18, :pa19, :hfp, :dns, :lad]
+
       MAX_WEIGHT = 30 # kg
 
       attr_accessor :language, :endpoint, :logger
@@ -68,7 +71,7 @@ module ActiveMerchant
         response = ssl_post(url, request, headers(RATE_MIMETYPE, RATE_MIMETYPE))
         parse_rates_response(response, origin, destination)
       rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
-        error_response(response, RateResponse)
+        error_response(e.response.body, RateResponse)
       end
       
       def find_tracking_info(pin, options = {})
@@ -84,35 +87,37 @@ module ActiveMerchant
         response = ssl_get(url, headers(TRACK_MIMETYPE))
         parse_tracking_response(response)
       rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
-        error_response(response, CPPWSTrackingResponse)
+        error_response(e.response.body, CPPWSTrackingResponse)
       rescue InvalidPinFormatError => e
         CPPWSTrackingResponse.new(false, "Invalid Pin Format", {}, {:carrier => @@name})
       end
       
+      # line_items should be a list of PackageItem's
       def create_shipment(origin, destination, package, line_items = [], options = {})
         raise MissingCustomerNumberError unless customer_number = options[:customer_number]
         url = endpoint + "rs/#{customer_number}/ncshipment"
 
-        # build shipment request
         request_body = build_shipment_request(origin, destination, package, line_items, options)
-        # get response
+
         response = ssl_post(url, request_body, headers(SHIPMENT_MIMETYPE, SHIPMENT_MIMETYPE))
         parse_shipment_response(response)
       rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
         puts "Error #{e.response.body}"
+        error_response(e.response.body, CPPWSShippingResponse)
       rescue MissingCustomerNumberError => e
         p "Error #{e}"
+        CPPWSShippingResponse.new(false, "Invalid Pin Format", {}, {:carrier => @@name})
+      end
+
+      def retrieve_shipment(shipping_id, options = {})
+        raise MissingCustomerNumberError unless customer_number = options[:customer_number]
+        url = endpoint + "rs/#{customer_number}/ncshipment/#{shipping_id}"
+        response = ssl_post(url, nil, headers(SHIPMENT_MIMETYPE, SHIPMENT_MIMETYPE))
+        shipping_response = parse_shipment_response(response)
       end
       
       def retrieve_shipping_label(shipping_response, options = {})
         raise MissingShippingNumberError unless shipping_response && shipping_response.shipping_id
-        # TODO: do we need to do an initial service call here to get an updated label url? Does the url expire?
-        # url = endpoint + "rs/#{customer_number}/ncshipment/#{shipping_response.shipping_id}"
-        # response = ssl_post(url, nil, headers(SHIPMENT_MIMETYPE, SHIPMENT_MIMETYPE))
-        # shipping_response = parse_shipment_response(response)
-
-        # get label pdf
-        return unless shipping_response.label_url
         ssl_get(shipping_response.label_url, headers("application/pdf"))
       end
 
@@ -129,7 +134,7 @@ module ActiveMerchant
           node << customer_number_node(options)
           node << contract_id_node(options)
           node << quote_type_node(options)
-          node << shipping_options_node(options)
+          node << shipping_options_node(RATES_OPTIONS, options)
           node << parcel_node(line_items)
           node << origin_node(origin)
           node << destination_node(destination)
@@ -274,7 +279,7 @@ module ActiveMerchant
       end
 
       def shipment_options_node(options)
-          shipping_options_node(options)
+          shipping_options_node(SHIPPING_OPTIONS, options)
       end
 
       def shipment_notification_node(options)
@@ -319,12 +324,12 @@ module ActiveMerchant
           node << XmlNode.new('sku-list') do |sku|
             line_items.each do |line_item|
               sku << XmlNode.new('item') do |item|
-                # item << XmlNode.new('hs-tariff-code', '1234.12.12.12') #(optional)
-                item << XmlNode.new('sku', line_item[:product_id]) #(optional)
-                item << XmlNode.new('customs-description', line_item[:name])
-                item << XmlNode.new('unit-weight', line_item[:grams] * 1000)
-                item << XmlNode.new('customs-value-per-unit', line_item[:price])
-                item << XmlNode.new('customs-number-of-units', line_item[:quantity])
+                item << XmlNode.new('hs-tariff-code', line_item.hs_code) if line_item.hs_code && !line_item.hs_code.empty?
+                item << XmlNode.new('sku', line_item.sku) if line_item.sku && !line_item.sku.empty?
+                item << XmlNode.new('customs-description', line_item.name)
+                item << XmlNode.new('unit-weight', sanitize_weight_kg(line_item.kg))
+                item << XmlNode.new('customs-value-per-unit', sanitize_price_from_cents(line_item.value_per_unit))
+                item << XmlNode.new('customs-number-of-units', line_item.quantity)
               end
             end
           end
@@ -333,7 +338,7 @@ module ActiveMerchant
       end
 
       def shipment_parcel_node(package, options ={})
-        weight = package.kilograms.to_f
+        weight = sanitize_weight_kg(package.kilograms.to_f)
         XmlNode.new('parcel-characteristics') do |el|
           el << XmlNode.new('weight', "%#2.3f" % weight)
           pkg_dim = package.cm
@@ -346,7 +351,6 @@ module ActiveMerchant
           end
           el << XmlNode.new('document', false)
           el << XmlNode.new('mailing-tube', package.tube?)
-          el << XmlNode.new('oversized', true) if package.oversized?
           el << XmlNode.new('unpackaged', package.unpackaged?)
         end
       end
@@ -405,7 +409,7 @@ module ActiveMerchant
       end
 
       def parcel_node(line_items, options ={})
-        weight = line_items.sum(&:kilograms).to_f
+        weight = sanitize_weight_kg(line_items.sum(&:kilograms).to_f)
         XmlNode.new('parcel-characteristics') do |el|
           el << XmlNode.new('weight', "%#2.3f" % weight)
           # currently not provided, and not required for rating
@@ -452,9 +456,8 @@ module ActiveMerchant
         end
       end
 
-      # TODO: should we do CP defined required field validation here?
-      def shipping_options_node(options = {})
-        return if (options.keys & SHIPPING_OPTIONS).empty?
+      def shipping_options_node(available_options, options = {})
+        return if (options.symbolize_keys.keys & available_options).empty?
         XmlNode.new('options') do |el|
           
           if options[:delivery_confirm]
@@ -518,6 +521,15 @@ module ActiveMerchant
         end
         hash
       end
+
+      def sanitize_weight_kg(kg)
+        return kg == 0 ? 0.001 : kg;
+      end
+
+      def sanitize_price_from_cents(value)
+        return value == 0 ? 0.01 : (value / 100.0).round(2)
+      end
+
     end
     
     class CPPWSTrackingResponse < TrackingResponse      

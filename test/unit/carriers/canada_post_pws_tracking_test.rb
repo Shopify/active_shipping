@@ -57,8 +57,12 @@ class CanadaPostPwsTrackingTest < Test::Unit::TestCase
   def test_find_tracking_info_when_pin_doesnt_exist
     pin = '1371134583769924'
     response = xml_fixture('canadapost_pws/tracking_details_en_error')
-    @cp.expects(:ssl_get).returns(response)
-    
+    http_response = mock()
+    http_response.stubs(:code).returns('400')
+    http_response.stubs(:body).returns(response)
+    response_error = ActiveMerchant::ResponseError.new(http_response)
+    @cp.expects(:ssl_get).raises(response_error)
+
     exception = assert_raises ActiveMerchant::Shipping::ResponseError do
       @cp.find_tracking_info(pin)
     end
