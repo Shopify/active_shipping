@@ -136,13 +136,13 @@ class UPSTest < Test::Unit::TestCase
   def test_delivery_range_takes_weekend_into_consideration
     mock_response = xml_fixture('ups/test_real_home_as_residential_destination_response')
     @carrier.expects(:commit).returns(mock_response)
+    Timecop.freeze(DateTime.new(2012, 6, 15))
     response = @carrier.find_rates( @locations[:beverly_hills],
                                     @locations[:real_home_as_residential],
                                     @packages.values_at(:chocolate_stuff))
 
-    Timecop.freeze(DateTime.new(2012, 6, 15))
     date_test = [nil, 3, 2, 1, 1, 1].map do |days|
-      DateTime.now + days + 3 if days
+      DateTime.now.utc + days + 2 if days
     end
     Timecop.return
 
