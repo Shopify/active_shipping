@@ -115,6 +115,7 @@ module ActiveMerchant
                                       :country => 'US',
                                       :city => 'Tampa',
                                       :state => 'FL',
+                                      :company => 'Tampa Company',
                                       :address1 => '7926 Woodvale Circle',
                                       :zip => '33615',
                                       :address_type => 'commercial'), # means that UPS will default to commercial if it doesn't know

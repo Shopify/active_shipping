@@ -184,4 +184,19 @@ class ShipwireTest < Test::Unit::TestCase
     assert_equal [], response.rates[0].delivery_range
     assert_nil response.rates[0].delivery_date
   end
+
+  def test_rate_request_includes_company_if_provided
+    company = CGI.escape("<Company>Tampa Company</Company>")
+    @carrier.expects(:ssl_post).with(anything, includes(company)).returns(xml_fixture('shipwire/rates_response'))
+    
+    response = @carrier.find_rates(
+                 @locations[:ottawa],
+                 @locations[:real_home_as_commercial],
+                 @packages.values_at(:book, :wii),
+                 :order_id => '#1000',
+                 :items => @items
+               )   
+ 
+    assert response.success?
+  end
 end
