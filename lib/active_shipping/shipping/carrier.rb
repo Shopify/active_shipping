@@ -68,7 +68,7 @@ module ActiveMerchant
 
       def timestamp_from_business_day(days)
         return unless days
-        date = DateTime.now
+        date = DateTime.now.utc
         days.times do
           begin
             date = date + 1
