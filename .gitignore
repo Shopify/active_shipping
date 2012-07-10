@@ -5,3 +5,4 @@ sample.rb
 pkg
 .dotest
 Gemfile.lock
+.rvmrc
