@@ -30,6 +30,7 @@ class CanadaPostTest < Test::Unit::TestCase
     rate_estimates.rates.each do |rate|
       assert_instance_of RateEstimate, rate
       assert_instance_of DateTime, rate.delivery_date
+      assert_instance_of DateTime, rate.shipping_date
       assert_instance_of String, rate.service_name
       assert_instance_of Fixnum, rate.total_price
     end
@@ -63,6 +64,7 @@ class CanadaPostTest < Test::Unit::TestCase
     rate_estimates.rates.each do |rate|
       assert_instance_of RateEstimate, rate
       assert_instance_of DateTime, rate.delivery_date
+      assert_instance_of DateTime, rate.shipping_date
       assert_instance_of String, rate.service_name
       assert_instance_of Fixnum, rate.total_price
     end

@@ -10,6 +10,7 @@ module ActiveMerchant #:nodoc:
       attr_reader :service_code
       attr_reader :currency       # 'USD', 'CAD', etc.
                                   # http://en.wikipedia.org/wiki/ISO_4217
+      attr_reader :shipping_date
       attr_reader :delivery_date  # Usually only available for express shipments
       attr_reader :delivery_range # Min and max delivery estimate in days
       attr_reader :negotiated_rate
@@ -26,6 +27,7 @@ module ActiveMerchant #:nodoc:
         @negotiated_rate = options[:negotiated_rate] ? Package.cents_from(options[:negotiated_rate]) : nil
         @currency = options[:currency]
         @delivery_range = options[:delivery_range] ? options[:delivery_range].map { |date| date_for(date) }.compact : []
+        @shipping_date = date_for(options[:shipping_date])
         @delivery_date = @delivery_range.last
       end
 
