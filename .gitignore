@@ -6,4 +6,4 @@ pkg
 .dotest
 Gemfile.lock
 test/fixtures/live_credentials.yml
-
+.rvmrc
