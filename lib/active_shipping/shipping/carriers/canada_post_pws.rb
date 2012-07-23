@@ -37,6 +37,7 @@ module ActiveMerchant
       SHIPMENT_MIMETYPE = "application/vnd.cpc.ncshipment+xml"
       RATE_MIMETYPE = "application/vnd.cpc.ship.rate+xml"
       TRACK_MIMETYPE = "application/vnd.cpc.track+xml"
+      REGISTER_MIMETYPE = "application/vnd.cpc.registration+xml"
       
       LANGUAGE = {
         'en' => 'en-CA',
@@ -53,11 +54,12 @@ module ActiveMerchant
 
       MAX_WEIGHT = 30 # kg
 
-      attr_accessor :language, :endpoint, :logger
+      attr_accessor :language, :endpoint, :logger, :platform_id
 
       def initialize(options = {})
         @language = LANGUAGE[options[:language]] || LANGUAGE['en']
         @endpoint = options[:endpoint] || ENDPOINT
+        @platform_id = options[:platform_id]
         super(options)
       end
       
@@ -68,7 +70,7 @@ module ActiveMerchant
       def find_rates(origin, destination, line_items = [], options = {})
         url = endpoint + "rs/ship/price"              
         request  = build_rates_request(origin, destination, line_items, options)
-        response = ssl_post(url, request, headers(RATE_MIMETYPE, RATE_MIMETYPE))
+        response = ssl_post(url, request, headers(options, RATE_MIMETYPE, RATE_MIMETYPE))
         parse_rates_response(response, origin, destination)
       rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
         error_response(e.response.body, RateResponse)
@@ -84,7 +86,7 @@ module ActiveMerchant
             raise InvalidPinFormatError
           end
 
-        response = ssl_get(url, headers(TRACK_MIMETYPE))
+        response = ssl_get(url, headers(options, TRACK_MIMETYPE))
         parse_tracking_response(response)
       rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
         error_response(e.response.body, CPPWSTrackingResponse)
@@ -99,28 +101,44 @@ module ActiveMerchant
 
         request_body = build_shipment_request(origin, destination, package, line_items, options)
 
-        response = ssl_post(url, request_body, headers(SHIPMENT_MIMETYPE, SHIPMENT_MIMETYPE))
+        response = ssl_post(url, request_body, headers(options, SHIPMENT_MIMETYPE, SHIPMENT_MIMETYPE))
         parse_shipment_response(response)
       rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
-        puts "Error #{e.response.body}"
         error_response(e.response.body, CPPWSShippingResponse)
       rescue MissingCustomerNumberError => e
-        p "Error #{e}"
-        CPPWSShippingResponse.new(false, "Invalid Pin Format", {}, {:carrier => @@name})
+        CPPWSShippingResponse.new(false, "Missing Customer Number", {}, {:carrier => @@name})
       end
 
       def retrieve_shipment(shipping_id, options = {})
         raise MissingCustomerNumberError unless customer_number = options[:customer_number]
         url = endpoint + "rs/#{customer_number}/ncshipment/#{shipping_id}"
-        response = ssl_post(url, nil, headers(SHIPMENT_MIMETYPE, SHIPMENT_MIMETYPE))
+        response = ssl_post(url, nil, headers(options, SHIPMENT_MIMETYPE, SHIPMENT_MIMETYPE))
         shipping_response = parse_shipment_response(response)
       end
       
       def retrieve_shipping_label(shipping_response, options = {})
         raise MissingShippingNumberError unless shipping_response && shipping_response.shipping_id
-        ssl_get(shipping_response.label_url, headers("application/pdf"))
+        ssl_get(shipping_response.label_url, headers(options, "application/pdf"))
       end
 
+      def register_merchant(options = {})
+        url = endpoint + "ot/token"
+        response = ssl_post(url, nil, headers({}, REGISTER_MIMETYPE, REGISTER_MIMETYPE).merge({"Content-Length" => "0"}))
+        parse_register_token_response(response)
+      rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
+        error_response(e.response.body, CPPWSRegisterResponse)
+      end
+
+      def retrieve_merchant_details(options = {})
+        raise MissingTokenIdError unless token_id = options[:token_id]
+        url = endpoint + "ot/token/#{token_id}"
+        response = ssl_get(url, headers({}, REGISTER_MIMETYPE, REGISTER_MIMETYPE))
+        parse_merchant_details_response(response)
+      rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
+        error_response(e.response.body, CPPWSMerchantDetailsResponse)
+      rescue Exception => e
+        raise ResponseError.new(e.message)
+      end
       
       def maximum_weight
         Mass.new(MAX_WEIGHT, :kilograms)
@@ -369,6 +387,29 @@ module ActiveMerchant
         CPPWSShippingResponse.new(true, "", {}, options)
       end
 
+      def parse_register_token_response(response)
+        doc = REXML::Document.new(response)
+        raise ActiveMerchant::Shipping::ResponseError, "No Registration Token" unless root_node = doc.elements['token']      
+        options = {
+          :token_id => root_node.get_text('token-id').to_s
+        }
+        CPPWSRegisterResponse.new(true, "", {}, options)
+      end
+
+      def parse_merchant_details_response(response)
+        doc = REXML::Document.new(response)
+        raise "No Merchant Info" unless root_node = doc.elements['merchant-info']
+        raise "No Merchant Info" if root_node.get_text('customer-number').blank?
+        options = {
+          :customer_number => root_node.get_text('customer-number').to_s,
+          :contract_number => root_node.get_text('contract-number').to_s,
+          :username => root_node.get_text('merchant-username').to_s,
+          :password => root_node.get_text('merchant-password').to_s,
+          :has_default_credit_card => root_node.get_text('has-default-credit-card') == 'true' ? true : false
+        }
+        CPPWSMerchantDetailsResponse.new(true, "", {}, options)
+      end
+
       def error_response(response, response_klass)
         doc = REXML::Document.new(response)
         messages = doc.elements['messages'].elements.collect('message') {|node| node }
@@ -382,17 +423,26 @@ module ActiveMerchant
 
       private
 
-      def encoded_authorization
-        "Basic %s" % ActiveSupport::Base64.encode64("#{@options[:api_key]}:#{@options[:secret]}")
+      def customer_credentials_valid?(credentials)
+        (credentials.keys & [:customer_api_key, :customer_secret]).any?
+      end
+
+      def encoded_authorization(customer_credentials = {})
+        if customer_credentials_valid?(customer_credentials)
+          "Basic %s" % ActiveSupport::Base64.encode64("#{customer_credentials[:customer_api_key]}:#{customer_credentials[:customer_secret]}")
+        else
+          "Basic %s" % ActiveSupport::Base64.encode64("#{@options[:api_key]}:#{@options[:secret]}")
+        end
       end
       
-      def headers(accept = nil, content_type = nil)
+      def headers(customer_credentials, accept = nil, content_type = nil)
         headers = {
-          'Authorization'   => encoded_authorization,
+          'Authorization'   => encoded_authorization(customer_credentials),
           'Accept-Language' => language          
         }
         headers['Accept'] = accept if accept
         headers['Content-Type'] = content_type if content_type
+        headers['Platform-ID'] = platform_id if platform_id && customer_credentials_valid?(customer_credentials)
         headers
       end
 
@@ -555,10 +605,35 @@ module ActiveMerchant
       end
     end
 
+    class CPPWSRegisterResponse < Response
+      attr_reader :token_id
+      def initialize(success, message, params = {}, options = {})
+        super
+        @token_id = options[:token_id]
+      end
+
+      def redirect_url(customer_id, return_url)
+        "http://www.canadapost.ca/cpotools/apps/drc/merchant?return-url=#{CGI::escape(return_url)}&token-id=#{token_id}&platform-id=#{customer_id}"
+      end
+    end
+
+    class CPPWSMerchantDetailsResponse < Response
+      attr_reader :customer_number, :contract_number, :username, :password, :has_default_credit_card
+      def initialize(success, message, params = {}, options = {})
+        super
+        @customer_number = options[:customer_number]
+        @contract_number = options[:contract_number]
+        @username = options[:username]
+        @password = options[:password]
+        @has_default_credit_card = options[:has_default_credit_card]
+      end
+    end
+
     # custom errors
     class InvalidPinFormatError < StandardError; end
     class MissingCustomerNumberError < StandardError; end
     class MissingShippingNumberError < StandardError; end
+    class MissingTokenIdError < StandardError; end
 
   end
 end
