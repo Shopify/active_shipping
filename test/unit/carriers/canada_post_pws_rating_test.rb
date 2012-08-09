@@ -236,4 +236,13 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
     assert_equal "No Quotes", exception.message
   end
 
+  def test_parse_services_response
+    body = xml_fixture('canadapost_pws/services_response')
+    response = @cp.parse_services_response(body)
+    assert_equal 6, response.size
+    service = response.first
+    assert_equal "INT.XP", service[0]
+    assert_equal "Xpresspost International", service[1] 
+  end
+
 end

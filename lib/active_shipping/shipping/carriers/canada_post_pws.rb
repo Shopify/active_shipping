@@ -66,9 +66,18 @@ module ActiveMerchant
       def requirements
         [:api_key, :secret]
       end
+
+      def find_services(country = nil, options = {})
+        url = endpoint + "rs/ship/service"
+        url += "?country=#{country}" if country
+        response = ssl_get(url, headers(options, RATE_MIMETYPE))
+        parse_services_response(response)
+      rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
+        error_response(e.response.body, RateResponse)
+      end
       
       def find_rates(origin, destination, line_items = [], options = {})
-        url = endpoint + "rs/ship/price"              
+        url = endpoint + "rs/ship/price"
         request  = build_rates_request(origin, destination, line_items, options)
         response = ssl_post(url, request, headers(options, RATE_MIMETYPE, RATE_MIMETYPE))
         parse_rates_response(response, origin, destination)
@@ -142,6 +151,20 @@ module ActiveMerchant
       
       def maximum_weight
         Mass.new(MAX_WEIGHT, :kilograms)
+      end
+
+      # service discovery
+
+      def parse_services_response(response)
+        doc = REXML::Document.new(response)
+        service_nodes = doc.elements['services'].elements.collect('service') {|node| node }
+        services = service_nodes.inject({}) do |result, node|
+          service_code = node.get_text("service-code").to_s
+          service_name = node.get_text("service-name").to_s
+          result[service_code] = service_name
+          result
+        end
+        services
       end
 
 
