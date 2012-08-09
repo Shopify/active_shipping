@@ -147,4 +147,21 @@ class CanadaPostPWSPlatformTest < Test::Unit::TestCase
     assert_equal "No Merchant Info", exception.message
   end
 
+  def test_find_services_no_country
+    response = @cp.find_services(nil, build_options)
+    assert response
+  end
+
+  def test_find_services_country_JP
+    response = @cp.find_services('JP', build_options)
+    assert response
+  end
+
+  def test_find_services_invalid_country
+    exception = assert_raise ResponseError do
+      response = @cp.find_services('XX', build_options)
+    end
+    assert_equal "A valid destination country must be supplied.", exception.message
+  end
+
 end
