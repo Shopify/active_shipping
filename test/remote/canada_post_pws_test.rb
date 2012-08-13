@@ -13,8 +13,8 @@ class CanadaPostPWSTest < Test::Unit::TestCase
 
     @line_item1 = TestFixtures.line_items1
 
-    @shipping_opts1 = {:delivery_confirm => true, :cod => true, :cod_amount => 500.00, :insurance => true, :insurance_amount => 100.00, 
-                       :signature_required => true, :pa18 => true}
+    @shipping_opts1 = {:dc => true, :cod => true, :cod_amount => 500.00, :cov => true, :cov_amount => 100.00, 
+                       :so => true, :pa18 => true}
 
     @home_params = {
       :name        => "John Smith", 

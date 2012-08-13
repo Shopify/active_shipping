@@ -1,0 +1,13 @@
+<option>
+<option-code>SO</option-code>
+<option-name>Signature option</option-name>
+<option-class>FEAT</option-class>
+<prints-on-label>true</prints-on-label>
+<qualifier-required>false</qualifier-required>
+<conflicting-options>
+<option-code>LAD</option-code>
+</conflicting-options>
+<prerequisite-options>
+<option-code>DC</option-code>
+</prerequisite-options>
+</option>

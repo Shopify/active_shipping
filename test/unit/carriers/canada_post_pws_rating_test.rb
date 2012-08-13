@@ -32,9 +32,9 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
     }
     @dest = Location.new(@dest_params)
 
-    @shipping_opts1 = {:delivery_confirm => true, :cod => :true, :cod_amount => 50.00, :cod_includes_shipping => true, 
-                       :cod_method_of_payment => 'CSH', :insurance => true, :insurance_amount => 100.00, 
-                       :signature_required => true, :pa18 => true}
+    @shipping_opts1 = {:dc => true, :cod => :true, :cod_amount => 50.00, :cod_includes_shipping => true, 
+                       :cod_method_of_payment => 'CSH', :cov => true, :cov_amount => 100.00, 
+                       :so => true, :pa18 => true}
 
     @cp = CanadaPostPWS.new(login)
     @cp.logger = Logger.new(STDOUT)
@@ -145,7 +145,7 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
   end
 
   def test_build_rates_request_with_signature_option
-    opts = @default_options.merge({:signature_required => true})
+    opts = @default_options.merge({:so => true})
     xml = @cp.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2], opts)
     doc = Nokogiri::HTML(xml)
 
@@ -153,7 +153,7 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
   end
 
   def test_build_rates_request_with_insurance_option
-    opts = @default_options.merge({:insurance => true, :insurance_amount => 122.05})
+    opts = @default_options.merge({:cov => true, :cov_amount => 122.05})
     xml = @cp.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2], opts)
     doc = Nokogiri::HTML(xml)
 
@@ -242,7 +242,47 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
     assert_equal 6, response.size
     service = response.first
     assert_equal "INT.XP", service[0]
-    assert_equal "Xpresspost International", service[1] 
+    assert_equal "Xpresspost International", service[1][:name]
+  end
+
+  def test_parse_find_service_options_response
+    body = xml_fixture('canadapost_pws/service_options_response')
+    response = @cp.parse_service_options_response(body)
+    assert_equal 3, response[:options].size
+    assert_equal 0, response[:restrictions][:min_weight]
+    assert_equal 30000, response[:restrictions][:max_weight]
+    assert_equal 0.1, response[:restrictions][:min_length]
+    assert_equal 0.1, response[:restrictions][:min_height]
+    assert_equal 0.1, response[:restrictions][:min_width]
+    assert_equal 150, response[:restrictions][:max_length]
+    assert_equal 150, response[:restrictions][:max_height]
+    assert_equal 150, response[:restrictions][:max_width]
+  end
+
+  def test_parse_find_option_response
+    body = xml_fixture('canadapost_pws/option_response')
+    response = @cp.parse_option_response(body)
+    assert_equal "SO", response[:code]
+    assert_equal "Signature option", response[:name]
+    assert_equal "FEAT", response[:class]
+    assert_equal true, response[:prints_on_label]
+    assert_equal false, response[:qualifier_required]
+    assert_equal 1, response[:conflicting_options].size
+    assert_equal "LAD", response[:conflicting_options][0]
+    assert_equal 1, response[:prerequisite_options].size
+    assert_equal "DC", response[:prerequisite_options][0]
+  end
+
+  def test_parse_find_option_response_no_conflicts_or_prereqs
+    body = xml_fixture('canadapost_pws/option_response_no_conflicts')
+    response = @cp.parse_option_response(body)
+    assert_equal "SO", response[:code]
+    assert_equal "Signature option", response[:name]
+    assert_equal "FEAT", response[:class]
+    assert_equal true, response[:prints_on_label]
+    assert_equal false, response[:qualifier_required]
+    assert response[:conflicting_options].blank?
+    assert response[:prerequisite_options].blank?
   end
 
 end

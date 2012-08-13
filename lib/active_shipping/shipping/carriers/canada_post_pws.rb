@@ -44,13 +44,11 @@ module ActiveMerchant
         'fr' => 'fr-CA'
       }
       
-      SHIPPING_OPTIONS = [:delivery_confirm, :cod, :cod_amount, :cod_includes_shipping, 
-                          :cod_method_of_payment, :insurance, :insurance_amount, 
-                          :signature_required, :pa18, :pa19, :hfp, :dns, :lad, :d2po, 
+      SHIPPING_OPTIONS = [:d2po, :d2po_office_id, :cov, :cov_amount, :cod, :cod_amount, :cod_includes_shipping, 
+                          :cod_method_of_payment, :so, :dc, :dns, :pa18, :pa19, :hfp, :lad, 
                           :rase, :rts, :aban]
 
-      RATES_OPTIONS = [:delivery_confirm, :cod, :cod_amount, :insurance, :insurance_amount, 
-                          :signature_required, :pa18, :pa19, :hfp, :dns, :lad]
+      RATES_OPTIONS = [:cov, :cov_amount, :cod, :so, :dc, :dns, :pa18, :pa19, :hfp, :lad]
 
       MAX_WEIGHT = 30 # kg
 
@@ -72,6 +70,23 @@ module ActiveMerchant
         url += "?country=#{country}" if country
         response = ssl_get(url, headers(options, RATE_MIMETYPE))
         parse_services_response(response)
+      rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
+        error_response(e.response.body, RateResponse)
+      end
+
+      def find_service_options(service_code, country, options = {})
+        url = endpoint + "rs/ship/service/#{service_code}"
+        url += "?country=#{country}" if country
+        response = ssl_get(url, headers(options, RATE_MIMETYPE))
+        parse_service_options_response(response)
+      rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
+        error_response(e.response.body, RateResponse)
+      end
+
+      def find_option_details(option_code, options = {})
+        url = endpoint + "rs/ship/option/#{option_code}"
+        response = ssl_get(url, headers(options, RATE_MIMETYPE))
+        parse_option_response(response)
       rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
         error_response(e.response.body, RateResponse)
       end
@@ -161,12 +176,74 @@ module ActiveMerchant
         services = service_nodes.inject({}) do |result, node|
           service_code = node.get_text("service-code").to_s
           service_name = node.get_text("service-name").to_s
-          result[service_code] = service_name
+          service_link = node.elements["link"].attributes['href']
+          service_link_media_type = node.elements["link"].attributes['media-type']
+          result[service_code] = {
+            :name => service_name,
+            :link => service_link,
+            :link_media_type => service_link_media_type
+          }
           result
         end
         services
       end
 
+      def parse_service_options_response(response)
+        doc = REXML::Document.new(response)
+        service_node = doc.elements['service']
+        service_code = service_node.get_text("service-code").to_s
+        service_name = service_node.get_text("service-name").to_s
+        option_nodes = service_node.elements['options'].elements.collect('option') {|node| node}
+        options = option_nodes.inject([]) do |result, node|
+          option = {
+            :code => node.get_text("option-code").to_s,
+            :name => node.get_text("option-name").to_s,
+            :required => node.get_text("mandatory").to_s == "false" ? false : true,
+            :qualifier_required => node.get_text("qualifier-required").to_s == "false" ? false : true
+          }
+          option[:qualifier_max] = node.get_text("qualifier-max").to_s.to_i if node.get_text("qualifier-max")
+          result << option
+          result
+        end
+        restrictions_node = service_node.elements['restrictions']
+        dimensions_node = restrictions_node.elements['dimensional-restrictions']
+        restrictions = {
+          :min_weight => restrictions_node.elements["weight-restriction"].attributes['min'].to_i,
+          :max_weight => restrictions_node.elements["weight-restriction"].attributes['max'].to_i,
+          :min_length => dimensions_node.elements["length"].attributes['min'].to_f,
+          :max_length => dimensions_node.elements["length"].attributes['max'].to_f,
+          :min_height => dimensions_node.elements["height"].attributes['min'].to_f,
+          :max_height => dimensions_node.elements["height"].attributes['max'].to_f,
+          :min_width => dimensions_node.elements["width"].attributes['min'].to_f,
+          :max_width => dimensions_node.elements["width"].attributes['max'].to_f,
+        }
+
+        {
+          :service_code => service_code,
+          :service_name => service_name,
+          :options => options,
+          :restrictions => restrictions
+        }
+      end
+
+      def parse_option_response(response)
+        doc = REXML::Document.new(response)
+        option_node = doc.elements['option']
+        conflicts = option_node.elements['conflicting-options'].elements.collect('option-code') {|node| node.get_text.to_s} unless option_node.elements['conflicting-options'].blank?
+        prereqs = option_node.elements['prerequisite-options'].elements.collect('option-code') {|node| node.get_text.to_s} unless option_node.elements['prerequisite-options'].blank?
+        option = {
+          :code => option_node.get_text('option-code').to_s,
+          :name => option_node.get_text('option-name').to_s,
+          :class => option_node.get_text('option-class').to_s,
+          :prints_on_label => option_node.get_text('prints-on-label').to_s == "false" ? false : true,
+          :qualifier_required => option_node.get_text('qualifier-required').to_s == "false" ? false : true
+        }
+        option[:conflicting_options] = conflicts if conflicts
+        option[:prerequisite_options] = prereqs if prereqs
+
+        option[:qualifier_max] = option_node.get_text("qualifier-max").to_s.to_i if option_node.get_text("qualifier-max")
+        option
+      end
 
       # rating
 
@@ -532,43 +609,31 @@ module ActiveMerchant
       def shipping_options_node(available_options, options = {})
         return if (options.symbolize_keys.keys & available_options).empty?
         XmlNode.new('options') do |el|
-          
-          if options[:delivery_confirm]
-            el << XmlNode.new('option') do |opt|
-              opt << XmlNode.new('option-code', 'DC')
-            end
-          end
 
           if options[:cod] && options[:cod_amount]
             el << XmlNode.new('option') do |opt|
               opt << XmlNode.new('option-code', 'COD')
               opt << XmlNode.new('option-amount', options[:cod_amount])
-              opt << XmlNode.new('option-qualifier-1', options[:cod_includes_shipping]) if options[:cod_includes_shipping]
-              opt << XmlNode.new('option-qualifier-2', options[:cod_method_of_payment]) if options[:cod_method_of_payment]
+              opt << XmlNode.new('option-qualifier-1', options[:cod_includes_shipping]) unless options[:cod_includes_shipping].blank?
+              opt << XmlNode.new('option-qualifier-2', options[:cod_method_of_payment]) unless options[:cod_method_of_payment].blank?
             end
           end
 
-          if options[:insurance] && options[:insurance_amount]
+          if options[:cov]
             el << XmlNode.new('option') do |opt|
               opt << XmlNode.new('option-code', 'COV')
-              opt << XmlNode.new('option-amount', options[:insurance_amount])
-            end
-          end
-
-          if options[:signature_required]
-            el << XmlNode.new('option') do |opt|
-              opt << XmlNode.new('option-code', 'SO')
+              opt << XmlNode.new('option-amount', options[:cov_amount]) unless options[:cov_amount].blank?
             end
           end
 
           if options[:d2po]
             el << XmlNode.new('option') do |opt|
               opt << XmlNode.new('option-code', 'D2PO')
-              # TODO: what else is required here?
+              opt << XmlNode.new('option-qualifier-2'. options[:d2po_office_id]) unless options[:d2po_office_id].blank?
             end
           end
 
-          [:pa18, :pa19, :hfp, :dns, :lad, :rase, :rts, :aban].each do |code|
+          [:so, :dc, :pa18, :pa19, :hfp, :dns, :lad, :rase, :rts, :aban].each do |code|
             if options[code]
               el << XmlNode.new('option') do |opt|
                 opt << XmlNode.new('option-code', code.to_s.upcase)
