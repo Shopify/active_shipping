@@ -13,8 +13,8 @@ class CanadaPostPWSPlatformTest < Test::Unit::TestCase
 
     @line_item1 = TestFixtures.line_items1
 
-    @shipping_opts1 = {:delivery_confirm => true, :cod => true, :cod_amount => 500.00, :insurance => true, :insurance_amount => 100.00, 
-                       :signature_required => true, :pa18 => true}
+    @shipping_opts1 = {:dc => true, :cod => true, :cod_amount => 500.00, :cov => true, :cov_amount => 100.00, 
+                       :so => true, :pa18 => true}
 
     @home_params = {
       :name        => "John Smith", 
@@ -162,6 +162,57 @@ class CanadaPostPWSPlatformTest < Test::Unit::TestCase
       response = @cp.find_services('XX', build_options)
     end
     assert_equal "A valid destination country must be supplied.", exception.message
+  end
+
+  def test_find_service_options_no_country
+    assert response = @cp.find_service_options("INT.XP", nil, build_options)
+    assert_equal "INT.XP", response[:service_code]
+    assert_equal "Xpresspost International", response[:service_name]
+    assert_equal 4, response[:options].size
+    assert_equal "COV", response[:options][0][:code]
+    assert_equal false, response[:options][0][:required]
+    assert_equal true, response[:options][0][:qualifier_required]
+    assert_equal 5000, response[:options][0][:qualifier_max]
+    assert_equal 0, response[:restrictions][:min_weight]
+    assert_equal 30000, response[:restrictions][:max_weight]
+    assert_equal 0.1, response[:restrictions][:min_length]
+    assert_equal 150, response[:restrictions][:max_length]
+    assert_equal 0.1, response[:restrictions][:min_height]
+    assert_equal 150, response[:restrictions][:max_height]
+    assert_equal 0.1, response[:restrictions][:min_width]
+    assert_equal 150, response[:restrictions][:max_width]
+  end
+
+  def test_find_service_options
+    assert response = @cp.find_service_options("INT.XP", "JP", build_options)
+    assert_equal "INT.XP", response[:service_code]
+    assert_equal "Xpresspost International", response[:service_name]
+    assert_equal 3, response[:options].size
+    assert_equal "COV", response[:options][0][:code]
+    assert_equal false, response[:options][0][:required]
+    assert_equal true, response[:options][0][:qualifier_required]
+    assert_equal 1000, response[:options][0][:qualifier_max]
+    assert_equal 0, response[:restrictions][:min_weight]
+    assert_equal 30000, response[:restrictions][:max_weight]
+    assert_equal 0.1, response[:restrictions][:min_length]
+    assert_equal 150, response[:restrictions][:max_length]
+    assert_equal 0.1, response[:restrictions][:min_height]
+    assert_equal 150, response[:restrictions][:max_height]
+    assert_equal 0.1, response[:restrictions][:min_width]
+    assert_equal 150, response[:restrictions][:max_width]
+  end
+
+  def test_find_option_details
+    assert response = @cp.find_option_details("SO", build_options)
+    assert_equal "SO", response[:code]
+    assert_equal "Signature option", response[:name]
+    assert_equal "FEAT", response[:class]
+    assert_equal true, response[:prints_on_label]
+    assert_equal false, response[:qualifier_required]
+    assert_equal 1, response[:conflicting_options].size
+    assert_equal "LAD", response[:conflicting_options][0]
+    assert_equal 1, response[:prerequisite_options].size
+    assert_equal "DC", response[:prerequisite_options][0]
   end
 
 end
