@@ -96,10 +96,17 @@ module ActiveMerchant #:nodoc:
         
         imperial = (options[:units] == :imperial) ||
           ([grams_or_ounces, *dimensions].all? {|m| m.respond_to?(:unit) && m.unit.to_sym == :imperial})
+
+        weight_imperial = (options[:weight_units] == :imperial) ||
+          (grams_or_ounces.respond_to?(:unit) && m.unit.to_sym == :imperial)
+
+        dimensions_imperial = (options[:dim_units] == :imperial) ||
+          (dimensions && dimensions.all? {|m| m.respond_to?(:unit) && m.unit.to_sym == :imperial})
         
-        @unit_system = imperial ? :imperial : :metric
+        @weight_unit_system = weight_imperial || imperial ? :imperial : :metric
+        @dimensions_unit_system = weight_imperial || imperial ? :imperial : :metric
         
-        @weight = attribute_from_metric_or_imperial(grams_or_ounces, Mass, :grams, :ounces)
+        @weight = attribute_from_metric_or_imperial(grams_or_ounces, Mass, @weight_unit_system, :grams, :ounces)
         
         if @dimensions.blank?
           @dimensions = [Length.new(0, (imperial ? :inches : :centimetres))] * 3
@@ -171,7 +178,7 @@ module ActiveMerchant #:nodoc:
         when :volumetric, :dimensional
           @volumetric_weight ||= begin
             m = Mass.new((centimetres(:box_volume) / 6.0), :grams)
-            @unit_system == :imperial ? m.in_ounces : m
+            @weight_unit_system == :imperial ? m.in_ounces : m
           end
         when :billable
           [ weight, weight(:type => :volumetric) ].max
@@ -196,12 +203,12 @@ module ActiveMerchant #:nodoc:
       end
   
       private
-      
-      def attribute_from_metric_or_imperial(obj, klass, metric_unit, imperial_unit)
+
+      def attribute_from_metric_or_imperial(obj, klass, unit_system, metric_unit, imperial_unit)
         if obj.is_a?(klass)
           return value
         else
-          return klass.new(obj, (@unit_system == :imperial ? imperial_unit : metric_unit))
+          return klass.new(obj, (unit_system == :imperial ? imperial_unit : metric_unit))
         end
       end
       
@@ -220,7 +227,7 @@ module ActiveMerchant #:nodoc:
       
       def process_dimensions
         @dimensions = @dimensions.map do |l|
-          attribute_from_metric_or_imperial(l, Length, :centimetres, :inches)
+          attribute_from_metric_or_imperial(l, Length, @dimensions_unit_system, :centimetres, :inches)
         end.sort
         # [1,2] => [1,1,2]
         # [5] => [5,5,5]
