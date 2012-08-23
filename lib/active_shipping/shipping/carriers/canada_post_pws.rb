@@ -147,6 +147,17 @@ module ActiveMerchant
         response = ssl_post(url, nil, headers(options, SHIPMENT_MIMETYPE, SHIPMENT_MIMETYPE))
         shipping_response = parse_shipment_response(response)
       end
+
+      def find_shipment_receipt(shipping_id, options = {})
+        raise MissingCustomerNumberError unless customer_number = options[:customer_number]
+        if @platform_id.present?
+          url = endpoint + "rs/#{customer_number}-#{@platform_id}/ncshipment/#{shipping_id}/receipt"
+        else
+          url = endpoint + "rs/#{customer_number}/ncshipment/#{shipping_id}/receipt"
+        end
+        response = ssl_get(url, headers(options, SHIPMENT_MIMETYPE, SHIPMENT_MIMETYPE))
+        shipping_response = parse_shipment_receipt_response(response)
+      end
       
       def retrieve_shipping_label(shipping_response, options = {})
         raise MissingShippingNumberError unless shipping_response && shipping_response.shipping_id
@@ -516,6 +527,34 @@ module ActiveMerchant
           :has_default_credit_card => root_node.get_text('has-default-credit-card') == 'true' ? true : false
         }
         CPPWSMerchantDetailsResponse.new(true, "", {}, options)
+      end
+
+      def parse_shipment_receipt_response(response)
+        doc = REXML::Document.new(response)
+        root = doc.elements['non-contract-shipment-receipt']
+        cc_details_node = root.elements['cc-receipt-details']
+        service_standard_node = root.elements['service-standard']
+        receipt = {
+          :final_shipping_point => root.get_text("final-shipping-point").to_s,
+          :shipping_point_name => root.get_text("shipping-point-name").to_s,
+          :service_code => root.get_text("service-code").to_s,
+          :rated_weight => root.get_text("rated-weight").to_s.to_f,
+          :base_amount => root.get_text("base-amount").to_s.to_f,
+          :pre_tax_amount => root.get_text("pre-tax-amount").to_s.to_f,
+          :gst_amount => root.get_text("gst-amount").to_s.to_f,
+          :pst_amount => root.get_text("pst-amount").to_s.to_f,
+          :hst_amount => root.get_text("hst-amount").to_s.to_f,
+          :charge_amount => cc_details_node.get_text("charge-amount").to_s.to_f,
+          :currency => cc_details_node.get_text("currency").to_s,
+          :expected_transit_days => service_standard_node.get_text("expected-transit-time").to_s.to_i,
+          :expected_delivery_date => service_standard_node.get_text("expected-delivery-date").to_s
+        }
+        option_nodes = root.elements['priced-options'].elements.collect('priced-option') {|node| node}
+        receipt[:priced_options] = option_nodes.inject({}) do |result, node|
+          result[node.get_text("option-code").to_s] = node.get_text("option-price").to_s.to_f
+          result
+        end
+        receipt
       end
 
       def error_response(response, response_klass)
