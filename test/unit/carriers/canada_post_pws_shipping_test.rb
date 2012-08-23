@@ -186,4 +186,32 @@ class CanadaPostPwsShippingTest < Test::Unit::TestCase
     assert_equal @DEFAULT_RESPONSE[:label_url], response.label_url
   end
 
+  def test_parse_find_shipment_receipt_response
+    body = xml_fixture('canadapost_pws/receipt_response')
+    response = @cp.parse_shipment_receipt_response(body)
+    assert_equal "J4W4T0", response[:final_shipping_point]
+    assert_equal "BP BROSSARD", response[:shipping_point_name]
+    assert_equal "DOM.EP", response[:service_code]
+    assert_equal 15.000, response[:rated_weight]
+    assert_equal 18.10, response[:base_amount]
+    assert_equal 19.46, response[:pre_tax_amount]
+    assert_equal 0.00, response[:gst_amount]
+    assert_equal 0.00, response[:pst_amount]
+    assert_equal 2.53, response[:hst_amount]
+    assert_equal 1, response[:priced_options].size
+    assert_equal 0.0, response[:priced_options]['DC']
+    assert_equal 21.99, response[:charge_amount]
+    assert_equal 'CAD', response[:currency]
+    assert_equal 1, response[:expected_transit_days]
+    assert_equal '2012-03-14', response[:expected_delivery_date]
+  end
+
+  def test_find_shipment_receipt
+    options = @default_options.dup
+    xml_response = xml_fixture('canadapost_pws/receipt_response')
+    @cp.expects(:ssl_get).once.returns(xml_response)
+    response = @cp.find_shipment_receipt('1234567', options)
+    assert_equal @cp.parse_shipment_receipt_response(xml_response), response
+  end
+
 end
