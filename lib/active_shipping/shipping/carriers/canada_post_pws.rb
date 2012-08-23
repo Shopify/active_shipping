@@ -121,7 +121,11 @@ module ActiveMerchant
       # line_items should be a list of PackageItem's
       def create_shipment(origin, destination, package, line_items = [], options = {})
         raise MissingCustomerNumberError unless customer_number = options[:customer_number]
-        url = endpoint + "rs/#{customer_number}/ncshipment"
+        if @platform_id.present?
+          url = endpoint + "rs/#{customer_number}-#{@platform_id}/ncshipment"
+        else
+          url = endpoint + "rs/#{customer_number}/ncshipment"
+        end
 
         request_body = build_shipment_request(origin, destination, package, line_items, options)
 
@@ -135,7 +139,11 @@ module ActiveMerchant
 
       def retrieve_shipment(shipping_id, options = {})
         raise MissingCustomerNumberError unless customer_number = options[:customer_number]
-        url = endpoint + "rs/#{customer_number}/ncshipment/#{shipping_id}"
+        if @platform_id.present?
+          url = endpoint + "rs/#{customer_number}-#{@platform_id}/ncshipment/#{shipping_id}"
+        else
+          url = endpoint + "rs/#{customer_number}/ncshipment/#{shipping_id}"
+        end
         response = ssl_post(url, nil, headers(options, SHIPMENT_MIMETYPE, SHIPMENT_MIMETYPE))
         shipping_response = parse_shipment_response(response)
       end
