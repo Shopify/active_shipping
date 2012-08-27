@@ -215,4 +215,11 @@ class CanadaPostPWSPlatformTest < Test::Unit::TestCase
     assert_equal "DC", response[:prerequisite_options][0]
   end
 
+  def test_find_option_details_french
+    cp = CanadaPostPWS.new(@login.merge({:language => 'fr'}))
+    assert response = cp.find_option_details("LAD", build_options)
+    assert_equal "LAD", response[:code]
+    assert_equal "Laisser à la porte (pas d'avis)", response[:name]
+  end
+
 end
