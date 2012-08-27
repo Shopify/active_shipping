@@ -190,7 +190,7 @@ module ActiveMerchant
       # service discovery
 
       def parse_services_response(response)
-        doc = REXML::Document.new(response)
+        doc = REXML::Document.new(REXML::Text::unnormalize(response))
         service_nodes = doc.elements['services'].elements.collect('service') {|node| node }
         services = service_nodes.inject({}) do |result, node|
           service_code = node.get_text("service-code").to_s
@@ -208,7 +208,7 @@ module ActiveMerchant
       end
 
       def parse_service_options_response(response)
-        doc = REXML::Document.new(response)
+        doc = REXML::Document.new(REXML::Text::unnormalize(response))
         service_node = doc.elements['service']
         service_code = service_node.get_text("service-code").to_s
         service_name = service_node.get_text("service-name").to_s
@@ -246,7 +246,7 @@ module ActiveMerchant
       end
 
       def parse_option_response(response)
-        doc = REXML::Document.new(response)
+        doc = REXML::Document.new(REXML::Text::unnormalize(response))
         option_node = doc.elements['option']
         conflicts = option_node.elements['conflicting-options'].elements.collect('option-code') {|node| node.get_text.to_s} unless option_node.elements['conflicting-options'].blank?
         prereqs = option_node.elements['prerequisite-options'].elements.collect('option-code') {|node| node.get_text.to_s} unless option_node.elements['prerequisite-options'].blank?
@@ -280,7 +280,7 @@ module ActiveMerchant
       end
 
       def parse_rates_response(response, origin, destination)
-        doc = REXML::Document.new(response)
+        doc = REXML::Document.new(REXML::Text::unnormalize(response))
         raise ActiveMerchant::Shipping::ResponseError, "No Quotes" unless doc.elements['price-quotes']
 
         quotes = doc.elements['price-quotes'].elements.collect('price-quote') {|node| node }
@@ -304,7 +304,7 @@ module ActiveMerchant
       # tracking
       
       def parse_tracking_response(response)
-        doc = REXML::Document.new(response)
+        doc = REXML::Document.new(REXML::Text::unnormalize(response))
         raise ActiveMerchant::Shipping::ResponseError, "No Tracking" unless root_node = doc.elements['tracking-detail']
 
         events = root_node.elements['significant-events'].elements.collect('occurrence') {|node| node }
@@ -494,7 +494,7 @@ module ActiveMerchant
 
 
       def parse_shipment_response(response)
-        doc = REXML::Document.new(response)
+        doc = REXML::Document.new(REXML::Text::unnormalize(response))
         raise ActiveMerchant::Shipping::ResponseError, "No Shipping" unless root_node = doc.elements['non-contract-shipment-info']      
         options = {
           :shipping_id      => root_node.get_text('shipment-id').to_s,
@@ -507,7 +507,7 @@ module ActiveMerchant
       end
 
       def parse_register_token_response(response)
-        doc = REXML::Document.new(response)
+        doc = REXML::Document.new(REXML::Text::unnormalize(response))
         raise ActiveMerchant::Shipping::ResponseError, "No Registration Token" unless root_node = doc.elements['token']      
         options = {
           :token_id => root_node.get_text('token-id').to_s
@@ -516,7 +516,7 @@ module ActiveMerchant
       end
 
       def parse_merchant_details_response(response)
-        doc = REXML::Document.new(response)
+        doc = REXML::Document.new(REXML::Text::unnormalize(response))
         raise "No Merchant Info" unless root_node = doc.elements['merchant-info']
         raise "No Merchant Info" if root_node.get_text('customer-number').blank?
         options = {
@@ -530,7 +530,7 @@ module ActiveMerchant
       end
 
       def parse_shipment_receipt_response(response)
-        doc = REXML::Document.new(response)
+        doc = REXML::Document.new(REXML::Text::unnormalize(response))
         root = doc.elements['non-contract-shipment-receipt']
         cc_details_node = root.elements['cc-receipt-details']
         service_standard_node = root.elements['service-standard']
@@ -558,7 +558,7 @@ module ActiveMerchant
       end
 
       def error_response(response, response_klass)
-        doc = REXML::Document.new(response)
+        doc = REXML::Document.new(REXML::Text::unnormalize(response))
         messages = doc.elements['messages'].elements.collect('message') {|node| node }
         message = messages.map {|message| message.get_text('description').to_s }.join(", ")
         response_klass.new(false, message, {}, {:carrier => @@name})
