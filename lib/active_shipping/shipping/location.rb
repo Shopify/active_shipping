@@ -2,6 +2,8 @@ module ActiveMerchant #:nodoc:
   module Shipping #:nodoc:
     class Location
       ADDRESS_TYPES = %w{residential commercial po_box}
+      # Array of U.S. possessions according to USPS: https://www.usps.com/ship/official-abbreviations.htm
+      US_POSSESSIONS = ["AS", "FM", "GU", "MH", "MP", "PW", "PR", "VI"]
       
       attr_reader :options,
                   :country,
@@ -25,6 +27,12 @@ module ActiveMerchant #:nodoc:
       alias_method :company, :company_name
       
       def initialize(options = {})
+        # Replace country and province options to ensure the correct calculation of shipping cost to US possessions
+        if US_POSSESSIONS.include?(options[:country])
+          options[:province] = options[:country]
+          options[:country] = 'US'
+        end
+        
         @country = (options[:country].nil? or options[:country].is_a?(ActiveMerchant::Country)) ?
                       options[:country] :
                       ActiveMerchant::Country.find(options[:country])

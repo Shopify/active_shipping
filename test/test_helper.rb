@@ -196,7 +196,12 @@ module ActiveMerchant
                                       :country => 'NZ',
                                       :city => 'Auckland',
                                       :address1 => '192 Victoria St West',
-                                      :postal_code => '1010')
+                                      :postal_code => '1010'),
+        :puerto_rico => Location.new(
+                                      :country => 'PR',
+                                      :city => 'Barceloneta',
+                                      :address1 => '1 Nueva St',
+                                      :postal_code => '00617'),
       }
       
     end

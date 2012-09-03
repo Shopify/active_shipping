@@ -75,7 +75,6 @@ module ActiveMerchant
         :all => 'ALL'
       }
       
-      # TODO: get rates for "U.S. possessions and Trust Territories" like Guam, etc. via domestic rates API: http://www.usps.com/ncsc/lookups/abbr_state.txt
       # TODO: figure out how USPS likes to say "Ivory Coast"
       #
       # Country names:
