@@ -116,6 +116,19 @@ class USPSTest < Test::Unit::TestCase
     
   end
   
+  def test_us_to_us_possession
+    response = nil
+    assert_nothing_raised do
+      response = @carrier.find_rates(
+                   @locations[:beverly_hills],
+                   @locations[:puerto_rico],
+                   @packages.values_at(:american_wii),
+                   :test => true
+                 )
+      assert_not_equal [], response.rates.length
+    end
+  end
+  
   def test_bare_packages_domestic
     response = nil
     response = begin
