@@ -75,6 +75,9 @@ module ActiveMerchant
         :all => 'ALL'
       }
       
+      # Array of U.S. possessions according to USPS: https://www.usps.com/ship/official-abbreviations.htm
+      US_POSSESSIONS = ["AS", "FM", "GU", "MH", "MP", "PW", "PR", "VI"]
+      
       # TODO: figure out how USPS likes to say "Ivory Coast"
       #
       # Country names:
@@ -148,10 +151,10 @@ module ActiveMerchant
         
         #raise ArgumentError.new("USPS packages must originate in the U.S.") unless ['US',nil].include?(origin.country_code(:alpha2))
         
-        
         # domestic or international?
         
-        response = if ['US',nil].include?(destination.country_code(:alpha2))
+        domestic_codes = US_POSSESSIONS + ['US', nil]
+        response = if domestic_codes.include?(destination.country_code(:alpha2))
           us_rates(origin, destination, packages, options)
         else
           world_rates(origin, destination, packages, options)
