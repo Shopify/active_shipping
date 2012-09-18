@@ -285,4 +285,12 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
     assert response[:prerequisite_options].blank?
   end
 
+  def test_error_response_includes_error_code
+    response = xml_fixture('canadapost_pws/rates_info_error')
+    e = assert_raises ActiveMerchant::Shipping::ResponseError do
+      @cp.error_response(response, CPPWSRateResponse)
+    end
+    assert_equal 'AA004', e.response.error_code
+  end
+
 end
