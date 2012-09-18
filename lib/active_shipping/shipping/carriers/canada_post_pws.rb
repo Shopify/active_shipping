@@ -71,7 +71,7 @@ module ActiveMerchant
         response = ssl_get(url, headers(options, RATE_MIMETYPE))
         parse_services_response(response)
       rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
-        error_response(e.response.body, RateResponse)
+        error_response(e.response.body, CPPWSRateResponse)
       end
 
       def find_service_options(service_code, country, options = {})
@@ -80,7 +80,7 @@ module ActiveMerchant
         response = ssl_get(url, headers(options, RATE_MIMETYPE))
         parse_service_options_response(response)
       rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
-        error_response(e.response.body, RateResponse)
+        error_response(e.response.body, CPPWSRateResponse)
       end
 
       def find_option_details(option_code, options = {})
@@ -88,7 +88,7 @@ module ActiveMerchant
         response = ssl_get(url, headers(options, RATE_MIMETYPE))
         parse_option_response(response)
       rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
-        error_response(e.response.body, RateResponse)
+        error_response(e.response.body, CPPWSRateResponse)
       end
       
       def find_rates(origin, destination, line_items = [], options = {})
@@ -97,7 +97,7 @@ module ActiveMerchant
         response = ssl_post(url, request, headers(options, RATE_MIMETYPE, RATE_MIMETYPE))
         parse_rates_response(response, origin, destination)
       rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
-        error_response(e.response.body, RateResponse)
+        error_response(e.response.body, CPPWSRateResponse)
       end
       
       def find_tracking_info(pin, options = {})
@@ -297,7 +297,7 @@ module ActiveMerchant
           }
           RateEstimate.new(origin, destination, @@name, service_name, options)
         end
-        RateResponse.new(true, "", {}, :rates => rates)
+        CPPWSRateResponse.new(true, "", {}, :rates => rates)
       end
 
 
@@ -560,8 +560,9 @@ module ActiveMerchant
       def error_response(response, response_klass)
         doc = REXML::Document.new(REXML::Text::unnormalize(response))
         messages = doc.elements['messages'].elements.collect('message') {|node| node }
-        message = messages.map {|message| message.get_text('description').to_s }.join(", ")
-        response_klass.new(false, message, {}, {:carrier => @@name})
+        message = messages.map {|m| m.get_text('description').to_s }.join(", ")
+        code = messages.map {|m| m.get_text('code').to_s }.join(", ")
+        response_klass.new(false, message, {}, {:carrier => @@name, :code => code})
       end
 
       def log(msg)
@@ -716,11 +717,30 @@ module ActiveMerchant
       end
 
     end
+
+    module CPPWSErrorResponse
+      attr_accessor :error_code
+      def handle_error(message, options)
+        @error_code = options[:code]
+      end
+    end
+
+    class CPPWSRateResponse < RateResponse      
+      include CPPWSErrorResponse
+      
+      def initialize(success, message, params = {}, options = {})
+        handle_error(message, options)
+        super
+      end
+    end
     
-    class CPPWSTrackingResponse < TrackingResponse      
+    class CPPWSTrackingResponse < TrackingResponse
+      include CPPWSErrorResponse
+
       attr_reader :service_name, :expected_date, :changed_date, :change_reason, :customer_number
       
       def initialize(success, message, params = {}, options = {})
+        handle_error(message, options)
         super
         @service_name    = options[:service_name]
         @expected_date   = options[:expected_date]
@@ -731,8 +751,10 @@ module ActiveMerchant
     end
 
     class CPPWSShippingResponse < ShippingResponse
+      include CPPWSErrorResponse
       attr_reader :label_url, :details_url, :receipt_url
       def initialize(success, message, params = {}, options = {})
+        handle_error(message, options)
         super
         @label_url      = options[:label_url]
         @details_url    = options[:details_url]
@@ -741,8 +763,10 @@ module ActiveMerchant
     end
 
     class CPPWSRegisterResponse < Response
+      include CPPWSErrorResponse
       attr_reader :token_id
       def initialize(success, message, params = {}, options = {})
+        handle_error(message, options)
         super
         @token_id = options[:token_id]
       end
@@ -753,8 +777,10 @@ module ActiveMerchant
     end
 
     class CPPWSMerchantDetailsResponse < Response
+      include CPPWSErrorResponse
       attr_reader :customer_number, :contract_number, :username, :password, :has_default_credit_card
       def initialize(success, message, params = {}, options = {})
+        handle_error(message, options)
         super
         @customer_number = options[:customer_number]
         @contract_number = options[:contract_number]
