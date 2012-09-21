@@ -481,9 +481,9 @@ module ActiveMerchant
           pkg_dim = package.cm
           if pkg_dim && !pkg_dim.select{|x| x != 0}.empty?
             el << XmlNode.new('dimensions') do |dim|
-              dim << XmlNode.new('length', pkg_dim[2]) if pkg_dim.size >= 3
-              dim << XmlNode.new('width', pkg_dim[1]) if pkg_dim.size >= 2
-              dim << XmlNode.new('height', pkg_dim[0]) if pkg_dim.size >= 1
+              dim << XmlNode.new('length', pkg_dim[2].round(1)) if pkg_dim.size >= 3
+              dim << XmlNode.new('width', pkg_dim[1].round(1)) if pkg_dim.size >= 2
+              dim << XmlNode.new('height', pkg_dim[0].round(1)) if pkg_dim.size >= 1
             end
           end
           el << XmlNode.new('document', false)
