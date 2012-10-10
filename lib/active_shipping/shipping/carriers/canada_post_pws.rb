@@ -447,14 +447,9 @@ module ActiveMerchant
         return unless destination.country_code != 'CA'
 
         XmlNode.new('customs') do |node|
-          # currency of receiving country
-          currency = case destination.country_code
-            when 'CA' then "CAD"
-            when 'US' then "USD"
-            else destination.country_code # TODO: country_code != currency code
-          end
+          currency = options[:currency] || "CAD"
           node << XmlNode.new('currency',currency)
-          # node << XmlNode.new('conversion-from-cad','1') # TODO: do we have exchange rates? Requied if currency!=CAD
+          node << XmlNode.new('conversion-from-cad',options[:conversion_from_cad].to_s) if currency != 'CAD' && options[:conversion_from_cad]
           node << XmlNode.new('reason-for-export','SOG') # SOG - Sale of Goods
           node << XmlNode.new('other-reason',options[:customs_other_reason]) if (options[:customs_reason_for_export] && options[:customs_other_reason])
           node << XmlNode.new('additional-customs-info',options[:customs_addition_info]) if options[:customs_addition_info]
