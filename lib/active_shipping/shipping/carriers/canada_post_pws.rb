@@ -544,7 +544,7 @@ module ActiveMerchant
           :expected_transit_days => service_standard_node.get_text("expected-transit-time").to_s.to_i,
           :expected_delivery_date => service_standard_node.get_text("expected-delivery-date").to_s
         }
-        option_nodes = root.elements['priced-options'].elements.collect('priced-option') {|node| node}
+        option_nodes = root.elements['priced-options'].elements.collect('priced-option') {|node| node} unless root.elements['priced-options'].blank?
         receipt[:priced_options] = option_nodes.inject({}) do |result, node|
           result[node.get_text("option-code").to_s] = node.get_text("option-price").to_s.to_f
           result
