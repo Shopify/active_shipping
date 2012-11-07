@@ -272,7 +272,7 @@ module ActiveMerchant
           node << contract_id_node(options)
           node << quote_type_node(options)
           options_node = shipping_options_node(RATES_OPTIONS, options)
-          node << options_node if options_node && !options_node.children.blank?
+          node << options_node if options_node && !options_node.children.count.zero?
           node << parcel_node(line_items)
           node << origin_node(origin)
           node << destination_node(destination)
@@ -367,7 +367,7 @@ module ActiveMerchant
             node << shipment_sender_node(origin, options)
             node << shipment_destination_node(destination, options)
             options_node = shipment_options_node(options)
-            node << shipment_options_node(options) if options_node && !options_node.children.blank?
+            node << shipment_options_node(options) if options_node && !options_node.children.count.zero?
             node << shipment_parcel_node(package)
             node << shipment_notification_node(options)
             node << shipment_preferences_node(options)
