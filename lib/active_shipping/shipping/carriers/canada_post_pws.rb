@@ -91,9 +91,9 @@ module ActiveMerchant
         error_response(e.response.body, CPPWSRateResponse)
       end
       
-      def find_rates(origin, destination, line_items = [], options = {})
+      def find_rates(origin, destination, line_items = [], options = {}, package = nil)
         url = endpoint + "rs/ship/price"
-        request  = build_rates_request(origin, destination, line_items, options)
+        request  = build_rates_request(origin, destination, line_items, options, package)
         response = ssl_post(url, request, headers(options, RATE_MIMETYPE, RATE_MIMETYPE))
         parse_rates_response(response, origin, destination)
       rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
@@ -266,14 +266,14 @@ module ActiveMerchant
 
       # rating
 
-      def build_rates_request(origin, destination, line_items = [], options = {})
+      def build_rates_request(origin, destination, line_items = [], options = {}, package = nil)
         xml =  XmlNode.new('mailing-scenario', :xmlns => "http://www.canadapost.ca/ws/ship/rate") do |node|
           node << customer_number_node(options)
           node << contract_id_node(options)
           node << quote_type_node(options)
           options_node = shipping_options_node(RATES_OPTIONS, options)
           node << options_node if options_node && !options_node.children.count.zero?
-          node << parcel_node(line_items)
+          node << parcel_node(line_items, package)
           node << origin_node(origin)
           node << destination_node(destination)
         end
@@ -603,17 +603,20 @@ module ActiveMerchant
         XmlNode.new("quote-type", 'commercial')
       end
 
-      def parcel_node(line_items, options ={})
-        weight = sanitize_weight_kg(line_items.sum(&:kilograms).to_f)
+      def parcel_node(line_items, package = nil, options ={})
+        weight = sanitize_weight_kg(package ? package.kilograms.to_f : line_items.sum(&:kilograms).to_f)
         XmlNode.new('parcel-characteristics') do |el|
           el << XmlNode.new('weight', "%#2.3f" % weight)
-          # currently not provided, and not required for rating
-          # el << XmlNode.new('dimensions') do |dim|
-          #   dim << XmlNode.new('length', 25)
-          #   dim << XmlNode.new('width', 25)
-          #   dim << XmlNode.new('height', 25)
-          # end
-          # el << XmlNode.new('document', false)
+          if package
+            pkg_dim = package.cm
+            if pkg_dim && !pkg_dim.select{|x| x != 0}.empty?
+              el << XmlNode.new('dimensions') do |dim|
+                dim << XmlNode.new('length', pkg_dim[2].round(1)) if pkg_dim.size >= 3
+                dim << XmlNode.new('width', pkg_dim[1].round(1)) if pkg_dim.size >= 2
+                dim << XmlNode.new('height', pkg_dim[0].round(1)) if pkg_dim.size >= 1
+              end
+            end
+          end
           el << XmlNode.new('mailing-tube', line_items.any?(&:tube?))
           el << XmlNode.new('oversized', true) if line_items.any?(&:oversized?)
           el << XmlNode.new('unpackaged', line_items.any?(&:unpackaged?))
