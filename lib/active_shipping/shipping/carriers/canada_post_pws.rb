@@ -604,7 +604,7 @@ module ActiveMerchant
       end
 
       def parcel_node(line_items, package = nil, options ={})
-        weight = sanitize_weight_kg(package ? package.kilograms.to_f : line_items.sum(&:kilograms).to_f)
+        weight = sanitize_weight_kg(package && !package.kilograms.zero? ? package.kilograms.to_f : line_items.sum(&:kilograms).to_f)
         XmlNode.new('parcel-characteristics') do |el|
           el << XmlNode.new('weight', "%#2.3f" % weight)
           if package
