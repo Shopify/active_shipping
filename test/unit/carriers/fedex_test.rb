@@ -204,4 +204,18 @@ class FedExTest < Test::Unit::TestCase
     assert_equal delivery_date, rate_estimates.rates[0].delivery_date
     assert_equal [delivery_date] * 2, rate_estimates.rates[0].delivery_range
   end
+
+  def test_delivery_date_from_transit_time
+    mock_response = xml_fixture('fedex/raterequest_reply').gsub('CAD', 'UKL')
+
+    @carrier.expects(:commit).returns(mock_response)
+    rate_estimates = @carrier.find_rates( @locations[:ottawa],
+                                    @locations[:beverly_hills],
+                                    @packages.values_at(:book, :wii), :test => true)
+
+    #the above fixture will specify a transit time of 5 days
+    delivery_date = Date.today + 5
+    assert_equal delivery_date, rate_estimates.rates[0].delivery_date
+  end
+
 end

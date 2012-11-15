@@ -1,6 +1,7 @@
 # FedEx module by Jimmy Baker
 # http://github.com/jimmyebaker
 
+require 'date'
 module ActiveMerchant
   module Shipping
     
@@ -85,6 +86,9 @@ module ActiveMerchant
         'express_mps_master' => 'EXPRESS_MPS_MASTER'
       }
 
+
+      TransitTimes = ["UNKNOWN","ONE_DAY","TWO_DAYS","THREE_DAYS","FOUR_DAYS","FIVE_DAYS","SIX_DAYS","SEVEN_DAYS","EIGHT_DAYS","NINE_DAYS","TEN_DAYS","ELEVEN_DAYS","TWELVE_DAYS","THIRTEEN_DAYS","FOURTEEN_DAYS","FIFTEEN_DAYS","SIXTEEN_DAYS","SEVENTEEN_DAYS","EIGHTEEN_DAYS"]
+
       # FedEx tracking codes as described in the FedEx Tracking Service WSDL Guide
       # All delays also have been marked as exceptions
       TRACKING_STATUS_CODES = HashWithIndifferentAccess.new({
@@ -136,7 +140,7 @@ module ActiveMerchant
         rate_request = build_rate_request(origin, destination, packages, options)
         
         response = commit(save_request(rate_request), (options[:test] || false)).gsub(/<(\/)?.*?\:(.*?)>/, '<\1\2>')
-        
+
         parse_rate_response(origin, destination, packages, response, options)
       end
       
@@ -272,6 +276,20 @@ module ActiveMerchant
           is_saturday_delivery = rated_shipment.get_text('AppliedOptions').to_s == 'SATURDAY_DELIVERY'
           service_type = is_saturday_delivery ? "#{service_code}_SATURDAY_DELIVERY" : service_code
           
+          transit_time = rated_shipment.get_text('TransitTime').to_s if service_code == "FEDEX_GROUND"
+          max_transit_time = rated_shipment.get_text('MaximumTransitTime').to_s if service_code == "FEDEX_GROUND"
+
+          delivery_timestamp = rated_shipment.get_text('DeliveryTimestamp').to_s
+
+          delivery_range = []
+          #if there's no delivery timestamp but we do have a transit time, use it
+          if delivery_timestamp.blank? and transit_time.present?
+            transit_range = parse_transit_times([transit_time,max_transit_time.presence || transit_time])
+            delivery_range = [Date.today + transit_range[0], Date.today + transit_range[1]]
+          else
+            delivery_range = [delivery_timestamp,delivery_timestamp]
+          end
+
           currency = handle_incorrect_currency_codes(rated_shipment.get_text('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Currency').to_s)
           rate_estimates << RateEstimate.new(origin, destination, @@name,
                               self.class.service_name_for_code(service_type),
@@ -279,9 +297,9 @@ module ActiveMerchant
                               :total_price => rated_shipment.get_text('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Amount').to_s.to_f,
                               :currency => currency,
                               :packages => packages,
-                              :delivery_date => rated_shipment.get_text('DeliveryTimestamp').to_s)
-	    end
-		
+                              :delivery_range => delivery_range)
+        end
+    
         if rate_estimates.empty?
           success = false
           message = "No shipping rates could be found for the destination address" if message.blank?
@@ -389,6 +407,15 @@ module ActiveMerchant
         when /SID/i then 'SGD'
         else currency
         end
+      end
+
+      def parse_transit_times(times)
+        results = []
+        times.each do |day_count|
+          days = TransitTimes.index(day_count.to_s.chomp)
+          results << days.to_i
+        end
+        results
       end
     end
   end
