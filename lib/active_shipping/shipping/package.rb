@@ -6,7 +6,7 @@ module ActiveMerchant #:nodoc:
     class PackageItem
       include Quantified
 
-      attr_reader :sku, :hs_code, :value, :name, :weight, :quantity
+      attr_reader :sku, :hs_code, :value, :name, :weight, :quantity, :options
 
       def initialize(name, grams_or_ounces, value, quantity, options = {})
         @name = name
@@ -23,6 +23,7 @@ module ActiveMerchant #:nodoc:
 
         @sku = options[:sku]
         @hs_code = options[:hs_code]
+        @options = options
       end
 
       def value_per_unit

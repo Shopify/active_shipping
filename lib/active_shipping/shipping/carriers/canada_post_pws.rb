@@ -464,6 +464,8 @@ module ActiveMerchant
                 item << XmlNode.new('unit-weight', sanitize_weight_kg(line_item.kg))
                 item << XmlNode.new('customs-value-per-unit', sanitize_price_from_cents(line_item.value_per_unit))
                 item << XmlNode.new('customs-number-of-units', line_item.quantity)
+                item << XmlNode.new('country-of-origin', line_item.options[:country_of_origin]) if line_item.options && line_item.options[:country_of_origin] && !line_item.options[:country_of_origin].empty?
+                item << XmlNode.new('province-of-origin', line_item.options[:province_of_origin]) if line_item.options && line_item.options[:province_of_origin] && !line_item.options[:province_of_origin].empty?
               end
             end
           end
@@ -478,9 +480,9 @@ module ActiveMerchant
           pkg_dim = package.cm
           if pkg_dim && !pkg_dim.select{|x| x != 0}.empty?
             el << XmlNode.new('dimensions') do |dim|
-              dim << XmlNode.new('length', pkg_dim[2].round(1)) if pkg_dim.size >= 3
-              dim << XmlNode.new('width', pkg_dim[1].round(1)) if pkg_dim.size >= 2
-              dim << XmlNode.new('height', pkg_dim[0].round(1)) if pkg_dim.size >= 1
+              dim << XmlNode.new('length', (pkg_dim[2]*10).round / 10.0) if pkg_dim.size >= 3
+              dim << XmlNode.new('width', (pkg_dim[1]*10).round / 10.0) if pkg_dim.size >= 2
+              dim << XmlNode.new('height', (pkg_dim[0]*10).round / 10.0) if pkg_dim.size >= 1
             end
           end
           el << XmlNode.new('document', false)
@@ -611,9 +613,9 @@ module ActiveMerchant
             pkg_dim = package.cm
             if pkg_dim && !pkg_dim.select{|x| x != 0}.empty?
               el << XmlNode.new('dimensions') do |dim|
-                dim << XmlNode.new('length', pkg_dim[2].round(1)) if pkg_dim.size >= 3
-                dim << XmlNode.new('width', pkg_dim[1].round(1)) if pkg_dim.size >= 2
-                dim << XmlNode.new('height', pkg_dim[0].round(1)) if pkg_dim.size >= 1
+                dim << XmlNode.new('length', (pkg_dim[2]*10).round / 10.0) if pkg_dim.size >= 3
+                dim << XmlNode.new('width', (pkg_dim[1]*10).round / 10.0) if pkg_dim.size >= 2
+                dim << XmlNode.new('height', (pkg_dim[0]*10).round / 10.0) if pkg_dim.size >= 1
               end
             end
           end
@@ -713,7 +715,7 @@ module ActiveMerchant
       end
 
       def sanitize_price_from_cents(value)
-        return value == 0 ? 0.01 : (value / 100.0).round(2)
+        return value == 0 ? 0.01 : value.round / 100.0
       end
 
     end

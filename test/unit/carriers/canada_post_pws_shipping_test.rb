@@ -81,7 +81,7 @@ class CanadaPostPwsShippingTest < Test::Unit::TestCase
     assert_not_nil response = @cp.shipment_customs_node(destination, @line_item1, options)
     doc = REXML::Document.new(response.to_s)
     assert root_node = doc.elements['customs']
-    assert_equal "USD", root_node.get_text('currency').to_s
+    assert_equal "CAD", root_node.get_text('currency').to_s
     assert items_node = root_node.elements['sku-list']
     assert_equal 2, items_node.size
   end
