@@ -461,7 +461,7 @@ module ActiveMerchant
                 item << XmlNode.new('hs-tariff-code', line_item.hs_code) if line_item.hs_code && !line_item.hs_code.empty?
                 item << XmlNode.new('sku', line_item.sku) if line_item.sku && !line_item.sku.empty?
                 item << XmlNode.new('customs-description', line_item.name)
-                item << XmlNode.new('unit-weight', sanitize_weight_kg(line_item.kg))
+                item << XmlNode.new('unit-weight', '%#2.3f' % sanitize_weight_kg(line_item.kg))
                 item << XmlNode.new('customs-value-per-unit', '%.2f' % sanitize_price_from_cents(line_item.value_per_unit))
                 item << XmlNode.new('customs-number-of-units', line_item.quantity)
                 item << XmlNode.new('country-of-origin', line_item.options[:country_of_origin]) if line_item.options && line_item.options[:country_of_origin] && !line_item.options[:country_of_origin].empty?
