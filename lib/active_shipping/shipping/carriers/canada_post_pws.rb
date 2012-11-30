@@ -480,9 +480,9 @@ module ActiveMerchant
           pkg_dim = package.cm
           if pkg_dim && !pkg_dim.select{|x| x != 0}.empty?
             el << XmlNode.new('dimensions') do |dim|
-              dim << XmlNode.new('length', '%.1f' % (pkg_dim[2]*10).round / 10.0) if pkg_dim.size >= 3
-              dim << XmlNode.new('width', '%.1f' % (pkg_dim[1]*10).round / 10.0) if pkg_dim.size >= 2
-              dim << XmlNode.new('height', '%.1f' % (pkg_dim[0]*10).round / 10.0) if pkg_dim.size >= 1
+              dim << XmlNode.new('length', '%.1f' % ((pkg_dim[2]*10).round / 10.0)) if pkg_dim.size >= 3
+              dim << XmlNode.new('width', '%.1f' % ((pkg_dim[1]*10).round / 10.0)) if pkg_dim.size >= 2
+              dim << XmlNode.new('height', '%.1f' % ((pkg_dim[0]*10).round / 10.0)) if pkg_dim.size >= 1
             end
           end
           el << XmlNode.new('document', false)
@@ -613,9 +613,9 @@ module ActiveMerchant
             pkg_dim = package.cm
             if pkg_dim && !pkg_dim.select{|x| x != 0}.empty?
               el << XmlNode.new('dimensions') do |dim|
-                dim << XmlNode.new('length', '%.1f' % (pkg_dim[2]*10).round / 10.0) if pkg_dim.size >= 3
-                dim << XmlNode.new('width', '%.1f' % (pkg_dim[1]*10).round / 10.0) if pkg_dim.size >= 2
-                dim << XmlNode.new('height', '%.1f' % (pkg_dim[0]*10).round / 10.0) if pkg_dim.size >= 1
+                dim << XmlNode.new('length', '%.1f' % ((pkg_dim[2]*10).round / 10.0)) if pkg_dim.size >= 3
+                dim << XmlNode.new('width', '%.1f' % ((pkg_dim[1]*10).round / 10.0)) if pkg_dim.size >= 2
+                dim << XmlNode.new('height', '%.1f' % ((pkg_dim[0]*10).round / 10.0)) if pkg_dim.size >= 1
               end
             end
           end
