@@ -213,17 +213,19 @@ module ActiveMerchant
         service_code = service_node.get_text("service-code").to_s
         service_name = service_node.get_text("service-name").to_s
         options_node = service_node.elements['options']
-        option_nodes = options_node.elements.collect('option') {|node| node} unless options_node.blank?
-        options = option_nodes.inject([]) do |result, node|
-          option = {
-            :code => node.get_text("option-code").to_s,
-            :name => node.get_text("option-name").to_s,
-            :required => node.get_text("mandatory").to_s == "false" ? false : true,
-            :qualifier_required => node.get_text("qualifier-required").to_s == "false" ? false : true
-          }
-          option[:qualifier_max] = node.get_text("qualifier-max").to_s.to_i if node.get_text("qualifier-max")
-          result << option
-          result
+        unless options_node.blank?
+          option_nodes = options_node.elements.collect('option') {|node| node}
+          options = option_nodes.inject([]) do |result, node|
+            option = {
+              :code => node.get_text("option-code").to_s,
+              :name => node.get_text("option-name").to_s,
+              :required => node.get_text("mandatory").to_s == "false" ? false : true,
+              :qualifier_required => node.get_text("qualifier-required").to_s == "false" ? false : true
+            }
+            option[:qualifier_max] = node.get_text("qualifier-max").to_s.to_i if node.get_text("qualifier-max")
+            result << option
+            result
+          end
         end
         restrictions_node = service_node.elements['restrictions']
         dimensions_node = restrictions_node.elements['dimensional-restrictions']
