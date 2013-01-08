@@ -212,7 +212,8 @@ module ActiveMerchant
         service_node = doc.elements['service']
         service_code = service_node.get_text("service-code").to_s
         service_name = service_node.get_text("service-name").to_s
-        option_nodes = service_node.elements['options'].elements.collect('option') {|node| node}
+        options_node = service_node.elements['options']
+        option_nodes = options_node.elements.collect('option') {|node| node} unless options_node.blank?
         options = option_nodes.inject([]) do |result, node|
           option = {
             :code => node.get_text("option-code").to_s,
