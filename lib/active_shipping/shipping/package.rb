@@ -94,23 +94,30 @@ module ActiveMerchant #:nodoc:
         @options = options
         
         @dimensions = [dimensions].flatten.reject {|d| d.nil?}
+
         
         imperial = (options[:units] == :imperial) ||
-          ([grams_or_ounces, *dimensions].all? {|m| m.respond_to?(:unit) && m.unit.to_sym == :imperial})
-
-        weight_imperial = (options[:weight_units] == :imperial) ||
-          (grams_or_ounces.respond_to?(:unit) && m.unit.to_sym == :imperial)
-
-        dimensions_imperial = (options[:dim_units] == :imperial) ||
-          (dimensions && dimensions.all? {|m| m.respond_to?(:unit) && m.unit.to_sym == :imperial})
+            ([grams_or_ounces, *dimensions].all? {|m| m.respond_to?(:unit) && m.unit.to_sym == :imperial})
         
-        @weight_unit_system = weight_imperial || imperial ? :imperial : :metric
-        @dimensions_unit_system = weight_imperial || imperial ? :imperial : :metric
+        weight_imperial = dimensions_imperial = imperial if options.include?(:units)
+
+        if options.include?(:weight_units)
+          weight_imperial = (options[:weight_units] == :imperial) ||
+              (grams_or_ounces.respond_to?(:unit) && m.unit.to_sym == :imperial)
+        end
+
+        if options.include?(:dim_units)
+          dimensions_imperial = (options[:dim_units] == :imperial) ||
+              (dimensions && dimensions.all? {|m| m.respond_to?(:unit) && m.unit.to_sym == :imperial})
+        end
+        
+        @weight_unit_system = weight_imperial ? :imperial : :metric
+        @dimensions_unit_system = dimensions_imperial ? :imperial : :metric
         
         @weight = attribute_from_metric_or_imperial(grams_or_ounces, Mass, @weight_unit_system, :grams, :ounces)
         
         if @dimensions.blank?
-          @dimensions = [Length.new(0, (imperial ? :inches : :centimetres))] * 3
+          @dimensions = [Length.new(0, (dimensions_imperial ? :inches : :centimetres))] * 3
         else
           process_dimensions
         end
