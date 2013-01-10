@@ -91,9 +91,9 @@ module ActiveMerchant
         error_response(e.response.body, CPPWSRateResponse)
       end
       
-      def find_rates(origin, destination, line_items = [], options = {}, package = nil)
+      def find_rates(origin, destination, line_items = [], options = {}, package = nil, services = [])
         url = endpoint + "rs/ship/price"
-        request  = build_rates_request(origin, destination, line_items, options, package)
+        request  = build_rates_request(origin, destination, line_items, options, package, services)
         response = ssl_post(url, request, headers(options, RATE_MIMETYPE, RATE_MIMETYPE))
         parse_rates_response(response, origin, destination)
       rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
@@ -269,7 +269,7 @@ module ActiveMerchant
 
       # rating
 
-      def build_rates_request(origin, destination, line_items = [], options = {}, package = nil)
+      def build_rates_request(origin, destination, line_items = [], options = {}, package = nil, services = [])
         xml =  XmlNode.new('mailing-scenario', :xmlns => "http://www.canadapost.ca/ws/ship/rate") do |node|
           node << customer_number_node(options)
           node << contract_id_node(options)
@@ -279,6 +279,7 @@ module ActiveMerchant
           node << parcel_node(line_items, package)
           node << origin_node(origin)
           node << destination_node(destination)
+          node << services_node(services) unless services.blank?
         end
         xml.to_s
       end
@@ -656,6 +657,12 @@ module ActiveMerchant
                 dom << XmlNode.new('country-code', destination.country_code)
               end
             end
+        end
+      end
+
+      def services_node(services)
+        XmlNode.new('services') do |node|
+          services.each {|code| node << XmlNode.new('service-code', code)}
         end
       end
 
