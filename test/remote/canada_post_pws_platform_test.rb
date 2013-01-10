@@ -9,7 +9,8 @@ class CanadaPostPWSPlatformTest < Test::Unit::TestCase
     
     # 100 grams, 93 cm long, 10 cm diameter, cylinders have different volume calculations
     # @pkg1 = Package.new(1000, [93,10], :value => 10.00)
-    @pkg1 = Package.new(1000, nil, :value => 10.00)
+    @pkg1 = Package.new(10, nil, :value => 10.00)
+    @pkg2 = Package.new(10, [20.0, 10.0, 1.0], :value => 10.00)
 
     @line_item1 = TestFixtures.line_items1
 
@@ -73,6 +74,18 @@ class CanadaPostPWSPlatformTest < Test::Unit::TestCase
       :country     => 'JP'      
     }
 
+    @usa_params = {
+      :name        => "John Smith", 
+      :company     => "",
+      :phone       => "555-555-5555",
+      :address1    => "123 Fake Street",
+      :address2    => "",
+      :city        => 'New York', 
+      :province    => 'NY', 
+      :country     => 'US',
+      :zip         => '12345'
+    }
+
     @cp = CanadaPostPWS.new(@login)
     @cp.logger = Logger.new(STDOUT)
 
@@ -107,6 +120,14 @@ class CanadaPostPWSPlatformTest < Test::Unit::TestCase
     assert_raise ResponseError do
       @cp.find_rates(@home_params, @dom_params, [@pkg1], opts)
     end
+  end
+
+  def test_rates_USA_returns_small_packet_rates
+    rates = @cp.find_rates(@home_params, @usa_params, [@pkg1], build_options, @pkg2, ['USA.SP.AIR'])
+    assert_equal CPPWSRateResponse, rates.class
+    assert_equal RateEstimate, rates.rates.first.class
+    puts rates.rates.map{|r| r.service_code}
+    assert rates.rates.map{|r| r.service_code}.include? "USA.SP.AIR"
   end
 
   def test_tracking
