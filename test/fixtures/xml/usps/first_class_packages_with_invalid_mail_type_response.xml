@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<RateV4Response>
+  <Package ID="0">
+    <Error>
+      <Number>-2147219428</Number>
+      <Source>DomesticRatesV4;clsRateV4.ValidateFirstClassMailType;RateEngineV4.ProcessRequest</Source>
+      <Description>Invalid First Class Mail Type.</Description>
+      <HelpFile/>
+      <HelpContext>1000440</HelpContext>
+    </Error>
+  </Package>
+</RateV4Response>

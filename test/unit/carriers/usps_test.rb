@@ -172,6 +172,63 @@ class USPSTest < Test::Unit::TestCase
     ]
     assert_equal rate_names, rates_response.rates.collect(&:service_name).sort
   end
+
+  def test_first_class_packages_with_mail_type
+    @carrier.expects(:commit).returns(xml_fixture('usps/first_class_packages_with_mail_type_response'))
+    
+    response = begin
+      @carrier.find_rates(
+        @locations[:beverly_hills], # imperial (U.S. origin)
+        @locations[:new_york],
+        Package.new(0,0),
+        {
+          :test => true,
+          :service => :first_class,
+          :first_class_mail_type => :parcel
+        }
+      )
+    rescue ResponseError => e
+      e.response
+    end
+    assert response.success?, response.message
+  end
+
+  def test_first_class_packages_without_mail_type
+    @carrier.expects(:commit).returns(xml_fixture('usps/first_class_packages_without_mail_type_response'))
+
+    response = begin
+      @carrier.find_rates(
+        @locations[:beverly_hills], # imperial (U.S. origin)
+        @locations[:new_york],
+        Package.new(0,0),
+        {
+          :test => true,
+          :service => :first_class
+        }
+      )
+    rescue ResponseError => e
+      assert_equal "Invalid First Class Mail Type.", e.message
+    end
+  end
+
+  def test_first_class_packages_with_invalid_mail_type
+    @carrier.expects(:commit).returns(xml_fixture('usps/first_class_packages_with_invalid_mail_type_response'))
+
+    response = begin
+      @carrier.find_rates(
+        @locations[:beverly_hills], # imperial (U.S. origin)
+        @locations[:new_york],
+        Package.new(0,0),
+        {
+          :test => true,
+          :service => :first_class,
+          :first_class_mail_tpe => :invalid
+        }
+      )
+    rescue ResponseError => e
+      assert_equal "Invalid First Class Mail Type.", e.message
+    end
+  end
   
   private
   

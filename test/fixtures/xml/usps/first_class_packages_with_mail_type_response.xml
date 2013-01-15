@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<RateV4Response>
+  <Package ID="0">
+    <ZipOrigination>90210</ZipOrigination>
+    <ZipDestination>10017</ZipDestination>
+    <Pounds>0</Pounds>
+    <Ounces>1.0</Ounces>
+    <Size>REGULAR</Size>
+    <Machinable>FALSE</Machinable>
+    <Zone>8</Zone>
+    <Postage CLASSID="0">
+      <MailService>First-Class Mail</MailService>
+      <Rate>2.07</Rate>
+    </Postage>
+  </Package>
+</RateV4Response>
