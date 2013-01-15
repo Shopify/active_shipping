@@ -74,6 +74,13 @@ module ActiveMerchant
         :library => 'LIBRARY',
         :all => 'ALL'
       }
+      FIRST_CLASS_MAIL_TYPES = {
+        :letter => 'LETTER',
+        :flat => 'FLAT',
+        :parcel => 'PARCEL',
+        :post_card => 'POSTCARD',
+        :package_service => 'PACKAGESERVICE'
+      }
       
       # Array of U.S. possessions according to USPS: https://www.usps.com/ship/official-abbreviations.htm
       US_POSSESSIONS = ["AS", "FM", "GU", "MH", "MP", "PW", "PR", "VI"]
@@ -207,6 +214,7 @@ module ActiveMerchant
           packages.each_with_index do |p,id|
             rate_request << XmlNode.new('Package', :ID => id.to_s) do |package|
               package << XmlNode.new('Service', US_SERVICES[options[:service] || :all])
+              package << XmlNode.new('FirstClassMailType', FIRST_CLASS_MAIL_TYPES[options[:first_class_mail_type]])
               package << XmlNode.new('ZipOrigination', strip_zip(origin_zip))
               package << XmlNode.new('ZipDestination', strip_zip(destination_zip))
               package << XmlNode.new('Pounds', 0)
