@@ -14,7 +14,35 @@ class FedExTest < Test::Unit::TestCase
     assert_raises ArgumentError do FedEx.new(:password => '7777777') end
     assert_nothing_raised { FedEx.new(:key => '999999999', :password => '7777777', :account => '123', :login => '123')}
   end
-  
+
+  def test_turn_around_time_default
+    mock_response = xml_fixture('fedex/ottawa_to_beverly_hills_rate_response')
+    Timecop.freeze(DateTime.new(2012, 6, 15)) do
+      timestamp = Time.now.iso8601
+      @carrier.expects(:commit).with do |request|
+        parsed_response = Hash.from_xml(request)
+        parsed_response['RateRequest']['RequestedShipment']['ShipTimestamp'] == timestamp
+      end.returns(mock_response)
+
+      destination = ActiveMerchant::Shipping::Location.from(@locations[:beverly_hills].to_hash, :address_type => :commercial)
+      @carrier.find_rates @locations[:ottawa], destination, @packages[:book], :test => true
+    end
+  end
+
+  def test_turn_around_time
+    mock_response = xml_fixture('fedex/ottawa_to_beverly_hills_rate_response')
+    Timecop.freeze(DateTime.new(2012, 6, 15)) do
+      timestamp = (Time.now + 1.day).iso8601
+      @carrier.expects(:commit).with do |request|
+        parsed_response = Hash.from_xml(request)
+        parsed_response['RateRequest']['RequestedShipment']['ShipTimestamp'] == timestamp
+      end.returns(mock_response)
+
+      destination = ActiveMerchant::Shipping::Location.from(@locations[:beverly_hills].to_hash, :address_type => :commercial)
+      @carrier.find_rates @locations[:ottawa], destination, @packages[:book], :turn_around_time => 24, :test => true
+    end
+  end
+
   # def test_no_rates_response
   #   @carrier.expects(:commit).returns(xml_fixture('fedex/empty_response'))
   # 
