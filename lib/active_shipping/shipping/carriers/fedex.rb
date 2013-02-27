@@ -173,7 +173,7 @@ module ActiveMerchant
           root_node << XmlNode.new('VariableOptions', 'SATURDAY_DELIVERY')
           
           root_node << XmlNode.new('RequestedShipment') do |rs|
-            rs << XmlNode.new('ShipTimestamp', Time.now)
+            rs << XmlNode.new('ShipTimestamp', ship_timestamp(options[:turn_around_time]))
             rs << XmlNode.new('DropoffType', options[:dropoff_type] || 'REGULAR_PICKUP')
             rs << XmlNode.new('PackagingType', options[:packaging_type] || 'YOUR_PACKAGING')
             
@@ -383,7 +383,12 @@ module ActiveMerchant
           :tracking_number => tracking_number
         )
       end
-            
+
+      def ship_timestamp(delay_in_hours)
+        delay_in_hours ||= 0
+        Time.now + delay_in_hours.hours
+      end
+
       def response_status_node(document)
         document.elements['/*/Notifications/']
       end
