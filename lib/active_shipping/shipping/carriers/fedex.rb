@@ -285,7 +285,7 @@ module ActiveMerchant
           #if there's no delivery timestamp but we do have a transit time, use it
           if delivery_timestamp.blank? and transit_time.present?
             transit_range = parse_transit_times([transit_time,max_transit_time.presence || transit_time])
-            delivery_range = [Date.today + transit_range[0], Date.today + transit_range[1]]
+            delivery_range = transit_range.map{|t| ship_date(options[:turn_around_time]) + t.days}
           else
             delivery_range = [delivery_timestamp,delivery_timestamp]
           end
@@ -387,6 +387,11 @@ module ActiveMerchant
       def ship_timestamp(delay_in_hours)
         delay_in_hours ||= 0
         Time.now + delay_in_hours.hours
+      end
+
+      def ship_date(delay_in_hours)
+        delay_in_hours ||= 0
+        Date.today + (delay_in_hours / 24).days
       end
 
       def response_status_node(document)
