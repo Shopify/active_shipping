@@ -16,8 +16,9 @@ class FedExTest < Test::Unit::TestCase
   end
 
   def test_turn_around_time_default
-    mock_response = xml_fixture('fedex/ottawa_to_beverly_hills_rate_response')
+    mock_response = xml_fixture('fedex/ottawa_to_beverly_hills_rate_response').gsub('<v6:DeliveryTimestamp>2011-07-29</v6:DeliveryTimestamp>', '')
     Timecop.freeze(DateTime.new(2012, 6, 15)) do
+      delivery_date = Date.today + 5.days # FIVE_DAYS in fixture response
       timestamp = Time.now.iso8601
       @carrier.expects(:commit).with do |request|
         parsed_response = Hash.from_xml(request)
@@ -25,13 +26,15 @@ class FedExTest < Test::Unit::TestCase
       end.returns(mock_response)
 
       destination = ActiveMerchant::Shipping::Location.from(@locations[:beverly_hills].to_hash, :address_type => :commercial)
-      @carrier.find_rates @locations[:ottawa], destination, @packages[:book], :test => true
+      response = @carrier.find_rates @locations[:ottawa], destination, @packages[:book], :test => true
+      assert_equal [delivery_date, delivery_date], response.rates.first.delivery_range
     end
   end
 
   def test_turn_around_time
-    mock_response = xml_fixture('fedex/ottawa_to_beverly_hills_rate_response')
+    mock_response = xml_fixture('fedex/ottawa_to_beverly_hills_rate_response').gsub('<v6:DeliveryTimestamp>2011-07-29</v6:DeliveryTimestamp>', '')
     Timecop.freeze(DateTime.new(2012, 6, 15)) do
+      delivery_date = Date.today + 6.days # FIVE_DAYS in fixture response, plus turn_around_time
       timestamp = (Time.now + 1.day).iso8601
       @carrier.expects(:commit).with do |request|
         parsed_response = Hash.from_xml(request)
@@ -39,7 +42,8 @@ class FedExTest < Test::Unit::TestCase
       end.returns(mock_response)
 
       destination = ActiveMerchant::Shipping::Location.from(@locations[:beverly_hills].to_hash, :address_type => :commercial)
-      @carrier.find_rates @locations[:ottawa], destination, @packages[:book], :turn_around_time => 24, :test => true
+      response = @carrier.find_rates @locations[:ottawa], destination, @packages[:book], :turn_around_time => 24, :test => true
+      assert_equal [delivery_date, delivery_date], response.rates.first.delivery_range
     end
   end
 
