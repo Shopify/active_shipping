@@ -214,4 +214,23 @@ class CanadaPostPwsShippingTest < Test::Unit::TestCase
     assert_equal @cp.parse_shipment_receipt_response(xml_response), response
   end
 
+  def test_character_limit_on_customs_description
+    @line_item1.first.stubs(:name).returns("Some super long description that exceeds the 44 character limit")
+    options = @default_options.dup
+
+    response = xml_fixture('canadapost_pws/shipment_response')
+    @cp.expects(:ssl_post).with do |url, request| 
+      request_hash = Hash.from_xml(request)
+
+      assert_equal 44, request_hash['non_contract_shipment']['delivery_spec']['customs']['sku_list']['item'].first['customs_description'].length
+      true
+    end.once.returns(response)
+
+    response = @cp.create_shipment(@home_params, @us_params, @pkg1, @line_item1, options)
+    assert response.is_a?(CPPWSShippingResponse)
+    assert_equal @DEFAULT_RESPONSE[:shipping_id], response.shipping_id
+    assert_equal @DEFAULT_RESPONSE[:tracking_number], response.tracking_number
+    assert_equal @DEFAULT_RESPONSE[:label_url], response.label_url
+  end
+
 end
