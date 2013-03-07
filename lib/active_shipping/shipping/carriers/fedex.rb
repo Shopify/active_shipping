@@ -391,7 +391,7 @@ module ActiveMerchant
 
       def ship_date(delay_in_hours)
         delay_in_hours ||= 0
-        Date.today + (delay_in_hours / 24).days
+        (Time.now + delay_in_hours.hours).to_date
       end
 
       def response_status_node(document)
