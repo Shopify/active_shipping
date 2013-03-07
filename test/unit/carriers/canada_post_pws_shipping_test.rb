@@ -228,9 +228,13 @@ class CanadaPostPwsShippingTest < Test::Unit::TestCase
 
     response = @cp.create_shipment(@home_params, @us_params, @pkg1, @line_item1, options)
     assert response.is_a?(CPPWSShippingResponse)
-    assert_equal @DEFAULT_RESPONSE[:shipping_id], response.shipping_id
-    assert_equal @DEFAULT_RESPONSE[:tracking_number], response.tracking_number
-    assert_equal @DEFAULT_RESPONSE[:label_url], response.label_url
+  end
+
+  def test_parse_find_shipment_receipt_doesnt_break_without_priced_options
+    body = xml_fixture('canadapost_pws/receipt_response_no_priced_options')
+    response = @cp.parse_shipment_receipt_response(body)
+
+    assert_equal 0, response[:priced_options].size
   end
 
 end
