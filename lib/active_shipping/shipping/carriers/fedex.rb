@@ -151,7 +151,7 @@ module ActiveMerchant
         response = commit(save_request(tracking_request), (options[:test] || false)).gsub(/<(\/)?.*?\:(.*?)>/, '<\1\2>')
         parse_tracking_response(response, options)
       end
-      
+
       protected
       def build_rate_request(origin, destination, packages, options={})
         imperial = ['US','LR','MM'].include?(origin.country_code(:alpha2))
@@ -281,14 +281,7 @@ module ActiveMerchant
 
           delivery_timestamp = rated_shipment.get_text('DeliveryTimestamp').to_s
 
-          delivery_range = []
-          #if there's no delivery timestamp but we do have a transit time, use it
-          if delivery_timestamp.blank? and transit_time.present?
-            transit_range = parse_transit_times([transit_time,max_transit_time.presence || transit_time])
-            delivery_range = transit_range.map{|t| ship_date(options[:turn_around_time]) + t.days}
-          else
-            delivery_range = [delivery_timestamp,delivery_timestamp]
-          end
+          delivery_range = delivery_range_from(transit_time, max_transit_time, delivery_timestamp, options)
 
           currency = handle_incorrect_currency_codes(rated_shipment.get_text('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Currency').to_s)
           rate_estimates << RateEstimate.new(origin, destination, @@name,
@@ -307,7 +300,35 @@ module ActiveMerchant
 
         RateResponse.new(success, message, Hash.from_xml(response), :rates => rate_estimates, :xml => response, :request => last_request, :log_xml => options[:log_xml])
       end
-      
+
+      def delivery_range_from(transit_time, max_transit_time, delivery_timestamp, options)
+        delivery_range = [delivery_timestamp, delivery_timestamp]
+        
+        #if there's no delivery timestamp but we do have a transit time, use it
+        if delivery_timestamp.blank? and transit_time.present?
+          transit_range  = parse_transit_times([transit_time,max_transit_time.presence || transit_time])
+          delivery_range = transit_range.map{|days| business_days_from(ship_date(options[:turn_around_time]), days)}
+        end
+
+        delivery_range
+      end
+
+      def business_days_from(date, days)
+        future_date = date
+        count       = 0
+
+        while count < days
+          future_date += 1.day
+          count += 1 if business_day?(future_date)
+        end
+
+        future_date
+      end
+
+      def business_day?(date)
+        (1..5).include?(date.wday)
+      end
+
       def parse_tracking_response(response, options)
         xml = REXML::Document.new(response)
         root_node = xml.elements['TrackReply']
