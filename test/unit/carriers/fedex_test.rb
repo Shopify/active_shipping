@@ -60,7 +60,6 @@ class FedExTest < Test::Unit::TestCase
       destination = ActiveMerchant::Shipping::Location.from(@locations[:beverly_hills].to_hash, :address_type => :commercial)
       response = @carrier.find_rates @locations[:ottawa], destination, @packages[:book], :turn_around_time => 24, :test => true
 
-
       assert_equal [delivery_date, delivery_date], response.rates.first.delivery_range
     end
   end
