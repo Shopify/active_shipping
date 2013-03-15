@@ -305,7 +305,7 @@ module ActiveMerchant
         delivery_range = [delivery_timestamp, delivery_timestamp]
         
         #if there's no delivery timestamp but we do have a transit time, use it
-        if delivery_timestamp.blank? and transit_time.present?
+        if delivery_timestamp.blank? && transit_time.present?
           transit_range  = parse_transit_times([transit_time,max_transit_time.presence || transit_time])
           delivery_range = transit_range.map{|days| business_days_from(ship_date(options[:turn_around_time]), days)}
         end
