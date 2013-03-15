@@ -17,8 +17,24 @@ class FedExTest < Test::Unit::TestCase
 
   def test_turn_around_time_default
     mock_response = xml_fixture('fedex/ottawa_to_beverly_hills_rate_response').gsub('<v6:DeliveryTimestamp>2011-07-29</v6:DeliveryTimestamp>', '')
-    Timecop.freeze(DateTime.new(2012, 6, 15)) do
+    Timecop.freeze(DateTime.new(2013, 3, 11)) do
       delivery_date = Date.today + 5.days # FIVE_DAYS in fixture response
+      timestamp = Time.now.iso8601
+      @carrier.expects(:commit).with do |request|
+        parsed_response = Hash.from_xml(request)
+        parsed_response['RateRequest']['RequestedShipment']['ShipTimestamp'] == timestamp
+      end.returns(mock_response)
+
+      destination = ActiveMerchant::Shipping::Location.from(@locations[:beverly_hills].to_hash, :address_type => :commercial)
+      response = @carrier.find_rates @locations[:ottawa], destination, @packages[:book], :test => true
+      assert_equal [delivery_date, delivery_date], response.rates.first.delivery_range
+    end
+  end
+
+  def test_turn_around_time_default_handles_weekends
+    mock_response = xml_fixture('fedex/ottawa_to_beverly_hills_rate_response').gsub('<v6:DeliveryTimestamp>2011-07-29</v6:DeliveryTimestamp>', '')
+    Timecop.freeze(DateTime.new(2012, 6, 15)) do
+      delivery_date = Date.today + 7.days # FIVE_DAYS in fixture response, plus weekend
       timestamp = Time.now.iso8601
       @carrier.expects(:commit).with do |request|
         parsed_response = Hash.from_xml(request)
@@ -33,8 +49,8 @@ class FedExTest < Test::Unit::TestCase
 
   def test_turn_around_time
     mock_response = xml_fixture('fedex/ottawa_to_beverly_hills_rate_response').gsub('<v6:DeliveryTimestamp>2011-07-29</v6:DeliveryTimestamp>', '')
-    Timecop.freeze(DateTime.new(2012, 6, 15)) do
-      delivery_date = Date.today + 6.days # FIVE_DAYS in fixture response, plus turn_around_time
+    Timecop.freeze(DateTime.new(2013, 3, 11)) do
+      delivery_date = Date.today + 8.days # FIVE_DAYS in fixture response, plus turn_around_time, plus weekend
       timestamp = (Time.now + 1.day).iso8601
       @carrier.expects(:commit).with do |request|
         parsed_response = Hash.from_xml(request)
@@ -43,6 +59,8 @@ class FedExTest < Test::Unit::TestCase
 
       destination = ActiveMerchant::Shipping::Location.from(@locations[:beverly_hills].to_hash, :address_type => :commercial)
       response = @carrier.find_rates @locations[:ottawa], destination, @packages[:book], :turn_around_time => 24, :test => true
+
+
       assert_equal [delivery_date, delivery_date], response.rates.first.delivery_range
     end
   end
@@ -241,13 +259,18 @@ class FedExTest < Test::Unit::TestCase
     mock_response = xml_fixture('fedex/raterequest_reply').gsub('CAD', 'UKL')
 
     @carrier.expects(:commit).returns(mock_response)
-    rate_estimates = @carrier.find_rates( @locations[:ottawa],
-                                    @locations[:beverly_hills],
-                                    @packages.values_at(:book, :wii), :test => true)
 
-    #the above fixture will specify a transit time of 5 days
-    delivery_date = Date.today + 5
-    assert_equal delivery_date, rate_estimates.rates[0].delivery_date
+    today = DateTime.civil(2013, 3, 15, 0, 0, 0, "-4")
+
+    Timecop.freeze(today) do
+      rate_estimates = @carrier.find_rates( @locations[:ottawa],
+                                      @locations[:beverly_hills],
+                                      @packages.values_at(:book, :wii), :test => true)
+
+      #the above fixture will specify a transit time of 5 days, with 2 weekend days accounted for
+      delivery_date = Date.today + 7
+      assert_equal delivery_date, rate_estimates.rates[0].delivery_date
+    end
   end
 
 end
