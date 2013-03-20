@@ -33,7 +33,7 @@ class FedExTest < Test::Unit::TestCase
     Timecop.freeze(today) do
       delivery_date = Date.today + 7.days # FIVE_DAYS in fixture response, plus weekend
       timestamp = Time.now.iso8601
-      @carrier.expects(:commit).with do |request|
+      @carrier.expects(:commit).with do |request, options|
         parsed_response = Hash.from_xml(request)
         parsed_response['RateRequest']['RequestedShipment']['ShipTimestamp'] == timestamp
       end.returns(mock_response)
@@ -49,7 +49,7 @@ class FedExTest < Test::Unit::TestCase
     Timecop.freeze(DateTime.new(2013, 3, 11)) do
       delivery_date = Date.today + 8.days # FIVE_DAYS in fixture response, plus turn_around_time, plus weekend
       timestamp = (Time.now + 1.day).iso8601
-      @carrier.expects(:commit).with do |request|
+      @carrier.expects(:commit).with do |request, options|
         parsed_response = Hash.from_xml(request)
         parsed_response['RateRequest']['RequestedShipment']['ShipTimestamp'] == timestamp
       end.returns(mock_response)
