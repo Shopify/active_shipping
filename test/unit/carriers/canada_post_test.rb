@@ -94,7 +94,7 @@ class CanadaPostTest < Test::Unit::TestCase
   end
 
   def test_turn_around_time_default
-    @carrier.expects(:commit).with do |request|
+    @carrier.expects(:commit).with do |request, options|
       parsed_request = Hash.from_xml(request)
       parsed_request['eparcel']['ratesAndServicesRequest']['turnAroundTime'] == "24"
     end
@@ -102,7 +102,7 @@ class CanadaPostTest < Test::Unit::TestCase
   end
 
   def test_turn_around_time
-    @carrier.expects(:commit).with do |request|
+    @carrier.expects(:commit).with do |request, options|
       parsed_request = Hash.from_xml(request)
       parsed_request['eparcel']['ratesAndServicesRequest']['turnAroundTime'] == "0"
     end
