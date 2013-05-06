@@ -96,6 +96,11 @@ class FedExTest < Test::Unit::TestCase
     assert_equal 'delivered', @carrier.find_tracking_info('1Z5FX0076803466397').status_description.downcase
   end
 
+  def test_find_tracking_info_should_return_delivery_signature
+    @carrier.expects(:commit).returns(@tracking_response)
+    assert_equal 'KKING', @carrier.find_tracking_info('077973360403984').delivery_signature
+  end
+
   def test_find_tracking_info_should_return_destination_address
     @carrier.expects(:commit).returns(@tracking_response)
     result = @carrier.find_tracking_info('077973360403984')
