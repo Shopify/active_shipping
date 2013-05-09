@@ -5,5 +5,6 @@ sample.rb
 pkg
 .dotest
 Gemfile.lock
-test/fixtures/live_credentials.yml
 .rvmrc
+test/fixtures/live_credentials.yml
+.rbenv-version
