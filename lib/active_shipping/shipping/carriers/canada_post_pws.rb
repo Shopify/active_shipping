@@ -721,8 +721,6 @@ module ActiveMerchant
           end
         end
       end
-
-
       
       def expected_date_from_node(node)
         if service = node.elements['service-standard']
@@ -821,7 +819,6 @@ module ActiveMerchant
       end
     end
 
-    # custom errors
     class InvalidPinFormatError < StandardError; end
     class MissingCustomerNumberError < StandardError; end
     class MissingShippingNumberError < StandardError; end
