@@ -64,32 +64,6 @@ module ActiveMerchant
       def requirements
         [:api_key, :secret]
       end
-
-      def find_services(country = nil, options = {})
-        url = endpoint + "rs/ship/service"
-        url += "?country=#{country}" if country
-        response = ssl_get(url, headers(options, RATE_MIMETYPE))
-        parse_services_response(response)
-      rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
-        error_response(e.response.body, CPPWSRateResponse)
-      end
-
-      def find_service_options(service_code, country, options = {})
-        url = endpoint + "rs/ship/service/#{service_code}"
-        url += "?country=#{country}" if country
-        response = ssl_get(url, headers(options, RATE_MIMETYPE))
-        parse_service_options_response(response)
-      rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
-        error_response(e.response.body, CPPWSRateResponse)
-      end
-
-      def find_option_details(option_code, options = {})
-        url = endpoint + "rs/ship/option/#{option_code}"
-        response = ssl_get(url, headers(options, RATE_MIMETYPE))
-        parse_option_response(response)
-      rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
-        error_response(e.response.body, CPPWSRateResponse)
-      end
       
       def find_rates(origin, destination, line_items = [], options = {}, package = nil, services = [])
         url = endpoint + "rs/ship/price"
@@ -181,6 +155,32 @@ module ActiveMerchant
         error_response(e.response.body, CPPWSMerchantDetailsResponse)
       rescue Exception => e
         raise ResponseError.new(e.message)
+      end
+
+      def find_services(country = nil, options = {})
+        url = endpoint + "rs/ship/service"
+        url += "?country=#{country}" if country
+        response = ssl_get(url, headers(options, RATE_MIMETYPE))
+        parse_services_response(response)
+      rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
+        error_response(e.response.body, CPPWSRateResponse)
+      end
+
+      def find_service_options(service_code, country, options = {})
+        url = endpoint + "rs/ship/service/#{service_code}"
+        url += "?country=#{country}" if country
+        response = ssl_get(url, headers(options, RATE_MIMETYPE))
+        parse_service_options_response(response)
+      rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
+        error_response(e.response.body, CPPWSRateResponse)
+      end
+
+      def find_option_details(option_code, options = {})
+        url = endpoint + "rs/ship/option/#{option_code}"
+        response = ssl_get(url, headers(options, RATE_MIMETYPE))
+        parse_option_response(response)
+      rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
+        error_response(e.response.body, CPPWSRateResponse)
       end
       
       def maximum_weight
