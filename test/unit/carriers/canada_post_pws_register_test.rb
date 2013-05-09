@@ -1,5 +1,4 @@
 require 'test_helper'
-require 'pp'
 class CanadaPostPwsRegisterTest < Test::Unit::TestCase
 
   def setup

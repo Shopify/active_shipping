@@ -527,7 +527,7 @@ module ActiveMerchant
           :contract_number => root_node.get_text('contract-number').to_s,
           :username => root_node.get_text('merchant-username').to_s,
           :password => root_node.get_text('merchant-password').to_s,
-          :has_default_credit_card => root_node.get_text('has-default-credit-card') == 'true' ? true : false
+          :has_default_credit_card => root_node.get_text('has-default-credit-card') == 'true'
         }
         CPPWSMerchantDetailsResponse.new(true, "", {}, options)
       end
