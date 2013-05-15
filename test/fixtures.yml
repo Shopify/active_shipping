@@ -13,3 +13,7 @@ canada_post:
   login: CPC_DEMO_XML
 new_zealand_post:
   key: '4d9dc0f0-dda0-012e-066f-000c29b44ac0'
+canada_post_pws:
+  platform_id: 12345678
+  api_key: 1234789
+  secret: 1245743
