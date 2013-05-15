@@ -9,7 +9,7 @@ require 'test/unit'
 require 'active_shipping'
 require 'mocha'
 require 'timecop'
-
+require 'nokogiri'
 
 XmlNode # trigger autorequire
 
@@ -36,7 +36,6 @@ module Test
       def load_fixtures
         file = File.exists?(LOCAL_CREDENTIALS) ? LOCAL_CREDENTIALS : DEFAULT_CREDENTIALS
         yaml_data = YAML.load(File.read(file))
-        
         model_fixtures = Dir.glob(File.join(MODEL_FIXTURES,'**','*.yml'))
         model_fixtures.each do |file|
           name = File.basename(file, '.yml')
@@ -62,7 +61,10 @@ module Test
         hash.symbolize_keys!
         hash.each{|k,v| symbolize_keys(v)}
       end
-      
+
+      def file_fixture(filename)
+        File.open("test/fixtures/files/#{filename}", "rb") { |f| f.read }
+      end
     end
   end
 end
@@ -71,7 +73,7 @@ module ActiveMerchant
   module Shipping
     module TestFixtures
       
-      mattr_reader :packages, :locations
+      mattr_reader :packages, :locations, :line_items1
       
       @@packages = {
         :just_ounces => Package.new(16, nil, :units => :imperial),
@@ -198,6 +200,11 @@ module ActiveMerchant
                                       :address1 => '192 Victoria St West',
                                       :postal_code => '1010')
       }
+
+      @@line_items1 = [
+        PackageItem.new("IPod Nano - 8gb - green", 200, 199.00, 1, {:sku => "IPOD2008GREEN", :hs_code => "1234.12.12.12"}),
+        PackageItem.new("IPod Nano - 8gb - black", 200, 199.00, 1, {:sku => "IPOD2008GREEN", :hs_code => "1234.12.12.12"})
+      ]
       
     end
   end

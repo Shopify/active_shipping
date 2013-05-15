@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency('rake')
   s.add_development_dependency('mocha')
   s.add_development_dependency('timecop')
+  s.add_development_dependency('nokogiri')
 
   s.files        = Dir.glob("lib/**/*") + %w(MIT-LICENSE README.markdown CHANGELOG)
   s.require_path = 'lib'

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<messages xmlns="http://www.canadapost.ca/ws/messages">
+  <message>
+    <code>007</code>
+    <description>Merchant Details Error</description>
+  </message>
+</messages>

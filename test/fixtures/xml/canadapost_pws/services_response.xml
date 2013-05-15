@@ -1,0 +1,32 @@
+<services>
+<service>
+<service-code>INT.PW.ENV</service-code>
+<service-name>Priority Worldwide envelope INT'L</service-name>
+<link rel="service" href="https://XX/rs/ship/service/INT.PW.ENV?country=JP" media-type="application/vnd.cpc.ship.rate+xml"></link>
+</service>
+<service>
+<service-code>INT.PW.PAK</service-code>
+<service-name>Priority Worldwide pak INT'L</service-name>
+<link rel="service" href="https://XX/rs/ship/service/INT.PW.PAK?country=JP" media-type="application/vnd.cpc.ship.rate+xml"></link>
+</service>
+<service>
+<service-code>INT.PW.PARCEL</service-code>
+<service-name>Priority Worldwide parcel INT'L</service-name>
+<link rel="service" href="https://XX/rs/ship/service/INT.PW.PARCEL?country=JP" media-type="application/vnd.cpc.ship.rate+xml"></link>
+</service>
+<service>
+<service-code>INT.XP</service-code>
+<service-name>Xpresspost International</service-name>
+<link rel="service" href="https://XX/rs/ship/service/INT.XP?country=JP" media-type="application/vnd.cpc.ship.rate+xml"></link>
+</service>
+<service>
+<service-code>INT.SP.SURF</service-code>
+<service-name>Small Packet International Surface</service-name>
+<link rel="service" href="https://XX/rs/ship/service/INT.SP.SURF?country=JP" media-type="application/vnd.cpc.ship.rate+xml"></link>
+</service>
+<service>
+<service-code>INT.SP.AIR</service-code>
+<service-name>Small Packet International Air</service-name>
+<link rel="service" href="https://XX/rs/ship/service/INT.SP.AIR?country=JP" media-type="application/vnd.cpc.ship.rate+xml"></link>
+</service>
+</services>
