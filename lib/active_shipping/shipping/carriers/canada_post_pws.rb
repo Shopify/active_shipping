@@ -599,9 +599,9 @@ module ActiveMerchant
 
       def encoded_authorization(customer_credentials = {})
         if customer_credentials_valid?(customer_credentials)
-          "Basic %s" % ActiveSupport::Base64.encode64("#{customer_credentials[:customer_api_key]}:#{customer_credentials[:customer_secret]}")
+          "Basic %s" % Base64.encode64("#{customer_credentials[:customer_api_key]}:#{customer_credentials[:customer_secret]}")
         else
-          "Basic %s" % ActiveSupport::Base64.encode64("#{@options[:api_key]}:#{@options[:secret]}")
+          "Basic %s" % Base64.encode64("#{@options[:api_key]}:#{@options[:secret]}")
         end
       end
       

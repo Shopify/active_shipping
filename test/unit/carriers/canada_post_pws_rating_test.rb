@@ -239,8 +239,8 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
     response = @cp.parse_services_response(body)
     assert_equal 6, response.size
     service = response.first
-    assert_equal "INT.PW.ENV", service[0]
-    assert_equal "Priority Worldwide envelope INT'L", service[1][:name]
+    assert service = response['INT.PW.ENV']
+    assert_equal "Priority Worldwide envelope INT'L", service[:name]
   end
 
   def test_parse_find_service_options_response
