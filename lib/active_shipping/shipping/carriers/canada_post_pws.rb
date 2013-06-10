@@ -530,8 +530,6 @@ module ActiveMerchant
           []
         end
 
-        else
-
         receipt
       end
 
