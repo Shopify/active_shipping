@@ -229,6 +229,62 @@ class USPSTest < Test::Unit::TestCase
       assert_equal "Invalid First Class Mail Type.", e.message
     end
   end
+
+  def test_domestic_retail_rates
+    mock_response = xml_fixture('usps/beverly_hills_to_new_york_book_commercial_base_rate_response')
+    @carrier.expects(:commit).returns(mock_response)
+
+    response = @carrier.find_rates(
+      @locations[:beverly_hills],
+      @locations[:new_york],
+      @packages.values_at(:book),
+      :test => true
+    )
+
+    rates = Hash[response.rates.map {|rate| [rate.service_name, rate.price]}]
+
+    assert_equal 0,rates["USPS First-Class Package Service"] #the "first class package service" is only available for commercial base shippers
+    assert_equal 309,rates["USPS First-Class Mail Parcel"] #2013 retail 9oz first class parcel is $3.09
+    assert_equal 695,rates["USPS Priority Mail"] #2013 1lb zone 8 priority retail is $6.95
+  end
+
+  def test_domestic_commercial_base_rates
+    @carrier = USPS.new(fixtures(:usps).merge(:commercial_base => true))
+
+    mock_response = xml_fixture('usps/beverly_hills_to_new_york_book_commercial_base_rate_response')
+    @carrier.expects(:commit).returns(mock_response)
+
+    response = @carrier.find_rates(
+      @locations[:beverly_hills],
+      @locations[:new_york],
+      @packages.values_at(:book),
+      :test => true
+    )
+
+    rates = Hash[response.rates.map {|rate| [rate.service_name, rate.price]}]
+
+    assert_equal 0,rates["USPS First-Class Mail Parcel"] #commercial base prices retail first class is unavailable. must ship as package service
+    assert_equal 273,rates["USPS First-Class Package Service"] #the "first class package service" should be present for commerical base (instead of USPS First-Class Mail Parcel for retail rates)
+    assert_equal 651,rates["USPS Priority Mail"] #2013 zone 8 commercial base price is 6.51, retail is 6.95
+  end
+
+  def test_intl_commercial_base_rates
+    @carrier = USPS.new(fixtures(:usps).merge(:commercial_base => true))
+
+    mock_response = xml_fixture('usps/beverly_hills_to_ottawa_american_wii_commercial_base_rate_response')
+    @carrier.expects(:commit).returns(mock_response)
+
+    response = @carrier.find_rates(
+      @locations[:beverly_hills],
+      @locations[:ottawa],
+      @packages.values_at(:american_wii),
+      :test => true
+    )
+
+    rates = Hash[response.rates.map {|rate| [rate.service_name, rate.price]}]
+
+    assert_equal [4112, 6047, 7744, 7744], response.rates.map(&:price) #note these prices are higher than the normal/retail unit tests because the rates from that test is years older than from this test
+  end
   
   private
   
