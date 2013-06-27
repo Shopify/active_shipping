@@ -207,7 +207,7 @@ module ActiveMerchant
       }
 
       @@line_items1 = [
-        PackageItem.new("IPod Nano - 8gb - green", 200, 199.00, 1, {:sku => "IPOD2008GREEN", :hs_code => "1234.12.12.12"}),
+        PackageItem.new("IPod Nano - 8gb - green", 200, 199.00, 2, {:sku => "IPOD2008GREEN", :hs_code => "1234.12.12.12"}),
         PackageItem.new("IPod Nano - 8gb - black", 200, 199.00, 1, {:sku => "IPOD2008GREEN", :hs_code => "1234.12.12.12"})
       ]
       

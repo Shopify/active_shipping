@@ -26,10 +26,6 @@ module ActiveMerchant #:nodoc:
         @options = options
       end
 
-      def value_per_unit
-        @value > 0 ? @value / @quantity : @value
-      end
-
       def weight(options = {})
         case options[:type]
         when nil, :actual
