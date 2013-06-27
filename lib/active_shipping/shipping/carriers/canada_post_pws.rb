@@ -589,6 +589,7 @@ module ActiveMerchant
         url = endpoint + "rs/ship/service"
         url += "/#{service_code}" if service_code
         url += "?country=#{country}" if country
+        url
       end
 
       def customer_credentials_valid?(credentials)
