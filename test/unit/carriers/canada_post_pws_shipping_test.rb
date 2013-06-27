@@ -83,6 +83,7 @@ class CanadaPostPwsShippingTest < Test::Unit::TestCase
     assert_equal "CAD", root_node.get_text('currency').to_s
     assert items_node = root_node.elements['sku-list']
     assert_equal 2, items_node.size
+    assert_equal 199.0, items_node.first.elements['customs-value-per-unit'].text.to_f
   end
 
   def test_build_shipment_request_for_domestic
