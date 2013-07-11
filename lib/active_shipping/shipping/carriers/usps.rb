@@ -72,6 +72,7 @@ module ActiveMerchant
         :parcel => 'PARCEL',
         :media => 'MEDIA',
         :library => 'LIBRARY',
+        :online => 'ONLINE',
         :all => 'ALL'
       }
       FIRST_CLASS_MAIL_TYPES = {
@@ -211,7 +212,14 @@ module ActiveMerchant
         request = XmlNode.new('RateV4Request', :USERID => @options[:login]) do |rate_request|
           packages.each_with_index do |p,id|
             rate_request << XmlNode.new('Package', :ID => id.to_s) do |package|
-              package << XmlNode.new('Service', US_SERVICES[options[:service] || :all])
+              if @options[:commercial_base] == true
+                raise ArgumentError.new("Commercial Base rates are only provided with the :online method.") if !options[:service].blank? && options[:service] != :online
+                default_service = :online
+              else
+                default_service = :all
+              end
+
+              package << XmlNode.new('Service', US_SERVICES[options[:service] || default_service])
               package << XmlNode.new('FirstClassMailType', FIRST_CLASS_MAIL_TYPES[options[:first_class_mail_type]])
               package << XmlNode.new('ZipOrigination', strip_zip(origin_zip))
               package << XmlNode.new('ZipDestination', strip_zip(destination_zip))
@@ -272,6 +280,7 @@ module ActiveMerchant
               package << XmlNode.new('Length', "%0.2f" % [p.inches(:length), 0.01].max)
               package << XmlNode.new('Height', "%0.2f" % [p.inches(:height), 0.01].max)
               package << XmlNode.new('Girth', "%0.2f" % [p.inches(:girth), 0.01].max)
+              package << XmlNode.new('CommercialFlag', 'Y') if @options[:commercial_base]
             end
           end
         end
@@ -326,8 +335,13 @@ module ActiveMerchant
         return false unless (root_node = response_node.elements['/IntlRateV2Response | /RateV4Response'])
         domestic = (root_node.name == 'RateV4Response')
         
-        domestic_elements = ['Postage', 'CLASSID', 'MailService', 'Rate']
-        international_elements = ['Service', 'ID', 'SvcDescription', 'Postage']
+        if @options[:commercial_base]
+          domestic_elements = ['Postage', 'CLASSID', 'MailService', 'CommercialRate']
+          international_elements = ['Service', 'ID', 'SvcDescription', 'CommercialPostage']
+        else
+          domestic_elements = ['Postage', 'CLASSID', 'MailService', 'Rate']
+          international_elements = ['Service', 'ID', 'SvcDescription', 'Postage']
+        end
         service_node, service_code_node, service_name_node, rate_node = domestic ? domestic_elements : international_elements
         
         root_node.each_element('Package') do |package_node|
