@@ -185,19 +185,7 @@ module ActiveMerchant
         Mass.new(70, :pounds)
       end
       
-      
-      def find_tracking_info(tracking_number, options={})
-        options = @options.update(options)
-        tracking_request = build_tracking_request(tracking_number, options)
-        response = commit(save_request(tracking_request), (options[:test] || false)).gsub(/<(\/)?.*?\:(.*?)>/, '<\1\2>')
-        parse_tracking_response(response, options)
-      end
-      
-
       protected
-
-
-
       def response_success?(xml)
         xml.get_text('/*/Response/ResponseStatusCode').to_s == '1'
       end
