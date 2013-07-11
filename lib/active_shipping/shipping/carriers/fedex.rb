@@ -361,17 +361,7 @@ module ActiveMerchant
             )
           end
 
-          destination_node = tracking_details.elements['DestinationAddress']
-
-          if destination_node.nil?
-            destination_node = tracking_details.elements['ActualDeliveryAddress']
-          end
-
-          destination = Location.new(
-                :country =>     destination_node.get_text('CountryCode').to_s,
-                :province =>    destination_node.get_text('StateOrProvinceCode').to_s,
-                :city =>        destination_node.get_text('City').to_s
-              )
+          destination = extract_destination(tracking_details)
           
           tracking_details.elements.each('Events') do |event|
             address  = event.elements['Address']
@@ -451,6 +441,26 @@ module ActiveMerchant
           results << days.to_i
         end
         results
+      end
+
+      def extract_destination(document)
+        node = document.elements['DestinationAddress'] || document.elements['ActualDeliveryAddress']
+
+        args = if node
+          {
+            :country => node.get_text('CountryCode').to_s,
+            :province => node.get_text('StateOrProvinceCode').to_s,
+            :city => node.get_text('City').to_s
+          }
+        else
+          {
+            :country => ActiveMerchant::Country.new(:alpha2 => 'ZZ', :name => 'Unknown or Invalid Territory', :alpha3 => 'ZZZ', :numeric => '999'),
+            :province => 'unknown',
+            :city => 'unknown'
+          }
+        end
+
+        Location.new(args)
       end
     end
   end
