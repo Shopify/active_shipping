@@ -241,6 +241,7 @@ module ActiveMerchant
           node << customer_number_node(options)
           node << contract_id_node(options)
           node << quote_type_node(options)
+          node << expected_mailing_date_node(shipping_date(options)) if options[:shipping_date]
           options_node = shipping_options_node(RATES_OPTIONS, options)
           node << options_node if options_node && !options_node.children.count.zero?
           node << parcel_node(line_items, package)
@@ -627,6 +628,10 @@ module ActiveMerchant
         XmlNode.new("quote-type", 'commercial')
       end
 
+      def expected_mailing_date_node(date)
+        XmlNode.new("expected-mailing-date", date.strftime("%Y-%m-%d"))
+      end
+
       def parcel_node(line_items, package = nil, options ={})
         weight = sanitize_weight_kg(package && !package.kilograms.zero? ? package.kilograms.to_f : line_items.sum(&:kilograms).to_f)
         XmlNode.new('parcel-characteristics') do |el|
@@ -727,6 +732,11 @@ module ActiveMerchant
         else
           expected_date = nil
         end
+        expected_date
+      end
+
+      def shipping_date(options)
+        DateTime.strptime((options[:shipping_date] || Time.now).to_s, "%Y-%m-%d")
       end
 
       def sanitize_zip(hash)
