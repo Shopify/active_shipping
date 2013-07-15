@@ -628,8 +628,8 @@ module ActiveMerchant
         XmlNode.new("quote-type", 'commercial')
       end
 
-      def expected_mailing_date_node(date)
-        XmlNode.new("expected-mailing-date", date.strftime("%Y-%m-%d"))
+      def expected_mailing_date_node(date_as_string)
+        XmlNode.new("expected-mailing-date", date_as_string)
       end
 
       def parcel_node(line_items, package = nil, options ={})
