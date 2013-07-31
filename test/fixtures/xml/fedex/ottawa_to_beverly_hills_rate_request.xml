@@ -1,5 +1,5 @@
-<?xml version="1.0"?>
-<RateRequest xmlns="http://fedex.com/ws/rate/v6">
+<?xml version="1.0" encoding="UTF-8"?>
+<RateRequest xmlns="http://fedex.com/ws/rate/v13">
   <WebAuthenticationDetail>
     <UserCredential>
       <Key>1111</Key>
@@ -15,7 +15,7 @@
   </TransactionDetail>
   <Version>
     <ServiceId>crs</ServiceId>
-    <Major>6</Major>
+    <Major>13</Major>
     <Intermediate>0</Intermediate>
     <Minor>0</Minor>
   </Version>
@@ -39,9 +39,14 @@
         <Residential>true</Residential>
       </Address>
     </Recipient>
+    <SmartPostDetail>
+      <Indicia>PARCEL_SELECT</Indicia>
+      <HubId>5902</HubId>
+    </SmartPostDetail>
     <RateRequestTypes>ACCOUNT</RateRequestTypes>
     <PackageCount>2</PackageCount>
-    <RequestedPackages>
+    <RequestedPackageLineItems>
+      <GroupPackageCount>1</GroupPackageCount>
       <Weight>
         <Units>KG</Units>
         <Value>0.25</Value>
@@ -52,8 +57,9 @@
         <Height>2</Height>
         <Units>CM</Units>
       </Dimensions>
-    </RequestedPackages>
-    <RequestedPackages>
+    </RequestedPackageLineItems>
+    <RequestedPackageLineItems>
+      <GroupPackageCount>1</GroupPackageCount>
       <Weight>
         <Units>KG</Units>
         <Value>3.402</Value>
@@ -64,6 +70,6 @@
         <Height>12</Height>
         <Units>CM</Units>
       </Dimensions>
-    </RequestedPackages>
+    </RequestedPackageLineItems>
   </RequestedShipment>
 </RateRequest>

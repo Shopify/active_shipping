@@ -46,7 +46,8 @@ module ActiveMerchant
         "INTERNATIONAL_ECONOMY_FREIGHT" => "FedEx International Economy Freight",
         "GROUND_HOME_DELIVERY" => "FedEx Ground Home Delivery",
         "FEDEX_GROUND" => "FedEx Ground",
-        "INTERNATIONAL_GROUND" => "FedEx International Ground"
+        "INTERNATIONAL_GROUND" => "FedEx International Ground",
+        "SMART_POST" => "FedEx SmartPost"
       }
 
       PackageTypes = {
@@ -156,13 +157,13 @@ module ActiveMerchant
       def build_rate_request(origin, destination, packages, options={})
         imperial = ['US','LR','MM'].include?(origin.country_code(:alpha2))
 
-        xml_request = XmlNode.new('RateRequest', 'xmlns' => 'http://fedex.com/ws/rate/v6') do |root_node|
+        xml_request = XmlNode.new('RateRequest', 'xmlns' => 'http://fedex.com/ws/rate/v13') do |root_node|
           root_node << build_request_header
 
           # Version
           root_node << XmlNode.new('Version') do |version_node|
             version_node << XmlNode.new('ServiceId', 'crs')
-            version_node << XmlNode.new('Major', '6')
+            version_node << XmlNode.new('Major', '13')
             version_node << XmlNode.new('Intermediate', '0')
             version_node << XmlNode.new('Minor', '0')
           end
@@ -175,6 +176,7 @@ module ActiveMerchant
           root_node << XmlNode.new('RequestedShipment') do |rs|
             rs << XmlNode.new('ShipTimestamp', ship_timestamp(options[:turn_around_time]))
             rs << XmlNode.new('DropoffType', options[:dropoff_type] || 'REGULAR_PICKUP')
+            #rs << XmlNode.new('ServiceType', 'SMART_POST') # use this to test responses for specific services.
             rs << XmlNode.new('PackagingType', options[:packaging_type] || 'YOUR_PACKAGING')
             
             rs << build_location_node('Shipper', (options[:shipper] || origin))
@@ -182,11 +184,18 @@ module ActiveMerchant
             if options[:shipper] and options[:shipper] != origin
               rs << build_location_node('Origin', origin)
             end
-            
+
+            rs << XmlNode.new('SmartPostDetail') do |spd|
+              spd << XmlNode.new('Indicia', options[:smart_post_indicia] || 'PARCEL_SELECT')
+              spd << XmlNode.new('HubId', options[:smart_post_hub_id] || 5902) # default to LA
+            end
+
             rs << XmlNode.new('RateRequestTypes', 'ACCOUNT')
+
             rs << XmlNode.new('PackageCount', packages.size)
             packages.each do |pkg|
-              rs << XmlNode.new('RequestedPackages') do |rps|
+              rs << XmlNode.new('RequestedPackageLineItems') do |rps|
+                rps << XmlNode.new('GroupPackageCount', 1)
                 rps << XmlNode.new('Weight') do |tw|
                   tw << XmlNode.new('Units', imperial ? 'LB' : 'KG')
                   tw << XmlNode.new('Value', [((imperial ? pkg.lbs : pkg.kgs).to_f*1000).round/1000.0, 0.1].max)
