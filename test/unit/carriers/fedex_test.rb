@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class FedExTest < Test::Unit::TestCase
+class FedExTest < MiniTest::Unit::TestCase
   def setup
     @packages               = TestFixtures.packages
     @locations              = TestFixtures.locations
@@ -12,7 +12,7 @@ class FedExTest < Test::Unit::TestCase
     assert_raises ArgumentError do FedEx.new end
     assert_raises ArgumentError do FedEx.new(:login => '999999999') end
     assert_raises ArgumentError do FedEx.new(:password => '7777777') end
-    assert_nothing_raised { FedEx.new(:key => '999999999', :password => '7777777', :account => '123', :login => '123')}
+    FedEx.new(:key => '999999999', :password => '7777777', :account => '123', :login => '123')
   end
 
   def test_business_days
@@ -137,10 +137,8 @@ class FedExTest < Test::Unit::TestCase
 
   def test_find_tracking_info_should_not_include_events_without_an_address
     @carrier.expects(:commit).returns(@tracking_response)
-    assert_nothing_raised do
-      response = @carrier.find_tracking_info('077973360403984', :test => true)
-      assert_nil response.shipment_events.find{|event| event.name == 'Shipment information sent to FedEx' }
-    end
+    response = @carrier.find_tracking_info('077973360403984', :test => true)
+    assert_nil response.shipment_events.find{|event| event.name == 'Shipment information sent to FedEx' }
   end
   
   def test_building_request_with_address_type_commercial_should_not_include_residential
@@ -171,7 +169,7 @@ class FedExTest < Test::Unit::TestCase
     assert_instance_of Hash, response.params
     assert_instance_of String, response.xml
     assert_instance_of Array, response.rates
-    assert_not_equal [], response.rates
+    assert response.rates.length > 0, "There should've been more than 0 rates returned"
     
     rate = response.rates.first
     assert_equal 'FedEx', rate.carrier
@@ -212,7 +210,7 @@ class FedExTest < Test::Unit::TestCase
     assert_equal [3836], response.rates.map(&:price)
     
     assert response.success?, response.message
-    assert_not_equal [], response.rates
+    assert response.rates.length > 0, "There should've been more than 0 rates returned"
     
     response.rates.each do |rate|
       assert_equal 'FedEx', rate.carrier
@@ -232,7 +230,7 @@ class FedExTest < Test::Unit::TestCase
     assert_equal [3836], response.rates.map(&:price)
     
     assert response.success?, response.message
-    assert_not_equal [], response.rates
+    assert response.rates.length > 0, "There should've been more than 0 rates returned"
     
     response.rates.each do |rate|
       assert_equal 'FedEx', rate.carrier
@@ -268,6 +266,21 @@ class FedExTest < Test::Unit::TestCase
       #the above fixture will specify a transit time of 5 days, with 2 weekend days accounted for
       delivery_date = Date.today + 7
       assert_equal delivery_date, rate_estimates.rates[0].delivery_date
+    end
+  end
+
+  def test_failure_to_parse_invalid_xml_results_in_a_useful_error
+    mock_response = xml_fixture('fedex/invalid_fedex_reply')
+
+    @carrier.expects(:commit).returns(mock_response)
+
+    assert_raises ActiveMerchant::Shipping::ResponseContentError do
+      rate_estimates = @carrier.find_rates(
+        @locations[:ottawa],
+        @locations[:beverly_hills],
+        @packages.values_at(:book, :wii),
+        :test => true
+      )
     end
   end
 
