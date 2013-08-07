@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<v6:RateReply xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:v6="http://fedex.com/ws/rate/v6">
+  <v6:HighestSeverity>WARNING</v6:HighestSeverity>
+  <v6:Notifications>
+    <v6:Severity>WARNING</v6:Severity>
+    <v6:Source>crs</v6:Source>
+    <v6:Code>872</v6:Code>
+    <v6:Message>Rating is temporarily unavailable for one or more services:
+INTERNATIONAL_FIRST; INTERNATIONAL_PRIORITY; INTERNATIONAL_ECONOMY; ; ; ; ; ; ; ; . Please try again later. </v6:Message>
+    <v6:LocalizedMessage>Rating is temporarily unavailable for one or more services:
+INTERNATIONAL_FIRST; INTERNATIONAL_PRIORITY; INTERNATIONAL_ECONOMY; ; ; ; ; ; ; ; . Please try again later. </v6:LocalizedMessage>
+    <v6:MessageParameters>
+      <v6:Id>SERVICE_TYPE_1</v6:Id>
+      <v6:Value>INTERNATIONAL_FIRST</v6:Value>
+    </v6:MessageParameters>
+    <v6:MessageParameters>
+      <v6:Id>SERVICE_TYPE_2</v6:Id>
+      <v6:Value>INTERNATIONAL_PRIORITY</v6:Value>
+    </v6:MessageParameters>
+    <v6:MessageParameters>
+      <v6:Id>SERVICE_TYPE_3</v6:Id>
+      <v6:Value>INTERNATIONAL_ECONOMY</v6:Value>
+    </v6:MessageParameters>
+  </v6:Notifications>
+  <v6:Notifications>
+    <v6:Severity>NOTE</v6:Severity>
+    <v6:Source>crs

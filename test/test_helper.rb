@@ -7,14 +7,14 @@ Bundler.setup
 
 require 'test/unit'
 require 'active_shipping'
-require 'mocha'
+require 'mocha/setup'
 require 'timecop'
 require 'nokogiri'
 
 XmlNode # trigger autorequire
 
-module Test
-  module Unit
+module MiniTest
+  class Unit
     class TestCase
       include ActiveMerchant::Shipping
       
@@ -66,6 +66,12 @@ module Test
         File.open("test/fixtures/files/#{filename}", "rb") { |f| f.read }
       end
     end
+  end
+end
+
+module Test
+  module Unit
+    class TestCase < MiniTest::Unit::TestCase; end
   end
 end
 
