@@ -464,11 +464,9 @@ module ActiveMerchant
       end
 
       def build_document(xml)
-        begin
-          REXML::Document.new(xml)
-        rescue REXML::ParseException => e
-          raise ActiveMerchant::Shipping::ResponseContentError.new(e, xml)
-        end
+        REXML::Document.new(xml)
+      rescue REXML::ParseException => e
+        raise ActiveMerchant::Shipping::ResponseContentError.new(e, xml)
       end
     end
   end
