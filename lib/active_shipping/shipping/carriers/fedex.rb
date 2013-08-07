@@ -274,7 +274,7 @@ module ActiveMerchant
         rate_estimates = []
         success, message = nil
         
-        xml = REXML::Document.new(response)
+        xml = build_document(response)
         root_node = xml.elements['RateReply']
         
         success = response_success?(xml)
@@ -339,7 +339,7 @@ module ActiveMerchant
       end
 
       def parse_tracking_response(response, options)
-        xml = REXML::Document.new(response)
+        xml = build_document(response)
         root_node = xml.elements['TrackReply']
         
         success = response_success?(xml)
@@ -470,6 +470,14 @@ module ActiveMerchant
         end
 
         Location.new(args)
+      end
+
+      def build_document(xml)
+        begin
+          REXML::Document.new(xml)
+        rescue REXML::ParseException => e
+          raise ActiveMerchant::Shipping::ResponseContentError.new(e, xml)
+        end
       end
     end
   end
