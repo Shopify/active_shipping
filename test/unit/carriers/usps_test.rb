@@ -24,6 +24,13 @@ class USPSTest < Test::Unit::TestCase
     end
   end
 
+  def test_find_tracking_info_should_handle_not_available_error
+    @carrier.expects(:commit).returns(xml_fixture('usps/tracking_response_not_available'))
+    assert_raises ResponseError do
+      @carrier.find_tracking_info('9574211957289221353248', :test => true)
+    end
+  end
+
   def test_find_tracking_info_should_return_a_tracking_response
     @carrier.expects(:commit).returns(@tracking_response)
     assert_instance_of ActiveMerchant::Shipping::TrackingResponse, @carrier.find_tracking_info('9102901000462189604217', :test => true)

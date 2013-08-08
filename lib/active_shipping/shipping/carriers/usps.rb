@@ -584,12 +584,15 @@ module ActiveMerchant
       end
             
       def response_status_node(document)
-        document.elements['*/*/TrackSummary'] || document.elements['Error/Description']
+        document.elements['*/*/TrackSummary'] || document.elements['Error/Description'] || document.elements['*/TrackInfo/Error/Description'] 
       end
       
       def response_success?(document)
         summary = response_status_node(document).get_text.to_s
-        !(summary =~ /There is no record of that mail item/ || summary =~ /This Information has not been included in this Test Server\./)
+        !([/There is no record of that mail item/,
+           /This Information has not been included in this Test Server\./,
+           /Delivery status information is not available/
+          ].detect { |re| summary =~ re })
       end
       
       def response_message(document)
