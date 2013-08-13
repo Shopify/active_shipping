@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/test_helper'
+require 'test_helper'
 require 'quantified/length'
 
 class LengthTest < Test::Unit::TestCase
