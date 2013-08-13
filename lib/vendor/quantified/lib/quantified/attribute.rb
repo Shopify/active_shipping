@@ -38,6 +38,10 @@ module Quantified
     def system
       self.class.units_to_systems[unit]
     end
+
+    def coerce(other)
+      [other, self.amount]
+    end
     
     def method_missing(meth, *args)
       if args.size == 1 && self.class == (other = args.first).class
