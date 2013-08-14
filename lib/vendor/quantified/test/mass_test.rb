@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/test_helper'
+require 'test_helper'
 require 'quantified/mass'
 
 class MassTest < Test::Unit::TestCase
@@ -84,5 +84,13 @@ class MassTest < Test::Unit::TestCase
     assert_equal [:metric, :imperial], Mass.systems
     assert_equal [:grams, :milligrams, :kilograms], Mass.units(:metric)
     assert_equal [:ounces, :pounds, :stones, :short_tons], Mass.units(:imperial)
+  end
+
+  def test_right_side_comparison_with_fixnum
+    assert Mass.new(14, :grams) < 20
+  end
+
+  def test_left_side_comparison_with_fixnum
+    assert 20 > Mass.new(14, :grams)
   end
 end

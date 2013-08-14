@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/test_helper'
+require 'test_helper'
 require 'quantified/length'
 
 class LengthTest < Test::Unit::TestCase
@@ -40,17 +40,15 @@ class LengthTest < Test::Unit::TestCase
   end
   
   def test_convert_yards_to_millimetres
-    assert Length.new(914.4, :millimetres).eql?(Length.new(1, :yards).to_millimetres)
+    assert_in_epsilon Length.new(914.4, :millimetres).to_f, Length.new(1, :yards).to_millimetres.to_f
   end
   
   def test_convert_millimetres_to_yards
-    assert Length.new(1, :yards).eql?(Length.new(914.4, :millimetres).to_yards)
+    assert_in_epsilon Length.new(1, :yards).to_f, Length.new(914.4, :millimetres).to_yards.to_f
   end
   
   def test_convert_metres_to_inches
-    assert_equal 1.inches, (0.0254).metres.to_inches
-    assert 1.inches.eql?((0.0254).metres.to_inches)
-    assert 1.inches.eql?((0.0254).metres.in_inches)
+    assert_in_epsilon 1.inches.to_f, (0.0254).metres.to_inches.to_f
   end
   
   def test_comparison_with_numeric
