@@ -530,7 +530,12 @@ module ActiveMerchant
 
       def no_record?(document)
         summary_node = track_summary_node(document)
-        summary_node && (summary_node.get_text.to_s =~ /There is no record of that mail item/)
+        if summary_node
+          summary = summary_node.get_text.to_s
+          summary =~ /There is no record of that mail item/ || summary =~ /This Information has not been included in this Test Server\./
+        else
+          false
+        end
       end
 
       def response_success?(document)
