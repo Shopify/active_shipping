@@ -1,8 +1,2 @@
-<?xml version="1.0"?>
-<Error>
-  <Number>-2147219040</Number>
-  <Source>SOLServerTest;SOLServerTest.Track_Respond</Source>
-  <Description>This Information has not been included in this Test Server.</Description>
-  <HelpFile></HelpFile>
-  <HelpContext></HelpContext>
-</Error>
+<?xml version="1.0"?><Error><Number>-2147219067</Number><Source>;SOLServer.Track2_Respond</Source><Description>Invalid XML A name contained an invalid character.
+</Description><HelpFile></HelpFile><HelpContext></HelpContext></Error>
