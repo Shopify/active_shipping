@@ -24,6 +24,13 @@ class USPSTest < Test::Unit::TestCase
     end
   end
 
+  def test_find_tracking_info_should_handle_invalid_xml_error
+    @carrier.expects(:commit).returns(xml_fixture('usps/invalid_xml_tracking_response_error'))
+    assert_raises ResponseError do
+      @carrier.find_tracking_info('9102901000462189604217,9102901000462189604214', :test => true)
+    end
+  end
+
   def test_find_tracking_info_should_return_a_tracking_response
     @carrier.expects(:commit).returns(@tracking_response)
     assert_instance_of ActiveMerchant::Shipping::TrackingResponse, @carrier.find_tracking_info('9102901000462189604217', :test => true)
@@ -36,13 +43,13 @@ class USPSTest < Test::Unit::TestCase
     response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
     assert_equal 7, response.shipment_events.size
   end
-  
+
   def test_find_tracking_info_should_return_shipment_events_in_ascending_chronological_order
     @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
     assert_equal response.shipment_events.map(&:time).sort, response.shipment_events.map(&:time)
   end
-  
+
   def test_find_tracking_info_should_have_correct_timestamps_for_shipment_events
     @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
@@ -97,24 +104,24 @@ class USPSTest < Test::Unit::TestCase
     assert_equal 'LARGE', USPS.size_code_for(Package.new(2, [12.1,1,1], :units => :imperial))
     assert_equal 'LARGE', USPS.size_code_for(Package.new(2, [1000,1000,1000], :units => :imperial))
   end
-  
+
   # TODO: test_parse_domestic_rate_response
   # TODO: test_build_us_rate_request
-  
+
   def test_build_world_rate_request
     expected_request = "<IntlRateV2Request USERID='login'><Package ID='0'><Pounds>0</Pounds><Ounces>9</Ounces><MailType>Package</MailType><GXG><POBoxFlag>N</POBoxFlag><GiftFlag>N</GiftFlag></GXG><ValueOfContents>0.0</ValueOfContents><Country><![CDATA[Canada]]></Country><Container>RECTANGULAR</Container><Size>REGULAR</Size><Width>5.51</Width><Length>7.48</Length><Height>0.79</Height><Girth>12.60</Girth></Package></IntlRateV2Request>"
     @carrier.expects(:commit).with(:world_rates, URI.encode(expected_request), false).returns(expected_request)
     @carrier.expects(:parse_rate_response)
     @carrier.find_rates(@locations[:beverly_hills], @locations[:ottawa], @packages[:book], :test => true)
   end
-  
+
   def test_build_world_rate_request_with_package_value
     expected_request = "<IntlRateV2Request USERID='login'><Package ID='0'><Pounds>0</Pounds><Ounces>120</Ounces><MailType>Package</MailType><GXG><POBoxFlag>N</POBoxFlag><GiftFlag>N</GiftFlag></GXG><ValueOfContents>269.99</ValueOfContents><Country><![CDATA[Canada]]></Country><Container>RECTANGULAR</Container><Size>LARGE</Size><Width>10.00</Width><Length>15.00</Length><Height>4.50</Height><Girth>29.00</Girth></Package></IntlRateV2Request>"
     @carrier.expects(:commit).with(:world_rates, URI.encode(expected_request), false).returns(expected_request)
     @carrier.expects(:parse_rate_response)
     @carrier.find_rates(@locations[:beverly_hills], @locations[:ottawa], @packages[:american_wii], :test => true)
   end
-  
+
   def test_initialize_options_requirements
     assert_raises ArgumentError do USPS.new end
     assert_nothing_raised { USPS.new(:login => 'blah')}
@@ -123,7 +130,7 @@ class USPSTest < Test::Unit::TestCase
   def test_parse_international_rate_response
     fixture_xml = xml_fixture('usps/beverly_hills_to_ottawa_american_wii_rate_response')
     @carrier.expects(:commit).returns(fixture_xml)
-    
+
     response = begin
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
@@ -134,24 +141,24 @@ class USPSTest < Test::Unit::TestCase
     rescue ResponseError => e
       e.response
     end
-    
+
     expected_xml_hash = Hash.from_xml(fixture_xml)
     actual_xml_hash = Hash.from_xml(response.xml)
-    
+
     assert_equal expected_xml_hash, actual_xml_hash
-    
+
     assert_not_equal [],response.rates
-    
+
     assert_equal [3420, 5835, 8525, 8525], response.rates.map(&:price)
     assert_equal [1, 2, 4, 12], response.rates.map(&:service_code).map(&:to_i).sort
-    
+
     ordered_service_names = ["USPS Express Mail International",
       "USPS GXG Envelopes",
       "USPS Global Express Guaranteed (GXG)",
       "USPS Priority Mail International"]
     assert_equal ordered_service_names, response.rates.map(&:service_name).sort
   end
-  
+
   def test_parse_max_dimension_sentences
     limits = {
       "Max. length 46\", width 35\", height 46\" and max. length plus girth 108\"" =>
@@ -177,33 +184,33 @@ class USPSTest < Test::Unit::TestCase
       @carrier.expects(:package_valid_for_max_dimensions).with(p, dimensions)
       @carrier.send(:package_valid_for_service, p, service_node)
     end
-  
+
     service_node = build_service_node(
         :name => "flat-rate box",
         :max_weight => 50,
         :max_dimensions => "USPS-supplied Priority Mail flat-rate box. Maximum weight 20 pounds." )
-    
+
     # should test against either kind of flat rate box:
     dimensions = [{:weight => 50.0, :length => 11.0, :width => 8.5, :height => 5.5}, # or...
       {:weight => 50.0, :length => 13.625, :width => 11.875, :height => 3.375}]
     @carrier.expects(:package_valid_for_max_dimensions).with(p, dimensions[0])
     @carrier.expects(:package_valid_for_max_dimensions).with(p, dimensions[1])
     @carrier.send(:package_valid_for_service, p, service_node)
-    
+
   end
-  
+
   def test_package_valid_for_max_dimensions
     p = Package.new(70 * 16, [10,10,10], :units => :imperial)
     limits = {:weight => 70.0, :length => 10.0, :width => 10.0, :height => 10.0, :length_plus_girth => 50.0, :length_plus_width_plus_height => 30.0}
     assert_equal true, @carrier.send(:package_valid_for_max_dimensions, p, limits)
-    
+
     limits.keys.each do |key|
       dimensions = {key => (limits[key] - 1)}
       assert_equal false, @carrier.send(:package_valid_for_max_dimensions, p, dimensions)
     end
-    
+
   end
-  
+
   def test_strip_9_digit_zip_codes
     request = URI.decode(@carrier.send(:build_us_rate_request, @packages[:book], "90210-1234", "123456789"))
     assert !(request =~ /\>90210-1234\</)
@@ -211,13 +218,13 @@ class USPSTest < Test::Unit::TestCase
     assert !(request =~ /\>123456789\</)
     assert request =~ /\>12345\</
   end
-  
+
   def test_maximum_weight
     assert Package.new(70 * 16, [5,5,5], :units => :imperial).mass == @carrier.maximum_weight
     assert Package.new((70 * 16) + 0.01, [5,5,5], :units => :imperial).mass > @carrier.maximum_weight
     assert Package.new((70 * 16) - 0.01, [5,5,5], :units => :imperial).mass < @carrier.maximum_weight
   end
-  
+
   def test_updated_domestic_rate_name_format_with_unescaped_html
     mock_response = xml_fixture('usps/beverly_hills_to_new_york_book_rate_response')
     @carrier.expects(:commit).returns(mock_response)
@@ -258,7 +265,7 @@ class USPSTest < Test::Unit::TestCase
 
   def test_first_class_packages_with_mail_type
     @carrier.expects(:commit).returns(xml_fixture('usps/first_class_packages_with_mail_type_response'))
-    
+
     response = begin
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
@@ -368,9 +375,9 @@ class USPSTest < Test::Unit::TestCase
 
     assert_equal [4112, 6047, 7744, 7744], response.rates.map(&:price) #note these prices are higher than the normal/retail unit tests because the rates from that test is years older than from this test
   end
-  
+
   private
-  
+
   def build_service_node(options = {})
     XmlNode.new('Service') do |service_node|
       service_node << XmlNode.new('Pounds', options[:pounds] || "0")
@@ -385,7 +392,7 @@ class USPSTest < Test::Unit::TestCase
       service_node << XmlNode.new('MaxDimensions', options[:max_dimensions].dup || "Max. length 24\", Max. length, height, depth combined 36\"")
     end.to_xml_element
   end
-  
+
   def build_service_hash(options = {})
     {"Pounds"=> options[:pounds] || "0",
          "SvcCommitments"=> options[:svc_commitments] || "Varies",
@@ -396,7 +403,7 @@ class USPSTest < Test::Unit::TestCase
          "MailType"=> options[:mail_type] || "Package",
          "Postage"=> options[:postage] || "3.76",
          "Ounces"=> options[:ounces] || "9",
-         "MaxDimensions"=> options[:max_dimensions] || 
+         "MaxDimensions"=> options[:max_dimensions] ||
           "Max. length 24\", Max. length, height, depth combined 36\""}
   end
 end
