@@ -470,7 +470,6 @@ module ActiveMerchant
         message = response_message(xml)
 
         if success
-
           tracking_number, origin, destination = nil
           shipment_events = []
           tracking_details = xml.elements.collect('*/*/TrackDetail'){ |e| e }
