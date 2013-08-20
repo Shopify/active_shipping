@@ -125,6 +125,18 @@ module ActiveMerchant
         "WS" => "Western Samoa"
       }
 
+      STATUS_NODE_PATTERNS = %w(
+        */*/TrackSummary
+        Error/Description
+        */TrackInfo/Error/Description
+      )
+
+      RESPONSE_ERROR_MESSAGES = [
+        /There is no record of that mail item/,
+        /This Information has not been included in this Test Server\./,
+        /Delivery status information is not available/
+      ]
+
       def find_tracking_info(tracking_number, options={})
         options = @options.update(options)        
         tracking_request = build_tracking_request(tracking_number, options)
@@ -584,12 +596,16 @@ module ActiveMerchant
       end
             
       def response_status_node(document)
-        document.elements['*/*/TrackSummary'] || document.elements['Error/Description']
+        STATUS_NODE_PATTERNS.each do |pattern|
+          if node = document.elements[pattern]
+            return node
+          end
+        end
       end
       
       def response_success?(document)
         summary = response_status_node(document).get_text.to_s
-        !(summary =~ /There is no record of that mail item/ || summary =~ /This Information has not been included in this Test Server\./)
+        !RESPONSE_ERROR_MESSAGES.detect { |re| summary =~ re }
       end
       
       def response_message(document)
