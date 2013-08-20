@@ -71,6 +71,10 @@ class ShipmentPackerTest < Test::Unit::TestCase
     end
   end
 
+  def test_returns_an_empty_list_when_no_items_provided
+    assert_equal [], ShipmentPacker.pack([], @dimensions, 1, 'USD')
+  end
+
   def test_add_summarized_prices_for_all_items_and_currency_to_package
     items = [
       {:grams => 1, :quantity => 3, :price => 1.0},

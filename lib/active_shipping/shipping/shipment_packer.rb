@@ -10,8 +10,11 @@ module ActiveMerchant
       # maximum_weight  - maximum weight in grams
       # currency        - ISO currency code
       def self.pack(items, dimensions, maximum_weight, currency)
-        items = items.map(&:symbolize_keys).map { |item| [item] * item[:quantity].to_i }.flatten
         packages = []
+
+        return packages if items.empty?
+
+        items = items.map(&:symbolize_keys).map { |item| [item] * item[:quantity].to_i }.flatten
         state = :package_empty
 
         while state != :packing_finished
