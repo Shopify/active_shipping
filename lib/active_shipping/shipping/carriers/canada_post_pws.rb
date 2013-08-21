@@ -237,6 +237,7 @@ module ActiveMerchant
       # rating
 
       def build_rates_request(origin, destination, line_items = [], options = {}, package = nil, services = [])
+        line_items = Array(line_items)
         xml =  XmlNode.new('mailing-scenario', :xmlns => "http://www.canadapost.ca/ws/ship/rate") do |node|
           node << customer_number_node(options)
           node << contract_id_node(options)
