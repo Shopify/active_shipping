@@ -110,6 +110,16 @@ After you've pushed your well-tested changes to your github fork, make a pull re
 * Cody Fauser (<http://codyfauser.com>)
 * Jimmy Baker (<http://jimmyville.com/>)
 * William Lang (<http://williamlang.net/>)
+* Cameron Fowler
+* Christopher Saunders (<http://christophersaunders.ca>)
+* Denis Odorcic
+* Dennis O'Connor
+* Dennis Theisen
+* Edward Ocampo-Gooding
+* Isaac Kearse
+* John Duff
+* Nigel Ramsay
+* Philip Arndt
 
 ## Legal Mumbo Jumbo
 
