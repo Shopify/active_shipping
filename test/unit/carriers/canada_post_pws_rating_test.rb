@@ -97,6 +97,17 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
     assert_equal "3.427", doc.xpath('//parcel-characteristics//weight').first.content
   end
 
+  def test_build_rates_request_location_object
+    xml = @cp.build_rates_request(Location.new(@home_params), Location.new(@dest_params), [@pkg1, @pkg2], @default_options)
+    doc = Nokogiri::HTML(xml)
+
+    assert_equal @default_options[:customer_number], doc.xpath('//customer-number').first.content
+    assert_equal 'K1P1J1', doc.xpath('//origin-postal-code').first.content
+    assert_equal 'united-states', doc.xpath('//destination').children.first.name
+    assert !doc.xpath('//parcel-characteristics').empty?
+    assert_equal "3.427", doc.xpath('//parcel-characteristics//weight').first.content
+  end
+
   def test_build_rates_request_domestic
     @dest_params = {       
       :name        => "John Smith", 
