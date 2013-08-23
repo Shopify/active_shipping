@@ -110,6 +110,12 @@ class CanadaPostPwsShippingTest < Test::Unit::TestCase
     assert_not_nil request
   end
 
+  def test_build_shipment_request_location_object
+    options = @default_options.dup
+    request = @cp.build_shipment_request(Location.new(@home_params), Location.new(@dom_params), @pkg1, @line_item1, options)
+    assert_not_nil request
+  end
+
   def test_create_shipment_request_with_options
     options = @default_options.merge(@shipping_opts1)
     request = @cp.build_shipment_request(@home_params, @paris_params, @pkg1, @line_item1, options)
