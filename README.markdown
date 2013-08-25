@@ -67,7 +67,7 @@ Active Shipping is currently being used and improved in a production environment
     
 ### Track a FedEx package
 
-    fedex = FedEx.new(:login => '999999999', :password => '7777777')
+    fedex = FedEx.new(:login => '999999999', :password => '7777777', key: '1BXXXXXXXXXxrcB', account: '51XXXXX20')
     tracking_info = fedex.find_tracking_info('tracking-number', :carrier_code => 'fedex_ground') # Ground package
     
     tracking_info.shipment_events.each do |event|
