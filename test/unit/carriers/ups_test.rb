@@ -134,6 +134,23 @@ class UPSTest < Test::Unit::TestCase
     assert_equal [0, 0, 0, 0, 0, 0], response.rates.map(&:negotiated_rate)
   end
 
+  def test_response_with_insured_value
+    mock_response = xml_fixture('ups/test_real_home_as_residential_destination_response_with_insured')
+    @carrier.expects(:commit).returns(mock_response)
+    response = @carrier.find_rates( @locations[:beverly_hills],
+                                    @locations[:real_home_as_residential],
+                                    @packages.values_at(:declared_value))
+    assert_equal [ "UPS Ground",
+                   "UPS Three-Day Select",
+                   "UPS Second Day Air",
+                   "UPS Next Day Air Saver",
+                   "UPS Next Day Air Early A.M.",
+                   "UPS Next Day Air"], response.rates.map(&:service_name)
+    assert_equal [2254, 4002, 5107, 8726, 12730, 9430], response.rates.map(&:price)
+    assert_equal [850, 850, 850, 850, 850, 850], response.rates.map(&:insurance_price)
+    assert_equal [0, 0, 0, 0, 0, 0], response.rates.map(&:negotiated_rate)
+  end
+
   def test_response_with_origin_account_parsing
     mock_response = xml_fixture('ups/test_real_home_as_residential_destination_with_origin_account_response')
     @carrier.expects(:commit).returns(mock_response)

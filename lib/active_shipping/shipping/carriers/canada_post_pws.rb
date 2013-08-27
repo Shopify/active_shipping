@@ -237,6 +237,7 @@ module ActiveMerchant
       # rating
 
       def build_rates_request(origin, destination, line_items = [], options = {}, package = nil, services = [])
+        line_items = Array(line_items)
         xml =  XmlNode.new('mailing-scenario', :xmlns => "http://www.canadapost.ca/ws/ship/rate") do |node|
           node << customer_number_node(options)
           node << contract_id_node(options)
@@ -329,9 +330,9 @@ module ActiveMerchant
       # :show_postage_rate
       # :cod, :cod_amount, :insurance, :insurance_amount, :signature_required, :pa18, :pa19, :hfp, :dns, :lad
       # 
-      def build_shipment_request(origin_hash, destination_hash, package, line_items = [], options = {})
-        origin = Location.new(sanitize_zip(origin_hash))
-        destination = Location.new(sanitize_zip(destination_hash))
+      def build_shipment_request(origin, destination, package, line_items = [], options = {})
+        origin = sanitize_location(origin)
+        destination = sanitize_location(destination)
 
         xml = XmlNode.new('non-contract-shipment', :xmlns => "http://www.canadapost.ca/ws/ncshipment") do |root_node|
           root_node << XmlNode.new('delivery-spec') do |node|
@@ -652,13 +653,13 @@ module ActiveMerchant
         end
       end
 
-      def origin_node(location_hash)
-        origin = Location.new(sanitize_zip(location_hash))
+      def origin_node(location)
+        origin = sanitize_location(location)
         XmlNode.new("origin-postal-code", origin.zip)
       end
 
-      def destination_node(location_hash)
-        destination = Location.new(sanitize_zip(location_hash))
+      def destination_node(location)
+        destination = sanitize_location(location)
         case destination.country_code
           when 'CA'
             XmlNode.new('destination') do |node|
@@ -737,6 +738,12 @@ module ActiveMerchant
 
       def shipping_date(options)
         DateTime.strptime((options[:shipping_date] || Time.now).to_s, "%Y-%m-%d")
+      end
+
+      def sanitize_location(location)
+        location_hash = location.is_a?(Location) ? location.to_hash : location
+        location_hash = sanitize_zip(location_hash)
+        Location.new(location_hash)
       end
 
       def sanitize_zip(hash)
