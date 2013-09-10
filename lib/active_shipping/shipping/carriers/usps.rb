@@ -3,10 +3,10 @@ require 'cgi'
 
 module ActiveMerchant
   module Shipping
-    
+
     # After getting an API login from USPS (looks like '123YOURNAME456'),
     # run the following test:
-    # 
+    #
     # usps = USPS.new(:login => '123YOURNAME456', :test => true)
     # usps.valid_credentials?
     #
@@ -14,20 +14,20 @@ module ActiveMerchant
     # to do before they put your API key in production mode.
     class USPS < Carrier
       self.retry_safe = true
-      
+
       cattr_reader :name
       @@name = "USPS"
-      
+
       LIVE_DOMAIN = 'production.shippingapis.com'
       LIVE_RESOURCE = 'ShippingAPI.dll'
-      
+
       TEST_DOMAINS = { #indexed by security; e.g. TEST_DOMAINS[USE_SSL[:rates]]
         true => 'secure.shippingapis.com',
         false => 'testing.shippingapis.com'
       }
-      
+
       TEST_RESOURCE = 'ShippingAPITest.dll'
-      
+
       API_CODES = {
         :us_rates => 'RateV4',
         :world_rates => 'IntlRateV2',
@@ -85,10 +85,10 @@ module ActiveMerchant
         :post_card => 'POSTCARD',
         :package_service => 'PACKAGESERVICE'
       }
-      
+
       # Array of U.S. possessions according to USPS: https://www.usps.com/ship/official-abbreviations.htm
       US_POSSESSIONS = ["AS", "FM", "GU", "MH", "MP", "PW", "PR", "VI"]
-      
+
       # TODO: figure out how USPS likes to say "Ivory Coast"
       #
       # Country names:
@@ -126,7 +126,6 @@ module ActiveMerchant
       }
 
       STATUS_NODE_PATTERNS = %w(
-        */*/TrackSummary
         Error/Description
         */TrackInfo/Error/Description
       )
@@ -138,7 +137,7 @@ module ActiveMerchant
       ]
 
       def find_tracking_info(tracking_number, options={})
-        options = @options.update(options)        
+        options = @options.update(options)
         tracking_request = build_tracking_request(tracking_number, options)
         response = commit(:track, tracking_request, (options[:test] || false))
         parse_tracking_response(response, options)
@@ -151,9 +150,9 @@ module ActiveMerchant
           'LARGE'
         end
       end
-      
+
       # from info at http://www.usps.com/businessmail101/mailcharacteristics/parcels.htm
-      # 
+      #
       # package.options[:books] -- 25 lb. limit instead of 35 for books or other printed matter.
       #                             Defaults to false.
       def self.package_machinable?(package, options={})
@@ -167,22 +166,22 @@ module ActiveMerchant
                             package.pounds <= (package.options[:books] ? 25.0 : 35.0)
         at_least_minimum && at_most_maximum
       end
-      
+
       def requirements
         [:login]
       end
-      
+
       def find_rates(origin, destination, packages, options = {})
         options = @options.merge(options)
-        
+
         origin = Location.from(origin)
         destination = Location.from(destination)
         packages = Array(packages)
-        
+
         #raise ArgumentError.new("USPS packages must originate in the U.S.") unless ['US',nil].include?(origin.country_code(:alpha2))
-        
+
         # domestic or international?
-        
+
         domestic_codes = US_POSSESSIONS + ['US', nil]
         response = if domestic_codes.include?(destination.country_code(:alpha2))
           us_rates(origin, destination, packages, options)
@@ -190,89 +189,17 @@ module ActiveMerchant
           world_rates(origin, destination, packages, options)
         end
       end
-      
+
       def valid_credentials?
         # Cannot test with find_rates because USPS doesn't allow that in test mode
         test_mode? ? canned_address_verification_works? : super
       end
-      
+
       def maximum_weight
         Mass.new(70, :pounds)
       end
-      
+
       protected
-      def response_success?(xml)
-        xml.get_text('/*/Response/ResponseStatusCode').to_s == '1'
-      end
-
-      def response_message(xml)
-        xml.get_text('/*/Response/Error/ErrorDescription | /*/Response/ResponseStatusDescription').to_s
-      end
-
-      def parse_tracking_response(response, options={})
-        xml = REXML::Document.new(response)
-        success = response_success?(xml)
-        message = response_message(xml)
-        
-        if success
-          tracking_number, origin, destination = nil
-          shipment_events = []
-          
-          first_shipment = xml.elements['/*/Shipment']
-          first_package = first_shipment.elements['Package']
-          tracking_number = first_shipment.get_text('ShipmentIdentificationNumber | Package/TrackingNumber').to_s
-          
-          origin, destination = %w{Shipper ShipTo}.map do |location|
-            location_from_address_node(first_shipment.elements["#{location}/Address"])
-          end
-          
-          activities = first_package.get_elements('Activity')
-          unless activities.empty?
-            shipment_events = activities.map do |activity|
-              description = activity.get_text('Status/StatusType/Description').to_s
-              zoneless_time = if (time = activity.get_text('Time')) &&
-                                 (date = activity.get_text('Date'))
-                time, date = time.to_s, date.to_s
-                hour, minute, second = time.scan(/\d{2}/)
-                year, month, day = date[0..3], date[4..5], date[6..7]
-                Time.utc(year, month, day, hour, minute, second)
-              end
-              location = location_from_address_node(activity.elements['ActivityLocation/Address'])
-              ShipmentEvent.new(description, zoneless_time, location)
-            end
-            
-            shipment_events = shipment_events.sort_by(&:time)
-            
-            if origin
-              first_event = shipment_events[0]
-              same_country = origin.country_code(:alpha2) == first_event.location.country_code(:alpha2)
-              same_or_blank_city = first_event.location.city.blank? or first_event.location.city == origin.city
-              origin_event = ShipmentEvent.new(first_event.name, first_event.time, origin)
-              if same_country and same_or_blank_city
-                shipment_events[0] = origin_event
-              else
-                shipment_events.unshift(origin_event)
-              end
-            end
-            if shipment_events.last.name.downcase == 'delivered'
-              shipment_events[-1] = ShipmentEvent.new(shipment_events.last.name, shipment_events.last.time, destination)
-            end
-          end
-          
-        end
-        TrackingResponse.new(success, message, Hash.from_xml(response).values.first,
-          :xml => response,
-          :request => last_request,
-          :shipment_events => shipment_events,
-          :origin => origin,
-          :destination => destination,
-          :tracking_number => tracking_number)
-      end
-
-
-
-
-
 
       def build_tracking_request(tracking_number, options={})
         xml_request = XmlNode.new('TrackRequest', 'USERID' => @options[:login]) do |root_node|
@@ -286,13 +213,13 @@ module ActiveMerchant
          # never use test mode; rate requests just won't work on test servers
         parse_rate_response origin, destination, packages, commit(:us_rates,request,false), options
       end
-      
+
       def world_rates(origin, destination, packages, options={})
         request = build_world_rate_request(packages, destination)
          # never use test mode; rate requests just won't work on test servers
         parse_rate_response origin, destination, packages, commit(:world_rates,request,false), options
       end
-      
+
       # Once the address verification API is implemented, remove this and have valid_credentials? build the request using that instead.
       def canned_address_verification_works?
         request = "%3CCarrierPickupAvailabilityRequest%20USERID=%22#{URI.encode(@options[:login])}%22%3E%20%0A%3CFirmName%3EABC%20Corp.%3C/FirmName%3E%20%0A%3CSuiteOrApt%3ESuite%20777%3C/SuiteOrApt%3E%20%0A%3CAddress2%3E1390%20Market%20Street%3C/Address2%3E%20%0A%3CUrbanization%3E%3C/Urbanization%3E%20%0A%3CCity%3EHouston%3C/City%3E%20%0A%3CState%3ETX%3C/State%3E%20%0A%3CZIP5%3E77058%3C/ZIP5%3E%20%0A%3CZIP4%3E1234%3C/ZIP4%3E%20%0A%3C/CarrierPickupAvailabilityRequest%3E%0A"
@@ -301,7 +228,7 @@ module ActiveMerchant
         xml.get_text('/CarrierPickupAvailabilityResponse/City').to_s == 'HOUSTON' &&
         xml.get_text('/CarrierPickupAvailabilityResponse/Address2').to_s == '1390 Market Street'
       end
-      
+
       # options[:service] --    One of [:first_class, :priority, :express, :bpm, :parcel,
       #                          :media, :library, :all]. defaults to :all.
       # options[:container] --  One of [:envelope, :box]. defaults to neither (this field has
@@ -345,14 +272,14 @@ module ActiveMerchant
         end
         URI.encode(save_request(request.to_s))
       end
-      
+
       # important difference with international rate requests:
       # * services are not given in the request
       # * package sizes are not given in the request
       # * services are returned in the response along with restrictions of size
       # * the size restrictions are returned AS AN ENGLISH SENTENCE (!?)
       #
-      # 
+      #
       # package.options[:mail_type] -- one of [:package, :postcard, :matter_for_the_blind, :envelope].
       #                                 Defaults to :package.
       def build_world_rate_request(packages, destination)
@@ -389,14 +316,14 @@ module ActiveMerchant
         end
         URI.encode(save_request(request.to_s))
       end
-      
+
       def parse_rate_response(origin, destination, packages, response, options={})
         success = true
         message = ''
         rate_hash = {}
-        
+
         xml = REXML::Document.new(response)
-        
+
         if error = xml.elements['/Error']
           success = false
           message = error.elements['Description'].text
@@ -408,7 +335,7 @@ module ActiveMerchant
               break
             end
           end
-          
+
           if success
             rate_hash = rates_from_response_node(xml, packages)
             unless rate_hash
@@ -416,9 +343,9 @@ module ActiveMerchant
               message = "Unknown root node in XML response: '#{xml.root.name}'"
             end
           end
-          
+
         end
-        
+
         if success
           rate_estimates = rate_hash.keys.map do |service_name|
             RateEstimate.new(origin,destination,@@name,"USPS #{service_name}",
@@ -429,15 +356,15 @@ module ActiveMerchant
           rate_estimates.reject! {|e| e.package_count != packages.length}
           rate_estimates = rate_estimates.sort_by(&:total_price)
         end
-        
+
         RateResponse.new(success, message, Hash.from_xml(response), :rates => rate_estimates, :xml => response, :request => last_request)
       end
-      
+
       def rates_from_response_node(response_node, packages)
         rate_hash = {}
         return false unless (root_node = response_node.elements['/IntlRateV2Response | /RateV4Response'])
         domestic = (root_node.name == 'RateV4Response')
-        
+
         if @options[:commercial_base]
           domestic_elements = ['Postage', 'CLASSID', 'MailService', 'CommercialRate']
           international_elements = ['Service', 'ID', 'SvcDescription', 'CommercialPostage']
@@ -446,10 +373,10 @@ module ActiveMerchant
           international_elements = ['Service', 'ID', 'SvcDescription', 'Postage']
         end
         service_node, service_code_node, service_name_node, rate_node = domestic ? domestic_elements : international_elements
-        
+
         root_node.each_element('Package') do |package_node|
           this_package = packages[package_node.attributes['ID'].to_i]
-          
+
           package_node.each_element(service_node) do |service_response_node|
             service_name = service_response_node.get_text(service_name_node).to_s
 
@@ -470,18 +397,18 @@ module ActiveMerchant
             package_rates = this_service[:package_rates] ||= []
             this_package_rate = {:package => this_package,
                                  :rate => Package.cents_from(service_response_node.get_text(rate_node).to_s.to_f)}
-            
+
             package_rates << this_package_rate if package_valid_for_service(this_package,service_response_node)
           end
         end
         rate_hash
       end
-      
+
       def package_valid_for_service(package, service_node)
         return true if service_node.elements['MaxWeight'].nil?
         max_weight = service_node.get_text('MaxWeight').to_s.to_f
         name = service_node.get_text('SvcDescription | MailService').to_s.downcase
-        
+
         if name =~ /flat.rate.box/ #domestic or international flat rate box
           # flat rate dimensions from http://www.usps.com/shipping/flatrate.htm
           return (package_valid_for_max_dimensions(package,
@@ -507,7 +434,7 @@ module ActiveMerchant
           #
           # 'Max. length 46", width 35", height 46" and max. length plus girth 108"'
           # 'Max. length 24", Max. length, height, depth combined 36"'
-          # 
+          #
           sentence = CGI.unescapeHTML(service_node.get_text('MaxDimensions').to_s)
           tokens = sentence.downcase.split(/[^\d]*"/).reject {|t| t.empty?}
           max_dimensions = {:weight => max_weight}
@@ -515,7 +442,7 @@ module ActiveMerchant
           tokens.each do |token|
             axis_sum = [/length/,/width/,/height/,/depth/].sum {|regex| (token =~ regex) ? 1 : 0}
             unless axis_sum == 0
-              value = token[/\d+$/].to_f 
+              value = token[/\d+$/].to_f
               if axis_sum == 3
                 max_dimensions[:length_plus_width_plus_height] = value
               elsif token =~ /girth/ and axis_sum == 1
@@ -532,7 +459,7 @@ module ActiveMerchant
           return package_valid_for_max_dimensions(package, max_dimensions)
         end
       end
-      
+
       def package_valid_for_max_dimensions(package,dimensions)
         valid = ((not ([:length,:width,:height].map {|dim| dimensions[dim].nil? || dimensions[dim].to_f >= package.inches(dim).to_f}.include?(false))) and
                 (dimensions[:weight].nil? || dimensions[:weight] >= package.pounds) and
@@ -549,18 +476,18 @@ module ActiveMerchant
       def parse_tracking_response(response, options)
         xml = REXML::Document.new(response)
         root_node = xml.elements['TrackResponse']
-        
+
         success = response_success?(xml)
         message = response_message(xml)
-        
+
         if success
           tracking_number, origin, destination = nil
           shipment_events = []
           tracking_details = xml.elements.collect('*/*/TrackDetail'){ |e| e }
-          
+
           tracking_summary = xml.elements.collect('*/*/TrackSummary'){ |e| e }.first
           tracking_details << tracking_summary
-          
+
           tracking_number = root_node.elements['TrackInfo'].attributes['ID'].to_s
 
           tracking_details.each do |event|
@@ -584,7 +511,7 @@ module ActiveMerchant
           end
           shipment_events = shipment_events.sort_by(&:time)
         end
-        
+
         TrackingResponse.new(success, message, Hash.from_xml(response),
           :carrier => @@name,
           :xml => response,
@@ -594,40 +521,66 @@ module ActiveMerchant
           :tracking_number => tracking_number
         )
       end
-            
-      def response_status_node(document)
+
+      def track_summary_node(document)
+        document.elements['*/*/TrackSummary']
+      end
+
+      def error_description_node(document)
         STATUS_NODE_PATTERNS.each do |pattern|
           if node = document.elements[pattern]
             return node
           end
         end
       end
-      
-      def response_success?(document)
-        summary = response_status_node(document).get_text.to_s
-        !RESPONSE_ERROR_MESSAGES.detect { |re| summary =~ re }
+
+      def response_status_node(document)
+         track_summary_node(document) || error_description_node(document)
       end
-      
+
+      def has_error?(document)
+        !!document.elements['Error']
+      end
+
+      def no_record?(document)
+        summary_node = track_summary_node(document)
+        if summary_node
+          summary = summary_node.get_text.to_s
+          RESPONSE_ERROR_MESSAGES.detect { |re| summary =~ re }
+          summary =~ /There is no record of that mail item/ || summary =~ /This Information has not been included in this Test Server\./
+        else
+          false
+        end
+      end
+
+      def tracking_info_error?(document)
+        document.elements['*/TrackInfo/Error']
+      end
+
+      def response_success?(document)
+        !(has_error?(document) || no_record?(document) || tracking_info_error?(document))
+      end
+
       def response_message(document)
         response_node = response_status_node(document)
-        response_status_node(document).get_text.to_s
+        response_node.get_text.to_s
       end
-      
+
       def commit(action, request, test = false)
         ssl_get(request_url(action, request, test))
       end
-      
+
       def request_url(action, request, test)
         scheme = USE_SSL[action] ? 'https://' : 'http://'
         host = test ? TEST_DOMAINS[USE_SSL[action]] : LIVE_DOMAIN
         resource = test ? TEST_RESOURCE : LIVE_RESOURCE
         "#{scheme}#{host}/#{resource}?API=#{API_CODES[action]}&XML=#{request}"
       end
-      
+
       def strip_zip(zip)
         zip.to_s.scan(/\d{5}/).first || zip
       end
-      
+
     end
   end
 end
