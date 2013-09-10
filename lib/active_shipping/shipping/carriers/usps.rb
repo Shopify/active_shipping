@@ -553,8 +553,12 @@ module ActiveMerchant
         end
       end
 
+      def tracking_info_error?(document)
+        document.elements['*/TrackInfo/Error']
+      end
+
       def response_success?(document)
-        !(has_error?(document) || no_record?(document))
+        !(has_error?(document) || no_record?(document) || tracking_info_error?(document))
       end
 
       def response_message(document)
