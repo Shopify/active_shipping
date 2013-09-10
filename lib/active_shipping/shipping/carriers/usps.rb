@@ -603,9 +603,31 @@ module ActiveMerchant
         end
       end
 
+      def response_status_node(document)
+         track_summary_node(document) || error_description_node(document)
+      end
+
+      def has_error?(document)
+        !!document.elements['Error']
+      end
+
+      def no_record?(document)
+        summary_node = track_summary_node(document)
+        if summary_node
+          summary = summary_node.get_text.to_s
+          RESPONSE_ERROR_MESSAGES.detect { |re| summary =~ re }
+          summary =~ /There is no record of that mail item/ || summary =~ /This Information has not been included in this Test Server\./
+        else
+          false
+        end
+      end
+
+      def tracking_info_error?(document)
+        document.elements['*/TrackInfo/Error']
+      end
+
       def response_success?(document)
-        summary = response_status_node(document).get_text.to_s
-        !RESPONSE_ERROR_MESSAGES.detect { |re| summary =~ re }
+        !(has_error?(document) || no_record?(document) || tracking_info_error?(document))
       end
 
       def response_message(document)
