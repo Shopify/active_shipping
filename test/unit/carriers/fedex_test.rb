@@ -116,6 +116,57 @@ class FedExTest < MiniTest::Unit::TestCase
     assert_equal 'ZZ', result.destination.country.code(:alpha2).to_s
   end
 
+  def test_find_tracking_info_should_return_correct_shipper_address
+    @carrier.expects(:commit).returns(xml_fixture('fedex/tracking_response_with_shipper_address'))
+    response = @carrier.find_tracking_info('927489999894450502838')
+    assert_equal 'wallingford', response.shipper_address.city.downcase
+    assert_equal 'CT', response.shipper_address.state
+  end
+
+  def test_find_tracking_info_should_gracefully_handle_missing_shipper_address
+    @carrier.expects(:commit).returns(@tracking_response)
+    response = @carrier.find_tracking_info('077973360403984')
+    assert_equal nil, response.shipper_address
+  end
+
+  def test_find_tracking_info_should_return_correct_ship_time
+    @carrier.expects(:commit).returns(@tracking_response)
+    response = @carrier.find_tracking_info('927489999894450502838')
+    assert_equal Time.parse("2008-12-03T00:00:00").utc, response.ship_time
+  end
+
+  def test_find_tracking_info_should_gracefully_handle_missing_ship_time
+    @carrier.expects(:commit).returns(xml_fixture('fedex/tracking_response_no_ship_time'))
+    response = @carrier.find_tracking_info('927489999894450502838')
+    assert_equal nil, response.ship_time
+  end
+
+  def test_find_tracking_info_should_return_correct_actual_delivery_date
+    @carrier.expects(:commit).returns(@tracking_response)
+    response = @carrier.find_tracking_info('077973360403984')
+    assert_equal Time.parse('2008-12-08T07:43:37-08:00').utc, response.actual_delivery_date
+  end
+
+  def test_find_tracking_info_should_gracefully_handle_missing_actual_delivery_date
+    # This particular fixture doesn't contain an actual delivery date 
+    # (in addition to having a shipper address)
+    @carrier.expects(:commit).returns(xml_fixture('fedex/tracking_response_with_shipper_address'))
+    response = @carrier.find_tracking_info('9274899998944505028386')
+    assert_equal nil, response.actual_delivery_date
+  end
+
+  def test_find_tracking_info_should_return_correct_scheduled_delivery_date
+    @carrier.expects(:commit).returns(xml_fixture('fedex/tracking_response_with_estimated_delivery_date'))
+    response = @carrier.find_tracking_info('1234567890111')
+    assert_equal Time.parse('2013-10-15T00:00:00').utc, response.scheduled_delivery_date
+  end
+
+  def test_find_tracking_info_should_gracefully_handle_missing_scheduled_delivery_date
+    @carrier.expects(:commit).returns(@tracking_response)
+    response = @carrier.find_tracking_info('077973360403984')
+    assert_equal nil, response.scheduled_delivery_date
+  end
+
   def test_find_tracking_info_should_return_origin_address
     @carrier.expects(:commit).returns(@tracking_response)
     result = @carrier.find_tracking_info('077973360403984')

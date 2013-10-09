@@ -106,6 +106,18 @@ class USPSTest < Test::Unit::TestCase
     assert_equal response.tracking_number, '9102901000462189604217'
   end
 
+  def test_find_tracking_info_should_have_correct_status
+    @carrier.expects(:commit).returns(@tracking_response)
+    response = @carrier.find_tracking_info('9102901000462189604217')
+    assert_equal response.status, :out_for_delivery
+  end
+
+  def test_find_tracking_info_should_have_correct_delivered
+    @carrier.expects(:commit).returns(xml_fixture('usps/delivered_tracking_response'))
+    response = @carrier.find_tracking_info('9102901000462189604217')
+    assert_equal response.delivered?, true
+  end
+
   def test_size_codes
     assert_equal 'REGULAR', USPS.size_code_for(Package.new(2, [1,12,1], :units => :imperial))
     assert_equal 'LARGE', USPS.size_code_for(Package.new(2, [12.1,1,1], :units => :imperial))
