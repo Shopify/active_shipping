@@ -170,7 +170,7 @@ class FedExTest < Test::Unit::TestCase
 
   def test_tracking
     assert_nothing_raised do
-      @carrier.find_tracking_info('077973360403984', :test => true)
+      @carrier.find_tracking_info('123456789012', :test => true)
     end
   end
 
