@@ -127,7 +127,7 @@ module ActiveMerchant
             request << XmlNode.new('merchantCPCID', @options[:login])
             request << XmlNode.new('fromPostalCode', origin.postal_code)
             request << XmlNode.new('turnAroundTime', options[:turn_around_time] ? options[:turn_around_time] : DEFAULT_TURN_AROUND_TIME)
-            request << XmlNode.new('itemsPrice', dollar_amount(line_items.sum(&:value)))
+            request << XmlNode.new('itemsPrice', dollar_amount(line_items.map(&:value).compact.sum))
 
             #line items
             request << build_line_items(line_items)
