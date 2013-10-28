@@ -143,4 +143,9 @@ class CanadaPostTest < Test::Unit::TestCase
 
     assert_equal [], rate_estimates.rates[0].delivery_range
   end
+
+  def test_line_items_with_nil_values
+    @line_items << Package.new(500, [2, 3, 4], :description => "another box full of stuff", :value => nil)
+    @carrier.find_rates(@origin, @destination, @line_items)
+  end
 end
