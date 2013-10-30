@@ -325,7 +325,7 @@ module ActiveMerchant
         message = response_message(xml)
 
         if success
-          tracking_number, origin, destination, status_code, status_description = nil
+          tracking_number, origin, destination, status_code, status_description, delivery_signature = nil
           delivered, exception = false
           exception_event = nil
           shipment_events = []
@@ -392,6 +392,7 @@ module ActiveMerchant
 
             # Has the shipment been delivered?
             if status == :delivered
+              delivery_signature = activities.first.get_text('ActivityLocation/SignedForByName').to_s
               if !destination
                 destination = shipment_events[-1].location
               end
@@ -407,6 +408,7 @@ module ActiveMerchant
           :status => status,
           :status_code => status_code,
           :status_description => status_description,
+          :delivery_signature => delivery_signature,
           :scheduled_delivery_date => scheduled_delivery_date,
           :shipment_events => shipment_events,
           :delivered => delivered,

@@ -57,6 +57,11 @@ class UPSTest < Test::Unit::TestCase
     assert_equal 'delivered', @carrier.find_tracking_info('1Z5FX0076803466397').status_description.downcase
   end
 
+  def test_find_tracking_info_should_return_delivery_signature
+    @carrier.expects(:commit).returns(@tracking_response)
+    assert_equal 'MCAULEY', @carrier.find_tracking_info('1Z5FX0076803466397').delivery_signature
+  end
+
   def test_find_tracking_info_should_have_an_out_for_delivery_status
     out_for_delivery_tracking_response = xml_fixture('ups/out_for_delivery_shipment')
     @carrier.expects(:commit).returns(out_for_delivery_tracking_response)
