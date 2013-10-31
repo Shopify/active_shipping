@@ -47,7 +47,9 @@ module ActiveMerchant
         "GROUND_HOME_DELIVERY" => "FedEx Ground Home Delivery",
         "FEDEX_GROUND" => "FedEx Ground",
         "INTERNATIONAL_GROUND" => "FedEx International Ground",
-        "SMART_POST" => "FedEx SmartPost"
+        "SMART_POST" => "FedEx SmartPost",
+        "FEDEX_FREIGHT_PRIORITY" => "FedEx Freight Priority",
+        "FEDEX_FREIGHT_ECONOMY" => "FedEx Freight Economy"
       }
 
       PackageTypes = {
