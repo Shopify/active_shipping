@@ -152,6 +152,67 @@ class FedExTest < MiniTest::Unit::TestCase
                                     destination,
                                     @packages.values_at(:book, :wii), :test => true)
   end
+
+  def test_building_freight_request_and_parsing_response
+    expected_request = xml_fixture('fedex/freight_rate_request')
+    mock_response = xml_fixture('fedex/freight_rate_response')
+    Time.any_instance.expects(:to_xml_value).returns("2013-11-01T14:04:01-07:00")
+
+    @carrier.expects(:commit).with {|request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode}.returns(mock_response)
+
+    # shipping and billing addresses below are provided by fedex test credentials
+
+    shipping_location = Location.new( address1: '1202 Chalet Ln',
+                                      address2: 'Do Not Delete - Test Account',
+                                      city: 'Harrison',
+                                      state: 'AR',
+                                      postal_code: '72601',
+                                      country: 'US')
+
+    billing_location = Location.new(  address1: '2000 Freight LTL Testing',
+                                      address2: 'Do Not Delete - Test Account',
+                                      city: 'Harrison',
+                                      state: 'AR',
+                                      postal_code: '72601',
+                                      country: 'US')
+
+    freight_options = {
+      account: '5555',
+      billing_location: billing_location,
+      payment_type: 'SENDER',
+      freight_class: 'CLASS_050',
+      packaging: 'PALLET',
+      role: 'SHIPPER'
+    }
+
+    response = @carrier.find_rates( shipping_location,
+                                    @locations[:ottawa],
+                                    @packages.values_at(:wii), { :freight => freight_options, :test => true })
+
+    assert_equal ["FedEx Freight Economy", "FedEx Freight Priority"], response.rates.map(&:service_name)
+    assert_equal [66263, 68513], response.rates.map(&:price)
+    
+    assert response.success?, response.message
+    assert_instance_of Hash, response.params
+    assert_instance_of String, response.xml
+    assert_instance_of Array, response.rates
+    assert response.rates.length > 0, "There should've been more than 0 rates returned"
+    
+    rate = response.rates.first
+    assert_equal 'FedEx', rate.carrier
+    assert_equal 'USD', rate.currency
+    assert_instance_of Fixnum, rate.total_price
+    assert_instance_of Fixnum, rate.price
+    assert_instance_of String, rate.service_name
+    assert_instance_of String, rate.service_code
+    assert_instance_of Array, rate.package_rates
+    assert_equal @packages.values_at(:wii), rate.packages
+    
+    package_rate = rate.package_rates.first
+    assert_instance_of Hash, package_rate
+    assert_instance_of Package, package_rate[:package]
+    assert_nil package_rate[:rate]
+  end
   
   def test_building_request_and_parsing_response
     expected_request = xml_fixture('fedex/ottawa_to_beverly_hills_rate_request')
