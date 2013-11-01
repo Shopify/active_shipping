@@ -27,6 +27,48 @@ class FedExTest < Test::Unit::TestCase
       end
     end
   end
+
+  def test_freight
+    response = nil
+    freight = fixtures(:fedex_freight)
+
+    shipping_location = Location.new( address1: freight[:shipping_address1],
+                                      address2: freight[:shipping_address2],
+                                      city: freight[:shipping_city],
+                                      state: freight[:shipping_state],
+                                      postal_code: freight[:shipping_postal_code],
+                                      country: freight[:shipping_country])
+
+    billing_location = Location.new(  address1: freight[:billing_address1],
+                                      address2: freight[:billing_address2],
+                                      city: freight[:billing_city],
+                                      state: freight[:billing_state],
+                                      postal_code: freight[:billing_postal_code],
+                                      country: freight[:billing_country])
+
+    freight_options = {
+      account: freight[:account],
+      billing_location: billing_location,
+      payment_type: freight[:payment_type],
+      freight_class: freight[:freight_class],
+      packaging: freight[:packaging],
+      role: freight[:role]
+    }
+
+    assert_nothing_raised do
+      response = @carrier.find_rates(
+                   shipping_location,
+                   @locations[:ottawa],
+                   @packages.values_at(:wii),
+                   { freight: freight_options }
+                 )
+      assert !response.rates.blank?
+      response.rates.each do |rate|
+        assert_instance_of String, rate.service_name
+        assert_instance_of Fixnum, rate.price
+      end
+    end
+  end
   
   def test_zip_to_zip_fails
     begin
