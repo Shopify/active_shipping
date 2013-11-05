@@ -1,76 +1,16 @@
-<?xml version="1.0"?>
+<?xml version="1.0" ?>
 <!DOCTYPE eparcel [
-<!-- EVERY REQUEST CONTAIN THE eparcel TAG -->
-<!ELEMENT eparcel (ratesAndServicesResponse)>
-<!-- *********************************************************  -->
-<!-- * Standard response for request for rates and services  *  -->
-<!-- *********************************************************  -->
-<!ELEMENT ratesAndServicesResponse (statusCode , statusMessage+ , requestID , handling , language , product+ , packing* , emptySpace* , shippingOptions , comment , nearestPostalOutlet*)>
+<!ELEMENT eparcel (error)>
+<!ELEMENT error (statusCode,statusMessage*, requestID)>
 <!ELEMENT statusCode (#PCDATA)>
 <!ELEMENT statusMessage (#PCDATA)>
 <!ELEMENT requestID (#PCDATA)>
-<!ELEMENT handling (#PCDATA)>
-<!ELEMENT language (#PCDATA)>
-<!ELEMENT product (name , rate , shippingDate , deliveryDate , deliveryDayOfWeek , nextDayAM? , packingID)>
-<!ATTLIST product id CDATA #REQUIRED>
-<!ATTLIST product sequence CDATA #REQUIRED>
-<!ELEMENT name (#PCDATA)>
-<!ELEMENT rate (#PCDATA)>
-<!ELEMENT shippingDate (#PCDATA)>
-<!ELEMENT deliveryDate (#PCDATA)>
-<!ELEMENT deliveryDayOfWeek (#PCDATA)>
-<!ELEMENT nextDayAM (#PCDATA)>
-<!ELEMENT packingID (#PCDATA)>
-<!ELEMENT packing (packingID , box+)>
-<!ELEMENT box (name , weight , expediterWeight , length , width , height , packedItem+)>
-<!ELEMENT weight (#PCDATA)>
-<!ELEMENT expediterWeight (#PCDATA)>
-<!ELEMENT length (#PCDATA)>
-<!ELEMENT width (#PCDATA)>
-<!ELEMENT height (#PCDATA)>
-<!ELEMENT packedItem (quantity , description)>
-<!ELEMENT quantity (#PCDATA)>
-<!ELEMENT description (#PCDATA)>
-<!ELEMENT emptySpace (length , width , height , weight)>
-<!ELEMENT shippingOptions (insurance , deliveryConfirmation , signature , flexiblePaymentAvailable?)>
-<!ELEMENT insurance (#PCDATA)>
-<!ELEMENT deliveryConfirmation (#PCDATA)>
-<!ELEMENT signature (#PCDATA)>
-<!ELEMENT flexiblePaymentAvailable EMPTY>
-<!ELEMENT comment (#PCDATA)>
-<!-- *********************************************************  -->
-<!-- * 'nearestPostalOutlet'  is optional and is returned    *  -->
-<!-- * only if the merchant profile has this option enabled  *  -->
-<!-- *********************************************************  -->
-<!ELEMENT nearestPostalOutlet (postalOutletSequenceNo , distance , outletName , businessName , postalAddress , phoneNumber , businessHours+)>
-<!ELEMENT postalOutletSequenceNo (#PCDATA)>
-<!ELEMENT distance (#PCDATA)>
-<!ELEMENT outletName (#PCDATA)>
-<!ELEMENT businessName (#PCDATA)>
-<!ELEMENT postalAddress (addressLine+ , postalCode , municipality , province?)>
-<!ELEMENT addressLine (#PCDATA)>
-<!ELEMENT postalCode (#PCDATA)>
-<!ELEMENT municipality (#PCDATA)>
-<!ELEMENT province (#PCDATA)>
-<!ELEMENT phoneNumber (#PCDATA)>
-<!ELEMENT businessHours (dayId , dayOfWeek , time)>
-<!ELEMENT dayId (#PCDATA)>
-<!ELEMENT dayOfWeek (#PCDATA)>
-<!ELEMENT time (#PCDATA)>
 ]>
 <eparcel>
-  <ratesAndServicesResponse>
-    <statusCode>-2</statusCode>
-    <statusMessage>Missing argument when calling module</statusMessage>
-    <requestID>6877575</requestID>
-    <handling>0.0</handling>
-    <language>0</language>
-    <shippingOptions>
-      <insurance>No</insurance>
-      <deliveryConfirmation>No</deliveryConfirmation>
-      <signature>No</signature>
-    </shippingOptions>
-    <comment/>
-  </ratesAndServicesResponse>
+<error>
+<statusCode>-3004</statusCode>
+<statusMessage>Parcel too heavy to be shipped with CPC.</statusMessage>
+<requestID>3070209</requestID>
+</error>
 </eparcel>
 <!--END_OF_EPARCEL-->
