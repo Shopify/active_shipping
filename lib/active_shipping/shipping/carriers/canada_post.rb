@@ -211,12 +211,18 @@ module ActiveMerchant
       end
 
       def response_success?(xml)
+        return false unless xml.get_text('eparcel/error').nil?
+
         value = xml.get_text('eparcel/ratesAndServicesResponse/statusCode').to_s
         value == '1' || value == '2'
       end
       
       def response_message(xml)
-        xml.get_text('eparcel/ratesAndServicesResponse/statusMessage').to_s
+        if response_success?(xml)
+          xml.get_text('eparcel/ratesAndServicesResponse/statusMessage').to_s
+        else
+          xml.get_text('eparcel/error/statusMessage').to_s
+        end
       end
       
       # <!-- List of items in the shopping    -->
