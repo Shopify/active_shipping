@@ -178,11 +178,11 @@ module ActiveMerchant
           root_node << XmlNode.new('RequestedShipment') do |rs|
             rs << XmlNode.new('ShipTimestamp', ship_timestamp(options[:turn_around_time]))
 
-            freight = options[:freight] && options[:freight].present?
+            freight = has_freight?(options)
 
             if !freight
+              # fedex api wants this up here otherwise request returns an error
               rs << XmlNode.new('DropoffType', options[:dropoff_type] || 'REGULAR_PICKUP')
-              #rs << XmlNode.new('ServiceType', 'SMART_POST') # use this to test responses for specific services.
               rs << XmlNode.new('PackagingType', options[:packaging_type] || 'YOUR_PACKAGING')
             end
             
@@ -194,32 +194,9 @@ module ActiveMerchant
 
             if freight
               # build xml for freight rate requests
-              rs << XmlNode.new('ShippingChargesPayment') do |shipping_charges_payment|
-                shipping_charges_payment << XmlNode.new('PaymentType', options[:freight][:payment_type])
-                shipping_charges_payment << XmlNode.new('Payor') do |payor|
-                  payor << XmlNode.new('ResponsibleParty') do |responsible_party|
-                    # TODO: case of different freight account numbers?
-                    responsible_party << XmlNode.new('AccountNumber', options[:freight][:account])
-                  end
-                end
-              end
-
-              rs << XmlNode.new('FreightShipmentDetail') do |freight_shipment_detail|
-                # TODO: case of different freight account numbers?
-                freight_shipment_detail << XmlNode.new('FedExFreightAccountNumber', options[:freight][:account])
-                freight_shipment_detail << build_location_node('FedExFreightBillingContactAndAddress', options[:freight][:billing_location])
-                freight_shipment_detail << XmlNode.new('Role', options[:freight][:role])
-
-                packages.each do |pkg|
-                  freight_shipment_detail << XmlNode.new('LineItems') do |line_items|
-                    line_items << XmlNode.new('FreightClass', options[:freight][:freight_class])
-                    line_items << XmlNode.new('Packaging', options[:freight][:packaging])
-                    line_items << build_package_weight_node(pkg, imperial)
-                    line_items << build_package_dimensions_node(pkg, imperial)
-                  end
-                end
-              end
-
+              freight_options = options[:freight]
+              rs << build_shipping_charges_payment_node(freight_options)
+              rs << build_freight_shipment_detail_node(freight_options, packages, imperial)
               rs << build_rate_request_types_node
             else
               # build xml for non-freight rate requests
@@ -242,6 +219,40 @@ module ActiveMerchant
           end
         end
         xml_request.to_s
+      end
+
+      def build_shipping_charges_payment_node(freight_options)
+        XmlNode.new('ShippingChargesPayment') do |shipping_charges_payment|
+          shipping_charges_payment << XmlNode.new('PaymentType', freight_options[:payment_type])
+          shipping_charges_payment << XmlNode.new('Payor') do |payor|
+            payor << XmlNode.new('ResponsibleParty') do |responsible_party|
+              # TODO: case of different freight account numbers?
+              responsible_party << XmlNode.new('AccountNumber', freight_options[:account])
+            end
+          end
+        end
+      end
+
+      def build_freight_shipment_detail_node(freight_options, packages, imperial)
+        XmlNode.new('FreightShipmentDetail') do |freight_shipment_detail|
+          # TODO: case of different freight account numbers?
+          freight_shipment_detail << XmlNode.new('FedExFreightAccountNumber', freight_options[:account])
+          freight_shipment_detail << build_location_node('FedExFreightBillingContactAndAddress', freight_options[:billing_location])
+          freight_shipment_detail << XmlNode.new('Role', freight_options[:role])
+
+          packages.each do |pkg|
+            freight_shipment_detail << XmlNode.new('LineItems') do |line_items|
+              line_items << XmlNode.new('FreightClass', freight_options[:freight_class])
+              line_items << XmlNode.new('Packaging', freight_options[:packaging])
+              line_items << build_package_weight_node(pkg, imperial)
+              line_items << build_package_dimensions_node(pkg, imperial)
+            end
+          end
+        end
+      end
+
+      def has_freight?(options)
+        options[:freight] && options[:freight].present?
       end
 
       def build_package_weight_node(pkg, imperial)
