@@ -1,0 +1,85 @@
+<RateRequest xmlns="http://fedex.com/ws/rate/v13">
+  <WebAuthenticationDetail>
+    <UserCredential>
+      <Key>1111</Key>
+      <Password>2222</Password>
+    </UserCredential>
+  </WebAuthenticationDetail>
+  <ClientDetail>
+    <AccountNumber>3333</AccountNumber>
+    <MeterNumber>4444</MeterNumber>
+  </ClientDetail>
+  <TransactionDetail>
+    <CustomerTransactionId>ActiveShipping</CustomerTransactionId>
+  </TransactionDetail>
+  <Version>
+    <ServiceId>crs</ServiceId>
+    <Major>13</Major>
+    <Intermediate>0</Intermediate>
+    <Minor>0</Minor>
+  </Version>
+  <ReturnTransitAndCommit>true</ReturnTransitAndCommit>
+  <VariableOptions>SATURDAY_DELIVERY</VariableOptions>
+  <RequestedShipment>
+    <ShipTimestamp>2013-11-01T14:04:01-07:00</ShipTimestamp>
+    <Shipper>
+      <Address>
+        <StreetLines>1202 Chalet Ln</StreetLines>
+        <StreetLines>Do Not Delete - Test Account</StreetLines>
+        <City>Harrison</City>
+        <StateOrProvinceCode>AR</StateOrProvinceCode>
+        <PostalCode>72601</PostalCode>
+        <CountryCode>US</CountryCode>
+        <Residential>true</Residential>
+      </Address>
+    </Shipper>
+    <Recipient>
+      <Address>
+        <StreetLines>110 Laurier Avenue West</StreetLines>
+        <City>Ottawa</City>
+        <StateOrProvinceCode>ON</StateOrProvinceCode>
+        <PostalCode>K1P 1J1</PostalCode>
+        <CountryCode>CA</CountryCode>
+        <Residential>true</Residential>
+      </Address>
+    </Recipient>
+    <ShippingChargesPayment>
+      <PaymentType>SENDER</PaymentType>
+      <Payor>
+        <ResponsibleParty>
+          <AccountNumber>5555</AccountNumber>
+        </ResponsibleParty>
+      </Payor>
+    </ShippingChargesPayment>
+    <FreightShipmentDetail>
+      <FedExFreightAccountNumber>5555</FedExFreightAccountNumber>
+      <FedExFreightBillingContactAndAddress>
+        <Address>
+          <StreetLines>2000 Freight LTL Testing</StreetLines>
+          <StreetLines>Do Not Delete - Test Account</StreetLines>
+          <City>Harrison</City>
+          <StateOrProvinceCode>AR</StateOrProvinceCode>
+          <PostalCode>72601</PostalCode>
+          <CountryCode>US</CountryCode>
+          <Residential>true</Residential>
+        </Address>
+      </FedExFreightBillingContactAndAddress>
+      <Role>SHIPPER</Role>
+      <LineItems>
+        <FreightClass>CLASS_050</FreightClass>
+        <Packaging>PALLET</Packaging>
+        <Weight>
+          <Units>LB</Units>
+          <Value>7.5</Value>
+        </Weight>
+        <Dimensions>
+          <Length>15</Length>
+          <Width>10</Width>
+          <Height>5</Height>
+          <Units>IN</Units>
+        </Dimensions>
+      </LineItems>
+    </FreightShipmentDetail>
+    <RateRequestTypes>ACCOUNT</RateRequestTypes>
+  </RequestedShipment>
+</RateRequest>

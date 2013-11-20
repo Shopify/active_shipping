@@ -47,7 +47,9 @@ module ActiveMerchant
         "GROUND_HOME_DELIVERY" => "FedEx Ground Home Delivery",
         "FEDEX_GROUND" => "FedEx Ground",
         "INTERNATIONAL_GROUND" => "FedEx International Ground",
-        "SMART_POST" => "FedEx SmartPost"
+        "SMART_POST" => "FedEx SmartPost",
+        "FEDEX_FREIGHT_PRIORITY" => "FedEx Freight Priority",
+        "FEDEX_FREIGHT_ECONOMY" => "FedEx Freight Economy"
       }
 
       PackageTypes = {
@@ -175,9 +177,14 @@ module ActiveMerchant
           
           root_node << XmlNode.new('RequestedShipment') do |rs|
             rs << XmlNode.new('ShipTimestamp', ship_timestamp(options[:turn_around_time]))
-            rs << XmlNode.new('DropoffType', options[:dropoff_type] || 'REGULAR_PICKUP')
-            #rs << XmlNode.new('ServiceType', 'SMART_POST') # use this to test responses for specific services.
-            rs << XmlNode.new('PackagingType', options[:packaging_type] || 'YOUR_PACKAGING')
+
+            freight = has_freight?(options)
+
+            if !freight
+              # fedex api wants this up here otherwise request returns an error
+              rs << XmlNode.new('DropoffType', options[:dropoff_type] || 'REGULAR_PICKUP')
+              rs << XmlNode.new('PackagingType', options[:packaging_type] || 'YOUR_PACKAGING')
+            end
             
             rs << build_location_node('Shipper', (options[:shipper] || origin))
             rs << build_location_node('Recipient', destination)
@@ -185,34 +192,88 @@ module ActiveMerchant
               rs << build_location_node('Origin', origin)
             end
 
-            rs << XmlNode.new('SmartPostDetail') do |spd|
-              spd << XmlNode.new('Indicia', options[:smart_post_indicia] || 'PARCEL_SELECT')
-              spd << XmlNode.new('HubId', options[:smart_post_hub_id] || 5902) # default to LA
-            end
+            if freight
+              # build xml for freight rate requests
+              freight_options = options[:freight]
+              rs << build_shipping_charges_payment_node(freight_options)
+              rs << build_freight_shipment_detail_node(freight_options, packages, imperial)
+              rs << build_rate_request_types_node
+            else
+              # build xml for non-freight rate requests
+              rs << XmlNode.new('SmartPostDetail') do |spd|
+                spd << XmlNode.new('Indicia', options[:smart_post_indicia] || 'PARCEL_SELECT')
+                spd << XmlNode.new('HubId', options[:smart_post_hub_id] || 5902) # default to LA
+              end
 
-            rs << XmlNode.new('RateRequestTypes', 'ACCOUNT')
+              rs << build_rate_request_types_node
 
-            rs << XmlNode.new('PackageCount', packages.size)
-            packages.each do |pkg|
-              rs << XmlNode.new('RequestedPackageLineItems') do |rps|
-                rps << XmlNode.new('GroupPackageCount', 1)
-                rps << XmlNode.new('Weight') do |tw|
-                  tw << XmlNode.new('Units', imperial ? 'LB' : 'KG')
-                  tw << XmlNode.new('Value', [((imperial ? pkg.lbs : pkg.kgs).to_f*1000).round/1000.0, 0.1].max)
-                end
-                rps << XmlNode.new('Dimensions') do |dimensions|
-                  [:length,:width,:height].each do |axis|
-                    value = ((imperial ? pkg.inches(axis) : pkg.cm(axis)).to_f*1000).round/1000.0 # 3 decimals
-                    dimensions << XmlNode.new(axis.to_s.capitalize, value.ceil)
-                  end
-                  dimensions << XmlNode.new('Units', imperial ? 'IN' : 'CM')
+              rs << XmlNode.new('PackageCount', packages.size)
+              packages.each do |pkg|
+                rs << XmlNode.new('RequestedPackageLineItems') do |rps|
+                  rps << XmlNode.new('GroupPackageCount', 1)
+                  rps << build_package_weight_node(pkg, imperial)
+                  rps << build_package_dimensions_node(pkg, imperial)
                 end
               end
             end
-            
           end
         end
         xml_request.to_s
+      end
+
+      def build_shipping_charges_payment_node(freight_options)
+        XmlNode.new('ShippingChargesPayment') do |shipping_charges_payment|
+          shipping_charges_payment << XmlNode.new('PaymentType', freight_options[:payment_type])
+          shipping_charges_payment << XmlNode.new('Payor') do |payor|
+            payor << XmlNode.new('ResponsibleParty') do |responsible_party|
+              # TODO: case of different freight account numbers?
+              responsible_party << XmlNode.new('AccountNumber', freight_options[:account])
+            end
+          end
+        end
+      end
+
+      def build_freight_shipment_detail_node(freight_options, packages, imperial)
+        XmlNode.new('FreightShipmentDetail') do |freight_shipment_detail|
+          # TODO: case of different freight account numbers?
+          freight_shipment_detail << XmlNode.new('FedExFreightAccountNumber', freight_options[:account])
+          freight_shipment_detail << build_location_node('FedExFreightBillingContactAndAddress', freight_options[:billing_location])
+          freight_shipment_detail << XmlNode.new('Role', freight_options[:role])
+
+          packages.each do |pkg|
+            freight_shipment_detail << XmlNode.new('LineItems') do |line_items|
+              line_items << XmlNode.new('FreightClass', freight_options[:freight_class])
+              line_items << XmlNode.new('Packaging', freight_options[:packaging])
+              line_items << build_package_weight_node(pkg, imperial)
+              line_items << build_package_dimensions_node(pkg, imperial)
+            end
+          end
+        end
+      end
+
+      def has_freight?(options)
+        options[:freight] && options[:freight].present?
+      end
+
+      def build_package_weight_node(pkg, imperial)
+        XmlNode.new('Weight') do |tw|
+          tw << XmlNode.new('Units', imperial ? 'LB' : 'KG')
+          tw << XmlNode.new('Value', [((imperial ? pkg.lbs : pkg.kgs).to_f*1000).round/1000.0, 0.1].max)
+        end
+      end
+
+      def build_package_dimensions_node(pkg, imperial)
+        XmlNode.new('Dimensions') do |dimensions|
+          [:length,:width,:height].each do |axis|
+            value = ((imperial ? pkg.inches(axis) : pkg.cm(axis)).to_f*1000).round/1000.0 # 3 decimals
+            dimensions << XmlNode.new(axis.to_s.capitalize, value.ceil)
+          end
+          dimensions << XmlNode.new('Units', imperial ? 'IN' : 'CM')
+        end
+      end
+
+      def build_rate_request_types_node(type = 'ACCOUNT')
+        XmlNode.new('RateRequestTypes', type)
       end
       
       def build_tracking_request(tracking_number, options={})
@@ -262,6 +323,10 @@ module ActiveMerchant
       def build_location_node(name, location)
         location_node = XmlNode.new(name) do |xml_node|
           xml_node << XmlNode.new('Address') do |address_node|
+            address_node << XmlNode.new('StreetLines', location.address1) if location.address1
+            address_node << XmlNode.new('StreetLines', location.address2) if location.address2
+            address_node << XmlNode.new('City', location.city) if location.city
+            address_node << XmlNode.new('StateOrProvinceCode', location.state) if location.state
             address_node << XmlNode.new('PostalCode', location.postal_code)
             address_node << XmlNode.new("CountryCode", location.country_code(:alpha2))
 
