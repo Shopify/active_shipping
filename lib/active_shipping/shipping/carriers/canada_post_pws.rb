@@ -52,12 +52,13 @@ module ActiveMerchant
 
       MAX_WEIGHT = 30 # kg
 
-      attr_accessor :language, :endpoint, :logger, :platform_id
+      attr_accessor :language, :endpoint, :logger, :platform_id, :customer_number
 
       def initialize(options = {})
         @language = LANGUAGE[options[:language]] || LANGUAGE['en']
         @endpoint = options[:endpoint] || ENDPOINT
         @platform_id = options[:platform_id]
+        @customer_number = options[:customer_number]
         super(options)
       end
       
@@ -618,7 +619,7 @@ module ActiveMerchant
       end
 
       def customer_number_node(options)
-        XmlNode.new("customer-number", options[:customer_number])
+        XmlNode.new("customer-number", options[:customer_number] || @customer_number)
       end
 
       def contract_id_node(options)
