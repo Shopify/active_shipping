@@ -35,9 +35,12 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
                        :cod_method_of_payment => 'CSH', :cov => true, :cov_amount => 100.00, 
                        :so => true, :pa18 => true}
 
+    @customer_number = '654321'
+
     @cp = CanadaPostPWS.new(login)
     @cp.logger = Logger.new(STDOUT)
     @french_cp = CanadaPostPWS.new(login.merge(:language => 'fr'))
+    @cp_customer_number = CanadaPostPWS.new(login.merge(:customer_number => @customer_number))
 
     @default_options = {:customer_number => '123456'}
   end
@@ -108,6 +111,28 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
 
   def test_build_rates_request
     xml = @cp.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2], @default_options)
+    doc = Nokogiri::HTML(xml)
+
+    assert_equal @default_options[:customer_number], doc.xpath('//customer-number').first.content
+    assert_equal 'K1P1J1', doc.xpath('//origin-postal-code').first.content
+    assert_equal 'united-states', doc.xpath('//destination').children.first.name
+    assert !doc.xpath('//parcel-characteristics').empty?
+    assert_equal "3.427", doc.xpath('//parcel-characteristics//weight').first.content
+  end
+
+  def test_build_rates_request_use_carrier_customer_number
+    xml = @cp_customer_number.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2])
+    doc = Nokogiri::HTML(xml)
+
+    assert_equal @customer_number, doc.xpath('//customer-number').first.content
+    assert_equal 'K1P1J1', doc.xpath('//origin-postal-code').first.content
+    assert_equal 'united-states', doc.xpath('//destination').children.first.name
+    assert !doc.xpath('//parcel-characteristics').empty?
+    assert_equal "3.427", doc.xpath('//parcel-characteristics//weight').first.content
+  end
+
+  def test_build_rates_request_override_carrier_customer_number
+    xml = @cp_customer_number.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2], @default_options)
     doc = Nokogiri::HTML(xml)
 
     assert_equal @default_options[:customer_number], doc.xpath('//customer-number').first.content
