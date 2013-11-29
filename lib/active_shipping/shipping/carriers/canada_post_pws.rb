@@ -619,7 +619,7 @@ module ActiveMerchant
       end
 
       def customer_number_node(options)
-        XmlNode.new("customer-number", options[:customer_number] || @customer_number)
+        XmlNode.new("customer-number", options[:customer_number] || customer_number)
       end
 
       def contract_id_node(options)
