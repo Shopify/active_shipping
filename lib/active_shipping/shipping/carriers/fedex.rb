@@ -22,6 +22,9 @@ module ActiveMerchant
         "fedex_ground" => "FDXG",
         "fedex_express" => "FDXE"
       }
+
+      DELIVERY_ADDRESS_NODE_NAMES = %w(DestinationAddress ActualDeliveryAddress)
+      SHIPPER_ADDRESS_NODE_NAMES  = %w(ShipperAddress)
       
       ServiceTypes = {
         "PRIORITY_OVERNIGHT" => "FedEx Priority Overnight",
@@ -437,31 +440,12 @@ module ActiveMerchant
             )
           end
 
-          destination = extract_destination(tracking_details)
+          destination = extract_destination(tracking_details, DELIVERY_ADDRESS_NODE_NAMES)
+          shipper_address = extract_destination(tracking_details, SHIPPER_ADDRESS_NODE_NAMES)
 
-          shipper_address_node = tracking_details.elements['ShipperAddress']
-          if shipper_address_node
-            shipper_address = Location.new(
-                  :country =>     shipper_address_node.get_text('CountryCode').to_s,
-                  :province =>    shipper_address_node.get_text('StateOrProvinceCode').to_s,
-                  :city =>        shipper_address_node.get_text('City').to_s
-            )
-          end
-
-          ship_timestamp_node = tracking_details.elements['ShipTimestamp']
-          if ship_timestamp_node
-            ship_time = Time.parse(ship_timestamp_node.to_s).utc
-          end
-
-          actual_delivery_timestamp_node = tracking_details.elements['ActualDeliveryTimestamp']
-          if actual_delivery_timestamp_node
-            actual_delivery_time = Time.parse(actual_delivery_timestamp_node.to_s).utc
-          end
-
-          estimated_delivery_timestamp_node = tracking_details.elements['EstimatedDeliveryTimestamp']
-          if estimated_delivery_timestamp_node
-            scheduled_delivery_time = Time.parse(estimated_delivery_timestamp_node.to_s).utc
-          end
+          ship_time = extract_timestamp(tracking_details, 'ShipTimestamp')
+          actual_delivery_time = extract_timestamp(tracking_details, 'ActualDeliveryTimestamp')
+          scheduled_delivery_time = extract_timestamp(tracking_details, 'EstimatedDeliveryTimestamp')
           
           tracking_details.elements.each('Events') do |event|
             address  = event.elements['Address']
@@ -496,7 +480,7 @@ module ActiveMerchant
           :actual_delivery_date => actual_delivery_time,
           :delivery_signature => delivery_signature,
           :shipment_events => shipment_events,
-          :shipper_address => shipper_address,
+          :shipper_address => shipper_address.unknown? ? nil : shipper_address,
           :origin => origin,
           :destination => destination,
           :tracking_number => tracking_number
@@ -547,8 +531,12 @@ module ActiveMerchant
         results
       end
 
-      def extract_destination(document)
-        node = document.elements['DestinationAddress'] || document.elements['ActualDeliveryAddress']
+      def extract_destination(document, possible_node_names)
+        node = nil
+        possible_node_names.each do |name|
+          node ||= document.elements[name]
+          break if node
+        end
 
         args = if node
           {
@@ -565,6 +553,12 @@ module ActiveMerchant
         end
 
         Location.new(args)
+      end
+
+      def extract_timestamp(document, node_name)
+        if timestamp_node = document.elements[node_name]
+          Time.parse(timestamp_node.to_s).utc
+        end
       end
 
       def build_document(xml)

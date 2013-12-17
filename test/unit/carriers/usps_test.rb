@@ -109,13 +109,13 @@ class USPSTest < Test::Unit::TestCase
   def test_find_tracking_info_should_have_correct_status
     @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('9102901000462189604217')
-    assert_equal response.status, :out_for_delivery
+    assert_equal :out_for_delivery, response.status
   end
 
   def test_find_tracking_info_should_have_correct_delivered
     @carrier.expects(:commit).returns(xml_fixture('usps/delivered_tracking_response'))
     response = @carrier.find_tracking_info('9102901000462189604217')
-    assert_equal response.delivered?, true
+    assert_equal true, response.delivered?
   end
 
   def test_size_codes
