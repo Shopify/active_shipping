@@ -380,10 +380,9 @@ module ActiveMerchant
             # This adds an origin event to the shipment activity in such cases.
             if origin && !(shipment_events.count == 1 && status == :delivered)
               first_event = shipment_events[0]
-              same_country = origin.country_code(:alpha2) == first_event.location.country_code(:alpha2)
-              same_or_blank_city = first_event.location.city.blank? or first_event.location.city == origin.city
               origin_event = ShipmentEvent.new(first_event.name, first_event.time, origin)
-              if same_country and same_or_blank_city
+
+              if within_same_area?(origin, first_event.location)
                 shipment_events[0] = origin_event
               else
                 shipment_events.unshift(origin_event)
@@ -456,6 +455,12 @@ module ActiveMerchant
         ssl_post("#{test ? TEST_URL : LIVE_URL}/#{RESOURCES[action]}", request)
       end
 
+      def within_same_area(origin, location)
+        return false unless location
+        matching_country_codes = origin.country_code(:alpha2) == location.country_code(:alpha2)
+        matching_or_blank_city = location.city.blank || location.city == origin.city
+        matching_country_codes && matching_or_blank_city
+      end
 
       def service_name_for(origin, code)
         origin = origin.country_code(:alpha2)
