@@ -440,8 +440,8 @@ module ActiveMerchant
             )
           end
 
-          destination = extract_destination(tracking_details, DELIVERY_ADDRESS_NODE_NAMES)
-          shipper_address = extract_destination(tracking_details, SHIPPER_ADDRESS_NODE_NAMES)
+          destination = extract_address(tracking_details, DELIVERY_ADDRESS_NODE_NAMES)
+          shipper_address = extract_address(tracking_details, SHIPPER_ADDRESS_NODE_NAMES)
 
           ship_time = extract_timestamp(tracking_details, 'ShipTimestamp')
           actual_delivery_time = extract_timestamp(tracking_details, 'ActualDeliveryTimestamp')
@@ -531,7 +531,7 @@ module ActiveMerchant
         results
       end
 
-      def extract_destination(document, possible_node_names)
+      def extract_address(document, possible_node_names)
         node = nil
         possible_node_names.each do |name|
           node ||= document.elements[name]
