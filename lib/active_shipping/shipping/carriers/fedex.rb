@@ -22,6 +22,9 @@ module ActiveMerchant
         "fedex_ground" => "FDXG",
         "fedex_express" => "FDXE"
       }
+
+      DELIVERY_ADDRESS_NODE_NAMES = %w(DestinationAddress ActualDeliveryAddress)
+      SHIPPER_ADDRESS_NODE_NAMES  = %w(ShipperAddress)
       
       ServiceTypes = {
         "PRIORITY_OVERNIGHT" => "FedEx Priority Overnight",
@@ -411,7 +414,9 @@ module ActiveMerchant
         message = response_message(xml)
         
         if success
-          tracking_number, origin, destination, status, status_code, status_description, delivery_signature = nil
+          tracking_number, shipper_address, origin, destination, status = nil
+          status_code, status_description, ship_time = nil
+          scheduled_delivery_time, actual_delivery_time, delivery_signature = nil
           shipment_events = []
 
           tracking_details = root_node.elements['TrackDetails']
@@ -435,7 +440,12 @@ module ActiveMerchant
             )
           end
 
-          destination = extract_destination(tracking_details)
+          destination = extract_address(tracking_details, DELIVERY_ADDRESS_NODE_NAMES)
+          shipper_address = extract_address(tracking_details, SHIPPER_ADDRESS_NODE_NAMES)
+
+          ship_time = extract_timestamp(tracking_details, 'ShipTimestamp')
+          actual_delivery_time = extract_timestamp(tracking_details, 'ActualDeliveryTimestamp')
+          scheduled_delivery_time = extract_timestamp(tracking_details, 'EstimatedDeliveryTimestamp')
           
           tracking_details.elements.each('Events') do |event|
             address  = event.elements['Address']
@@ -465,8 +475,12 @@ module ActiveMerchant
           :status => status,
           :status_code => status_code,
           :status_description => status_description,
+          :ship_time => ship_time,
+          :scheduled_delivery_date => scheduled_delivery_time,
+          :actual_delivery_date => actual_delivery_time,
           :delivery_signature => delivery_signature,
           :shipment_events => shipment_events,
+          :shipper_address => shipper_address.unknown? ? nil : shipper_address,
           :origin => origin,
           :destination => destination,
           :tracking_number => tracking_number
@@ -517,8 +531,12 @@ module ActiveMerchant
         results
       end
 
-      def extract_destination(document)
-        node = document.elements['DestinationAddress'] || document.elements['ActualDeliveryAddress']
+      def extract_address(document, possible_node_names)
+        node = nil
+        possible_node_names.each do |name|
+          node ||= document.elements[name]
+          break if node
+        end
 
         args = if node
           {
@@ -535,6 +553,12 @@ module ActiveMerchant
         end
 
         Location.new(args)
+      end
+
+      def extract_timestamp(document, node_name)
+        if timestamp_node = document.elements[node_name]
+          Time.parse(timestamp_node.to_s).utc
+        end
       end
 
       def build_document(xml)

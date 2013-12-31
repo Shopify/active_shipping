@@ -84,6 +84,7 @@ module ActiveMerchant #:nodoc:
       def residential?; @address_type == 'residential' end
       def commercial?; @address_type == 'commercial' end
       def po_box?; @address_type == 'po_box' end
+      def unknown?; country_code == 'ZZ' end
 
       def address_type=(value)
         return unless value.present?

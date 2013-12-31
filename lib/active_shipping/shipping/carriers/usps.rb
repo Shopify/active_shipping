@@ -474,6 +474,7 @@ module ActiveMerchant
       end
 
       def parse_tracking_response(response, options)
+        actual_delivery_date, status = nil
         xml = REXML::Document.new(response)
         root_node = xml.elements['TrackResponse']
 
@@ -509,7 +510,13 @@ module ActiveMerchant
               shipment_events << ShipmentEvent.new(description, zoneless_time, location)
             end
           end
+
           shipment_events = shipment_events.sort_by(&:time)
+
+          if last_shipment = shipment_events.last
+            status = last_shipment.status
+            actual_delivery_date = last_shipment.time if last_shipment.delivered?
+          end
         end
 
         TrackingResponse.new(success, message, Hash.from_xml(response),
@@ -518,7 +525,9 @@ module ActiveMerchant
           :request => last_request,
           :shipment_events => shipment_events,
           :destination => destination,
-          :tracking_number => tracking_number
+          :tracking_number => tracking_number,
+          :status => status,
+          :actual_delivery_date => actual_delivery_date
         )
       end
 
