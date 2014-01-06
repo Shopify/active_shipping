@@ -771,20 +771,21 @@ module ActiveMerchant
       end
     end
 
-    class CPPWSRateResponse < RateResponse      
+    class CPPWSRateResponse < RateResponse
       include CPPWSErrorResponse
-      
+
       def initialize(success, message, params = {}, options = {})
         handle_error(message, options)
         super
       end
     end
-    
+
     class CPPWSTrackingResponse < TrackingResponse
+      DELIVERED_EVENT_CODES = %w(1496 1498 1499 1409 1410 1411 1412 1413 1414 1415 1416 1417 1418 1419 1420 1421 1422 1423 1424 1425 1426 1427 1428 1429 1430 1431 1432 1433 1434 1435 1436 1437 1438)
       include CPPWSErrorResponse
 
       attr_reader :service_name, :expected_date, :changed_date, :change_reason, :customer_number
-      
+
       def initialize(success, message, params = {}, options = {})
         handle_error(message, options)
         super
@@ -793,6 +794,10 @@ module ActiveMerchant
         @changed_date    = options[:changed_date]
         @change_reason   = options[:change_reason]
         @customer_number = options[:customer_number]
+      end
+
+      def delivered?
+        @shipment_events.any? { |event| DELIVERED_EVENT_CODES.include? event.name }
       end
     end
 
