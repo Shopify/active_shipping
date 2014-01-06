@@ -99,6 +99,7 @@ class CanadaPostPwsTrackingTest < Test::Unit::TestCase
     assert_equal "G1K4M7", response.destination.to_s
     assert_equal "0001371134", response.customer_number
     assert_equal true, response.delivered?
+    assert_equal Time.parse('2011-02-03 16:59:59 UTC'), response.actual_delivery_time
   end
 
   def test_parse_undelivered_tracking_response
@@ -107,6 +108,7 @@ class CanadaPostPwsTrackingTest < Test::Unit::TestCase
     response = @cp.find_tracking_info('1371134583769923', {})
 
     assert_equal false, response.delivered?
+    assert_equal nil, response.actual_delivery_time
   end
 
   def test_parse_tracking_response_shipment_events

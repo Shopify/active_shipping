@@ -797,7 +797,18 @@ module ActiveMerchant
       end
 
       def delivered?
-        @shipment_events.any? { |event| DELIVERED_EVENT_CODES.include? event.name }
+        !! delivered_event
+      end
+
+      def actual_delivery_time
+        delivered_event.time if delivered_event
+      end
+
+
+      private
+
+      def delivered_event
+        @delivered_event ||= @shipment_events.detect { |event| DELIVERED_EVENT_CODES.include? event.name }
       end
     end
 
