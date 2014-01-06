@@ -68,33 +68,34 @@ class CanadaPostPwsTrackingTest < Test::Unit::TestCase
 
     assert_equal "No Pin History", exception.message
   end
-  
+
   def test_find_tracking_info_with_invalid_pin_format
     pin = '123'
     @cp.expects(:ssl_get).never
-    
+
     exception = assert_raises ActiveMerchant::Shipping::ResponseError do
       @cp.find_tracking_info(pin)
     end
     assert_equal "Invalid Pin Format", exception.message
   end
-  
+
   # parse_tracking_response
-  
+
   def test_parse_tracking_response
     @response = xml_fixture('canadapost_pws/tracking_details_en')
     @cp.expects(:ssl_get).returns(@response)
-    
+
     response = @cp.find_tracking_info('1371134583769923', {})
-    
+
     assert_equal CPPWSTrackingResponse, response.class
     assert_equal "Xpresspost", response.service_name
     assert_equal Date.parse("2011-02-01"), response.expected_date
     assert_equal "Customer addressing error found; attempting to correct", response.change_reason
     assert_equal "1371134583769923", response.tracking_number
     assert_equal 10, response.shipment_events.size
+    assert_equal response.origin.city, "LACHINE"
+    assert_equal response.origin.province, "QC"
     assert response.origin.is_a?(Location)
-    assert_equal "", response.origin.to_s
     assert response.destination.is_a?(Location)
     assert_equal "G1K4M7", response.destination.to_s
     assert_equal "0001371134", response.customer_number
