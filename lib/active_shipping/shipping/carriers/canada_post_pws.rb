@@ -289,7 +289,7 @@ module ActiveMerchant
         expected_date    = root_node.get_text('expected-delivery-date').to_s
         dest_postal_code = root_node.get_text('destination-postal-id').to_s
         destination      = Location.new(:postal_code => dest_postal_code)
-        origin           = Location.new({})        
+        origin           = Location.new(origin_hash_for(root_node))
         options = {
           :carrier                 => @@name,
           :service_name            => root_node.get_text('service-name').to_s,
@@ -762,6 +762,24 @@ module ActiveMerchant
         return value == 0 ? 0.01 : value.round / 100.0
       end
 
+      def origin_hash_for(root_node)
+        occurrences = root_node.get_elements('significant-events').first.get_elements('occurrence')
+        earliest = occurrences.sort_by { |occurrence| time_of_occurrence occurrence }.first
+
+        {
+          city: earliest.get_text('event-site'),
+          province: earliest.get_text('event-province'),
+          address_1: earliest.get_text('event-retail-location-id'),
+          country: 'Canada'
+        }
+      end
+
+      def time_of_occurrence(occurrence)
+        time = occurrence.get_text('event_time')
+        date = occurrence.get_text('event-date')
+        time_zone = occurrence.get_text('event-date')
+        DateTime.parse "#{date} #{time} #{time_zone}"
+      end
     end
 
     module CPPWSErrorResponse
