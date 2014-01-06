@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tracking-detail xmlns="http://www.canadapost.ca/ws/track">
+  <pin>1371134583769923</pin>
+  <active-exists>1</active-exists>
+  <archive-exists/>
+  <changed-expected-date>2011-02-11</changed-expected-date>
+  <destination-postal-id>G1K4M7</destination-postal-id>
+  <expected-delivery-date>2011-02-01</expected-delivery-date>
+  <changed-expected-delivery-reason>Customer addressing error found; attempting to correct</changed-expected-delivery-reason>
+  <mailed-by-customer-number>0001371134</mailed-by-customer-number>
+  <mailed-on-behalf-of-customer-number>0001371134</mailed-on-behalf-of-customer-number>
+  <original-pin/>
+  <service-name>Xpresspost</service-name>
+  <service-name-2>Xpresspost</service-name-2>
+  <customer-ref-1>955-0398</customer-ref-1>
+  <customer-ref-2/>
+  <return-pin/>
+  <signature-image-exists>false</signature-image-exists>
+  <suppress-signature>false</suppress-signature>
+  <delivery-options>
+    <item>
+      <delivery-option/>
+      <delivery-option-description/>
+    </item>
+    <item>
+      <delivery-option>CH_SGN_OPTION</delivery-option>
+      <delivery-option-description>Signature Required</delivery-option-description>
+    </item>
+  </delivery-options>
+  <significant-events>
+    <occurrence>
+      <event-identifier>0174</event-identifier>
+      <event-date>2011-02-03</event-date>
+      <event-time>08:27:43</event-time>
+      <event-time-zone>EST</event-time-zone>
+      <event-description>Item out for delivery</event-description>
+      <signatory-name/>
+      <event-site>SAINTE-FOY</event-site>
+      <event-province>QC</event-province>
+      <event-retail-location-id/>
+      <event-retail-name/>
+    </occurrence>
+    <occurrence>
+      <event-identifier>0100</event-identifier>
+      <event-date>2011-02-02</event-date>
+      <event-time>14:45:48</event-time>
+      <event-time-zone>EST</event-time-zone>
+      <event-description>Item processed at postal facility</event-description>
+      <signatory-name/>
+      <event-site>QUEBEC</event-site>
+      <event-province>QC</event-province>
+      <event-retail-location-id/>
+      <event-retail-name/>
+    </occurrence>
+    <occurrence>
+      <event-identifier>0173</event-identifier>
+      <event-date>2011-02-02</event-date>
+      <event-time>06:19:57</event-time>
+      <event-time-zone>EST</event-time-zone>
+      <event-description>Customer addressing error found; attempting to correct. Possible delay</event-description>
+      <signatory-name/>
+      <event-site>QUEBEC</event-site>
+      <event-province>QC</event-province>
+      <event-retail-location-id/>
+      <event-retail-name/>
+    </occurrence>
+    <occurrence>
+      <event-identifier>20</event-identifier>
+      <event-date>2011-02-01</event-date>
+      <event-time>07:59:52</event-time>
+      <event-time-zone>EST</event-time-zone>
+      <event-description>Signature image recorded for Online viewing</event-description>
+      <signatory-name>R GREGOIRE</signatory-name>
+      <event-site>QUEBEC</event-site>
+      <event-province>QC</event-province>
+      <event-retail-location-id/>
+      <event-retail-name/>
+    </occurrence>
+    <occurrence>
+      <event-identifier>0500</event-identifier>
+      <event-date>2011-02-01</event-date>
+      <event-time>07:51:23</event-time>
+      <event-time-zone>EST</event-time-zone>
+      <event-description>Out for delivery</event-description>
+      <signatory-name/>
+      <event-site>QUEBEC</event-site>
+      <event-province>QC</event-province>
+      <event-retail-location-id/>
+      <event-retail-name/>
+    </occurrence>
+    <occurrence>
+      <event-identifier>2300</event-identifier>
+      <event-date>2011-01-31</event-date>
+      <event-time>17:06:02</event-time>
+      <event-time-zone>EST</event-time-zone>
+      <event-description>Item picked up by Canada Post</event-description>
+      <signatory-name/>
+      <event-site>MONTREAL</event-site>
+      <event-province>QC</event-province>
+      <event-retail-location-id/>
+      <event-retail-name/>
+    </occurrence>
+    <occurrence>
+      <event-identifier>3000</event-identifier>
+      <event-date>2011-01-31</event-date>
+      <event-time>14:34:57</event-time>
+      <event-time-zone>EST</event-time-zone>
+      <event-description>Order information received by Canada Post</event-description>
+      <signatory-name/>
+      <event-site>LACHINE</event-site>
+      <event-province>QC</event-province>
+      <event-retail-location-id/>
+      <event-retail-name/>
+    </occurrence>
+  </significant-events>
+</tracking-detail>

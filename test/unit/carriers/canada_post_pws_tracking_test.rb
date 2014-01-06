@@ -98,15 +98,24 @@ class CanadaPostPwsTrackingTest < Test::Unit::TestCase
     assert response.destination.is_a?(Location)
     assert_equal "G1K4M7", response.destination.to_s
     assert_equal "0001371134", response.customer_number
+    assert_equal true, response.delivered?
+  end
+
+  def test_parse_undelivered_tracking_response
+    @response = xml_fixture('canadapost_pws/tracking_details_en_undelivered')
+    @cp.expects(:ssl_get).returns(@response)
+    response = @cp.find_tracking_info('1371134583769923', {})
+
+    assert_equal false, response.delivered?
   end
 
   def test_parse_tracking_response_shipment_events
     @response = xml_fixture('canadapost_pws/tracking_details_en')
     @cp.expects(:ssl_get).returns(@response)
-    
+
     response = @cp.find_tracking_info('1371134583769923', {})
     events = response.shipment_events
-    
+
     event = events.first
     assert_equal ShipmentEvent, event.class
     assert_equal "1496", event.name
