@@ -161,6 +161,8 @@ module ActiveMerchant
         end
         
         response
+      rescue NoMethodError => e
+        raise ActiveMerchant::Shipping::ResponseContentError.new(e, xml)
       end
       
       def parse_child_text(parent, name)
