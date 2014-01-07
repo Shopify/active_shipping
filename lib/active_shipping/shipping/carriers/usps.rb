@@ -13,6 +13,11 @@ module ActiveMerchant
     # This will send a test request to the USPS test servers, which they ask you
     # to do before they put your API key in production mode.
     class USPS < Carrier
+      EventDetails = Struct.new(:description, :time, :zoneless_time, :location)
+      EVENT_MESSAGE_PATTERNS = [
+        /^(.*), (\w+ \d{1,2}, \d{4}, \d{1,2}:\d\d [ap]m), (.*), (\w\w) (\d{5})$/i,
+        /^Your item \w{2,3} (out for delivery|delivered) at (\d{1,2}:\d\d [ap]m on \w+ \d{1,2}, \d{4}) in (.*), (\w\w) (\d{5})\.$/i
+      ]
       self.retry_safe = true
 
       cattr_reader :name
@@ -198,6 +203,20 @@ module ActiveMerchant
 
       def maximum_weight
         Mass.new(70, :pounds)
+      end
+
+      def extract_event_details(message)
+        return EventDetails.new unless EVENT_MESSAGE_PATTERNS.any?{|pattern| message =~ pattern}
+        description = $1.upcase
+        timestamp = $2
+        city = $3
+        state = $4
+        zip_code = $5
+
+        time = Time.parse(timestamp)
+        zoneless_time = Time.utc(time.year, time.month, time.mday, time.hour, time.min, time.sec)
+        location = Location.new(city: city, state: state, postal_code: zip_code, country: 'USA')
+        EventDetails.new($1.upcase, time, zoneless_time, location)
       end
 
       protected
@@ -565,23 +584,8 @@ module ActiveMerchant
           tracking_number = root_node.elements['TrackInfo'].attributes['ID'].to_s
 
           tracking_details.each do |event|
-            location = nil
-            timestamp = nil
-            description = nil
-            if event.get_text.to_s =~ /^(.*), (\w+ \d{1,2}, \d{4}, \d{1,2}:\d\d [ap]m), (.*), (\w\w) (\d{5})$/i ||
-                event.get_text.to_s =~ /^Your item \w{2,3} (out for delivery|delivered) at (\d{1,2}:\d\d [ap]m on \w+ \d{1,2}, \d{4}) in (.*), (\w\w) (\d{5})\.$/i
-              description = $1.upcase
-              timestamp   = $2
-              city        = $3
-              state       = $4
-              zip_code    = $5
-              location = Location.new(:city => city, :state => state, :postal_code => zip_code, :country => 'USA')
-            end
-            if location
-              time = Time.parse(timestamp)
-              zoneless_time = Time.utc(time.year, time.month, time.mday, time.hour, time.min, time.sec)
-              shipment_events << ShipmentEvent.new(description, zoneless_time, location)
-            end
+            details = extract_event_details(event.get_text.to_s)
+            shipment_events << ShipmentEvent.new(details.description, details.zoneless_time, details.location) if details.location
           end
 
           shipment_events = shipment_events.sort_by(&:time)

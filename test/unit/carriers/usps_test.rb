@@ -1,6 +1,7 @@
 require 'test_helper'
 
 class USPSTest < Test::Unit::TestCase
+  attr_reader :carrier
 
   def setup
     @packages  = TestFixtures.packages
@@ -393,6 +394,18 @@ class USPSTest < Test::Unit::TestCase
     rates = Hash[response.rates.map {|rate| [rate.service_name, rate.price]}]
 
     assert_equal [4112, 6047, 7744, 7744], response.rates.map(&:price) #note these prices are higher than the normal/retail unit tests because the rates from that test is years older than from this test
+  end
+
+  def test_extract_event_details_handles_single_digit_calendar_dates
+    assert details = carrier.extract_event_details("Out for Delivery, October 9, 2013, 10:16 am, BROOKLYN, NY 11201")
+    assert_equal "OUT FOR DELIVERY", details.description
+    assert_equal 9, details.zoneless_time.mday
+  end
+
+  def test_extract_event_details_handles_double_digit_calendar_dates
+    assert details = carrier.extract_event_details("Out for Delivery, October 12, 2013, 10:16 am, BROOKLYN, NY 11201")
+    assert_equal "OUT FOR DELIVERY", details.description
+    assert_equal 12, details.zoneless_time.mday
   end
 
   private
