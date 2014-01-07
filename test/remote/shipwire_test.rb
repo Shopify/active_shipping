@@ -52,6 +52,20 @@ class RemoteShipwireTest < Test::Unit::TestCase
     assert_equal 1, response.rates.size
     assert_equal ['INTL'], response.rates.collect(&:service_code)
   end
+
+  def test_invalid_xml_raises_response_content_error
+    @carrier.expects(:ssl_post).returns("")
+
+    assert_raises ActiveMerchant::Shipping::ResponseContentError do
+      rate_estimates = @carrier.find_rates(
+        @locations[:ottawa],
+        @locations[:london],
+        @packages.values_at(:book, :wii),
+        :items => @items,
+        :order_id => '#1000'
+      )
+    end
+  end
   
   def test_invalid_credentials
     shipwire = Shipwire.new(
