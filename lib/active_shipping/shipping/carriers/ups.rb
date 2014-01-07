@@ -455,10 +455,10 @@ module ActiveMerchant
         ssl_post("#{test ? TEST_URL : LIVE_URL}/#{RESOURCES[action]}", request)
       end
 
-      def within_same_area(origin, location)
+      def within_same_area?(origin, location)
         return false unless location
         matching_country_codes = origin.country_code(:alpha2) == location.country_code(:alpha2)
-        matching_or_blank_city = location.city.blank || location.city == origin.city
+        matching_or_blank_city = location.city.blank? || location.city == origin.city
         matching_country_codes && matching_or_blank_city
       end
 
