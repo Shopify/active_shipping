@@ -815,11 +815,11 @@ module ActiveMerchant
       end
 
       def delivered?
-        !! delivered_event
+        ! delivered_event.nil?
       end
 
       def actual_delivery_time
-        delivered_event.time if delivered_event
+        delivered_event.time if delivered?
       end
 
 
