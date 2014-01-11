@@ -145,7 +145,8 @@ module ActiveMerchant
         
         rate_request = build_rate_request(origin, destination, packages, options)
         
-        response = commit(save_request(rate_request), (options[:test] || false)).gsub(/<(\/)?.*?\:(.*?)>/, '<\1\2>')
+        xml = commit(save_request(rate_request), (options[:test] || false))
+        response = remove_version_prefix(xml)
 
         parse_rate_response(origin, destination, packages, response, options)
       end
@@ -154,7 +155,8 @@ module ActiveMerchant
         options = @options.update(options)
         
         tracking_request = build_tracking_request(tracking_number, options)
-        response = commit(save_request(tracking_request), (options[:test] || false)).gsub(/<(\/)?.*?\:(.*?)>/, '<\1\2>')
+        xml = commit(save_request(tracking_request), (options[:test] || false))
+        response = remove_version_prefix(xml)
         parse_tracking_response(response, options)
       end
 
@@ -480,7 +482,7 @@ module ActiveMerchant
           :actual_delivery_date => actual_delivery_time,
           :delivery_signature => delivery_signature,
           :shipment_events => shipment_events,
-          :shipper_address => shipper_address.unknown? ? nil : shipper_address,
+          :shipper_address => (shipper_address.nil? || shipper_address.unknown?) ? nil : shipper_address,
           :origin => origin,
           :destination => destination,
           :tracking_number => tracking_number
@@ -558,6 +560,14 @@ module ActiveMerchant
       def extract_timestamp(document, node_name)
         if timestamp_node = document.elements[node_name]
           Time.parse(timestamp_node.to_s).utc
+        end
+      end
+
+      def remove_version_prefix(xml)
+        if xml =~ /xmlns:v[0-9]/
+          xml.gsub(/<(\/)?.*?\:(.*?)>/, '<\1\2>')
+        else
+          xml
         end
       end
 
