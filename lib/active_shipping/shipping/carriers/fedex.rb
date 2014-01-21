@@ -331,7 +331,6 @@ module ActiveMerchant
             address_node << XmlNode.new('StreetLines', location.address1) if location.address1
             address_node << XmlNode.new('StreetLines', location.address2) if location.address2
             address_node << XmlNode.new('City', location.city) if location.city
-            address_node << XmlNode.new('StateOrProvinceCode', location.state) if location.state
             address_node << XmlNode.new('PostalCode', location.postal_code)
             address_node << XmlNode.new("CountryCode", location.country_code(:alpha2))
 
