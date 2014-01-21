@@ -160,7 +160,6 @@ class FedExTest < Test::Unit::TestCase
                    @locations[:netherlands],
                    @packages.values_at(:book, :wii)
                  )
-      #pp response
       assert !response.rates.blank?
       response.rates.each do |rate|
         assert_instance_of String, rate.service_name
