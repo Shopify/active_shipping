@@ -211,6 +211,11 @@ module ActiveMerchant
                                       :city => 'Barceloneta',
                                       :address1 => '1 Nueva St',
                                       :postal_code => '00617'),
+        :netherlands => Location.new( :country => 'NL',
+                                      :city => 'Groningen',
+                                      :address1 => 'Aquamarijnstraat 349',
+                                      :postal_code => '9743 PJ',
+                                      :state => 'Groningen'),
       }
 
       @@line_items1 = [

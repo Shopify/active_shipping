@@ -152,6 +152,38 @@ class FedExTest < Test::Unit::TestCase
     end
   end
   
+  def test_beverly_hills_to_netherlands
+    response = nil
+    assert_nothing_raised do
+      response = @carrier.find_rates(
+                   @locations[:beverly_hills],
+                   @locations[:netherlands],
+                   @packages.values_at(:book, :wii)
+                 )
+      assert !response.rates.blank?
+      response.rates.each do |rate|
+        assert_instance_of String, rate.service_name
+        assert_instance_of Fixnum, rate.price
+      end
+    end
+  end
+
+  def test_beverly_hills_to_new_york
+    response = nil
+    assert_nothing_raised do
+      response = @carrier.find_rates(
+                   @locations[:beverly_hills],
+                   @locations[:new_york],
+                   @packages.values_at(:book, :wii)
+                 )
+      assert !response.rates.blank?
+      response.rates.each do |rate|
+        assert_instance_of String, rate.service_name
+        assert_instance_of Fixnum, rate.price
+      end
+    end
+  end
+
   def test_beverly_hills_to_london
     response = nil
     assert_nothing_raised do
