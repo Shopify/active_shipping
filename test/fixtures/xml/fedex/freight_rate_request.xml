@@ -27,7 +27,6 @@
         <StreetLines>1202 Chalet Ln</StreetLines>
         <StreetLines>Do Not Delete - Test Account</StreetLines>
         <City>Harrison</City>
-        <StateOrProvinceCode>AR</StateOrProvinceCode>
         <PostalCode>72601</PostalCode>
         <CountryCode>US</CountryCode>
         <Residential>true</Residential>
@@ -37,7 +36,6 @@
       <Address>
         <StreetLines>110 Laurier Avenue West</StreetLines>
         <City>Ottawa</City>
-        <StateOrProvinceCode>ON</StateOrProvinceCode>
         <PostalCode>K1P 1J1</PostalCode>
         <CountryCode>CA</CountryCode>
         <Residential>true</Residential>
@@ -58,7 +56,6 @@
           <StreetLines>2000 Freight LTL Testing</StreetLines>
           <StreetLines>Do Not Delete - Test Account</StreetLines>
           <City>Harrison</City>
-          <StateOrProvinceCode>AR</StateOrProvinceCode>
           <PostalCode>72601</PostalCode>
           <CountryCode>US</CountryCode>
           <Residential>true</Residential>

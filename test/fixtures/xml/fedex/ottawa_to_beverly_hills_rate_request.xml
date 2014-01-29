@@ -29,7 +29,6 @@
       <Address>
         <StreetLines>110 Laurier Avenue West</StreetLines>
         <City>Ottawa</City>
-        <StateOrProvinceCode>ON</StateOrProvinceCode>
         <PostalCode>K1P 1J1</PostalCode>
         <CountryCode>CA</CountryCode>
         <Residential>true</Residential>
@@ -40,7 +39,6 @@
         <StreetLines>455 N. Rexford Dr.</StreetLines>
         <StreetLines>3rd Floor</StreetLines>
         <City>Beverly Hills</City>
-        <StateOrProvinceCode>CA</StateOrProvinceCode>
         <PostalCode>90210</PostalCode>
         <CountryCode>US</CountryCode>
         <Residential>true</Residential>
