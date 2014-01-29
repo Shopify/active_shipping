@@ -103,6 +103,26 @@ class CanadaPostPwsTrackingTest < Test::Unit::TestCase
     assert_equal Time.parse('2011-02-03 16:59:59 UTC'), response.actual_delivery_time
   end
 
+  def test_parse_tracking_response_no_expected_delivery_date
+    @response = xml_fixture('canadapost_pws/tracking_details_no_expected_delivery_date')
+    @cp.expects(:ssl_get).returns(@response)
+
+    response = @cp.find_tracking_info('1371134583769923', {})
+
+    assert_equal CPPWSTrackingResponse, response.class
+    assert_equal "Expedited Parcels", response.service_name
+    assert_equal nil, response.expected_date
+    assert_equal "8213295707205355", response.tracking_number
+    assert_equal 1, response.shipment_events.size
+    assert_equal response.origin.city, "MAPLE"
+    assert_equal response.origin.province, "ON"
+    assert response.origin.is_a?(Location)
+    assert response.destination.is_a?(Location)
+    assert_equal "J7Y0E4", response.destination.to_s
+    assert_equal "0008213295", response.customer_number
+    assert_equal false, response.delivered?
+  end
+
   def test_parse_undelivered_tracking_response
     @response = xml_fixture('canadapost_pws/tracking_details_en_undelivered')
     @cp.expects(:ssl_get).returns(@response)

@@ -293,7 +293,7 @@ module ActiveMerchant
         options = {
           :carrier                 => @@name,
           :service_name            => root_node.get_text('service-name').to_s,
-          :expected_date           => Date.parse(expected_date),
+          :expected_date           => expected_date.blank? ? nil : Date.parse(expected_date),
           :changed_date            => change_date.blank? ? nil : Date.parse(change_date),
           :change_reason           => root_node.get_text('changed-expected-delivery-reason').to_s.strip,
           :destination_postal_code => root_node.get_text('destination-postal-id').to_s,

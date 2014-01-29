@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tracking-detail xmlns="http://www.canadapost.ca/ws/track">
+  <pin>8213295707205355</pin>
+  <active-exists>1</active-exists>
+  <archive-exists/>
+  <changed-expected-date/>
+  <destination-postal-id>J7Y0E4</destination-postal-id>
+  <expected-delivery-date/>
+  <changed-expected-delivery-reason/>
+  <mailed-by-customer-number>0008213295</mailed-by-customer-number>
+  <mailed-on-behalf-of-customer-number>0008213295</mailed-on-behalf-of-customer-number>
+  <original-pin/>
+  <service-name>Expedited Parcels</service-name>
+  <service-name-2>Colis accélérés</service-name-2>
+  <customer-ref-1/>
+  <customer-ref-2/>
+  <return-pin/>
+  <signature-image-exists>false</signature-image-exists>
+  <suppress-signature>false</suppress-signature>
+  <delivery-options>
+    <item>
+      <delivery-option>CH_SGN_OPTION</delivery-option>
+      <delivery-option-description>Signature Required</delivery-option-description>
+    </item>
+  </delivery-options>
+  <significant-events>
+    <occurrence>
+      <event-identifier>3000</event-identifier>
+      <event-date>2014-01-26</event-date>
+      <event-time>20:18:06</event-time>
+      <event-time-zone>EST</event-time-zone>
+      <event-description>Electronic information submitted by shipper</event-description>
+      <signatory-name/>
+      <event-site>MAPLE</event-site>
+      <event-province>ON</event-province>
+      <event-retail-location-id/>
+      <event-retail-name/>
+    </occurrence>
+  </significant-events>
+</tracking-detail>
