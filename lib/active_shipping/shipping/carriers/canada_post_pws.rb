@@ -767,9 +767,9 @@ module ActiveMerchant
         earliest = occurrences.sort_by { |occurrence| time_of_occurrence occurrence }.first
 
         {
-          city: earliest.get_text('event-site'),
-          province: earliest.get_text('event-province'),
-          address_1: earliest.get_text('event-retail-location-id'),
+          city: earliest.get_text('event-site').to_s,
+          province: earliest.get_text('event-province').to_s,
+          address_1: earliest.get_text('event-retail-location-id').to_s,
           country: 'Canada'
         }
       end
