@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <TrackShipmentResponse xmlns="http://stamps.com/xml/namespace/2013/10/swsim/swsimv33">
+      <Authenticator>***authenticator***</Authenticator>
+      <TrackingEvents>
+        <TrackingEvent>
+          <Timestamp>2008-02-19T10:32:00</Timestamp>
+          <Event>DELIVERED</Event>
+          <TrackingEventType>Delivered</TrackingEventType>
+          <City>FORT WAYNE</City>
+          <State>IN</State>
+          <Zip>46809</Zip>
+          <Country>US</Country>
+          <SignedBy />
+          <AuthorizedAgent>true</AuthorizedAgent>
+        </TrackingEvent>
+        <TrackingEvent>
+          <Timestamp>2008-02-15T16:58:00</Timestamp>
+          <Event>PROCESSED</Event>
+          <TrackingEventType>Enroute</TrackingEventType>
+          <City>INDIANAPOLIS</City>
+          <State>IN</State>
+          <Zip>46206</Zip>
+          <Country>US</Country>
+          <SignedBy />
+          <AuthorizedAgent>true</AuthorizedAgent>
+        </TrackingEvent>
+        <TrackingEvent>
+          <Timestamp>2008-02-13T16:09:00</Timestamp>
+          <Event>Electronic Notification</Event>
+          <TrackingEventType>ElectronicNotification</TrackingEventType>
+          <City />
+          <State />
+          <Zip>90066</Zip>
+          <Country>US</Country>
+          <SignedBy />
+          <AuthorizedAgent>true</AuthorizedAgent>
+        </TrackingEvent>
+      </TrackingEvents>
+    </TrackShipmentResponse>
+  </soap:Body>
+</soap:Envelope>

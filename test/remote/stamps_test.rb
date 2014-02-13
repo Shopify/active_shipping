@@ -192,6 +192,79 @@ class StampsTest < Test::Unit::TestCase
     assert_equal "%PDF", response.image[0..3]
   end
 
+  def test_track_shipment
+    shipment = nil
+    tracking = nil
+    assert_nothing_raised do
+      # Tracking is not available for sample only shipments
+      shipment = @carrier.create_shipment(
+        @locations[:beverly_hills],
+        @locations[:new_york_with_name],
+        @packages[:book],
+        [],
+        {
+          service: 'US-MM',
+          insured_value: 70,
+          add_ons: [ 'US-A-INS', 'US-A-DC' ]
+        }
+      )
+      tracking = @carrier.find_tracking_info(shipment.tracking_number)
+    end
+
+    assert_equal :stamps, tracking.carrier
+    assert_equal "Stamps", tracking.carrier_name
+    assert_equal :electronic_notification, tracking.status
+    assert_equal "ElectronicNotification", tracking.status_code
+
+    assert_equal 1, tracking.shipment_events.length
+
+    event = tracking.shipment_events.first
+    assert_equal "Electronic Notification", event.name
+    assert_equal "90210", event.location.zip
+
+    assert_instance_of Time, event.time
+  end
+
+  def test_track_with_stamps_tx_id
+    shipment = nil
+    tracking = nil
+    assert_nothing_raised do
+      # Tracking is not available for sample only shipments
+      shipment = @carrier.create_shipment(
+        @locations[:beverly_hills],
+        @locations[:new_york_with_name],
+        @packages[:book],
+        [],
+        {
+          service: 'US-MM',
+          insured_value: 70,
+          add_ons: [ 'US-A-INS', 'US-A-DC' ]
+        }
+      )
+      tracking = @carrier.find_tracking_info(shipment.stamps_tx_id, stamps_tx_id: true)
+    end
+
+    assert_equal :stamps, tracking.carrier
+    assert_equal "Stamps", tracking.carrier_name
+    assert_equal :electronic_notification, tracking.status
+    assert_equal "ElectronicNotification", tracking.status_code
+
+    assert_equal 1, tracking.shipment_events.length
+
+    event = tracking.shipment_events.first
+    assert_equal "Electronic Notification", event.name
+    assert_equal "90210", event.location.zip
+
+    assert_instance_of Time, event.time
+  end
+
+  def test_tracking_with_bad_number
+    response = nil
+    assert_raise ResponseError do
+      response = @carrier.find_tracking_info('abc123xyz')
+    end
+  end
+
   def test_zip_to_zip
     response = nil
     assert_nothing_raised do

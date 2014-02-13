@@ -182,14 +182,46 @@ class StampsTest < Test::Unit::TestCase
     assert_equal '543.21', indicium.control_total
   end
 
+  def test_track_shipment
+    response_chain(xml_fixture('stamps/track_shipment_response'))
+
+    tracking_response = @carrier.find_tracking_info('c605aec1-322e-48d5-bf81-b0bb820f9c22', stamps_tx_id: true)
+
+    assert_equal 'ActiveMerchant::Shipping::TrackingResponse', tracking_response.class.name
+
+    assert_equal 3, tracking_response.shipment_events.length
+
+    assert_equal 'Electronic Notification', tracking_response.shipment_events[0].name
+    assert_equal '90066', tracking_response.shipment_events[0].location.zip
+    assert_equal 'United States', tracking_response.shipment_events[0].location.country.name
+    assert_equal Time.utc(2008, 2, 13, 16, 9, 0), tracking_response.shipment_events[0].time
+
+    assert_equal 'PROCESSED', tracking_response.shipment_events[1].name
+    assert_equal 'INDIANAPOLIS', tracking_response.shipment_events[1].location.city
+    assert_equal 'IN', tracking_response.shipment_events[1].location.state
+    assert_equal '46206', tracking_response.shipment_events[1].location.zip
+    assert_equal 'United States', tracking_response.shipment_events[1].location.country.name
+    assert_equal Time.utc(2008, 2, 15, 16, 58, 0), tracking_response.shipment_events[1].time
+
+    assert_equal 'DELIVERED', tracking_response.shipment_events[2].name
+    assert_equal 'FORT WAYNE', tracking_response.shipment_events[2].location.city
+    assert_equal 'IN', tracking_response.shipment_events[2].location.state
+    assert_equal '46809', tracking_response.shipment_events[2].location.zip
+    assert_equal 'United States', tracking_response.shipment_events[2].location.country.name
+    assert_equal Time.utc(2008, 2, 19, 10, 32, 0), tracking_response.shipment_events[2].time
+
+    assert_equal :delivered, tracking_response.status
+    assert_equal 'Delivered', tracking_response.status_code
+  end
+
   def test_authenticator_renewal
     fixtures = [
-                @authentication_response,
-                xml_fixture('stamps/get_account_info_response'),
-                xml_fixture('stamps/expired_authenticator_response'),
-                @authentication_response,
-                xml_fixture('stamps/get_account_info_response')
-               ]
+      @authentication_response,
+      xml_fixture('stamps/get_account_info_response'),
+      xml_fixture('stamps/expired_authenticator_response'),
+      @authentication_response,
+      xml_fixture('stamps/get_account_info_response')
+    ]
 
     @carrier.expects(:ssl_post).times(5).returns(*fixtures)
 

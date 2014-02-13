@@ -179,6 +179,11 @@ module ActiveMerchant
         response = commit(:CreateIndicium, request)
       end
 
+      def find_tracking_info(shipment_id, options = {})
+        request = build_track_shipment_request(shipment_id, options)
+        response = commit(:TrackShipment, request)
+      end
+
       def namespace
         NAMESPACE
       end
@@ -273,7 +278,7 @@ module ActiveMerchant
             xml.tns(:Authenticator, authenticator)
             xml.tns(:PurchaseAmount, purchase_amount)
             xml.tns(:ControlTotal, control_total)
-              end
+          end
         end
       end
 
@@ -450,6 +455,15 @@ module ActiveMerchant
         end
       end
 
+      def build_track_shipment_request(shipment_id, options)
+        build_header do |xml|
+          xml.tns :TrackShipment do
+            xml.tns(:Authenticator, authenticator)
+            xml.tns(options[:stamps_tx_id] ? :StampsTxID : :TrackingNumber, shipment_id)
+          end
+        end
+      end
+
       def commit(swsim_method, request)
         save_request(request)
         save_swsim_method(swsim_method)
@@ -493,7 +507,7 @@ module ActiveMerchant
           nil
         end
 
-        # Renew the Authenticator if it has expired and retry  the request
+        # Renew the Authenticator if it has expired and retry the request
         if error_code and error_code.downcase == '002b0202'
           request = renew_authenticator(last_request)
           commit(last_swsim_method, request)
@@ -710,6 +724,43 @@ module ActiveMerchant
         response_options[:rate]              = parse_rate(indicium.elements['Rate'])
 
         StampsShippingResponse.new(true, '', {}, response_options)
+      end
+
+      def parse_track_shipment_response(track_shipment, response_options)
+        parse_authenticator(track_shipment)
+
+        response_options[:carrier] = @@name
+
+        shipment_events = track_shipment.get_elements('TrackingEvents/TrackingEvent').map do |event|
+          unless response_options[:status]
+            response_options[:status_code] = event.get_text('TrackingEventType').to_s
+            response_options[:status] = response_options[:status_code].underscore.to_sym
+          end
+
+          response_options[:delivery_signature] = event.get_text('SignedBy').to_s if event.get_text('SignedBy')
+
+          description = event.get_text('Event').to_s
+
+          timestamp = event.get_text('Timestamp').to_s
+          date, time = timestamp.split('T')
+          year, month, day = date.split('-')
+          hour, minute, second = time.split(':')
+          zoneless_time = Time.utc(year, month, day, hour, minute, second)
+
+          location = Location.new(
+            city:    event.get_text('City').to_s,
+            state:   event.get_text('State').to_s,
+            zip:     event.get_text('Zip').to_s,
+            country: event.get_text('Country').to_s
+          )
+
+          ShipmentEvent.new(description, zoneless_time, location)
+        end
+
+        response_options[:shipment_events] = shipment_events.sort_by(&:time)
+        response_options[:delivered] = response_options[:status] == :delivered
+
+        TrackingResponse.new(true, '', {}, response_options)
       end
     end
 
