@@ -18,6 +18,105 @@ class StampsTest < Test::Unit::TestCase
     assert_equal 'ActiveMerchant::Shipping::StampsAccountInfoResponse', @account_info.class.name
   end
 
+  def test_validation_domestic
+    response = nil
+    assert_nothing_raised do
+      response = @carrier.validate_address(@locations[:new_york_with_name])
+    end
+
+    assert_equal 'BOB BOBSEN', response.address.name
+    assert_equal '780 3RD AVE RM 2601', response.address.address1
+    assert_nil response.address.address2
+    assert_equal 'NEW YORK', response.address.city
+    assert_equal 'NY', response.address.state
+    assert_equal '10017-2177', response.address.zip
+
+    assert_equal [], response.candidate_addresses
+
+    assert response.address_match?
+    assert response.city_state_zip_ok?
+
+    assert_instance_of String, response.cleanse_hash
+    assert_instance_of String, response.override_hash
+  end
+
+  def test_validation_puerto_rico
+    puerto_rico_with_name = Location.new(@locations[:puerto_rico].to_hash.merge(name: 'Bob Bobsen'))
+
+    response = nil
+    assert_nothing_raised do
+      response = @carrier.validate_address(puerto_rico_with_name)
+    end
+
+    assert_equal 'BOB BOBSEN', response.address.name
+    assert_equal '1 CALLE NUEVA', response.address.address1
+    assert_equal 'BARCELONETA', response.address.city
+    assert_equal 'PR', response.address.province
+    assert_equal '00617-3101', response.address.postal_code
+
+    assert_equal [], response.candidate_addresses
+
+    assert response.address_match?
+    assert response.city_state_zip_ok?
+
+    assert_instance_of String, response.cleanse_hash
+    assert_instance_of String, response.override_hash
+  end
+
+  def test_validatation_ottawa
+    ottawa_with_name = Location.new(@locations[:ottawa].to_hash.merge(name: 'Bob Bobsen'))
+
+    response = nil
+    assert_nothing_raised do
+      response = @carrier.validate_address(ottawa_with_name)
+    end
+
+    assert_equal 'BOB BOBSEN', response.address.name
+    assert_equal '110 LAURIER AVENUE WEST', response.address.address1
+    assert_equal 'OTTAWA', response.address.city
+    assert_equal 'ON', response.address.province
+    assert_equal 'K1P 1J1', response.address.postal_code
+    assert_equal 'CA', response.address.country_code
+    assert_equal '1-613-580-2400', response.address.phone
+
+    assert_equal [], response.candidate_addresses
+
+    assert response.address_match?
+    assert response.city_state_zip_ok?
+
+    assert_instance_of String, response.cleanse_hash
+    assert_instance_of String, response.override_hash
+  end
+
+  def test_validation_with_candidates
+    missing_quadrant = Location.new(
+      name: 'The White House',
+      address1: '1600 Pennsylvania Ave',
+      city: 'Washington',
+      state: 'DC',
+      zip: '20500'
+    )
+
+    response = nil
+    assert_nothing_raised do
+      response = @carrier.validate_address(missing_quadrant)
+    end
+
+    assert_equal 'THE WHITE HOUSE', response.address.name
+    assert_equal '1600 PENNSYLVANIA AVE NW', response.address.address1
+    assert_equal 'WASHINGTON', response.address.city
+    assert_equal 'DC', response.address.province
+    assert_equal '20500-0003', response.address.postal_code
+
+    assert_equal 7, response.candidate_addresses.length
+
+    assert !response.address_match?
+    assert response.city_state_zip_ok?
+
+    assert_nil response.cleanse_hash
+    assert_instance_of String, response.override_hash
+  end
+
   def test_zip_to_zip
     response = nil
     assert_nothing_raised do

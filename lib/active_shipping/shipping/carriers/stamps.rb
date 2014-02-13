@@ -83,6 +83,13 @@ module ActiveMerchant
         response = commit(:GetAccountInfo, request)
       end
 
+      def validate_address(address, options = {})
+        address = standardize_address(address)
+
+        request = build_cleanse_address_request(address)
+        response = commit(:CleanseAddress, request)
+      end
+
       def find_rates(origin, destination, package, options = {})
         origin = standardize_address(origin)
         destination = standardize_address(destination)
@@ -176,6 +183,38 @@ module ActiveMerchant
           xml.tns :GetAccountInfo do
             xml.tns(:Authenticator, authenticator)
           end
+        end
+      end
+
+      def build_cleanse_address_request(address)
+        build_header do |xml|
+          xml.tns :CleanseAddress do
+            xml.tns(:Authenticator, authenticator)
+            add_address(xml, address)
+          end
+        end
+      end
+
+      def add_address(xml, address, object_type = :Address)
+        xml.tns object_type do
+          xml.tns(:FullName,       address.name) unless address.name.blank?
+          xml.tns(:Company,        address.company) unless address.company.blank?
+          xml.tns(:Address1,       address.address1)
+          xml.tns(:Address2,       address.address2) unless address.address2.blank?
+          xml.tns(:Address3,       address.address3) unless address.address3.blank?
+          xml.tns(:City,           address.city) unless address.city.blank?
+          if domestic?(address)
+            xml.tns(:State,        address.state) unless address.state.blank?
+
+            zip = (address.postal_code || '').match(/^(\d{5})?-?(\d{4})?$/)
+            xml.tns(:ZIPCode,      zip[1]) unless zip[1].nil?
+            xml.tns(:ZIPCodeAddOn, zip[2]) unless zip[2].nil?
+          else
+            xml.tns(:Province,     address.province) unless address.province.blank?
+            xml.tns(:PostalCode,   address.postal_code) unless address.postal_code.blank?
+          end
+          xml.tns(:Country,        address.country_code) unless address.country_code.blank?
+          xml.tns(:PhoneNumber,    address.phone) unless address.phone.blank?
         end
       end
 
@@ -327,6 +366,64 @@ module ActiveMerchant
         StampsAccountInfoResponse.new(true, '', {}, response_options)
       end
 
+      def parse_cleanse_address_response(cleanse_address, response_options)
+        parse_authenticator(cleanse_address)
+
+        response_options[:address_match]     = cleanse_address.get_text('AddressMatch').to_s == 'true'
+        response_options[:city_state_zip_ok] = cleanse_address.get_text('CityStateZipOK').to_s == 'true'
+
+        address = cleanse_address.elements['Address']
+        response_options[:cleanse_hash]  = address.get_text('CleanseHash').to_s if address.get_text('CleanseHash')
+        response_options[:override_hash] = address.get_text('OverrideHash').to_s if address.get_text('OverrideHash')
+
+        address_node = cleanse_address.elements['Address']
+        indicator_node = cleanse_address.get_text('ResidentialDeliveryIndicatorType').to_s
+        po_box_node    = cleanse_address.get_text('IsPOBox').to_s
+        response_options[:address] = parse_address(address_node, indicator_node, po_box_node)
+
+        candidate_addresses = cleanse_address.get_elements('CandidateAddresses/Address')
+        response_options[:candidate_addresses] = candidate_addresses.map do |candidate_address|
+          parse_address(candidate_address)
+        end
+
+        StampsCleanseAddressResponse.new(true, '', {}, response_options)
+      end
+
+      def parse_address(address_node, residential_indicator_node = nil, po_box_node = nil)
+        address = {}
+
+        address[:name]     = address_node.get_text('FullName').to_s if address_node.get_text('FullName')
+        address[:company]  = address_node.get_text('Company').to_s if address_node.get_text('Company')
+        address[:address1] = address_node.get_text('Address1').to_s if address_node.get_text('Address1')
+        address[:address2] = address_node.get_text('Address2').to_s if address_node.get_text('Address2')
+        address[:address3] = address_node.get_text('Address3').to_s if address_node.get_text('Address3')
+        address[:city]     = address_node.get_text('City').to_s if address_node.get_text('City')
+        address[:country]  = address_node.get_text('Country').to_s if address_node.get_text('Country')
+        address[:phone]    = address_node.get_text('PhoneNumber').to_s if address_node.get_text('PhoneNumber')
+
+        if address[:country] == 'US' || address[:country].nil?
+          address[:state]  = address_node.get_text('State').to_s if address_node.get_text('State')
+
+          address[:postal_code] = address_node.get_text('ZIPCode').to_s if address_node.get_text('ZIPCode')
+          address[:postal_code] += '-' + address_node.get_text('ZIPCodeAddOn').to_s if address_node.get_text('ZIPCodeAddOn')
+        else
+          address[:province]    = address_node.get_text('Province').to_s if address_node.get_text('Province')
+          address[:postal_code] = address_node.get_text('PostalCode').to_s if address_node.get_text('PostalCode')
+        end
+
+        address[:address_type] = if residential_indicator_node == 'Yes'
+          'residential'
+        elsif residential_indicator_node == 'No'
+          'commercial'
+        elsif po_box_node == 'true'
+          'po_box'
+        else
+          nil
+        end
+
+        Location.new(address)
+      end
+
       def parse_get_rates_response(get_rates, response_options)
         parse_authenticator(get_rates)
 
@@ -450,6 +547,23 @@ module ActiveMerchant
         @must_use_cost_codes        = options[:must_use_cost_codes]
         @can_view_online_reports    = options[:can_view_online_reports]
         @per_print_limit            = options[:per_print_limit]
+      end
+    end
+
+    class StampsCleanseAddressResponse < Response
+      attr_reader :address, :address_match, :city_state_zip_ok, :candidate_addresses, :cleanse_hash, :override_hash
+
+      alias_method :address_match?, :address_match
+      alias_method :city_state_zip_ok?, :city_state_zip_ok
+
+      def initialize(success, message, params = {}, options = {})
+        super
+        @address             = options[:address]
+        @address_match       = options[:address_match]
+        @city_state_zip_ok   = options[:city_state_zip_ok]
+        @candidate_addresses = options[:candidate_addresses]
+        @cleanse_hash        = options[:cleanse_hash]
+        @override_hash       = options[:override_hash]
       end
     end
 
