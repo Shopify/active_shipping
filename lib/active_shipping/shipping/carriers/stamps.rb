@@ -78,6 +78,69 @@ module ActiveMerchant
         'US-A-RRE'   => 'Unknow Service Name RRE'
       }
 
+      CARRIER_PICKUP_LOCATION = {
+        'FrontDoor'             => 'Packages are at front door',
+        'BackDoor'              => 'Packages are at back door',
+        'SideDoor'              => 'Packages are at side door',
+        'KnockOnDoorOrRingBell' => 'Knock on door or ring bell',
+        'MailRoom'              => 'Packages are in mail room',
+        'Office'                => 'Packages are in office',
+        'Reception'             => 'Packages are at reception area',
+        'InOrAtMailbox'         => 'Packages are in mail box',
+        'Other'                 => 'Other Location'
+      }
+
+      PRINT_LAYOUTS = [
+        'Normal',
+        'NormalLeft',
+        'NormalRight',
+        'Normal4X6',
+        'Normal6X4',
+        'Normal75X2',
+        'NormalReceipt',
+        'NormalCN22',
+        'NormalCP72',
+        'Normal4X6CN22',
+        'Normal6X4CN22',
+        'Normal4X6CP72',
+        'Normal6X4CP72',
+        'Normal4X675',
+        'Normal4X675CN22',
+        'Normal4X675CP72',
+        'Return',
+        'ReturnCN22',
+        'ReturnCP72',
+        'Return4X675',
+        'Return4X675CN22',
+        'Return4X675CP72',
+        'SDC3510',
+        'SDC3520',
+        'SDC3530',
+        'SDC3610',
+        'SDC3710',
+        'SDC3810',
+        'SDC3820',
+        'SDC3910',
+        'Envelope9',
+        'Envelope10',
+        'Envelope11',
+        'Envelope12',
+        'EnvelopePersonal',
+        'EnvelopeMonarch',
+        'EnvelopeInvitation',
+        'EnvelopeGreeting'
+      ]
+
+      IMAGE_TYPE = [
+        'Auto',
+        'Epl',
+        'Gif',
+        'Jpg',
+        'Pdf',
+        'Png',
+        'Zpl'
+      ]
+
       def account_info
         request = build_get_account_info_request
         response = commit(:GetAccountInfo, request)
@@ -96,6 +159,14 @@ module ActiveMerchant
 
         request = build_rate_request(origin, destination, package, options)
         response = commit(:GetRates, request)
+      end
+
+      def create_shipment(origin, destination, package, line_items = [], options = {})
+        origin = standardize_address(origin)
+        destination = standardize_address(destination)
+
+        request = build_create_indicium_request(origin, destination, package, line_items, options)
+        response = commit(:CreateIndicium, request)
       end
 
       def namespace
@@ -271,6 +342,82 @@ module ActiveMerchant
           end
 
           xml.tns(:ToState,           destination.province) unless destination.province.blank?
+        end
+      end
+
+      def build_create_indicium_request(origin, destination, package, line_items, options)
+        build_header do |xml|
+          xml.tns :CreateIndicium do
+            xml.tns(:Authenticator,             authenticator)
+            xml.tns(:IntegratorTxID,            options[:integrator_tx_id] || SecureRandom::uuid)
+
+            add_rate(xml, origin, destination, package, options)
+            add_address(xml, origin, :From)
+            add_address(xml, destination, :To)
+            add_customs(xml, line_items, options) unless options[:content_type].blank?
+
+            xml.tns(:SampleOnly,                options[:sample_only]) unless options[:sample_only].blank?
+            xml.tns(:ImageType,                 options[:image_type]) unless options[:image_type].blank?
+            xml.tns(:EltronPrinterDPIType,      options[:label_resolution]) unless options[:label_resolution].blank?
+            xml.tns(:memo,                      options[:memo]) unless options[:memo].blank?
+            xml.tns(:deliveryNotification,      options[:delivery_notification]) unless options[:delivery_notification].blank?
+
+            add_shipment_notification(xml, options) unless options[:email].blank?
+
+            xml.tns(:horizontalOffset,          options[:horizontal_offset]) unless options[:horizontal_offest].blank?
+            xml.tns(:verticalOffset,            options[:vertical_offset]) unless options[:vertical_offest].blank?
+            xml.tns(:printDensity,              options[:print_density]) unless options[:print_density].blank?
+            xml.tns(:rotationDegrees,           options[:rotation]) unless options[:rotation].blank?
+            xml.tns(:printMemo,                 options[:print_memo]) unless options[:print_memo].blank?
+            xml.tns(:printInstructions,         options[:print_instructions]) unless options[:print_instructions].blank?
+            xml.tns(:ReturnImageData,           options[:return_image_data]) unless options[:return_image_data].blank?
+            xml.tns(:InternalTransactionNumber, options[:internal_transaction_number]) unless options[:internal_transaction_number].blank?
+            xml.tns(:PaperSize,                 options[:paper_size]) unless options[:paper_size].blank?
+
+            add_label_recipient_info(xml, options) unless options[:label_email_address].blank?
+          end
+        end
+      end
+
+      def add_shipment_notification(xml, options)
+        xml.tns :ShipmentNotification do
+          xml.tns(:Email,                    options[:email])
+          xml.tns(:CCToAccountHolder,        options[:cc_to_account_holder]) unless options[:cc_to_account_holder].blank?
+          xml.tns(:UseCompanyNameInFromLine, options[:use_company_name_in_from_name]) unless options[:use_company_name_in_from_line].blank?
+          xml.tns(:UseCompanyNameInSubject,  options[:use_company_name_in_subject]) unless options[:use_company_name_in_subject].blank?
+        end
+      end
+
+      def add_customs(xml, line_items, options)
+        xml.tns :Customs do
+          xml.tns(:ContentType,       options[:content_type])
+          xml.tns(:Comments,          options[:comments]) unless options[:comments].blank?
+          xml.tns(:LicenseNumber,     options[:license_number]) unless options[:license_number].blank?
+          xml.tns(:CertificateNumber, options[:certificate_number]) unless options[:certificate_number].blank?
+          xml.tns(:InvoiceNumber,     options[:invoice_number]) unless options[:invoice_number].blank?
+          xml.tns(:OtherDescribe,     options[:other_describe]) unless options[:other_describe].blank?
+
+          xml.tns :CustomsLines do
+            line_items.each do |customs_line|
+              xml.tns :CustomsLine do
+                xml.tns(:Description,     customs_line.name)
+                xml.tns(:Quantity,        customs_line.quantity)
+                xml.tns(:Value,           '%.2f' % (customs_line.value.to_f / 100))
+                xml.tns(:WeightOz,        customs_line.ounces) unless customs_line.ounces.blank?
+                xml.tns(:HSTariffNumber,  customs_line.hs_code.tr('.', '')[0..5]) unless customs_line.hs_code.blank?
+                xml.tns(:CountryOfOrigin, customs_line.options[:country]) unless customs_line.options[:country].blank?
+              end
+            end
+          end
+        end
+      end
+
+      def add_label_recipient_info(xml, options)
+        xml.tns :LabelRecipientInfo do
+          xml.tns(:EmailAddress,     options[:label_email_address])
+          xml.tns(:Name,             options[:name]) unless options[:name].blank?
+          xml.tns(:Note,             options[:note]) unless options[:note].blank?
+          xml.tns(:CopyToOriginator, options[:copy_to_originator]) unless options[:copy_to_originator].blank?
         end
       end
 
@@ -505,6 +652,21 @@ module ActiveMerchant
 
         Package.new(weight, dimensions, package_options)
       end
+
+      def parse_create_indicium_response(indicium, response_options)
+        parse_authenticator(indicium)
+
+        response_options[:shipping_id]       = indicium.get_text('IntegratorTxID').to_s
+        response_options[:tracking_number]   = indicium.get_text('TrackingNumber').to_s if indicium.get_text('TrackingNumber')
+        response_options[:stamps_tx_id]      = indicium.get_text('StampsTxID').to_s
+        response_options[:label_url]         = indicium.get_text('URL').to_s if indicium.get_text('URL')
+        response_options[:available_postage] = indicium.get_text('PostageBalance/AvailablePostage').to_s
+        response_options[:control_total]     = indicium.get_text('PostageBalance/ControlTotal').to_s
+        response_options[:image_data]        = Base64.decode64(indicium.get_text('ImageData/base64Binary').to_s) if indicium.get_text('ImageData/base64Binary')
+        response_options[:rate]              = parse_rate(indicium.elements['Rate'])
+
+        StampsShippingResponse.new(true, '', {}, response_options)
+      end
     end
 
     class StampsAccountInfoResponse < Response
@@ -577,6 +739,29 @@ module ActiveMerchant
 
       def available_add_ons
         add_ons.keys
+      end
+    end
+
+    class StampsShippingResponse < ShippingResponse
+
+      include PostsData
+
+      self.ssl_version = :SSLv3
+
+      attr_reader :rate, :stamps_tx_id, :label_url, :available_postage, :control_total
+
+      def initialize(success, message, params = {}, options = {})
+        super
+        @rate              = options[:rate]
+        @stamps_tx_id      = options[:stamps_tx_id]
+        @label_url         = options[:label_url]
+        @image_data        = options[:image_data]
+        @available_postage = options[:available_postage]
+        @control_total     = options[:control_total]
+      end
+
+      def image
+        @image_data ||= ssl_get(label_url)
       end
     end
   end

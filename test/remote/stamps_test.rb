@@ -117,6 +117,73 @@ class StampsTest < Test::Unit::TestCase
     assert_instance_of String, response.override_hash
   end
 
+  def test_shipment
+    response = nil
+    assert_nothing_raised do
+      response = @carrier.create_shipment(
+        @locations[:beverly_hills],
+        @locations[:new_york_with_name],
+        @packages[:book],
+        [],
+        {
+          service: 'US-PM',
+          image_type: 'Epl',
+          return_image_data: true,
+          sample_only: true
+        }
+      )
+    end
+
+    assert_equal 'Stamps', response.rate.carrier
+    assert_equal 'USPS Priority Mail', response.rate.service_name
+    assert_equal 'US-PM', response.rate.service_code
+    assert_equal 'USD', response.rate.currency
+    assert_equal '90210', response.rate.origin.zip
+    assert_equal '10017', response.rate.destination.zip
+    assert_equal 'US', response.rate.destination.country_code
+
+    assert_instance_of Fixnum, response.rate.total_price
+    assert_instance_of String, response.stamps_tx_id
+
+    assert_nil response.label_url
+
+    assert_equal "\r\nN\r\n", response.image[0..4]
+  end
+
+  def test_international_shipment
+    ottawa_with_name = Location.new(@locations[:ottawa].to_hash.merge(name: 'Bob Bobsen'))
+
+    response = nil
+    assert_nothing_raised do
+      response = @carrier.create_shipment(
+        @locations[:new_york_with_name],
+        ottawa_with_name,
+        @packages[:declared_value],
+        @line_items,
+        {
+          service: 'US-PMI',
+          content_type: 'Merchandise',
+          sample_only: true
+        }
+      )
+    end
+
+    assert_equal 'Stamps', response.rate.carrier
+    assert_equal 'USPS Priority Mail International', response.rate.service_name
+    assert_equal 'US-PMI', response.rate.service_code
+    assert_equal 'USD', response.rate.currency
+    assert_equal '10017', response.rate.origin.zip
+    assert_equal 'K1P 1J1', response.rate.destination.zip
+    assert_equal 'CA', response.rate.destination.country_code
+
+    assert_instance_of Fixnum, response.rate.total_price
+    assert_instance_of String, response.stamps_tx_id
+    assert_instance_of String, response.label_url
+
+    assert_equal "https://", response.label_url[0..7]
+    assert_equal "%PDF", response.image[0..3]
+  end
+
   def test_zip_to_zip
     response = nil
     assert_nothing_raised do

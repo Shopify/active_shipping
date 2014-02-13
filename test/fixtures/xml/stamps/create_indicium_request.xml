@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               xmlns:tns="http://stamps.com/xml/namespace/2013/10/swsim/swsimv33">
+  <soap:Body>
+    <tns:CreateIndicium>
+      <tns:Authenticator>***authenticator***</tns:Authenticator>
+      <tns:IntegratorTxID>1234567890ABCDEF</tns:IntegratorTxID>
+      <tns:TrackingNumber/>
+      <tns:Rate>
+        <tns:FromZIPCode>90405</tns:FromZIPCode>
+        <tns:ToZIPCode>90066</tns:ToZIPCode>
+        <tns:Amount>10</tns:Amount>
+        <tns:ServiceType>US-PM</tns:ServiceType>
+        <tns:DeliverDays>1-1</tns:DeliverDays>
+        <tns:WeightLb>12</tns:WeightLb>
+        <tns:WeightOz>0</tns:WeightOz>
+        <tns:PackageType>Package</tns:PackageType>
+        <tns:ShipDate>2009-08-31</tns:ShipDate>
+        <tns:InsuredValue>100.00</tns:InsuredValue>
+        <tns:RectangularShaped>false</tns:RectangularShaped>
+        <tns:AddOns>
+          <tns:AddOn>
+            <tns:Amount>0</tns:Amount>
+            <tns:AddOnType>US-A-DC</tns:AddOnType>
+          </tns:AddOn>
+          <tns:AddOn>
+            <tns:Amount>1.3</tns:Amount>
+            <tns:AddOnType>SC-A-INS</tns:AddOnType>
+          </tns:AddOn>
+        </tns:AddOns>
+      </tns:Rate>
+      <tns:From>
+        <tns:FullName>Some Body</tns:FullName>
+        <tns:Address1>3420 Ocean Park Bl</tns:Address1>
+        <tns:Address2>Ste 1000</tns:Address2>
+        <tns:City>Santa Monica</tns:City>
+        <tns:State>CA</tns:State>
+        <tns:ZIPCode>90405</tns:ZIPCode>
+      </tns:From>
+      <tns:To>
+        <tns:FullName>GEOFF ANTON</tns:FullName>
+        <tns:NamePrefix/>
+        <tns:FirstName/>
+        <tns:MiddleName/>
+        <tns:LastName/>
+        <tns:NameSuffix/>
+        <tns:Title/>
+        <tns:Department/>
+        <tns:Company>STAMPS.COM</tns:Company>
+        <tns:Address1>12959 CORAL TREE PL</tns:Address1>
+        <tns:Address2/>
+        <tns:City>LOS ANGELES</tns:City>
+        <tns:State>CA</tns:State>
+        <tns:ZIPCode>90066</tns:ZIPCode>
+        <tns:ZIPCodeAddOn>7020</tns:ZIPCodeAddOn>
+        <tns:DPB>59</tns:DPB>
+        <tns:CheckDigit>6</tns:CheckDigit>
+        <tns:Province/>
+        <tns:PostalCode/>
+        <tns:Country/>
+        <tns:Urbanization/>
+        <tns:PhoneNumber/>
+        <tns:Extension/>
+        <tns:CleanseHash>7SWYAzuNh82cWhIQyRFXRNa71HFkZWFkYmVlZg==20070513</tns:CleanseHash>
+      </tns:To>
+    </tns:CreateIndicium>
+  </soap:Body>
+</soap:Envelope>

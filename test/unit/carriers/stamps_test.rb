@@ -106,6 +106,58 @@ class StampsTest < Test::Unit::TestCase
     assert_equal 17, rate.available_add_ons.length
   end
 
+  def test_create_shipment
+    response_chain(xml_fixture('stamps/create_indicium_response'))
+
+    origin = Location.new(
+      name:     'Some Body',
+      address1: '3420 Ocean Park Bl',
+      address2: 'Ste 1000',
+      city:     'Santa Monica',
+      state:    'CA',
+      zip:      '90405'
+    )
+
+    destination = Location.new(
+      name:     'GEOFF ANTON',
+      compnay:  'STAMPS.COM',
+      address1: '12959 CORAL TREE PL',
+      city:     'LOS ANGELES',
+      state:    'CA',
+      zip:      '90066-7020'
+    )
+
+    package = Package.new((12 * 16), [], units: :imperial)
+
+    options = { service: 'US-PM', insured_value: 100, add_ons: ['US-A-DC', 'SC-A-INS'] }
+
+    indicium = @carrier.create_shipment(origin, destination, package, [], options)
+
+    assert_equal 'ActiveMerchant::Shipping::StampsShippingResponse', indicium.class.name
+
+    assert_equal '1234567890ABCDEF', indicium.shipping_id
+    assert_equal '9101010521290895036903', indicium.tracking_number
+
+    assert_equal '90405', indicium.rate.origin.zip
+    assert_equal '90066', indicium.rate.destination.zip
+    assert_equal 'US-PM', indicium.rate.service_code
+    assert_equal 'USPS Priority Mail', indicium.rate.service_name
+    assert_equal 'USD', indicium.rate.currency
+    assert_equal Date.new(2009, 8, 31), indicium.rate.shipping_date
+    assert_equal [Date.new(2009, 9, 1), Date.new(2009, 9, 3)], indicium.rate.delivery_range
+    assert_equal Date.new(2009, 9, 3), indicium.rate.delivery_date
+    assert_equal 1036, indicium.rate.price
+    assert_equal 185, indicium.rate.insurance_price
+    assert_equal Hash.new, indicium.rate.add_ons['US-A-DC']
+    assert_equal '1.85', indicium.rate.add_ons['SC-A-INS'][:amount]
+    assert_equal ['US-A-DC', 'SC-A-INS'], indicium.rate.available_add_ons
+
+    assert_equal '0dd49299-d89c-4997-b8ac-28db5542edc9', indicium.stamps_tx_id
+
+    assert_equal '123.45', indicium.available_postage
+    assert_equal '543.21', indicium.control_total
+  end
+
   def test_authenticator_renewal
     fixtures = [
                 @authentication_response,
