@@ -47,6 +47,30 @@ class StampsTest < Test::Unit::TestCase
     assert_equal '987.65', account_info.per_print_limit
   end
 
+  def test_purchase_postage
+    response_chain(xml_fixture('stamps/purchase_postage_response'))
+
+    purchase_status = @carrier.purchase_postage('543.21', '123.45')
+
+    assert_equal 'ActiveMerchant::Shipping::StampsPurchasePostageResponse', purchase_status.class.name
+
+    assert_equal 'Pending', purchase_status.purchase_status
+    assert_equal '1234', purchase_status.transaction_id
+    assert_equal '543.21', purchase_status.available_postage
+    assert_equal '123.45', purchase_status.control_total
+  end
+
+  def test_purchase_status
+    response_chain(xml_fixture('stamps/get_purchase_status_response'))
+
+    purchase_status = @carrier.purchase_status('1234')
+
+    assert_equal 'ActiveMerchant::Shipping::StampsPurchasePostageResponse', purchase_status.class.name
+
+    assert_equal 'Success', purchase_status.purchase_status
+    assert_equal nil, purchase_status.transaction_id
+  end
+
   def test_validate_address
     response_chain(xml_fixture('stamps/cleanse_address_response'))
 
