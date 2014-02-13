@@ -21,9 +21,74 @@ module ActiveMerchant
 
       REQUIRED_OPTIONS = [:integration_id, :username, :password].freeze
 
+      PACKAGE = [
+                 'Postcard',
+                 'Letter',
+                 'Large Envelope or Flat',
+                 'Thick Envelope',
+                 'Package',
+                 'Flat Rate Box',
+                 'Small Flat Rate Box',
+                 'Large Flat Rate Box',
+                 'Flat Rate Envelope',
+                 'Flat Rate Padded Envelope',
+                 'Large Package',
+                 'Oversized Package',
+                 'Regional Rate Box A',
+                 'Regional Rate Box B',
+                 'Regional Rate Box C',
+                 'Legal Flat Rate Envelope'
+                ].freeze
+
+      US_POSSESSIONS = ["AS", "FM", "GU", "MH", "MP", "PW", "PR", "VI"]
+
+      SERVICE_TYPES = {
+        'US-FC'  => 'USPS First-Class Mail',
+        'US-MM'  => 'USPS Media Mail',
+        'US-PM'  => 'USPS Priority Mail',
+        'US-BP'  => 'USPS BP',
+        'US-LM'  => 'USPS LM',
+        'US-XM'  => 'USPS Express Mail',
+        'US-EMI' => 'USPS Express Mail International',
+        'US-PMI' => 'USPS Priority Mail International',
+        'US-FCI' => 'USPS First Class Mail International',
+        'US-CM'  => 'USPS Critical Mail',
+        'US-PS'  => 'USPS Parcel Select'
+      }
+
+      ADD_ONS = {
+        'SC-A-HP'    => 'Hidden Postage',
+        'SC-A-INS'   => 'Insurance',
+        'SC-A-INSRM' => 'Insurance for Registered Mail',
+        'US-A-CM'    => 'Certified Mail',
+        'US-A-COD'   => 'Collect on Delivery',
+        'US-A-COM'   => 'Certificate of Mailing',
+        'US-A-DC'    => 'USPS Delivery Confirmation',
+        'US-A-ESH'   => 'USPS Express - Sunday / Holiday Guaranteed',
+        'US-A-INS'   => 'USPS Insurance',
+        'US-A-NDW'   => 'USPS Express - No Delivery on Saturdays',
+        'US-A-RD'    => 'Restricted Delivery',
+        'US-A-REG'   => 'Registered Mail',
+        'US-A-RR'    => 'Return Receipt Requested',
+        'US-A-RRM'   => 'Return Receipt for Merchandise',
+        'US-A-SC'    => 'USPS Signature Confirmation',
+        'US-A-SH'    => 'Special Handling',
+        'US-A-NND'   => 'Notice of non-delivery',
+        'US-A-SR'    => 'Unknow Service Name SR',
+        'US-A-RRE'   => 'Unknow Service Name RRE'
+      }
+
       def account_info
         request = build_get_account_info_request
         response = commit(:GetAccountInfo, request)
+      end
+
+      def find_rates(origin, destination, package, options = {})
+        origin = standardize_address(origin)
+        destination = standardize_address(destination)
+
+        request = build_rate_request(origin, destination, package, options)
+        response = commit(:GetRates, request)
       end
 
       def namespace
@@ -42,6 +107,25 @@ module ActiveMerchant
 
       def save_swsim_method(swsim_method)
         @last_swsim_method = swsim_method
+      end
+
+      def international?(address)
+        ! (['US', nil] + US_POSSESSIONS).include?(address.country_code)
+      end
+
+      def standardize_address(address)
+        if US_POSSESSIONS.include?(address.country_code)
+          new_address = address.to_hash
+          new_address[:province] = new_address[:country]
+          new_address[:country] = 'US'
+          Location.new(new_address)
+        else
+          address
+        end
+      end
+
+      def domestic?(address)
+        address.country_code(:alpha2) == 'US' || address.country_code(:alpha2).nil?
       end
 
       def authenticator
@@ -92,6 +176,62 @@ module ActiveMerchant
           xml.tns :GetAccountInfo do
             xml.tns(:Authenticator, authenticator)
           end
+        end
+      end
+
+      def build_rate_request(origin, destination, package, options)
+        build_header do |xml|
+          xml.tns :GetRates do
+            xml.tns(:Authenticator, authenticator)
+            add_rate(xml, origin, destination, package, options)
+          end
+        end
+      end
+
+      def add_rate(xml, origin, destination, package, options)
+        value = package.value ? '%.2f' % (package.value.to_f / 100) : nil
+        options[:insured_value] ||= value
+        options[:declared_value] ||= value if international?(destination)
+
+        xml.tns :Rate do
+          xml.tns(:FromZIPCode,       origin.postal_code) unless origin.postal_code.blank?
+          xml.tns(:ToZIPCode,         destination.postal_code) unless destination.postal_code.blank?
+          xml.tns(:ToCountry,         destination.country_code) unless destination.country_code.blank?
+          xml.tns(:ServiceType,       options[:service]) unless options[:service].blank?
+          xml.tns(:PrintLayout,       options[:print_layout]) unless options[:print_layout].blank?
+          xml.tns(:WeightOz,          [package.ounces, 1].max)
+          xml.tns(:PackageType,       options[:package_type] || 'Package')
+          xml.tns(:Length,            package.inches(:length)) if package.inches(:length)
+          xml.tns(:Width,             package.inches(:width)) if package.inches(:width)
+          xml.tns(:Height,            package.inches(:height)) if package.inches(:height)
+          xml.tns(:ShipDate,          options[:ship_date] || Date.today)
+          xml.tns(:InsuredValue,      options[:insured_value]) unless options[:insured_value].blank?
+          xml.tns(:CODValue,          options[:cod_value]) unless options[:cod_value].blank?
+          xml.tns(:DeclaredValue,     options[:declared_value]) unless options[:declared_value].blank?
+
+          machinable = if package.options.has_key?(:machinable)
+            package.options[:machinable] ? true : false
+          else
+            USPS.package_machinable?(package)
+          end
+
+          xml.tns(:NonMachinable,     true) unless machinable
+
+          xml.tns(:RectangularShaped, ! package.cylinder?)
+          xml.tns(:GEMNotes,          options[:gem_notes]) unless options[:gem_notes].blank?
+
+          add_ons = Array(options[:add_ons])
+          unless add_ons.empty?
+            xml.tns(:AddOns) do
+              add_ons.each do |add_on|
+                xml.tns(:AddOnV5) do
+                  xml.tns(:AddOnType, add_on)
+                end
+              end
+            end
+          end
+
+          xml.tns(:ToState,           destination.province) unless destination.province.blank?
         end
       end
 
@@ -186,6 +326,88 @@ module ActiveMerchant
 
         StampsAccountInfoResponse.new(true, '', {}, response_options)
       end
+
+      def parse_get_rates_response(get_rates, response_options)
+        parse_authenticator(get_rates)
+
+        response_options[:estimates] = get_rates.get_elements('Rates/Rate').map do |rate|
+          parse_rate(rate)
+        end
+
+        RateResponse.new(true, '', {}, response_options)
+      end
+
+      def parse_rate(rate)
+        rate_options = {}
+
+        origin = Location.new(zip: rate.get_text('FromZIPCode').to_s)
+
+        location_values = {}
+        location_values[:zip]     = rate.get_text('ToZIPCode').to_s if rate.get_text('ToZIPCode')
+        location_values[:country] = rate.get_text('ToCountry').to_s if rate.get_text('ToCountry')
+        destination = Location.new(location_values)
+
+        service_name = SERVICE_TYPES[rate.get_text('ServiceType').to_s]
+
+        rate_options[:service_code]  = rate.get_text('ServiceType').to_s
+        rate_options[:currency]      = 'USD'
+        rate_options[:shipping_date] = Date.parse(rate.get_text('ShipDate').to_s)
+
+        if delivery_days = rate.get_text('DeliverDays')
+          delivery_days = delivery_days.to_s.split('-')
+          rate_options[:delivery_range] = delivery_days.map { |day| rate_options[:shipping_date] + day.to_i.days }
+        end
+
+        rate_options[:total_price] = rate.get_text('Amount').to_s
+
+        rate_options[:add_ons]     = parse_add_ons(rate)
+        rate_options[:packages]    = parse_package(rate)
+
+        add_ons = rate_options[:add_ons]
+        if add_ons['SC-A-INS'] and add_ons['SC-A-INS'][:amount]
+          rate_options[:insurance_price] = add_ons['SC-A-INS'][:amount]
+        elsif add_ons['US-A-INS'] and add_ons['US-A-INS'][:amount]
+          rate_options[:insurance_price] = add_ons['US-A-INS'][:amount]
+        end
+
+        StampsRateEstimate.new(origin, destination, @@name, service_name, rate_options)
+      end
+
+      def parse_add_ons(rate)
+        add_ons = {}
+        rate.get_elements('AddOns/AddOnV5').each do |add_on|
+          add_on_type = add_on.get_text('AddOnType').to_s
+
+          add_on_details = {}
+          add_on_details[:missing_data] = add_on.get_text('MissingData').to_s if add_on.get_text('MissingData')
+          add_on_details[:amount]       = add_on.get_text('Amount').to_s if add_on.get_text('Amount')
+
+          prohibited_with = add_on.get_elements('ProhibitedWithAnyOf/AddOnTypeV5').map { |p| p.text }
+          add_on_details[:prohibited_with] = prohibited_with unless prohibited_with.empty?
+
+          add_ons[add_on_type] = add_on_details
+        end
+
+        add_ons
+      end
+
+      def parse_package(rate)
+        weight = rate.get_text('WeightOz').to_s.to_f
+
+        dimensions = ['Length', 'Width', 'Height'].map do |dim|
+          rate.get_text(dim) ? rate.get_text(dim).to_s.to_f : nil
+        end
+        dimensions.compact!
+
+        package_options = { units: :imperial }
+
+        if value = rate.get_text('InsuredValue') || rate.get_text('DeclaredValue')
+          package_options[:value] = value.to_s.to_f
+          package_options[:currency] = 'USD'
+        end
+
+        Package.new(weight, dimensions, package_options)
+      end
     end
 
     class StampsAccountInfoResponse < Response
@@ -228,6 +450,19 @@ module ActiveMerchant
         @must_use_cost_codes        = options[:must_use_cost_codes]
         @can_view_online_reports    = options[:can_view_online_reports]
         @per_print_limit            = options[:per_print_limit]
+      end
+    end
+
+    class StampsRateEstimate < RateEstimate
+      attr_reader :add_ons
+
+      def initialize(origin, destination, carrier, service_name, options={})
+        super
+        @add_ons = options[:add_ons]
+      end
+
+      def available_add_ons
+        add_ons.keys
       end
     end
   end
