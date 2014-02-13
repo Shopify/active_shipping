@@ -146,6 +146,16 @@ module ActiveMerchant
         response = commit(:GetAccountInfo, request)
       end
 
+      def purchase_postage(purchase_amount, control_total)
+        request = build_purchase_postage_request(purchase_amount, control_total)
+        response = commit(:PurchasePostage, request)
+      end
+
+      def purchase_status(transaction_id)
+        request = build_get_purchase_status(transaction_id)
+        response = commit(:GetPurchaseStatus, request)
+      end
+
       def validate_address(address, options = {})
         address = standardize_address(address)
 
@@ -253,6 +263,25 @@ module ActiveMerchant
         build_header do |xml|
           xml.tns :GetAccountInfo do
             xml.tns(:Authenticator, authenticator)
+          end
+        end
+      end
+
+      def build_purchase_postage_request(purchase_amount, control_total)
+        build_header do |xml|
+          xml.tns :PurchasePostage do
+            xml.tns(:Authenticator, authenticator)
+            xml.tns(:PurchaseAmount, purchase_amount)
+            xml.tns(:ControlTotal, control_total)
+              end
+        end
+      end
+
+      def build_get_purchase_status(transaction_id)
+        build_header do |xml|
+          xml.tns :GetPurchaseStatus do
+            xml.tns(:Authenticator, authenticator)
+            xml.tns(:TransactionID, transaction_id)
           end
         end
       end
@@ -513,6 +542,21 @@ module ActiveMerchant
         StampsAccountInfoResponse.new(true, '', {}, response_options)
       end
 
+      def parse_purchase_postage_response(postage, response_options)
+        parse_authenticator(postage)
+
+        response_options[:purchase_status]   = postage.get_text('PurchaseStatus').to_s
+        response_options[:rejection_reason]  = postage.get_text('RejectionReason').to_s if postage.get_text('RejectionReason')
+        response_options[:transaction_id]    = postage.get_text('TransactionID').to_s if postage.get_text('TransactionID')
+
+        balance = postage.elements['PostageBalance']
+        response_options[:available_postage] = balance.get_text('AvailablePostage').to_s
+        response_options[:control_total]     = balance.get_text('ControlTotal').to_s if balance.get_text('ControlTotal')
+
+        StampsPurchasePostageResponse.new(true, '', {}, response_options)
+      end
+      alias_method :parse_get_purchase_status_response, :parse_purchase_postage_response
+
       def parse_cleanse_address_response(cleanse_address, response_options)
         parse_authenticator(cleanse_address)
 
@@ -709,6 +753,19 @@ module ActiveMerchant
         @must_use_cost_codes        = options[:must_use_cost_codes]
         @can_view_online_reports    = options[:can_view_online_reports]
         @per_print_limit            = options[:per_print_limit]
+      end
+    end
+
+    class StampsPurchasePostageResponse < Response
+      attr_reader :purchase_status, :transaction_id, :available_postage, :control_total, :rejection_reason
+
+      def initialize(success, message, params = {}, options = {})
+        super
+        @purchase_status   = options[:purchase_status]
+        @transaction_id    = options[:transaction_id]
+        @available_postage = options[:available_postage]
+        @control_total     = options[:control_total]
+        @rejection_reason  = options[:rejection_reason]
       end
     end
 

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               xmlns:tns="http://stamps.com/xml/namespace/2013/10/swsim/swsimv33">
+  <soap:Body>
+    <tns:PurchasePostage>
+      <tns:Authenticator>***authenticator***</tns:Authenticator>
+      <tns:PurchaseAmount>100</tns:PurchaseAmount>
+      <tns:ControlTotal>####.##</tns:ControlTotal>
+    </tns:PurchasePostage>
+  </soap:Body>
+</soap:Envelope>

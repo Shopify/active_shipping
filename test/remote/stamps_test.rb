@@ -18,6 +18,14 @@ class StampsTest < Test::Unit::TestCase
     assert_equal 'ActiveMerchant::Shipping::StampsAccountInfoResponse', @account_info.class.name
   end
 
+  def test_purchase_postage
+    purchase_amount = 10.62 # Based on the amount used in the track shipment tests
+    assert_nothing_raised do
+      account = @carrier.account_info
+      purchase = @carrier.purchase_postage(purchase_amount, account.control_total)
+    end
+  end
+
   def test_validation_domestic
     response = nil
     assert_nothing_raised do
