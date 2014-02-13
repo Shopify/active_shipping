@@ -47,6 +47,57 @@ class StampsTest < Test::Unit::TestCase
     assert_equal '987.65', account_info.per_print_limit
   end
 
+  def test_get_rates
+    response_chain(xml_fixture('stamps/get_rates_response'))
+
+    origin = Location.new(zip: '90405')
+    destination = Location.new(zip: '90066')
+    package = Package.new((12 * 16), [1, 2, 3], value: 100.00, units: :imperial)
+
+    rates = @carrier.find_rates(origin, destination, package)
+
+    assert_equal 'ActiveMerchant::Shipping::RateResponse', rates.class.name
+
+    assert_equal 2, rates.rates.length
+
+    assert_equal 'ActiveMerchant::Shipping::StampsRateEstimate', rates.rates[0].class.name
+
+    rate = rates.rates.first
+    assert_equal '90405', rate.origin.zip
+    assert_equal '90066', rate.destination.zip
+    assert_equal 'US-PM', rate.service_code
+    assert_equal 'USPS Priority Mail', rate.service_name
+    assert_equal 'USD', rate.currency
+    assert_equal Date.new(2014, 1, 31), rate.shipping_date
+    assert_equal [Date.new(2014, 2, 1), Date.new(2014, 2, 3)], rate.delivery_range
+    assert_equal Date.new(2014, 2, 3), rate.delivery_date
+    assert_equal 1217, rate.price
+    assert_equal 260, rate.insurance_price
+    assert_equal ["US-A-SC", "US-A-CM"], rate.add_ons['US-A-DC'][:prohibited_with]
+    assert_equal '2.6', rate.add_ons['SC-A-INS'][:amount]
+    assert_equal ["US-A-REG", "US-A-INS"], rate.add_ons['SC-A-INS'][:prohibited_with]
+    assert_equal 17, rate.available_add_ons.length
+  end
+
+  def test_authenticator_renewal
+    fixtures = [
+                @authentication_response,
+                xml_fixture('stamps/get_account_info_response'),
+                xml_fixture('stamps/expired_authenticator_response'),
+                @authentication_response,
+                xml_fixture('stamps/get_account_info_response')
+               ]
+
+    @carrier.expects(:ssl_post).times(5).returns(*fixtures)
+
+    # The first call gets initial authenticator, second call receives
+    # expired authenticator
+    @carrier.account_info
+    account_info = @carrier.account_info
+
+    assert_equal 'ActiveMerchant::Shipping::StampsAccountInfoResponse', account_info.class.name
+  end
+
   private
 
   def response_chain(primary_response)
