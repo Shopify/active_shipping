@@ -96,8 +96,6 @@ class CanadaPostPwsTrackingTest < Test::Unit::TestCase
 
     assert_equal response.origin.city, "LACHINE"
     assert_equal response.origin.province, "QC"
-    assert_equal response.origin.city.kind_of?(String),true
-    assert_equal response.origin.province.kind_of?(String),true
 
     assert response.origin.is_a?(Location)
     assert response.destination.is_a?(Location)
