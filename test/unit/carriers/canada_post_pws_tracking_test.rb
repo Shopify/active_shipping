@@ -93,8 +93,10 @@ class CanadaPostPwsTrackingTest < Test::Unit::TestCase
     assert_equal "Customer addressing error found; attempting to correct", response.change_reason
     assert_equal "1371134583769923", response.tracking_number
     assert_equal 10, response.shipment_events.size
+
     assert_equal response.origin.city, "LACHINE"
     assert_equal response.origin.province, "QC"
+
     assert response.origin.is_a?(Location)
     assert response.destination.is_a?(Location)
     assert_equal "G1K4M7", response.destination.to_s
