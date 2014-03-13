@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <CleanseAddressResponse xmlns="http://stamps.com/xml/namespace/2013/10/swsim/swsimv33">
+      <Authenticator>***authenticator***</Authenticator>
+      <Address>
+        <FullName>GEOFF ANTON</FullName>
+        <Company>STAMPS.COM</Company>
+        <Address1>12959 CORAL TREE PL</Address1>
+        <Address2 />
+        <City>LOS ANGELES</City>
+        <State>CA</State>
+        <ZIPCode>90066</ZIPCode>
+        <ZIPCodeAddOn>7020</ZIPCodeAddOn>
+        <DPB>59</DPB>
+        <CheckDigit>6</CheckDigit>
+        <Urbanization />
+        <CleanseHash>7SWYAzuNh82cWhIQyRFXRNa71HFkZWFkYmVlZg==20100210</CleanseHash>
+        <OverrideHash>Tdwp4JlTc02DhscYxbI7l7o08apkZWFkYmVlZg==20100210</OverrideHash>
+      </Address>
+      <AddressMatch>true</AddressMatch>
+      <CityStateZipOK>true</CityStateZipOK>
+    </CleanseAddressResponse>
+  </soap:Body>
+</soap:Envelope>
