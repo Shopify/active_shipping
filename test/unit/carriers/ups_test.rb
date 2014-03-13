@@ -83,6 +83,14 @@ class UPSTest < Test::Unit::TestCase
     assert_equal 'TX', result.destination.state
   end
 
+  def test_find_tracking_info_should_return_delivered_if_event_is_not_latest
+    tracking_response = xml_fixture('ups/delivered_shipment_with_refund')
+    @carrier.expects(:commit).returns(tracking_response)
+    result = @carrier.find_tracking_info('1Z5FX0076803466397')
+    assert_equal :delivered, result.status
+    assert_equal true, result.delivered?
+  end
+
   def test_find_tracking_info_should_return_origin_address
     @carrier.expects(:commit).returns(@tracking_response)
     result = @carrier.find_tracking_info('1Z5FX0076803466397')

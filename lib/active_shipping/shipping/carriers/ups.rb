@@ -337,10 +337,16 @@ module ActiveMerchant
           tracking_number = first_shipment.get_text('ShipmentIdentificationNumber | Package/TrackingNumber').to_s
 
           # Build status hash
-          status_node = first_package.elements['Activity/Status/StatusType']
+          status_nodes = first_package.elements.to_a('Activity/Status/StatusType')
+
+          # Prefer a delivery node
+          status_node = status_nodes.detect { |x| x.get_text('Code').to_s == 'D' }
+          status_node ||= status_nodes.first
+
           status_code = status_node.get_text('Code').to_s
           status_description = status_node.get_text('Description').to_s
           status = TRACKING_STATUS_CODES[status_code]
+
 
           if status_description =~ /out.*delivery/i
             status = :out_for_delivery
