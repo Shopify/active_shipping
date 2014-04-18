@@ -79,7 +79,11 @@ module ActiveMerchant
         response = ssl_get(tracking_url(pin), headers(options, TRACK_MIMETYPE))
         parse_tracking_response(response)
       rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
-        error_response(e.response.body, CPPWSTrackingResponse)
+         if e.response
+          error_response(e.response.body, CPPWSShippingResponse)
+        else
+          CPPWSShippingResponse.new(false, e.message, {}, {:carrier => @@name})
+        end
       rescue InvalidPinFormatError => e
         CPPWSTrackingResponse.new(false, "Invalid Pin Format", {}, {:carrier => @@name})
       end

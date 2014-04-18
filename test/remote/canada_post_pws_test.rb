@@ -109,6 +109,14 @@ class CanadaPostPWSTest < Test::Unit::TestCase
     assert_equal 10, response.shipment_events.count
   end
 
+  def test_tracking_when_no_tracking_info_raises_exception
+    pin = "4442172020196022" # valid pin
+
+    assert_raise ActiveMerchant::Shipping::ResponseError do
+      @cp.find_tracking_info(pin, {})
+    end
+  end
+
   def test_create_shipment
     opts = {:customer_number => @customer_number, :service => "DOM.XP"}
     response = @cp.create_shipment(@home_params, @dom_params, @pkg1, @line_item1, opts)
