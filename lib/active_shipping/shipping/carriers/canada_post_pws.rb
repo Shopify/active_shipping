@@ -80,9 +80,9 @@ module ActiveMerchant
         parse_tracking_response(response)
       rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
          if e.response
-          error_response(e.response.body, CPPWSShippingResponse)
+          error_response(e.response.body, CPPWSTrackingResponse)
         else
-          CPPWSShippingResponse.new(false, e.message, {}, {:carrier => @@name})
+          CPPWSTrackingResponse.new(false, e.message, {}, {:carrier => @@name})
         end
       rescue InvalidPinFormatError => e
         CPPWSTrackingResponse.new(false, "Invalid Pin Format", {}, {:carrier => @@name})
