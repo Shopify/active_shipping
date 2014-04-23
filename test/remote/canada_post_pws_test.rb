@@ -112,9 +112,11 @@ class CanadaPostPWSTest < Test::Unit::TestCase
   def test_tracking_when_no_tracking_info_raises_exception
     pin = "4442172020196022" # valid pin
 
-    assert_raise ActiveMerchant::Shipping::ResponseError do
+    error = assert_raise ActiveMerchant::Shipping::ResponseError do
       @cp.find_tracking_info(pin, {})
     end
+
+    assert_match /No Tracking/, error.message
   end
 
   def test_create_shipment
