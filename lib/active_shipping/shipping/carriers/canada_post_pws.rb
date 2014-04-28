@@ -79,7 +79,7 @@ module ActiveMerchant
         response = ssl_get(tracking_url(pin), headers(options, TRACK_MIMETYPE))
         parse_tracking_response(response)
       rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
-         if e.response
+        if e.response
           error_response(e.response.body, CPPWSTrackingResponse)
         else
           CPPWSTrackingResponse.new(false, e.message, {}, {:carrier => @@name})
