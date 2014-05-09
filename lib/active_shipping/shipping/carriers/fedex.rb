@@ -326,7 +326,7 @@ module ActiveMerchant
       end
             
       def build_location_node(name, location)
-        location_node = XmlNode.new(name) do |xml_node|
+        XmlNode.new(name) do |xml_node|
           xml_node << XmlNode.new('Address') do |address_node|
             address_node << XmlNode.new('StreetLines', location.address1) if location.address1
             address_node << XmlNode.new('StreetLines', location.address2) if location.address2
