@@ -326,7 +326,7 @@ module ActiveMerchant
       end
             
       def build_location_node(name, location)
-        location_node = XmlNode.new(name) do |xml_node|
+        XmlNode.new(name) do |xml_node|
           xml_node << XmlNode.new('Address') do |address_node|
             address_node << XmlNode.new('StreetLines', location.address1) if location.address1
             address_node << XmlNode.new('StreetLines', location.address2) if location.address2
@@ -361,7 +361,7 @@ module ActiveMerchant
 
           delivery_range = delivery_range_from(transit_time, max_transit_time, delivery_timestamp, options)
 
-          currency = handle_incorrect_currency_codes(rated_shipment.get_text('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Currency').to_s)
+          currency = rated_shipment.get_text('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Currency').to_s
           rate_estimates << RateEstimate.new(origin, destination, @@name,
                               self.class.service_name_for_code(service_type),
                               :service_code => service_code,
@@ -515,14 +515,6 @@ module ActiveMerchant
         ssl_post(test ? TEST_URL : LIVE_URL, request.gsub("\n",''))        
       end
       
-      def handle_incorrect_currency_codes(currency)
-        case currency
-        when /UKL/i then 'GBP'
-        when /SID/i then 'SGD'
-        else currency
-        end
-      end
-
       def parse_transit_times(times)
         results = []
         times.each do |day_count|

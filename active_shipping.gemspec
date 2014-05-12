@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency('activesupport', '>= 2.3.5')
   s.add_dependency('i18n')
-  s.add_dependency('active_utils', '>= 1.0.1')
+  s.add_dependency('active_utils', '~> 2.1.1')
   s.add_dependency('builder')
   s.add_dependency('json', '>= 1.5.1')
 
