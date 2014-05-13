@@ -116,6 +116,14 @@ class FedExTest < MiniTest::Unit::TestCase
     assert_equal 'ZZ', result.destination.country.code(:alpha2).to_s
   end
 
+  def test_find_tracking_info_should_gracefully_handle_empty_destination_information
+    @carrier.expects(:commit).returns(xml_fixture('fedex/tracking_response_empty_destination'))
+    result = @carrier.find_tracking_info('077973360403984')
+    assert_equal 'unknown', result.destination.city.downcase
+    assert_equal 'unknown', result.destination.state
+    assert_equal 'ZZ', result.destination.country.code(:alpha2).to_s
+  end
+
   def test_find_tracking_info_should_return_correct_shipper_address
     @carrier.expects(:commit).returns(xml_fixture('fedex/tracking_response_with_shipper_address'))
     response = @carrier.find_tracking_info('927489999894450502838')
