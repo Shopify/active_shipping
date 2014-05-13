@@ -531,7 +531,7 @@ module ActiveMerchant
           break if node
         end
 
-        args = if node
+        args = if node && node.elements['CountryCode']
           {
             :country => node.get_text('CountryCode').to_s,
             :province => node.get_text('StateOrProvinceCode').to_s,
