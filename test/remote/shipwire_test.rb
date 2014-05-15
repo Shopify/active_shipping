@@ -66,32 +66,11 @@ class RemoteShipwireTest < Test::Unit::TestCase
       )
     end
   end
-  
-  def test_invalid_credentials
-    shipwire = Shipwire.new(
-      :login => 'your@email.com',
-      :password => 'password'
-    )
-    
-    begin
-      assert_raises(ActiveMerchant::Shipping::ResponseError) do
-        shipwire.find_rates(
-          @locations[:ottawa],
-          @locations[:beverly_hills],
-          @packages.values_at(:book, :wii),
-          :items => @items,
-          :order_id => '#1000'
-        )
-      end
-    rescue ResponseError => e
-      assert_equal "Could not verify e-mail/password combination", response.message
-    end
-  end
-  
+
   def test_validate_credentials_with_valid_credentials
     assert @carrier.valid_credentials?
   end
-  
+
   def test_validate_credentials_with_invalid_credentials
     shipwire = Shipwire.new(
       :login => 'your@email.com',
