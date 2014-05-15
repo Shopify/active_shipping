@@ -36,8 +36,10 @@ module ActiveMerchant
         find_rates(location, location, Package.new(100, [5,15,30]),
           :items => [ { :sku => '', :quantity => 1 } ]
         )
-      rescue ActiveMerchant::Shipping::ResponseError => e
-        e.message != "Could not verify Username/EmailAddress and Password combination"
+      rescue ActiveMerchant::Shipping::ResponseError
+        true
+      rescue ActiveMerchant::ResponseError => e
+        e.response.code != '401'
       end
       
       private
