@@ -8,23 +8,7 @@ class ShipwireTest < Test::Unit::TestCase
     @carrier   = Shipwire.new(:login => 'l', :password => 'p')
     @items = [ { :sku => 'AF0001', :quantity => 1 }, { :sku => 'AF0002', :quantity => 2 } ]
   end
-  
-  def test_invalid_credentials
-    @carrier.expects(:ssl_post).returns(xml_fixture('shipwire/invalid_credentials_response'))
-    
-    begin
-      @carrier.find_rates(
-        @locations[:ottawa],
-        @locations[:beverly_hills],
-        @packages.values_at(:book, :wii),
-        :order_id => '#1000',
-        :items => @items
-      )
-    rescue ResponseError => e
-      assert_equal "Could not verify Username/EmailAddress and Password combination", e.message
-    end
-  end
-  
+
   def test_response_with_no_rates_is_unsuccessful
     @carrier.expects(:ssl_post).returns(xml_fixture('shipwire/no_rates_response'))
 
@@ -136,7 +120,9 @@ class ShipwireTest < Test::Unit::TestCase
   end
   
   def test_validate_credentials_with_invalid_credentials
-    @carrier.expects(:ssl_post).returns(xml_fixture('shipwire/invalid_credentials_response'))
+    response = stub(:code => '401', :body => 'Could not verify Username/EmailAddress and Password combination')
+
+    @carrier.expects(:ssl_post).raises(ActiveMerchant::ResponseError.new(response))
     assert !@carrier.valid_credentials?
   end
   
