@@ -4,6 +4,9 @@ module ActiveMerchant
       class OverweightItem < StandardError
       end
 
+      EXCESS_PACKAGE_QUANTITY_THRESHOLD = 10_000
+      class ExcessPackageQuantity < StandardError; end
+
       # items           - array of hashes containing quantity, grams and price.
       #                   ex. [{:quantity => 2, :price => 1.0, :grams => 50}]
       # dimensions      - [5.0, 15.0, 30.0]
@@ -39,6 +42,7 @@ module ActiveMerchant
               state = :package_full
             end
           when :package_full
+            raise ExcessPackageQuantity, "Unable to pack more than #{EXCESS_PACKAGE_QUANTITY_THRESHOLD} packages" if packages.length >= EXCESS_PACKAGE_QUANTITY_THRESHOLD
             packages << ActiveMerchant::Shipping::Package.new(package_weight, dimensions, :value => package_value, :currency => currency)
             state = items.any? ? :package_empty : :packing_finished
           end
