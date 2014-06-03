@@ -125,4 +125,11 @@ class ShipmentPackerTest < Test::Unit::TestCase
     assert_equal 1, package.weight
     assert_equal 100, package.value
   end
+
+  def test_excess_packages
+    assert_raises(ShipmentPacker::ExcessPackageQuantity) do
+      items = [{:grams => 1, :quantity => ShipmentPacker::EXCESS_PACKAGE_QUANTITY_THRESHOLD + 1, :price => 1.0}]
+      ShipmentPacker.pack(items, @dimensions, 1, 'USD')
+    end
+  end
 end
