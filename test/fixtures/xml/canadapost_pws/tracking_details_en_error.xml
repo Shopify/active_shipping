@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<messages xmlns="http://www.canadapost.ca/ws/messages">
-  <message>
-    <code>004</code>
-    <description>No Pin History</description>
-  </message>
-</messages>

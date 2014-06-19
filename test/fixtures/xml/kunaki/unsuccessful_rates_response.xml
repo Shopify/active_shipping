@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<HTML>
-  <BODY>
-    <Response>
-      <ErrorCode>100</ErrorCode>
-      <ErrorText>Request contains invalid XML syntax</ErrorText>
-    </Response>
-  </BODY>
-</HTML>

@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<messages xmlns="http://www.canadapost.ca/ws/messages">
-<message>
-<code>8534</code>
-<description>A valid destination country must be supplied.</description></message></messages>
