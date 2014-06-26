@@ -134,4 +134,4 @@ After you've pushed your well-tested changes to your github fork, make a pull re
 
 ## License
 
-Unless otherwise noted, all code is released under the [MIT-LICENSE](http://opensource.org/licenses/MIT).
+Copyright (c) 2008 Shopify. Released under the [MIT-LICENSE](http://opensource.org/licenses/MIT).
