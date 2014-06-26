@@ -10,11 +10,7 @@ This library interfaces with the web services of various shipping carriers. The 
 
 Active Shipping is currently being used and improved in a production environment for [Shopify](http://www.shopify.com/). Development is being done by the Shopify integrations team (integrations-team@shopify.com). Discussion is welcome in the [Active Merchant Google Group](https://groups.google.com/forum/#!forum/activemerchant).
 
-[Active Merchant](http://www.activemerchant.org)
-[Shopify](http://www.shopify.com)
-[discuss](http://groups.google.com/group/activemerchant)
-
-## Supported Shipping Carriers
+### Supported Shipping Carriers
 
 * [UPS](http://www.ups.com)
 * [USPS](http://www.usps.com)
@@ -25,11 +21,11 @@ Active Shipping is currently being used and improved in a production environment
 
 ## Installation
 
+Add it to your [Gemfile](http://gembundler.com/) or run this command,
+
     gem install active_shipping
 
-...or add it to your [Gemfile](http://gembundler.com/).
-
-## Sample Usage
+## Usage
 
 ### Compare rates from different carriers
 
@@ -107,9 +103,9 @@ Yes, please! Take a look at the tests and the implementation of the Carrier clas
 
 For the features you add, you should have both unit tests and remote tests. It's probably best to start with the remote tests, and then log those requests and responses and use them as the mocks for the unit tests. You can see how this works with the USPS tests right now:
 
-https://github.com/Shopify/active_shipping/blob/master/test/remote/usps_test.rb
-https://github.com/Shopify/active_shipping/blob/master/test/unit/carriers/usps_test.rb
-https://github.com/Shopify/active_shipping/tree/master/test/fixtures/xml/usps
+[https://github.com/Shopify/active_shipping/blob/master/test/remote/usps_test.rb](https://github.com/Shopify/active_shipping/blob/master/test/remote/usps_test.rb)
+[https://github.com/Shopify/active_shipping/blob/master/test/unit/carriers/usps_test.rb](https://github.com/Shopify/active_shipping/blob/master/test/unit/carriers/usps_test.rb)
+[https://github.com/Shopify/active_shipping/tree/master/test/fixtures/xml/usps](https://github.com/Shopify/active_shipping/tree/master/test/fixtures/xml/usps)
 
 To log requests and responses, just set the `logger` on your carrier class to some kind of `Logger` object:
 
@@ -119,25 +115,25 @@ To log requests and responses, just set the `logger` on your carrier class to so
 
 After you've pushed your well-tested changes to your github fork, make a pull request and we'll take it from there!
 
-## Contributors
+### Contributors
 
-* James MacAulay (<http://jmacaulay.net>)
-* Tobias Luetke (<http://blog.leetsoft.com>)
-* Cody Fauser (<http://codyfauser.com>)
-* Jimmy Baker (<http://jimmyville.com/>)
-* William Lang (<http://williamlang.net/>)
 * Cameron Fowler
-* Christopher Saunders (<http://christophersaunders.ca>)
 * Denis Odorcic
 * Dennis O'Connor
 * Dennis Theisen
-* Edward Ocampo-Gooding
+* [Chris Saunders](http://christophersaunders.ca), [@chris_saunders](https://twitter.com/chris_saunders)
+* [Cody Fauser](http://codefauser.com), [@codyfauser](https://twitter.com/codyfauser)
+* [Edward Ocampo-Gooding](http://edwardog.net), [@edwardog](https://twitter.com/edwardog) 
 * Isaac Kearse
-* John Duff
+* [James MacAulay](http://jmacaulay.net), [@jamesmacaulay](https://twitter.com/jamesmacaulay)
+* Jimmy Baker
+* [John Duff](https://twitter.com/johnduff)
 * Nigel Ramsay
 * Philip Arndt
+* [Tobias Lütke](http://about.me/tobiaslutke), [@tobi](https://twitter.com/tobi)
 * Vikram Oberoi
+* William Lang
 
-## Legal Mumbo Jumbo
+## License
 
-Unless otherwise noted in specific files, all code in the Active Shipping project is under the copyright and license described in the included MIT-LICENSE file.
+Unless otherwise noted, all code is released under the [MIT-LICENSE](http://opensource.org/licenses/MIT).
