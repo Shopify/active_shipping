@@ -17,7 +17,13 @@ module ActiveMerchant
 
         return packages if items.empty?
 
-        items = items.map(&:symbolize_keys).map { |item| [item] * item[:quantity].to_i }.flatten
+        items.map!(&:symbolize_keys)
+
+        if items.sum { |item| item[:quantity].to_i } >= EXCESS_PACKAGE_QUANTITY_THRESHOLD
+          raise ExcessPackageQuantity, "Unable to pack more than #{EXCESS_PACKAGE_QUANTITY_THRESHOLD} packages"
+        end
+
+        items = items.map { |item| [item] * item[:quantity].to_i }.flatten
         state = :package_empty
 
         while state != :packing_finished
@@ -42,7 +48,6 @@ module ActiveMerchant
               state = :package_full
             end
           when :package_full
-            raise ExcessPackageQuantity, "Unable to pack more than #{EXCESS_PACKAGE_QUANTITY_THRESHOLD} packages" if packages.length >= EXCESS_PACKAGE_QUANTITY_THRESHOLD
             packages << ActiveMerchant::Shipping::Package.new(package_weight, dimensions, :value => package_value, :currency => currency)
             state = items.any? ? :package_empty : :packing_finished
           end
