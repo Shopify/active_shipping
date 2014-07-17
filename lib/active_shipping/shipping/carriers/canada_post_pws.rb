@@ -368,8 +368,7 @@ module ActiveMerchant
           node << XmlNode.new('contact-phone', location.phone)
           node << XmlNode.new('address-details') do |innernode|
             innernode << XmlNode.new('address-line-1', location.address1)
-            address2 = [location.address2, location.address3].reject(&:blank?).join(", ")
-            innernode << XmlNode.new('address-line-2', address2) unless address2.blank?
+            innernode << XmlNode.new('address-line-2', location.address2_and_3) unless location.address2_and_3.blank?
             innernode << XmlNode.new('city', location.city)
             innernode << XmlNode.new('prov-state', location.province)     
             #innernode << XmlNode.new('country-code', location.country_code)
@@ -385,8 +384,7 @@ module ActiveMerchant
           node << XmlNode.new('client-voice-number', location.phone)
           node << XmlNode.new('address-details') do |innernode|
             innernode << XmlNode.new('address-line-1', location.address1)
-            address2 = [location.address2, location.address3].reject(&:blank?).join(", ")
-            innernode << XmlNode.new('address-line-2', address2) unless address2.blank?
+            innernode << XmlNode.new('address-line-2', location.address2_and_3) unless location.address2_and_3.blank?
             innernode << XmlNode.new('city', location.city)
             innernode << XmlNode.new('prov-state', location.province) unless location.province.blank?
             innernode << XmlNode.new('country-code', location.country_code)
