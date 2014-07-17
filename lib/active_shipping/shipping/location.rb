@@ -144,6 +144,10 @@ module ActiveMerchant #:nodoc:
         end
       end
 
+      def address2_and_3
+        [address2, address3].reject(&:blank?).join(", ")
+      end
+
     end
       
   end
