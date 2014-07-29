@@ -19,7 +19,7 @@ module ActiveMerchant
         # Naive in that it assumes weight is equally distributed across all items
         # Should raise early enough in most cases
         total_weight = 0
-        items.each do |item|
+        items.map!(&:symbolize_keys).each do |item|
           total_weight += item[:quantity].to_i * item[:grams].to_i
 
           if item[:grams].to_i > maximum_weight
@@ -31,9 +31,9 @@ module ActiveMerchant
           end
         end
 
-        items.sort_by! {|i| i[:grams].to_i}.map!(&:symbolize_keys)
-        state = :package_empty
+        items.sort_by! {|i| i[:grams].to_i}
 
+        state = :package_empty
         while state != :packing_finished
           case state
           when :package_empty
