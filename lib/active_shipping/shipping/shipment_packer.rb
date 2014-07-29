@@ -31,7 +31,7 @@ module ActiveMerchant
           end
         end
 
-        items = items.sort_by {|i| i[:grams].to_i}
+        items = items.deep_dup.sort_by! {|i| i[:grams].to_i}
 
         state = :package_empty
         while state != :packing_finished
