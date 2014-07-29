@@ -16,17 +16,19 @@ module ActiveMerchant
         return [] if items.empty?
         packages = []
 
-
         # Naive in that it assumes weight is equally distributed across all items
         # Should raise early enough in most cases
-        total_weight = items.sum {|i| i[:quantity].to_i * i[:grams].to_i}
+        total_weight = 0
+        items.each do |item|
+          total_weight += item[:quantity].to_i * item[:grams].to_i
 
-        if total_weight > maximum_weight * EXCESS_PACKAGE_QUANTITY_THRESHOLD
-          raise ExcessPackageQuantity, "Unable to pack more than #{EXCESS_PACKAGE_QUANTITY_THRESHOLD} packages"
-        end
+          if item[:grams].to_i > maximum_weight
+            raise OverweightItem, "The item with weight of #{item[:grams]}g is heavier than the allowable package weight of #{maximum_weight}g"
+          end
 
-        if item = items.detect {|i| i[:grams].to_i > maximum_weight}
-          raise OverweightItem, "The item with weight of #{item[:grams]}g is heavier than the allowable package weight of #{maximum_weight}g"
+          if total_weight > maximum_weight * EXCESS_PACKAGE_QUANTITY_THRESHOLD
+            raise ExcessPackageQuantity, "Unable to pack more than #{EXCESS_PACKAGE_QUANTITY_THRESHOLD} packages"
+          end
         end
 
         items.sort_by! {|i| i[:grams].to_i}.map!(&:symbolize_keys)
