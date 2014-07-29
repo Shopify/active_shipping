@@ -44,6 +44,9 @@ module ActiveMerchant
               quantity = if item[:grams].to_i == 0
                 item[:quantity].to_i
               else
+                # Grab the max amount of this item we can fit into this package
+                # Or, if there are fewer than the max for this item, put
+                # what is left into this package
                 [(maximum_weight - package_weight) / item[:grams].to_i, item[:quantity].to_i].min
               end
 
