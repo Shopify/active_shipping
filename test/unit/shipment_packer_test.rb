@@ -139,4 +139,13 @@ def test_raise_over_weight_exceptions_before_over_package_limit_exceptions
       ShipmentPacker.pack(items, @dimensions, 1, 'USD')
     end
   end
+
+  def test_lots_of_zero_weight_items
+    items = [{:grams => 0, :quantity => 1_000_000, :price => 1.0}]
+    packages = ShipmentPacker.pack(items, @dimensions, 1, 'USD')
+
+    assert_equal 1, packages.size
+    assert_equal 0, packages[0].grams
+    assert_equal 100_000_000, packages[0].value
+  end
 end
