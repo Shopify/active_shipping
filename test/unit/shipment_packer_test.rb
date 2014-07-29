@@ -71,6 +71,13 @@ class ShipmentPackerTest < Test::Unit::TestCase
     end
   end
 
+def test_raise_over_weight_exceptions_before_over_package_limit_exceptions
+    assert_raises(ShipmentPacker::OverweightItem) do
+      items = [{:grams => 5, :quantity => ShipmentPacker::EXCESS_PACKAGE_QUANTITY_THRESHOLD + 1, :price => 1.0}]
+      ShipmentPacker.pack(items, @dimensions, 4, 'USD')
+    end
+  end
+
   def test_returns_an_empty_list_when_no_items_provided
     assert_equal [], ShipmentPacker.pack([], @dimensions, 1, 'USD')
   end
@@ -131,5 +138,14 @@ class ShipmentPackerTest < Test::Unit::TestCase
       items = [{:grams => 1, :quantity => ShipmentPacker::EXCESS_PACKAGE_QUANTITY_THRESHOLD + 1, :price => 1.0}]
       ShipmentPacker.pack(items, @dimensions, 1, 'USD')
     end
+  end
+
+  def test_lots_of_zero_weight_items
+    items = [{:grams => 0, :quantity => 1_000_000, :price => 1.0}]
+    packages = ShipmentPacker.pack(items, @dimensions, 1, 'USD')
+
+    assert_equal 1, packages.size
+    assert_equal 0, packages[0].grams
+    assert_equal 100_000_000, packages[0].value
   end
 end
