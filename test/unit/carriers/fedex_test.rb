@@ -61,6 +61,18 @@ class FedExTest < MiniTest::Unit::TestCase
     end
   end
 
+  def test_transaction_id_sent_as_customer_transaction_id
+    transaction_id = '9999-test'
+    @carrier = FedEx.new(:key => '1111', :password => '2222', :account => '3333', :login => '4444', :transaction_id => transaction_id)
+    @carrier.expects(:commit).with do |request, options|
+      parsed_request = Hash.from_xml(request)
+      parsed_request['RateRequest']['TransactionDetail']['CustomerTransactionId'] == transaction_id
+    end.returns(xml_fixture('fedex/ottawa_to_beverly_hills_rate_response'))
+
+    destination = ActiveMerchant::Shipping::Location.from(@locations[:beverly_hills].to_hash, :address_type => :commercial)
+    @carrier.find_rates @locations[:ottawa], destination, @packages[:book], :test => true
+  end
+
   def test_find_tracking_info_should_return_a_tracking_response
     @carrier.expects(:commit).returns(@tracking_response)
     assert_instance_of ActiveMerchant::Shipping::TrackingResponse, @carrier.find_tracking_info('077973360403984', :test => true)
