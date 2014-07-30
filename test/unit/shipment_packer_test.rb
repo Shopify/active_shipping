@@ -157,4 +157,12 @@ def test_raise_over_weight_exceptions_before_over_package_limit_exceptions
     assert_equal 1, items.size
     assert_equal 1, packages.size
   end
+
+  def test_dont_modify_input_item_quantities
+    items = [{:grams => 1, :quantity => 5, :price => 1.0}]
+
+    packages = ShipmentPacker.pack(items, @dimensions, 10, 'USD')
+
+    assert_equal 5, items.first[:quantity]
+  end
 end
