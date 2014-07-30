@@ -166,14 +166,7 @@ module ActiveMerchant
 
         xml_request = XmlNode.new('RateRequest', 'xmlns' => 'http://fedex.com/ws/rate/v13') do |root_node|
           root_node << build_request_header
-
-          # Version
-          root_node << XmlNode.new('Version') do |version_node|
-            version_node << XmlNode.new('ServiceId', 'crs')
-            version_node << XmlNode.new('Major', '13')
-            version_node << XmlNode.new('Intermediate', '0')
-            version_node << XmlNode.new('Minor', '0')
-          end
+          root_node << build_version_node
           
           # Returns delivery dates
           root_node << XmlNode.new('ReturnTransitAndCommit', true)
@@ -211,21 +204,25 @@ module ActiveMerchant
               end
 
               rs << build_rate_request_types_node
-
               rs << XmlNode.new('PackageCount', packages.size)
-              packages.each do |pkg|
-                rs << XmlNode.new('RequestedPackageLineItems') do |rps|
-                  rps << XmlNode.new('GroupPackageCount', 1)
-                  rps << build_package_weight_node(pkg, imperial)
-                  rps << build_package_dimensions_node(pkg, imperial)
-                end
-              end
+              rs << build_packages_nodes(packages, imperial)
+              
             end
           end
         end
         xml_request.to_s
       end
 
+      def build_packages_nodes(packages, imperial)
+        packages.map do |pkg|
+          XmlNode.new('RequestedPackageLineItems') do |rps|
+            rps << XmlNode.new('GroupPackageCount', 1)
+            rps << build_package_weight_node(pkg, imperial)
+            rps << build_package_dimensions_node(pkg, imperial)
+          end
+        end
+      end
+   
       def build_shipping_charges_payment_node(freight_options)
         XmlNode.new('ShippingChargesPayment') do |shipping_charges_payment|
           shipping_charges_payment << XmlNode.new('PaymentType', freight_options[:payment_type])
@@ -264,6 +261,15 @@ module ActiveMerchant
         XmlNode.new('Weight') do |tw|
           tw << XmlNode.new('Units', imperial ? 'LB' : 'KG')
           tw << XmlNode.new('Value', [((imperial ? pkg.lbs : pkg.kgs).to_f*1000).round/1000.0, 0.1].max)
+        end
+      end
+
+      def build_version_node
+        XmlNode.new('Version') do |version_node|
+          version_node << XmlNode.new('ServiceId', 'crs')
+          version_node << XmlNode.new('Major', '13')
+          version_node << XmlNode.new('Intermediate', '0')
+          version_node << XmlNode.new('Minor', '0')
         end
       end
 
@@ -319,7 +325,7 @@ module ActiveMerchant
         end
         
         trasaction_detail = XmlNode.new('TransactionDetail') do |td|
-          td << XmlNode.new('CustomerTransactionId', 'ActiveShipping') # TODO: Need to do something better with this..
+          td << XmlNode.new('CustomerTransactionId', @options[:transaction_id] || 'ActiveShipping') # TODO: Need to do something better with this..
         end
         
         [web_authentication_detail, client_detail, trasaction_detail]
