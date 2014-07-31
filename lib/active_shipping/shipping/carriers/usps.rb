@@ -269,7 +269,7 @@ module ActiveMerchant
                 default_service = :all
               end
 
-              package << XmlNode.new('Service', US_SERVICES[options[:service] || default_service])
+              package << XmlNode.new('Service', US_SERVICES[options[:service].try(:to_sym) || default_service])
               package << XmlNode.new('FirstClassMailType', FIRST_CLASS_MAIL_TYPES[options[:first_class_mail_type]])
               package << XmlNode.new('ZipOrigination', strip_zip(origin_zip))
               package << XmlNode.new('ZipDestination', strip_zip(destination_zip))
