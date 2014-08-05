@@ -28,7 +28,7 @@ module ActiveMerchant
       end
 
       # Override with whatever you need to get a shipping label
-      def obtain_shipping_labels(origin, destination, packages, options = {})
+      def create_shipment(origin, destination, packages, options = {})
       end
 
       # Validate credentials with a call to the API. By default this just does a find_rates call
