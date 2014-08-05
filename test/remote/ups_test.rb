@@ -222,7 +222,7 @@ class UPSTest < Test::Unit::TestCase
     assert @options[:origin_account].present?, "test/fixtures.yml must have a valid ups/origin_account for this test to run"
 
     assert_nothing_raised do
-      response = @carrier.obtain_shipping_labels(
+      response = @carrier.create_shipment(
         @locations[:beverly_hills],
         @locations[:new_york_with_name],
         @packages.values_at(:chocolate_stuff, :book, :american_wii),
@@ -233,7 +233,7 @@ class UPSTest < Test::Unit::TestCase
 
     # All behavior specific to how a LabelResponse behaves in the
     # context of UPS label data is a matter for unit tests.  If
-    # the data changes substantially, the obtain_shipping_labels
+    # the data changes substantially, the create_shipment
     # ought to raise an exception and this test will fail.
     assert_instance_of ActiveMerchant::Shipping::LabelResponse, response
   end
@@ -241,7 +241,7 @@ class UPSTest < Test::Unit::TestCase
   def test_obtain_shipping_label_without_dimensions
     response = nil
     assert_nothing_raised do
-      response = @carrier.obtain_shipping_labels(
+      response = @carrier.create_shipment(
         @locations[:beverly_hills],
         @locations[:new_york_with_name],
         @packages.values_at(:tshirts),

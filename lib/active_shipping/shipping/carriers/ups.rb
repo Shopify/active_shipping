@@ -125,7 +125,7 @@ module ActiveMerchant
         parse_tracking_response(response, options)
       end
 
-      def obtain_shipping_labels(origin, destination, packages, options={})
+      def create_shipment(origin, destination, packages, options={})
         options = @options.merge(options)
         packages = Array(packages)
         access_request = build_access_request
@@ -133,7 +133,7 @@ module ActiveMerchant
         begin
 
           # STEP 1: Confirm.  Validation step, important for verifying price.
-          confirm_request = build_label_request(origin, destination, packages, options)
+          confirm_request = build_shipment_request(origin, destination, packages, options)
           logger.debug(confirm_request) if logger
 
           confirm_response = commit(:ship_confirm, save_request(access_request + confirm_request), (options[:test] || false))
@@ -228,7 +228,7 @@ module ActiveMerchant
             #                   * Shipment/DocumentsOnly element
 
             packages.each do |package|
-              options[:imperial] = IMPERIAL_COUNTRIES.include?(origin.country_code(:alpha2))
+              options[:imperial] ||= IMPERIAL_COUNTRIES.include?(origin.country_code(:alpha2))
               shipment << build_package_node(package, options)
             end
 
@@ -256,7 +256,7 @@ module ActiveMerchant
       # * saturday_delivery: any truthy value causes this element to exist
       # * optional_processing: 'validate' (blank) or 'nonvalidate' or blank
       #
-      def build_label_request(origin, destination, packages, options={})
+      def build_shipment_request(origin, destination, packages, options={})
 
         # There are a lot of unimplemented elements, documenting all of them
         # wouldprobably be unhelpful.
@@ -317,7 +317,7 @@ module ActiveMerchant
               end
             end
             # A request may specify multiple packages.
-            options[:imperial] = IMPERIAL_COUNTRIES.include?(origin.country_code(:alpha2))
+            options[:imperial] ||= IMPERIAL_COUNTRIES.include?(origin.country_code(:alpha2))
             packages.each do |package|
               shipment << build_package_node(package, options)
             end

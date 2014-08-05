@@ -205,7 +205,7 @@ class UPSTest < Test::Unit::TestCase
     accept_response = xml_fixture('ups/triple_accept_response')
     @carrier.stubs(:commit).returns(confirm_response, accept_response)
 
-    response = @carrier.obtain_shipping_labels(
+    response = @carrier.create_shipment(
       @locations[:beverly_hills],
       @locations[:new_york],
       @packages.values_at(:chocolate_stuff, :book, :american_wii),
@@ -238,7 +238,7 @@ class UPSTest < Test::Unit::TestCase
     accept_response = xml_fixture('ups/shipment_accept_response')
     @carrier.stubs(:commit).returns(confirm_response, accept_response)
 
-    response = @carrier.obtain_shipping_labels(
+    response = @carrier.create_shipment(
       @locations[:beverly_hills],
       @locations[:new_york],
       @packages.values_at(:chocolate_stuff),
@@ -266,7 +266,7 @@ class UPSTest < Test::Unit::TestCase
 
   def test_saturday_delivery
     # It's ok to use Nokogiri for development, right?
-    response = Nokogiri::XML @carrier.send(:build_label_request,
+    response = Nokogiri::XML @carrier.send(:build_shipment_request,
       @locations[:beverly_hills],
       @locations[:annapolis],
       @packages.values_at(:chocolate_stuff),
@@ -280,7 +280,7 @@ class UPSTest < Test::Unit::TestCase
   end
 
   def test_label_request_negotiated_rates_presence
-    response = Nokogiri::XML @carrier.send(:build_label_request,
+    response = Nokogiri::XML @carrier.send(:build_shipment_request,
       @locations[:beverly_hills],
       @locations[:annapolis],
       @packages.values_at(:chocolate_stuff),
@@ -300,7 +300,7 @@ class UPSTest < Test::Unit::TestCase
     shipper  = @locations[:fake_google_as_commercial]
     packages = @packages.values_at(:chocolate_stuff)
 
-    result   = Nokogiri::XML(@carrier.send(:build_label_request,
+    result   = Nokogiri::XML(@carrier.send(:build_shipment_request,
       pickup, deliver, packages, { :test => true, :shipper => shipper }))
 
     address = result.search '/ShipmentConfirmRequest/Shipment/Shipper/Address/AddressLine1'
