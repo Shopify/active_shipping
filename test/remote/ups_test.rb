@@ -1,7 +1,6 @@
 require 'test_helper'
 
 class UPSTest < Test::Unit::TestCase
-
   def setup
     @packages  = TestFixtures.packages
     @locations = TestFixtures.locations
@@ -212,4 +211,44 @@ class UPSTest < Test::Unit::TestCase
     assert_not_equal prices_of.call(:fake_home_as_residential), prices_of.call(:fake_home_as_commercial)
     assert_not_equal prices_of.call(:fake_google_as_commercial), prices_of.call(:fake_google_as_residential)
   end
+
+  def test_obtain_shipping_label
+    response = nil
+
+    # I want to provide some helpful information if this test fails.
+    # Perhaps it is better to skip and warn than to make an *assertion*
+    # about configuration?
+    assert @options[:origin_name].present?, "test/fixtures.yml must have a valid ups/origin_name for this test to run"
+    assert @options[:origin_account].present?, "test/fixtures.yml must have a valid ups/origin_account for this test to run"
+
+    assert_nothing_raised do
+      response = @carrier.create_shipment(
+        @locations[:beverly_hills],
+        @locations[:new_york_with_name],
+        @packages.values_at(:chocolate_stuff, :book, :american_wii),
+        { :test => true,
+          :reference_number => { :value => "FOO-123", :code => "PO" } }
+      )
+    end
+
+    # All behavior specific to how a LabelResponse behaves in the
+    # context of UPS label data is a matter for unit tests.  If
+    # the data changes substantially, the create_shipment
+    # ought to raise an exception and this test will fail.
+    assert_instance_of ActiveMerchant::Shipping::LabelResponse, response
+  end
+
+  def test_obtain_shipping_label_without_dimensions
+    response = nil
+    assert_nothing_raised do
+      response = @carrier.create_shipment(
+        @locations[:beverly_hills],
+        @locations[:new_york_with_name],
+        @packages.values_at(:tshirts),
+        { :test => true }
+      )
+    end
+    assert_instance_of ActiveMerchant::Shipping::LabelResponse, response
+  end
+
 end

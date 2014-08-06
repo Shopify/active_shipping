@@ -97,6 +97,7 @@ module ActiveMerchant
         :big_half_pound => Package.new((16 * 50), [24,24,36], :units => :imperial),
         :chocolate_stuff => Package.new(80, [2,6,12], :units => :imperial),
         :declared_value => Package.new(80, [2,6,12], :units => :imperial, :currency => 'USD', :value => 999.99),
+        :tshirts => Package.new(10 * 16, nil, :units => :imperial),
         :shipping_container => Package.new(2200000, [2440, 2600, 6058], :description => '20 ft Standard Container', :units => :metric),
         :largest_gold_bar => Package.new(250000, [ 45.5, 22.5, 17 ], :value => 15300000)
       }
@@ -194,7 +195,8 @@ module ActiveMerchant
                                       :state => 'NY',
                                       :address1 => '780 3rd Avenue',
                                       :address2 => 'Suite  2601',
-                                      :zip => '10017'),
+                                      :zip => '10017',
+                                      :phone => '123-123-1234'),
         :wellington => Location.new(
                                       :country => 'NZ',
                                       :city => 'Wellington',
@@ -211,11 +213,18 @@ module ActiveMerchant
                                       :city => 'Barceloneta',
                                       :address1 => '1 Nueva St',
                                       :postal_code => '00617'),
+        :annapolis => Location.new(
+                                      :name => 'Big Red',
+                                      :country => 'US',
+                                      :city => 'Annapolis',
+                                      :address1 => '1 Park Place',
+                                      :address2 => '#7',
+                                      :postal_code => '21401'),
         :netherlands => Location.new( :country => 'NL',
                                       :city => 'Groningen',
                                       :address1 => 'Aquamarijnstraat 349',
                                       :postal_code => '9743 PJ',
-                                      :state => 'Groningen'),
+                                      :state => 'Groningen')
       }
 
       @@line_items1 = [

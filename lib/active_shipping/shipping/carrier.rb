@@ -26,7 +26,11 @@ module ActiveMerchant
       # Override with whatever you need to get the rates
       def find_rates(origin, destination, packages, options = {})
       end
-      
+
+      # Override with whatever you need to get a shipping label
+      def create_shipment(origin, destination, packages, options = {})
+      end
+
       # Validate credentials with a call to the API. By default this just does a find_rates call
       # with the orgin and destination both as the carrier's default_location. Override to provide
       # alternate functionality, such as checking for test_mode to use test servers, etc.

@@ -199,4 +199,113 @@ class UPSTest < Test::Unit::TestCase
     assert Package.new((150 * 16) + 0.01, [5,5,5], :units => :imperial).mass > @carrier.maximum_weight
     assert Package.new((150 * 16) - 0.01, [5,5,5], :units => :imperial).mass < @carrier.maximum_weight
   end
+
+  def test_obtain_multiple_labels
+    confirm_response = xml_fixture('ups/triple_confirm_response')
+    accept_response = xml_fixture('ups/triple_accept_response')
+    @carrier.stubs(:commit).returns(confirm_response, accept_response)
+
+    response = @carrier.create_shipment(
+      @locations[:beverly_hills],
+      @locations[:new_york],
+      @packages.values_at(:chocolate_stuff, :book, :american_wii),
+      { :test => true,
+        :destination => {
+          :company_name => 'N.A.',
+          :phone_number => '123-123-1234',
+          :attention_name => 'Jane Doe'
+        }
+      }
+    )
+
+    # Sanity checks.  Hmm.  That looks a lot like a type check.
+    assert_instance_of LabelResponse, response
+    assert_equal 3, response.labels.count
+
+    # These tracking numbers are part of the fixture data.  What we're trying
+    # to verify is that the data in the XML is extracted properly.
+    tracking = response.labels.map { |label| label[:tracking_number] }
+    assert_includes tracking, "1ZA03R691594829862"
+    assert_includes tracking, "1ZA03R691592132475"
+    assert_includes tracking, "1ZA03R691590470881"
+
+    pictures = response.labels.map { |label| label[:image] }
+    refute_includes pictures, nil
+  end
+
+  def test_obtain_single_label
+    confirm_response = xml_fixture('ups/shipment_confirm_response')
+    accept_response = xml_fixture('ups/shipment_accept_response')
+    @carrier.stubs(:commit).returns(confirm_response, accept_response)
+
+    response = @carrier.create_shipment(
+      @locations[:beverly_hills],
+      @locations[:new_york],
+      @packages.values_at(:chocolate_stuff),
+      { :test => true,
+        :destination => {
+          :company_name => 'N.A.',
+          :phone_number => '123-123-1234',
+          :attention_name => 'Jane Doe'
+        }
+      }
+    )
+
+    # Sanity checks.  Hmm.  That looks a lot like a type check.
+    assert_instance_of LabelResponse, response
+    assert_equal 1, response.labels.count
+
+    # These tracking numbers are part of the fixture data.  What we're trying
+    # to verify is that the data in the XML is extracted properly.
+    tracking = response.labels.map { |label| label[:tracking_number] }
+    assert_includes tracking, "1ZA03R691591538440"
+
+    pictures = response.labels.map { |label| label[:image] }
+    refute_includes pictures, nil
+  end
+
+  def test_saturday_delivery
+    # It's ok to use Nokogiri for development, right?
+    response = Nokogiri::XML @carrier.send(:build_shipment_request,
+      @locations[:beverly_hills],
+      @locations[:annapolis],
+      @packages.values_at(:chocolate_stuff),
+      options = {
+        :test => true,
+        :saturday_delivery => true
+      })
+
+    saturday = response.search '/ShipmentConfirmRequest/Shipment/ShipmentServiceOptions/SaturdayDelivery'
+    refute_empty saturday
+  end
+
+  def test_label_request_negotiated_rates_presence
+    response = Nokogiri::XML @carrier.send(:build_shipment_request,
+      @locations[:beverly_hills],
+      @locations[:annapolis],
+      @packages.values_at(:chocolate_stuff),
+      options = {
+        :test => true,
+        :saturday_delivery => true,
+        :origin_account => 'A01B23' # without this option, a negotiated rate will not be requested
+      })
+
+    negotiated_rates = response.search '/ShipmentConfirmRequest/Shipment/RateInformation/NegotiatedRatesIndicator'
+    refute_empty negotiated_rates
+  end
+
+  def test_label_request_different_shipper
+    pickup   = @locations[:beverly_hills]
+    deliver  = @locations[:annapolis]
+    shipper  = @locations[:fake_google_as_commercial]
+    packages = @packages.values_at(:chocolate_stuff)
+
+    result   = Nokogiri::XML(@carrier.send(:build_shipment_request,
+      pickup, deliver, packages, { :test => true, :shipper => shipper }))
+
+    address = result.search '/ShipmentConfirmRequest/Shipment/Shipper/Address/AddressLine1'
+    assert_equal address.text, shipper.address1
+    refute_equal address.text, pickup.address1
+  end
+
 end
