@@ -509,12 +509,17 @@ module ActiveMerchant
       end
       
       def response_success?(document)
-        %w{SUCCESS WARNING NOTE}.include? response_status_node(document).get_text('Severity').to_s
+        response_node = response_status_node(document)
+        return false if response_node.nil?
+
+        %w{SUCCESS WARNING NOTE}.include? response_node.get_text('Severity').to_s
       end
       
       def response_message(document)
         response_node = response_status_node(document)
-        "#{response_status_node(document).get_text('Severity')} - #{response_node.get_text('Code')}: #{response_node.get_text('Message')}"
+        return "" if response_node.nil?
+
+        "#{response_node.get_text('Severity')} - #{response_node.get_text('Code')}: #{response_node.get_text('Message')}"
       end
       
       def commit(request, test = false)
