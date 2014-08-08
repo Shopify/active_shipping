@@ -376,4 +376,19 @@ class FedExTest < MiniTest::Unit::TestCase
     end
   end
 
+  def test_response_without_notifications_raises_useful_error
+    mock_response = xml_fixture('fedex/reply_without_notifications')
+
+    @carrier.expects(:commit).returns(mock_response)
+
+    assert_raises ActiveMerchant::Shipping::ResponseError do
+    @carrier.find_rates(
+        @locations[:ottawa],
+        @locations[:beverly_hills],
+        @packages.values_at(:book, :wii),
+        :test => true
+      )
+    end
+  end
+
 end
