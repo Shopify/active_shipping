@@ -41,7 +41,7 @@ module ActiveMerchant
             state = :filling_package
           when :filling_package
             items.each do |item|
-              quantity = if item[:grams].to_i == 0
+              quantity = if item[:grams].to_i <= 0
                 item[:quantity].to_i
               else
                 # Grab the max amount of this item we can fit into this package
