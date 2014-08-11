@@ -307,7 +307,7 @@ module ActiveMerchant
       end
 
       def world_rates(origin, destination, packages, options={})
-        request = build_world_rate_request(packages, destination)
+        request = build_world_rate_request(packages, destination, options)
          # never use test mode; rate requests just won't work on test servers
         parse_rate_response origin, destination, packages, commit(:world_rates,request,false), options
       end
@@ -335,7 +335,7 @@ module ActiveMerchant
         request = XmlNode.new('RateV4Request', :USERID => @options[:login]) do |rate_request|
           packages.each_with_index do |p,id|
             rate_request << XmlNode.new('Package', :ID => id.to_s) do |package|
-              if @options[:commercial_base] == true
+              if options[:commercial_base] == true
                 raise ArgumentError.new("Commercial Base rates are only provided with the :online method.") if !options[:service].blank? && options[:service] != :online
                 default_service = :online
               else
@@ -375,7 +375,7 @@ module ActiveMerchant
       #
       # package.options[:mail_type] -- one of [:package, :postcard, :matter_for_the_blind, :envelope].
       #                                 Defaults to :package.
-      def build_world_rate_request(packages, destination)
+      def build_world_rate_request(packages, destination, options)
         country = COUNTRY_NAME_CONVERSIONS[destination.country.code(:alpha2).value] || destination.country.name
         request = XmlNode.new('IntlRateV2Request', :USERID => @options[:login]) do |rate_request|
           packages.each_index do |id|
@@ -403,7 +403,7 @@ module ActiveMerchant
               package << XmlNode.new('Length', "%0.2f" % [p.inches(:length), 0.01].max)
               package << XmlNode.new('Height', "%0.2f" % [p.inches(:height), 0.01].max)
               package << XmlNode.new('Girth', "%0.2f" % [p.inches(:girth), 0.01].max)
-              package << XmlNode.new('CommercialFlag', 'Y') if @options[:commercial_base]
+              package << XmlNode.new('CommercialFlag', 'Y') if options[:commercial_base]
             end
           end
         end
@@ -430,7 +430,7 @@ module ActiveMerchant
           end
 
           if success
-            rate_hash = rates_from_response_node(xml, packages)
+            rate_hash = rates_from_response_node(xml, packages, options)
             unless rate_hash
               success = false
               message = "Unknown root node in XML response: '#{xml.root.name}'"
@@ -453,12 +453,12 @@ module ActiveMerchant
         RateResponse.new(success, message, Hash.from_xml(response), :rates => rate_estimates, :xml => response, :request => last_request)
       end
 
-      def rates_from_response_node(response_node, packages)
+      def rates_from_response_node(response_node, packages, options = {})
         rate_hash = {}
         return false unless (root_node = response_node.elements['/IntlRateV2Response | /RateV4Response'])
         domestic = (root_node.name == 'RateV4Response')
 
-        if @options[:commercial_base]
+        if options[:commercial_base]
           domestic_elements = ['Postage', 'CLASSID', 'MailService', 'CommercialRate']
           international_elements = ['Service', 'ID', 'SvcDescription', 'CommercialPostage']
         else
