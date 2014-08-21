@@ -320,7 +320,7 @@ class FedExTest < MiniTest::Unit::TestCase
   end
 
   def test_service_name_for_code
-    FedEx::ServiceTypes.each do |capitalized_name, readable_name|
+    FedEx::SERVICE_TYPES.each do |capitalized_name, readable_name|
       assert_equal readable_name, FedEx.service_name_for_code(capitalized_name)
     end
   end
