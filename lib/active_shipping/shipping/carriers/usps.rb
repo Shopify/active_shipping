@@ -141,6 +141,11 @@ module ActiveMerchant
         /Delivery status information is not available/
       ]
 
+      ESCAPING_AND_SYMBOLS = /&amp;lt;\S*&amp;gt;/
+      LEADING_USPS = /^USPS/
+      TRAILING_ASTERISKS = /\*+$/
+      SERVICE_NAME_SUBSTITUTIONS = /#{ESCAPING_AND_SYMBOLS}|#{LEADING_USPS}|#{TRAILING_ASTERISKS}/
+
       def find_tracking_info(tracking_number, options={})
         options = @options.update(options)
         tracking_request = build_tracking_request(tracking_number, options)
@@ -400,13 +405,7 @@ module ActiveMerchant
           package_node.each_element(service_node) do |service_response_node|
             service_name = service_response_node.get_text(service_name_node).to_s
 
-            # strips the double-escaped HTML for trademark symbols from service names
-            service_name.gsub!(/&amp;lt;\S*&amp;gt;/,'')
-            # ...leading "USPS"
-            service_name.gsub!(/^USPS/,'')
-            # ...trailing asterisks
-            service_name.gsub!(/\*+$/,'')
-            # ...surrounding spaces
+            service_name.gsub!(SERVICE_NAME_SUBSTITUTIONS,'')
             service_name.strip!
 
             # aggregate specific package rates into a service-centric RateEstimate
