@@ -199,5 +199,32 @@ Areas Served: All</ExpressMail>
       <MaxDimensions>Max. length 79", max. length plus girth 108"</MaxDimensions>
       <MaxWeight>66</MaxWeight>
     </Service>
+    <Service ID="15">
+      <Pounds>7</Pounds>
+      <Ounces>8</Ounces>
+      <MailType>Package</MailType>
+      <Container>RECTANGULAR</Container>
+      <Size>REGULAR</Size>
+      <Width>10</Width>
+      <Length>15</Length>
+      <Height>4.5</Height>
+      <Girth>29.0</Girth>
+      <Country>CANADA</Country>
+      <Postage>17.95</Postage>
+      <ExtraServices>
+        <ExtraService>
+          <ServiceID>1</ServiceID>
+          <ServiceName>Insurance</ServiceName>
+          <Available>True</Available>
+          <Price>5.60</Price>
+        </ExtraService>
+      </ExtraServices>
+      <ValueOfContents>269.99</ValueOfContents>
+      <ParcelIndemnityCoverage>86.43</ParcelIndemnityCoverage>
+      <SvcCommitments>Varies by destination</SvcCommitments>
+      <SvcDescription>First-Class Package International Service&amp;lt;sup&amp;gt;&amp;#8482;&amp;lt;/sup&amp;gt;**</SvcDescription>
+      <MaxDimensions>Other than rolls: Max. length 24", max length, height and depth (thickness) combined 36"&lt;br&gt;Rolls: Max. length 36". Max length and twice the diameter combined 42"</MaxDimensions>
+      <MaxWeight>8</MaxWeight>
+    </Service>
   </Package>
 </IntlRateV2Response>
