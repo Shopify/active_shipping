@@ -86,8 +86,6 @@ class USPSTest < Test::Unit::TestCase
 
     other_than_two = response.rates.map(&:package_count).reject {|n| n == 2}
     assert_equal [], other_than_two, "Some RateEstimates do not refer to the right number of packages (#{other_than_two.inspect})"
-
-
   end
 
   def test_international_rates
@@ -125,7 +123,6 @@ class USPSTest < Test::Unit::TestCase
 
     other_than_two = response.rates.map(&:package_count).reject {|n| n == 2}
     assert_equal [], other_than_two, "Some RateEstimates do not refer to the right number of packages (#{other_than_two.inspect})"
-
   end
 
   def test_us_to_us_possession
