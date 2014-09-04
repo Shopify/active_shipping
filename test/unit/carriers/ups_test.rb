@@ -131,6 +131,12 @@ class UPSTest < Test::Unit::TestCase
     assert_equal 'K1N5X8', response.shipment_events.last.location.postal_code
   end
 
+  def test_find_tracking_info_should_return_correct_actual_delivery_date
+    @carrier.expects(:commit).returns(@tracking_response)
+    response = @carrier.find_tracking_info('1Z5FX0076803466397')
+    assert_equal Time.parse('2008-06-25 11:19:00 UTC'), response.actual_delivery_date
+  end
+
   def test_response_parsing
     mock_response = xml_fixture('ups/test_real_home_as_residential_destination_response')
     @carrier.expects(:commit).returns(mock_response)
