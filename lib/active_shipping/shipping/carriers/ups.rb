@@ -483,11 +483,10 @@ module ActiveMerchant
 
         if success
           tracking_number, origin, destination, status_code, status_description, delivery_signature = nil
+          exception_event, scheduled_delivery_date, actual_delivery_date = nil
           delivered, exception = false
-          exception_event = nil
           shipment_events = []
           status = {}
-          scheduled_delivery_date = nil
 
           first_shipment = xml.elements['/*/Shipment']
           first_package = first_shipment.elements['Package']
@@ -525,13 +524,7 @@ module ActiveMerchant
           unless activities.empty?
             shipment_events = activities.map do |activity|
               description = activity.get_text('Status/StatusType/Description').to_s
-              zoneless_time = if (time = activity.get_text('Time')) &&
-                                 (date = activity.get_text('Date'))
-                time, date = time.to_s, date.to_s
-                hour, minute, second = time.scan(/\d{2}/)
-                year, month, day = date[0..3], date[4..5], date[6..7]
-                Time.utc(year, month, day, hour, minute, second)
-              end
+              zoneless_time = parse_ups_datetime(:time => activity.get_text('Time'), :date => activity.get_text('Date'))
               location = location_from_address_node(activity.elements['ActivityLocation/Address'])
               ShipmentEvent.new(description, zoneless_time, location)
             end
@@ -554,7 +547,11 @@ module ActiveMerchant
 
             # Has the shipment been delivered?
             if status == :delivered
-              delivery_signature = activities.first.get_text('ActivityLocation/SignedForByName').to_s
+              delivered_activity = activities.first
+              delivery_signature = delivered_activity.get_text('ActivityLocation/SignedForByName').to_s
+              if delivered_activity.get_text('Status/StatusType/Code') == 'D'
+                actual_delivery_date = parse_ups_datetime(:date => delivered_activity.get_text('Date'), :time => delivered_activity.get_text('Time'))
+              end
               if !destination
                 destination = shipment_events[-1].location
               end
@@ -572,6 +569,7 @@ module ActiveMerchant
           :status_description => status_description,
           :delivery_signature => delivery_signature,
           :scheduled_delivery_date => scheduled_delivery_date,
+          :actual_delivery_date => actual_delivery_date,
           :shipment_events => shipment_events,
           :delivered => delivered,
           :exception => exception,
