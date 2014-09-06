@@ -397,6 +397,44 @@ class USPSTest < Test::Unit::TestCase
     assert_equal [4112, 6047, 7744, 7744], response.rates.map(&:price) #note these prices are higher than the normal/retail unit tests because the rates from that test is years older than from this test
   end
 
+  def test_domestic_commercial_plus_rates
+    @carrier = USPS.new(fixtures(:usps).merge(:commercial_plus => true))
+
+    mock_response = xml_fixture('usps/beverly_hills_to_new_york_book_commercial_plus_rate_response')
+    @carrier.expects(:commit).returns(mock_response)
+
+    response = @carrier.find_rates(
+      @locations[:beverly_hills],
+      @locations[:new_york],
+      @packages.values_at(:book),
+      :test => true
+    )
+
+    rates = Hash[response.rates.map {|rate| [rate.service_name, rate.price]}]
+
+    assert_equal 0,rates["USPS First-Class Mail Parcel"]
+    assert_equal 405,rates["USPS First-Class Package Service"]
+    assert_equal 625,rates["USPS Priority Mail 2-Day"]
+  end
+
+  def test_intl_commercial_plus_rates
+    @carrier = USPS.new(fixtures(:usps).merge(:commercial_plus => true))
+
+    mock_response = xml_fixture('usps/beverly_hills_to_ottawa_american_wii_commercial_plus_rate_response')
+    @carrier.expects(:commit).returns(mock_response)
+
+    response = @carrier.find_rates(
+      @locations[:beverly_hills],
+      @locations[:ottawa],
+      @packages.values_at(:american_wii),
+      :test => true
+    )
+
+    rates = Hash[response.rates.map {|rate| [rate.service_name, rate.price]}]
+
+    assert_equal [3767, 5526, 7231, 7231], response.rates.map(&:price)
+  end
+
   def test_extract_event_details_handles_single_digit_calendar_dates
     assert details = carrier.extract_event_details("Out for Delivery, October 9, 2013, 10:16 am, BROOKLYN, NY 11201")
     assert_equal "OUT FOR DELIVERY", details.description

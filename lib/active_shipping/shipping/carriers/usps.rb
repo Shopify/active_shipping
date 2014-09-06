@@ -81,6 +81,7 @@ module ActiveMerchant
         :media => 'MEDIA',
         :library => 'LIBRARY',
         :online => 'ONLINE',
+        :plus => 'PLUS',
         :all => 'ALL'
       }
       FIRST_CLASS_MAIL_TYPES = {
@@ -255,7 +256,7 @@ module ActiveMerchant
       end
 
       # options[:service] --    One of [:first_class, :priority, :express, :bpm, :parcel,
-      #                          :media, :library, :all]. defaults to :all.
+      #                          :media, :library, :online, :plus, :all]. defaults to :all.
       # options[:container] --  One of [:envelope, :box]. defaults to neither (this field has
       #                          special meaning in the USPS API).
       # options[:books] --      Either true or false. Packages of books or other printed matter
@@ -269,6 +270,8 @@ module ActiveMerchant
             rate_request << XmlNode.new('Package', :ID => id.to_s) do |package|
               default_service, commercial_type = if commercial_base?
                 [:online, :base]
+              elsif commercial_plus?
+                [:plus, :plus]
               else
                 [:all]
               end
@@ -341,6 +344,7 @@ module ActiveMerchant
               package << XmlNode.new('Height', "%0.2f" % [p.inches(:height), 0.01].max)
               package << XmlNode.new('Girth', "%0.2f" % [p.inches(:girth), 0.01].max)
               package << XmlNode.new('CommercialFlag', 'Y') if commercial_base?
+              package << XmlNode.new('CommercialPlusFlag', 'Y') if commercial_plus?
             end
           end
         end
@@ -397,6 +401,8 @@ module ActiveMerchant
 
         rate, postage = if commercial_base?
           %w[CommercialRate CommercialPostage]
+        elsif commercial_plus?
+          %w[CommercialPlusRate CommercialPlusPostage]
         else
           %w[Rate Postage]
         end
@@ -605,6 +611,10 @@ module ActiveMerchant
 
       def commercial_base?
         @options[:commercial_base] == true
+      end
+
+      def commercial_plus?
+        @options[:commercial_plus] == true
       end
 
     end
