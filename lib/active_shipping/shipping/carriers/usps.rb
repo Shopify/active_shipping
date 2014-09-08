@@ -347,12 +347,12 @@ module ActiveMerchant
         request = XmlNode.new('RateV4Request', :USERID => @options[:login]) do |rate_request|
           packages.each_with_index do |p,id|
             rate_request << XmlNode.new('Package', :ID => id.to_s) do |package|
-              default_service, commercial_type = if commercial_base?
-                [:online, :base]
+              default_service = if commercial_base?
+                :online
               elsif commercial_plus?
-                [:plus, :plus]
+                :plus
               else
-                [:all]
+                :all
               end
 
               service = options.fetch(:service, default_service).to_sym
@@ -690,6 +690,14 @@ module ActiveMerchant
 
       def commercial_plus?
         @commercial_plus
+      end
+
+      def commercial_type
+        if commercial_plus?
+          :plus
+        elsif commercial_base?
+          :base
+        end
       end
 
     end
