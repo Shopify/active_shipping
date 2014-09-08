@@ -92,6 +92,10 @@ module ActiveMerchant
         :base => 'CommercialRate',
         :plus => 'CommercialPlusRate'
       )
+      INTERNATIONAL_RATE_FIELD = Hash.new('Postage').update(
+        :base => 'CommercialPostage',
+        :plus => 'CommercialPlusPostage'
+      )
       FIRST_CLASS_MAIL_TYPES = {
         :letter => 'LETTER',
         :flat => 'FLAT',
@@ -472,16 +476,9 @@ module ActiveMerchant
         rate_hash = {}
         return false unless (root_node = response_node.elements['/IntlRateV2Response | /RateV4Response'])
         domestic = (root_node.name == 'RateV4Response')
-        postage  = if commercial_base?
-          'CommercialPostage'
-        elsif commercial_plus?
-          'CommercialPlusPostage'
-        else
-          'Postage'
-        end
 
         domestic_elements      = %w[Postage CLASSID MailService] << DOMESTIC_RATE_FIELD[commercial_type]
-        international_elements = %w[Service ID SvcDescription]   << postage
+        international_elements = %w[Service ID SvcDescription]   << INTERNATIONAL_RATE_FIELD[commercial_type]
 
         service_node, service_code_node, service_name_node, rate_node = domestic ? domestic_elements : international_elements
 
