@@ -340,14 +340,19 @@ module ActiveMerchant
         request = XmlNode.new('RateV4Request', :USERID => @options[:login]) do |rate_request|
           packages.each_with_index do |p,id|
             rate_request << XmlNode.new('Package', :ID => id.to_s) do |package|
-              if options[:commercial_base] == true
-                raise ArgumentError.new("Commercial Base rates are only provided with the :online method.") if !options[:service].blank? && options[:service] != :online
-                default_service = :online
+              default_service, commercial_type = if commercial_base?
+                [:online, :base]
               else
-                default_service = :all
+                [:all]
               end
 
-              package << XmlNode.new('Service', US_SERVICES[options[:service].try(:to_sym) || default_service])
+              service = options.fetch(:service, default_service).to_sym
+
+              if commercial_type && service != default_service
+                raise ArgumentError, "Commercial #{commercial_type} rates are only provided with the #{default_service.inspect} service."
+              end
+
+              package << XmlNode.new('Service', US_SERVICES[service])
               package << XmlNode.new('FirstClassMailType', FIRST_CLASS_MAIL_TYPES[options[:first_class_mail_type].try(:to_sym)])
               package << XmlNode.new('ZipOrigination', strip_zip(origin_zip))
               package << XmlNode.new('ZipDestination', strip_zip(destination_zip))
@@ -408,7 +413,7 @@ module ActiveMerchant
               package << XmlNode.new('Length', "%0.2f" % [p.inches(:length), 0.01].max)
               package << XmlNode.new('Height', "%0.2f" % [p.inches(:height), 0.01].max)
               package << XmlNode.new('Girth', "%0.2f" % [p.inches(:girth), 0.01].max)
-              package << XmlNode.new('CommercialFlag', 'Y') if options[:commercial_base]
+              package << XmlNode.new('CommercialFlag', 'Y') if commercial_base?
             end
           end
         end
@@ -463,13 +468,15 @@ module ActiveMerchant
         return false unless (root_node = response_node.elements['/IntlRateV2Response | /RateV4Response'])
         domestic = (root_node.name == 'RateV4Response')
 
-        if options[:commercial_base]
-          domestic_elements = ['Postage', 'CLASSID', 'MailService', 'CommercialRate']
-          international_elements = ['Service', 'ID', 'SvcDescription', 'CommercialPostage']
+        rate, postage = if commercial_base?
+          %w[CommercialRate CommercialPostage]
         else
-          domestic_elements = ['Postage', 'CLASSID', 'MailService', 'Rate']
-          international_elements = ['Service', 'ID', 'SvcDescription', 'Postage']
+          %w[Rate Postage]
         end
+
+        domestic_elements      = %w[Postage CLASSID MailService] << rate
+        international_elements = %w[Service ID SvcDescription]   << postage
+
         service_node, service_code_node, service_name_node, rate_node = domestic ? domestic_elements : international_elements
 
         root_node.each_element('Package') do |package_node|
@@ -661,6 +668,12 @@ module ActiveMerchant
 
       def strip_zip(zip)
         zip.to_s.scan(/\d{5}/).first || zip
+      end
+
+      private
+
+      def commercial_base?
+        @options[:commercial_base] == true
       end
 
     end
