@@ -148,6 +148,12 @@ module ActiveMerchant
       TRAILING_ASTERISKS = /\*+$/
       SERVICE_NAME_SUBSTITUTIONS = /#{ESCAPING_AND_SYMBOLS}|#{LEADING_USPS}|#{TRAILING_ASTERISKS}/
 
+      def initialize(*)
+        super
+        @commercial_base = @options[:commercial_base] == true
+        @commercial_plus = @options[:commercial_plus] == true
+      end
+
       def find_tracking_info(tracking_number, options={})
         options = @options.update(options)
         tracking_request = build_tracking_request(tracking_number, options)
@@ -679,11 +685,11 @@ module ActiveMerchant
       private
 
       def commercial_base?
-        @options[:commercial_base] == true
+        @commercial_base
       end
 
       def commercial_plus?
-        @options[:commercial_plus] == true
+        @commercial_plus
       end
 
     end
