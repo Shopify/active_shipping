@@ -155,6 +155,7 @@ module ActiveMerchant
         super
         @commercial_base = @options[:commercial_base] == true
         @commercial_plus = @options[:commercial_plus] == true
+        assert_valid_service
       end
 
       def find_tracking_info(tracking_number, options={})
@@ -278,10 +279,6 @@ module ActiveMerchant
         request = XmlNode.new('RateV4Request', :USERID => @options[:login]) do |rate_request|
           packages.each_with_index do |p,id|
             rate_request << XmlNode.new('Package', :ID => id.to_s) do |package|
-              if commercial_type && service != default_service
-                raise ArgumentError, "Commercial #{commercial_type} rates are only provided with the #{default_service.inspect} service."
-              end
-
               package << XmlNode.new('Service', US_SERVICES[service])
               package << XmlNode.new('FirstClassMailType', FIRST_CLASS_MAIL_TYPES[options[:first_class_mail_type].try(:to_sym)])
               package << XmlNode.new('ZipOrigination', strip_zip(origin_zip))
@@ -631,6 +628,12 @@ module ActiveMerchant
 
       def service
         @options.fetch(:service, default_service).to_sym
+      end
+
+      def assert_valid_service
+        if commercial_type && service != default_service
+          raise ArgumentError, "Commercial #{commercial_type} rates are only provided with the #{default_service.inspect} service."
+        end
       end
 
     end
