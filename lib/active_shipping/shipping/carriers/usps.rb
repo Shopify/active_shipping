@@ -84,6 +84,10 @@ module ActiveMerchant
         :plus => 'PLUS',
         :all => 'ALL'
       }
+      DEFAULT_SERVICE = Hash.new(:all).update(
+        :base => :online,
+        :plus => :plus
+      )
       FIRST_CLASS_MAIL_TYPES = {
         :letter => 'LETTER',
         :flat => 'FLAT',
@@ -624,13 +628,7 @@ module ActiveMerchant
       end
 
       def default_service
-        if commercial_base?
-          :online
-        elsif commercial_plus?
-          :plus
-        else
-          :all
-        end
+        DEFAULT_SERVICE[commercial_type]
       end
 
     end
