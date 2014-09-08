@@ -96,6 +96,10 @@ module ActiveMerchant
         :base => 'CommercialPostage',
         :plus => 'CommercialPlusPostage'
       )
+      COMMERCIAL_FLAG_NAME = {
+        :base => 'CommercialFlag',
+        :plus => 'CommercialPlusFlag'
+      }
       FIRST_CLASS_MAIL_TYPES = {
         :letter => 'LETTER',
         :flat => 'FLAT',
@@ -421,8 +425,7 @@ module ActiveMerchant
               package << XmlNode.new('Length', "%0.2f" % [p.inches(:length), 0.01].max)
               package << XmlNode.new('Height', "%0.2f" % [p.inches(:height), 0.01].max)
               package << XmlNode.new('Girth', "%0.2f" % [p.inches(:girth), 0.01].max)
-              package << XmlNode.new('CommercialFlag', 'Y') if commercial_base?
-              package << XmlNode.new('CommercialPlusFlag', 'Y') if commercial_plus?
+              package << XmlNode.new(COMMERCIAL_FLAG_NAME.fetch(commercial_type), 'Y') if commercial_type
             end
           end
         end
