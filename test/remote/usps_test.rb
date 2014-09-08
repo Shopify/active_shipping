@@ -89,7 +89,6 @@ class USPSTest < Test::Unit::TestCase
   end
 
   def test_international_rates
-
     response = nil
     assert_nothing_raised do
       response = @carrier.find_rates(
