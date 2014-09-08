@@ -165,8 +165,11 @@ module ActiveMerchant
 
       def initialize(*)
         super
-        @commercial_base = @options[:commercial_base] == true
-        @commercial_plus = @options[:commercial_plus] == true
+        @commercial_type = if @options[:commercial_plus] == true
+          :plus
+        elsif @options[:commercial_base] == true
+          :base
+        end
         assert_valid_service
       end
 
@@ -609,20 +612,8 @@ module ActiveMerchant
 
       private
 
-      def commercial_base?
-        @commercial_base
-      end
-
-      def commercial_plus?
-        @commercial_plus
-      end
-
       def commercial_type
-        if commercial_plus?
-          :plus
-        elsif commercial_base?
-          :base
-        end
+        @commercial_type
       end
 
       def default_service
