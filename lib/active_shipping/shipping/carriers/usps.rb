@@ -475,12 +475,12 @@ module ActiveMerchant
       def rates_from_response_node(response_node, packages, options = {})
         rate_hash = {}
         return false unless (root_node = response_node.elements['/IntlRateV2Response | /RateV4Response'])
-        domestic = (root_node.name == 'RateV4Response')
 
-        domestic_elements      = %w[Postage CLASSID MailService] << DOMESTIC_RATE_FIELD[commercial_type]
-        international_elements = %w[Service ID SvcDescription]   << INTERNATIONAL_RATE_FIELD[commercial_type]
-
-        service_node, service_code_node, service_name_node, rate_node = domestic ? domestic_elements : international_elements
+        service_node, service_code_node, service_name_node, rate_node = if root_node.name == 'RateV4Response'
+          %w[Postage CLASSID MailService] << DOMESTIC_RATE_FIELD[commercial_type]
+        else
+          %w[Service ID SvcDescription]   << INTERNATIONAL_RATE_FIELD[commercial_type]
+        end
 
         root_node.each_element('Package') do |package_node|
           this_package = packages[package_node.attributes['ID'].to_i]
