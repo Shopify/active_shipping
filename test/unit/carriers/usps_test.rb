@@ -126,7 +126,16 @@ class USPSTest < Test::Unit::TestCase
   end
 
   # TODO: test_parse_domestic_rate_response
-  # TODO: test_build_us_rate_request
+
+  def test_build_us_rate_request_uses_proper_container
+    expected_request = "<RateV4Request USERID='login'><Package ID='0'><Service>ALL</Service><FirstClassMailType/><ZipOrigination>90210</ZipOrigination><ZipDestination>10017</ZipDestination><Pounds>0</Pounds><Ounces>8.8</Ounces><Container>RECTANGULAR</Container><Size>REGULAR</Size><Width>5.51</Width><Length>7.48</Length><Height>0.79</Height><Girth>12.60</Girth><Machinable>TRUE</Machinable></Package></RateV4Request>"
+    @carrier.expects(:commit).with(:us_rates, URI.encode(expected_request), false).returns(expected_request)
+    @carrier.expects(:parse_rate_response)
+    package = @packages[:book]
+    package.options[:container] = :rectangular
+    @carrier.find_rates(@locations[:beverly_hills], @locations[:new_york], package, {:test => true, :container => :rectangular})
+  end
+
 
   def test_build_world_rate_request
     expected_request = "<IntlRateV2Request USERID='login'><Package ID='0'><Pounds>0</Pounds><Ounces>9</Ounces><MailType>Package</MailType><GXG><POBoxFlag>N</POBoxFlag><GiftFlag>N</GiftFlag></GXG><ValueOfContents>0.0</ValueOfContents><Country><![CDATA[Canada]]></Country><Container>RECTANGULAR</Container><Size>REGULAR</Size><Width>5.51</Width><Length>7.48</Length><Height>0.79</Height><Girth>12.60</Girth></Package></IntlRateV2Request>"
@@ -141,6 +150,8 @@ class USPSTest < Test::Unit::TestCase
     @carrier.expects(:parse_rate_response)
     @carrier.find_rates(@locations[:beverly_hills], @locations[:ottawa], @packages[:american_wii], :test => true)
   end
+
+  def 
 
   def test_initialize_options_requirements
     assert_raises ArgumentError do USPS.new end
