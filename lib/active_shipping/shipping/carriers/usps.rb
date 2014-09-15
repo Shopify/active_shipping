@@ -175,16 +175,6 @@ module ActiveMerchant
       TRAILING_ASTERISKS = /\*+$/
       SERVICE_NAME_SUBSTITUTIONS = /#{ESCAPING_AND_SYMBOLS}|#{LEADING_USPS}|#{TRAILING_ASTERISKS}/
 
-      def initialize(*)
-        super
-        @commercial_type = if @options[:commercial_plus] == true
-          :plus
-        elsif @options[:commercial_base] == true
-          :base
-        end
-        assert_valid_service
-      end
-
       def find_tracking_info(tracking_number, options={})
         options = @options.update(options)
         tracking_request = build_tracking_request(tracking_number, options)
@@ -378,6 +368,14 @@ module ActiveMerchant
         request = XmlNode.new('RateV4Request', :USERID => @options[:login]) do |rate_request|
           packages.each_with_index do |p,id|
             rate_request << XmlNode.new('Package', :ID => id.to_s) do |package|
+              commercial_type = commercial_type(options)
+              default_service = DEFAULT_SERVICE[commercial_type]
+              service         = options.fetch(:service, default_service).to_sym
+
+              if commercial_type && service != default_service
+                raise ArgumentError, "Commercial #{commercial_type} rates are only provided with the #{default_service.inspect} service."
+              end
+
               package << XmlNode.new('Service', US_SERVICES[service])
               package << XmlNode.new('FirstClassMailType', FIRST_CLASS_MAIL_TYPES[options[:first_class_mail_type].try(:to_sym)])
               package << XmlNode.new('ZipOrigination', strip_zip(origin_zip))
@@ -439,7 +437,9 @@ module ActiveMerchant
               package << XmlNode.new('Length', "%0.2f" % [p.inches(:length), 0.01].max)
               package << XmlNode.new('Height', "%0.2f" % [p.inches(:height), 0.01].max)
               package << XmlNode.new('Girth', "%0.2f" % [p.inches(:girth), 0.01].max)
-              package << XmlNode.new(COMMERCIAL_FLAG_NAME.fetch(commercial_type), 'Y') if commercial_type
+              if commercial_type = commercial_type(options)
+                package << XmlNode.new(COMMERCIAL_FLAG_NAME.fetch(commercial_type), 'Y')
+              end
             end
           end
         end
@@ -493,6 +493,7 @@ module ActiveMerchant
         rate_hash = {}
         return false unless (root_node = response_node.elements['/IntlRateV2Response | /RateV4Response'])
 
+        commercial_type = commercial_type(options)
         service_node, service_code_node, service_name_node, rate_node = if root_node.name == 'RateV4Response'
           %w[Postage CLASSID MailService] << DOMESTIC_RATE_FIELD[commercial_type]
         else
@@ -692,21 +693,11 @@ module ActiveMerchant
 
       private
 
-      def commercial_type
-        @commercial_type
-      end
-
-      def default_service
-        DEFAULT_SERVICE[commercial_type]
-      end
-
-      def service
-        @options.fetch(:service, default_service).to_sym
-      end
-
-      def assert_valid_service
-        if commercial_type && service != default_service
-          raise ArgumentError, "Commercial #{commercial_type} rates are only provided with the #{default_service.inspect} service."
+      def commercial_type(options)
+        if options[:commercial_plus] == true
+          :plus
+        elsif options[:commercial_base] == true
+          :base
         end
       end
 
