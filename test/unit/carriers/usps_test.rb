@@ -151,8 +151,6 @@ class USPSTest < Test::Unit::TestCase
     @carrier.find_rates(@locations[:beverly_hills], @locations[:ottawa], @packages[:american_wii], :test => true)
   end
 
-  def 
-
   def test_initialize_options_requirements
     assert_raises ArgumentError do USPS.new end
     assert_nothing_raised { USPS.new(:login => 'blah')}
