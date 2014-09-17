@@ -45,10 +45,21 @@ module ActiveMerchant
         :test => true,
         :track => false
       }
+
       CONTAINERS = {
-        :envelope => 'Flat Rate Envelope',
-        :box => 'Flat Rate Box'
+        rectangular: 'RECTANGULAR',
+        box: 'FLAT RATE BOX',
+        box_large: 'LG FLAT RATE BOX',
+        box_medium: 'MD FLAT RATE BOX',
+        box_small: 'SM FLAT RATE BOX',
+        envelope: 'FLAT RATE ENVELOPE',
+        envelope_legal: 'LEGAL FLAT RATE ENVELOPE',
+        envelope_padded: 'PADDED FLAT RATE ENVELOPE',
+        envelope_gift_card: 'GIFT CARD FLAT RATE ENVELOPE',
+        envelope_window: 'WINDOW FLAT RATE ENVELOPE',
+        envelope_small: 'SM FLAT RATE ENVELOPE'
       }
+
       MAIL_TYPES = {
         :package => 'Package',
         :postcard => 'Postcards or aerogrammes',
