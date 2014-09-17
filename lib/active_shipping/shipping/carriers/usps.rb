@@ -92,7 +92,24 @@ module ActiveMerchant
         :media => 'MEDIA',
         :library => 'LIBRARY',
         :online => 'ONLINE',
+        :plus => 'PLUS',
         :all => 'ALL'
+      }
+      DEFAULT_SERVICE = Hash.new(:all).update(
+        :base => :online,
+        :plus => :plus
+      )
+      DOMESTIC_RATE_FIELD = Hash.new('Rate').update(
+        :base => 'CommercialRate',
+        :plus => 'CommercialPlusRate'
+      )
+      INTERNATIONAL_RATE_FIELD = Hash.new('Postage').update(
+        :base => 'CommercialPostage',
+        :plus => 'CommercialPlusPostage'
+      )
+      COMMERCIAL_FLAG_NAME = {
+        :base => 'CommercialFlag',
+        :plus => 'CommercialPlusFlag'
       }
       FIRST_CLASS_MAIL_TYPES = {
         :letter => 'LETTER',
@@ -266,7 +283,7 @@ module ActiveMerchant
       end
 
       # options[:service] --    One of [:first_class, :priority, :express, :bpm, :parcel,
-      #                          :media, :library, :all]. defaults to :all.
+      #                          :media, :library, :online, :plus, :all]. defaults to :all.
       # options[:container] --  One of [:envelope, :box]. defaults to neither (this field has
       #                          special meaning in the USPS API).
       # options[:books] --      Either true or false. Packages of books or other printed matter
@@ -278,14 +295,15 @@ module ActiveMerchant
         request = XmlNode.new('RateV4Request', :USERID => @options[:login]) do |rate_request|
           packages.each_with_index do |p,id|
             rate_request << XmlNode.new('Package', :ID => id.to_s) do |package|
-              if options[:commercial_base] == true
-                raise ArgumentError.new("Commercial Base rates are only provided with the :online method.") if !options[:service].blank? && options[:service] != :online
-                default_service = :online
-              else
-                default_service = :all
+              commercial_type = commercial_type(options)
+              default_service = DEFAULT_SERVICE[commercial_type]
+              service         = options.fetch(:service, default_service).to_sym
+
+              if commercial_type && service != default_service
+                raise ArgumentError, "Commercial #{commercial_type} rates are only provided with the #{default_service.inspect} service."
               end
 
-              package << XmlNode.new('Service', US_SERVICES[options[:service].try(:to_sym) || default_service])
+              package << XmlNode.new('Service', US_SERVICES[service])
               package << XmlNode.new('FirstClassMailType', FIRST_CLASS_MAIL_TYPES[options[:first_class_mail_type].try(:to_sym)])
               package << XmlNode.new('ZipOrigination', strip_zip(origin_zip))
               package << XmlNode.new('ZipDestination', strip_zip(destination_zip))
@@ -346,7 +364,9 @@ module ActiveMerchant
               package << XmlNode.new('Length', "%0.2f" % [p.inches(:length), 0.01].max)
               package << XmlNode.new('Height', "%0.2f" % [p.inches(:height), 0.01].max)
               package << XmlNode.new('Girth', "%0.2f" % [p.inches(:girth), 0.01].max)
-              package << XmlNode.new('CommercialFlag', 'Y') if options[:commercial_base]
+              if commercial_type = commercial_type(options)
+                package << XmlNode.new(COMMERCIAL_FLAG_NAME.fetch(commercial_type), 'Y')
+              end
             end
           end
         end
@@ -399,16 +419,13 @@ module ActiveMerchant
       def rates_from_response_node(response_node, packages, options = {})
         rate_hash = {}
         return false unless (root_node = response_node.elements['/IntlRateV2Response | /RateV4Response'])
-        domestic = (root_node.name == 'RateV4Response')
 
-        if options[:commercial_base]
-          domestic_elements = ['Postage', 'CLASSID', 'MailService', 'CommercialRate']
-          international_elements = ['Service', 'ID', 'SvcDescription', 'CommercialPostage']
+        commercial_type = commercial_type(options)
+        service_node, service_code_node, service_name_node, rate_node = if root_node.name == 'RateV4Response'
+          %w[Postage CLASSID MailService] << DOMESTIC_RATE_FIELD[commercial_type]
         else
-          domestic_elements = ['Postage', 'CLASSID', 'MailService', 'Rate']
-          international_elements = ['Service', 'ID', 'SvcDescription', 'Postage']
+          %w[Service ID SvcDescription]   << INTERNATIONAL_RATE_FIELD[commercial_type]
         end
-        service_node, service_code_node, service_name_node, rate_node = domestic ? domestic_elements : international_elements
 
         root_node.each_element('Package') do |package_node|
           this_package = packages[package_node.attributes['ID'].to_i]
@@ -603,6 +620,16 @@ module ActiveMerchant
 
       def strip_zip(zip)
         zip.to_s.scan(/\d{5}/).first || zip
+      end
+
+      private
+
+      def commercial_type(options)
+        if options[:commercial_plus] == true
+          :plus
+        elsif options[:commercial_base] == true
+          :base
+        end
       end
 
     end
