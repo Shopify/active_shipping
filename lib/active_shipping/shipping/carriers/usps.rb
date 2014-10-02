@@ -48,6 +48,7 @@ module ActiveMerchant
 
       CONTAINERS = {
         rectangular: 'RECTANGULAR',
+        variable: 'VARIABLE',
         box: 'FLAT RATE BOX',
         box_large: 'LG FLAT RATE BOX',
         box_medium: 'MD FLAT RATE BOX',
@@ -357,10 +358,10 @@ module ActiveMerchant
 
       # options[:service] --    One of [:first_class, :priority, :express, :bpm, :parcel,
       #                          :media, :library, :online, :plus, :all]. defaults to :all.
-      # options[:container] --  One of [:envelope, :box]. defaults to neither (this field has
-      #                          special meaning in the USPS API).
       # options[:books] --      Either true or false. Packages of books or other printed matter
       #                          have a lower weight limit to be considered machinable.
+      # package.options[:container] --  Can be :rectangular, :variable, or a flat rate container
+      #                                 defined in CONTAINERS.
       # package.options[:machinable] -- Either true or false. Overrides the detection of
       #                                  "machinability" entirely.
       def build_us_rate_request(packages, origin_zip, destination_zip, options={})
