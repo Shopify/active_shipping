@@ -58,7 +58,8 @@ module ActiveMerchant
         envelope_padded: 'PADDED FLAT RATE ENVELOPE',
         envelope_gift_card: 'GIFT CARD FLAT RATE ENVELOPE',
         envelope_window: 'WINDOW FLAT RATE ENVELOPE',
-        envelope_small: 'SM FLAT RATE ENVELOPE'
+        envelope_small: 'SM FLAT RATE ENVELOPE',
+        package_service: 'PACKAGE SERVICE'
       }
 
       MAIL_TYPES = {
