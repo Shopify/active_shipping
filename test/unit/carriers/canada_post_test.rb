@@ -95,14 +95,6 @@ class CanadaPostTest < Test::Unit::TestCase
     assert_equal 'Parcel too heavy to be shipped with CPC.', error.message
   end
 
-  def test_turn_around_time_default
-    @carrier.expects(:commit).with do |request, options|
-      parsed_request = Hash.from_xml(request)
-      parsed_request['eparcel']['ratesAndServicesRequest']['turnAroundTime'] == "24"
-    end
-    @carrier.find_rates(@origin, @destination, @line_items)
-  end
-
   def test_turn_around_time
     @carrier.expects(:commit).with do |request, options|
       parsed_request = Hash.from_xml(request)

@@ -29,7 +29,6 @@ module ActiveMerchant
       PackedItem = Struct.new(:quantity, :description)
       PostalOutlet = Struct.new(:sequence_no, :distance, :name, :business_name, :postal_address, :business_hours)
       
-      DEFAULT_TURN_AROUND_TIME = 24
       URL = "http://sellonline.canadapost.ca:30000"
       DOCTYPE = '<!DOCTYPE eparcel SYSTEM "http://sellonline.canadapost.ca/DevelopersResources/protocolV3/eParcel.dtd">'      
       
@@ -126,7 +125,7 @@ module ActiveMerchant
 
             request << XmlNode.new('merchantCPCID', @options[:login])
             request << XmlNode.new('fromPostalCode', origin.postal_code)
-            request << XmlNode.new('turnAroundTime', options[:turn_around_time] ? options[:turn_around_time] : DEFAULT_TURN_AROUND_TIME)
+            request << XmlNode.new('turnAroundTime', options[:turn_around_time]) if options[:turn_around_time]
             request << XmlNode.new('itemsPrice', dollar_amount(line_items.map(&:value).compact.sum))
 
             #line items
