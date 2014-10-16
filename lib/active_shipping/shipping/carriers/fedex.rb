@@ -352,29 +352,31 @@ module ActiveMerchant
         xml = build_document(response)
         root_node = xml.elements['RateReply']
 
-        success = response_success?(xml)
+        success = response_success?(xml) && root_node
         message = response_message(xml)
 
-        root_node.elements.each('RateReplyDetails') do |rated_shipment|
-          service_code = rated_shipment.get_text('ServiceType').to_s
-          is_saturday_delivery = rated_shipment.get_text('AppliedOptions').to_s == 'SATURDAY_DELIVERY'
-          service_type = is_saturday_delivery ? "#{service_code}_SATURDAY_DELIVERY" : service_code
+        if success
+          root_node.elements.each('RateReplyDetails') do |rated_shipment|
+            service_code = rated_shipment.get_text('ServiceType').to_s
+            is_saturday_delivery = rated_shipment.get_text('AppliedOptions').to_s == 'SATURDAY_DELIVERY'
+            service_type = is_saturday_delivery ? "#{service_code}_SATURDAY_DELIVERY" : service_code
 
-          transit_time = rated_shipment.get_text('TransitTime').to_s if service_code == "FEDEX_GROUND"
-          max_transit_time = rated_shipment.get_text('MaximumTransitTime').to_s if service_code == "FEDEX_GROUND"
+            transit_time = rated_shipment.get_text('TransitTime').to_s if service_code == "FEDEX_GROUND"
+            max_transit_time = rated_shipment.get_text('MaximumTransitTime').to_s if service_code == "FEDEX_GROUND"
 
-          delivery_timestamp = rated_shipment.get_text('DeliveryTimestamp').to_s
+            delivery_timestamp = rated_shipment.get_text('DeliveryTimestamp').to_s
 
-          delivery_range = delivery_range_from(transit_time, max_transit_time, delivery_timestamp, options)
+            delivery_range = delivery_range_from(transit_time, max_transit_time, delivery_timestamp, options)
 
-          currency = rated_shipment.get_text('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Currency').to_s
-          rate_estimates << RateEstimate.new(origin, destination, @@name,
-                              self.class.service_name_for_code(service_type),
-                              :service_code => service_code,
-                              :total_price => rated_shipment.get_text('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Amount').to_s.to_f,
-                              :currency => currency,
-                              :packages => packages,
-                              :delivery_range => delivery_range)
+            currency = rated_shipment.get_text('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Currency').to_s
+            rate_estimates << RateEstimate.new(origin, destination, @@name,
+                                self.class.service_name_for_code(service_type),
+                                :service_code => service_code,
+                                :total_price => rated_shipment.get_text('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Amount').to_s.to_f,
+                                :currency => currency,
+                                :packages => packages,
+                                :delivery_range => delivery_range)
+          end
         end
 
         if rate_estimates.empty?
