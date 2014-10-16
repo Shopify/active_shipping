@@ -355,6 +355,8 @@ module ActiveMerchant
         success = response_success?(xml)
         message = response_message(xml)
 
+        raise ActiveMerchant::Shipping::ResponseContentError.new(StandardError.new('Invalid document'), xml) unless root_node
+
         root_node.elements.each('RateReplyDetails') do |rated_shipment|
           service_code = rated_shipment.get_text('ServiceType').to_s
           is_saturday_delivery = rated_shipment.get_text('AppliedOptions').to_s == 'SATURDAY_DELIVERY'

@@ -319,6 +319,21 @@ class FedExTest < MiniTest::Unit::TestCase
     assert_nil package_rate[:rate]
   end
 
+  def test_parsing_response_with_no_rate_reply
+    expected_request = xml_fixture('fedex/ottawa_to_beverly_hills_rate_request')
+    mock_response = xml_fixture('fedex/unknown_fedex_document_reply')
+    Time.any_instance.expects(:to_xml_value).returns("2009-07-20T12:01:55-04:00")
+
+    @carrier.expects(:commit).with {|request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode}.returns(mock_response)
+    exception = assert_raises ActiveMerchant::Shipping::ResponseContentError do
+      response = @carrier.find_rates( @locations[:ottawa],
+                                      @locations[:beverly_hills],
+                                      @packages.values_at(:book, :wii), :test => true)
+    end
+    message = "Invalid document \n\n<?xml version='1.0' encoding='UTF-8'?>\n<RandomElement xmlns:v6='http://fedex.com/ws/rate/v6' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\n</RandomElement>\n"
+    assert_equal message, exception.message
+  end
+
   def test_service_name_for_code
     FedEx::SERVICE_TYPES.each do |capitalized_name, readable_name|
       assert_equal readable_name, FedEx.service_name_for_code(capitalized_name)
