@@ -319,6 +319,19 @@ class FedExTest < MiniTest::Unit::TestCase
     assert_nil package_rate[:rate]
   end
 
+  def test_parsing_response_with_no_rate_reply
+    expected_request = xml_fixture('fedex/ottawa_to_beverly_hills_rate_request')
+    mock_response = xml_fixture('fedex/unknown_fedex_document_reply')
+    Time.any_instance.expects(:to_xml_value).returns("2009-07-20T12:01:55-04:00")
+
+    @carrier.expects(:commit).with {|request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode}.returns(mock_response)
+    assert_raises ActiveMerchant::Shipping::ResponseError do
+      response = @carrier.find_rates( @locations[:ottawa],
+                                      @locations[:beverly_hills],
+                                      @packages.values_at(:book, :wii), :test => true)
+    end
+  end
+
   def test_service_name_for_code
     FedEx::SERVICE_TYPES.each do |capitalized_name, readable_name|
       assert_equal readable_name, FedEx.service_name_for_code(capitalized_name)
