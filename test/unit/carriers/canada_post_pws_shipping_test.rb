@@ -1,66 +1,65 @@
 require 'test_helper'
 class CanadaPostPwsShippingTest < Test::Unit::TestCase
-
   def setup
     login = fixtures(:canada_post_pws)
-    
+
     # 100 grams, 93 cm long, 10 cm diameter, cylinders have different volume calculations
-    @pkg1 = Package.new(25, [93,10], :cylinder => true)
+    @pkg1 = Package.new(25, [93, 10], :cylinder => true)
 
     # 7.5 lbs, times 16 oz/lb., 15x10x4.5 inches, not grams, not centimetres
     @pkg2 = Package.new(  (7.5 * 16), [15, 10, 4.5], :units => :imperial)
 
     @line_item1 = TestFixtures.line_items1
-    
+
     @home_params = {
-      :name        => "John Smith", 
+      :name        => "John Smith",
       :company     => "test",
       :phone       => "613-555-1212",
       :address1    => "123 Elm St.",
-      :city        => 'Ottawa', 
-      :province    => 'ON', 
-      :country     => 'CA', 
+      :city        => 'Ottawa',
+      :province    => 'ON',
+      :country     => 'CA',
       :postal_code => 'K1P 1J1'
     }
 
     @dom_params = {
-      :name        => "Mrs. Smith", 
+      :name        => "Mrs. Smith",
       :company     => "",
       :phone       => "604-555-1212",
       :address1    => "5000 Oak St.",
       :address2    => "",
-      :city        => 'Vancouver', 
-      :province    => 'BC', 
-      :country     => 'CA', 
+      :city        => 'Vancouver',
+      :province    => 'BC',
+      :country     => 'CA',
       :postal_code => 'V5J 2N2'
     }
 
     @us_params = {
-      :name        => "John Smith", 
+      :name        => "John Smith",
       :company     => "test",
       :phone       => "613-555-1212",
       :address1    => "123 Elm St.",
       :address2    => "",
-      :city        => 'Beverly Hills', 
-      :province    => 'CA', 
-      :country     => 'US', 
+      :city        => 'Beverly Hills',
+      :province    => 'CA',
+      :country     => 'US',
       :postal_code => '90210'
     }
 
     @paris_params = {
-      :name        => "John Smith", 
+      :name        => "John Smith",
       :company     => "test",
       :phone       => "613-555-1212",
       :address1    => "5 avenue Anatole France - Champ de Mars",
       :address2    => "",
-      :city        => 'Paris', 
-      :province    => '', 
-      :country     => 'FR', 
+      :city        => 'Paris',
+      :province    => '',
+      :country     => 'FR',
       :postal_code => '75007'
     }
 
-    @shipping_opts1 = {:dc => true, :cod => :true, :cod_amount => 50.00, :cod_includes_shipping => true, 
-                       :cod_method_of_payment => 'CSH', :cov => true, :cov_amount => 100.00, 
+    @shipping_opts1 = {:dc => true, :cod => :true, :cod_amount => 50.00, :cod_includes_shipping => true,
+                       :cod_method_of_payment => 'CSH', :cov => true, :cov_amount => 100.00,
                        :so => true, :pa18 => true}
 
     @default_options = {:customer_number => '123456'}
@@ -129,7 +128,7 @@ class CanadaPostPwsShippingTest < Test::Unit::TestCase
 
   def test_build_shipping_request_with_zero_weight
     options = @default_options.merge(@shipping_opts1)
-    package = Package.new(0, [93,10])
+    package = Package.new(0, [93, 10])
     request = @cp.build_shipment_request(@home_params, @dom_params, package, @line_item1, options)
     assert_not_nil request
     doc = REXML::Document.new(request)
@@ -225,7 +224,7 @@ class CanadaPostPwsShippingTest < Test::Unit::TestCase
     options = @default_options.dup
 
     response = xml_fixture('canadapost_pws/shipment_response')
-    @cp.expects(:ssl_post).with do |url, request| 
+    @cp.expects(:ssl_post).with do |_url, request|
       request_hash = Hash.from_xml(request)
 
       assert_equal 44, request_hash['non_contract_shipment']['delivery_spec']['customs']['sku_list']['item'].first['customs_description'].length
@@ -242,5 +241,4 @@ class CanadaPostPwsShippingTest < Test::Unit::TestCase
 
     assert_equal 0, response[:priced_options].size
   end
-
 end

@@ -3,7 +3,6 @@ require 'cgi'
 
 module ActiveMerchant
   module Shipping
-
     # After getting an API login from USPS (looks like '123YOURNAME456'),
     # run the following test:
     #
@@ -26,7 +25,7 @@ module ActiveMerchant
       LIVE_DOMAIN = 'production.shippingapis.com'
       LIVE_RESOURCE = 'ShippingAPI.dll'
 
-      TEST_DOMAINS = { #indexed by security; e.g. TEST_DOMAINS[USE_SSL[:rates]]
+      TEST_DOMAINS = { # indexed by security; e.g. TEST_DOMAINS[USE_SSL[:rates]]
         true => 'secure.shippingapis.com',
         false => 'testing.shippingapis.com'
       }
@@ -122,7 +121,7 @@ module ActiveMerchant
       }
 
       # Array of U.S. possessions according to USPS: https://www.usps.com/ship/official-abbreviations.htm
-      US_POSSESSIONS = ["AS", "FM", "GU", "MH", "MP", "PW", "PR", "VI"]
+      US_POSSESSIONS = %w(AS FM GU MH MP PW PR VI)
 
       # TODO: figure out how USPS likes to say "Ivory Coast"
       #
@@ -177,7 +176,7 @@ module ActiveMerchant
       TRAILING_ASTERISKS = /\*+$/
       SERVICE_NAME_SUBSTITUTIONS = /#{ESCAPING_AND_SYMBOLS}|#{LEADING_USPS}|#{TRAILING_ASTERISKS}/
 
-      def find_tracking_info(tracking_number, options={})
+      def find_tracking_info(tracking_number, options = {})
         options = @options.update(options)
         tracking_request = build_tracking_request(tracking_number, options)
         response = commit(:track, tracking_request, (options[:test] || false))
@@ -196,7 +195,7 @@ module ActiveMerchant
       #
       # package.options[:books] -- 25 lb. limit instead of 35 for books or other printed matter.
       #                             Defaults to false.
-      def self.package_machinable?(package, options={})
+      def self.package_machinable?(package, options = {})
         at_least_minimum =  package.inches(:length) >= 6.0 &&
                             package.inches(:width) >= 3.0 &&
                             package.inches(:height) >= 0.25 &&
@@ -219,7 +218,7 @@ module ActiveMerchant
         destination = Location.from(destination)
         packages = Array(packages)
 
-        #raise ArgumentError.new("USPS packages must originate in the U.S.") unless ['US',nil].include?(origin.country_code(:alpha2))
+        # raise ArgumentError.new("USPS packages must originate in the U.S.") unless ['US',nil].include?(origin.country_code(:alpha2))
 
         # domestic or international?
 
@@ -241,7 +240,7 @@ module ActiveMerchant
       end
 
       def extract_event_details(message)
-        return EventDetails.new unless EVENT_MESSAGE_PATTERNS.any?{|pattern| message =~ pattern}
+        return EventDetails.new unless EVENT_MESSAGE_PATTERNS.any? { |pattern| message =~ pattern }
         description = $1.upcase
         timestamp = $2
         city = $3
@@ -328,23 +327,23 @@ module ActiveMerchant
 
 
 
-      def build_tracking_request(tracking_number, options={})
+      def build_tracking_request(tracking_number, options = {})
         xml_request = XmlNode.new('TrackRequest', 'USERID' => @options[:login]) do |root_node|
           root_node << XmlNode.new('TrackID', :ID => tracking_number)
         end
         URI.encode(xml_request.to_s)
       end
 
-      def us_rates(origin, destination, packages, options={})
+      def us_rates(origin, destination, packages, options = {})
         request = build_us_rate_request(packages, origin.zip, destination.zip, options)
-         # never use test mode; rate requests just won't work on test servers
-        parse_rate_response origin, destination, packages, commit(:us_rates,request,false), options
+        # never use test mode; rate requests just won't work on test servers
+        parse_rate_response origin, destination, packages, commit(:us_rates, request, false), options
       end
 
-      def world_rates(origin, destination, packages, options={})
+      def world_rates(origin, destination, packages, options = {})
         request = build_world_rate_request(packages, destination, options)
-         # never use test mode; rate requests just won't work on test servers
-        parse_rate_response origin, destination, packages, commit(:world_rates,request,false), options
+        # never use test mode; rate requests just won't work on test servers
+        parse_rate_response origin, destination, packages, commit(:world_rates, request, false), options
       end
 
       # Once the address verification API is implemented, remove this and have valid_credentials? build the request using that instead.
@@ -354,7 +353,7 @@ module ActiveMerchant
         # expected_hash = {"CarrierPickupAvailabilityResponse"=>{"City"=>"HOUSTON", "Address2"=>"1390 Market Street", "FirmName"=>"ABC Corp.", "State"=>"TX", "Date"=>"3/1/2004", "DayOfWeek"=>"Monday", "Urbanization"=>nil, "ZIP4"=>"1234", "ZIP5"=>"77058", "CarrierRoute"=>"C", "SuiteOrApt"=>"Suite 777"}}
         xml = REXML::Document.new(commit(:test, request, true))
         xml.get_text('/CarrierPickupAvailabilityResponse/City').to_s == 'HOUSTON' &&
-        xml.get_text('/CarrierPickupAvailabilityResponse/Address2').to_s == '1390 Market Street'
+          xml.get_text('/CarrierPickupAvailabilityResponse/Address2').to_s == '1390 Market Street'
       end
 
       # options[:service] --    One of [:first_class, :priority, :express, :bpm, :parcel,
@@ -365,10 +364,10 @@ module ActiveMerchant
       #                                 defined in CONTAINERS.
       # package.options[:machinable] -- Either true or false. Overrides the detection of
       #                                  "machinability" entirely.
-      def build_us_rate_request(packages, origin_zip, destination_zip, options={})
+      def build_us_rate_request(packages, origin_zip, destination_zip, options = {})
         packages = Array(packages)
         request = XmlNode.new('RateV4Request', :USERID => @options[:login]) do |rate_request|
-          packages.each_with_index do |p,id|
+          packages.each_with_index do |p, id|
             rate_request << XmlNode.new('Package', :ID => id.to_s) do |package|
               commercial_type = commercial_type(options)
               default_service = DEFAULT_SERVICE[commercial_type]
@@ -383,7 +382,7 @@ module ActiveMerchant
               package << XmlNode.new('ZipOrigination', strip_zip(origin_zip))
               package << XmlNode.new('ZipDestination', strip_zip(destination_zip))
               package << XmlNode.new('Pounds', 0)
-              package << XmlNode.new('Ounces', "%0.1f" % [p.ounces,1].max)
+              package << XmlNode.new('Ounces', "%0.1f" % [p.ounces, 1].max)
               package << XmlNode.new('Container', CONTAINERS[p.options[:container]])
               package << XmlNode.new('Size', USPS.size_code_for(p))
               package << XmlNode.new('Width', "%0.2f" % p.inches(:width))
@@ -418,7 +417,7 @@ module ActiveMerchant
             p = packages[id]
             rate_request << XmlNode.new('Package', :ID => id.to_s) do |package|
               package << XmlNode.new('Pounds', 0)
-              package << XmlNode.new('Ounces', [p.ounces,1].max.ceil) #takes an integer for some reason, must be rounded UP
+              package << XmlNode.new('Ounces', [p.ounces, 1].max.ceil) # takes an integer for some reason, must be rounded UP
               package << XmlNode.new('MailType', MAIL_TYPES[p.options[:mail_type]] || 'Package')
               package << XmlNode.new('GXG') do |gxg|
                 gxg << XmlNode.new('POBoxFlag', destination.po_box? ? 'Y' : 'N')
@@ -448,7 +447,7 @@ module ActiveMerchant
         URI.encode(save_request(request.to_s))
       end
 
-      def parse_rate_response(origin, destination, packages, response, options={})
+      def parse_rate_response(origin, destination, packages, response, options = {})
         success = true
         message = ''
         rate_hash = {}
@@ -479,12 +478,12 @@ module ActiveMerchant
 
         if success
           rate_estimates = rate_hash.keys.map do |service_name|
-            RateEstimate.new(origin,destination,@@name,"USPS #{service_name}",
-                                      :package_rates => rate_hash[service_name][:package_rates],
-                                      :service_code => rate_hash[service_name][:service_code],
-                                      :currency => 'USD')
+            RateEstimate.new(origin, destination, @@name, "USPS #{service_name}",
+                             :package_rates => rate_hash[service_name][:package_rates],
+                             :service_code => rate_hash[service_name][:service_code],
+                             :currency => 'USD')
           end
-          rate_estimates.reject! {|e| e.package_count != packages.length}
+          rate_estimates.reject! { |e| e.package_count != packages.length }
           rate_estimates = rate_estimates.sort_by(&:total_price)
         end
 
@@ -497,9 +496,9 @@ module ActiveMerchant
 
         commercial_type = commercial_type(options)
         service_node, service_code_node, service_name_node, rate_node = if root_node.name == 'RateV4Response'
-          %w[Postage CLASSID MailService] << DOMESTIC_RATE_FIELD[commercial_type]
+          %w(Postage CLASSID MailService) << DOMESTIC_RATE_FIELD[commercial_type]
         else
-          %w[Service ID SvcDescription]   << INTERNATIONAL_RATE_FIELD[commercial_type]
+          %w(Service ID SvcDescription)   << INTERNATIONAL_RATE_FIELD[commercial_type]
         end
 
         root_node.each_element('Package') do |package_node|
@@ -508,7 +507,7 @@ module ActiveMerchant
           package_node.each_element(service_node) do |service_response_node|
             service_name = service_response_node.get_text(service_name_node).to_s
 
-            service_name.gsub!(SERVICE_NAME_SUBSTITUTIONS,'')
+            service_name.gsub!(SERVICE_NAME_SUBSTITUTIONS, '')
             service_name.strip!
 
             # aggregate specific package rates into a service-centric RateEstimate
@@ -520,7 +519,7 @@ module ActiveMerchant
             this_package_rate = {:package => this_package,
                                  :rate => Package.cents_from(rate_value(rate_node, service_response_node, commercial_type))}
 
-            package_rates << this_package_rate if package_valid_for_service(this_package,service_response_node)
+            package_rates << this_package_rate if package_valid_for_service(this_package, service_response_node)
           end
         end
         rate_hash
@@ -531,38 +530,38 @@ module ActiveMerchant
         max_weight = service_node.get_text('MaxWeight').to_s.to_f
         name = service_node.get_text('SvcDescription | MailService').to_s.downcase
 
-        if name =~ /flat.rate.box/ #domestic or international flat rate box
+        if name =~ /flat.rate.box/ # domestic or international flat rate box
           # flat rate dimensions from http://www.usps.com/shipping/flatrate.htm
           return (package_valid_for_max_dimensions(package,
-                      :weight => max_weight, #domestic apparently has no weight restriction
-                      :length => 11.0,
-                      :width => 8.5,
-                      :height => 5.5) or
+                                                   :weight => max_weight, # domestic apparently has no weight restriction
+                                                   :length => 11.0,
+                                                   :width => 8.5,
+                                                   :height => 5.5) or
                  package_valid_for_max_dimensions(package,
-                      :weight => max_weight,
-                      :length => 13.625,
-                      :width => 11.875,
-                      :height => 3.375))
+                                                  :weight => max_weight,
+                                                  :length => 13.625,
+                                                  :width => 11.875,
+                                                  :height => 3.375))
         elsif name =~ /flat.rate.envelope/
           return package_valid_for_max_dimensions(package,
-                      :weight => max_weight,
-                      :length => 12.5,
-                      :width => 9.5,
-                      :height => 0.75)
+                                                  :weight => max_weight,
+                                                  :length => 12.5,
+                                                  :width => 9.5,
+                                                  :height => 0.75)
         elsif service_node.elements['MailService'] # domestic non-flat rates
           return true
-        else #international non-flat rates
+        else # international non-flat rates
           # Some sample english that this is required to parse:
           #
           # 'Max. length 46", width 35", height 46" and max. length plus girth 108"'
           # 'Max. length 24", Max. length, height, depth combined 36"'
           #
           sentence = CGI.unescapeHTML(service_node.get_text('MaxDimensions').to_s)
-          tokens = sentence.downcase.split(/[^\d]*"/).reject {|t| t.empty?}
+          tokens = sentence.downcase.split(/[^\d]*"/).reject(&:empty?)
           max_dimensions = {:weight => max_weight}
           single_axis_values = []
           tokens.each do |token|
-            axis_sum = [/length/,/width/,/height/,/depth/].sum {|regex| (token =~ regex) ? 1 : 0}
+            axis_sum = [/length/, /width/, /height/, /depth/].sum { |regex| (token =~ regex) ? 1 : 0 }
             unless axis_sum == 0
               value = token[/\d+$/].to_f
               if axis_sum == 3
@@ -575,15 +574,15 @@ module ActiveMerchant
             end
           end
           single_axis_values.sort!.reverse!
-          [:length, :width, :height].each_with_index do |axis,i|
+          [:length, :width, :height].each_with_index do |axis, i|
             max_dimensions[axis] = single_axis_values[i] if single_axis_values[i]
           end
-          return package_valid_for_max_dimensions(package, max_dimensions)
+          package_valid_for_max_dimensions(package, max_dimensions)
         end
       end
 
-      def package_valid_for_max_dimensions(package,dimensions)
-        valid = ((not ([:length,:width,:height].map {|dim| dimensions[dim].nil? || dimensions[dim].to_f >= package.inches(dim).to_f}.include?(false))) and
+      def package_valid_for_max_dimensions(package, dimensions)
+        ((not ([:length, :width, :height].map { |dim| dimensions[dim].nil? || dimensions[dim].to_f >= package.inches(dim).to_f }.include?(false))) and
                 (dimensions[:weight].nil? || dimensions[:weight] >= package.pounds) and
                 (dimensions[:length_plus_girth].nil? or
                     dimensions[:length_plus_girth].to_f >=
@@ -591,8 +590,6 @@ module ActiveMerchant
                 (dimensions[:length_plus_width_plus_height].nil? or
                     dimensions[:length_plus_width_plus_height].to_f >=
                     package.inches(:length) + package.inches(:width) + package.inches(:height)))
-
-        return valid
       end
 
       def parse_tracking_response(response, options)
@@ -606,9 +603,9 @@ module ActiveMerchant
         if success
           tracking_number, origin, destination = nil
           shipment_events = []
-          tracking_details = xml.elements.collect('*/*/TrackDetail'){ |e| e }
+          tracking_details = xml.elements.collect('*/*/TrackDetail') { |e| e }
 
-          tracking_summary = xml.elements.collect('*/*/TrackSummary'){ |e| e }.first
+          tracking_summary = xml.elements.collect('*/*/TrackSummary') { |e| e }.first
           tracking_details << tracking_summary
 
           tracking_number = root_node.elements['TrackInfo'].attributes['ID'].to_s
@@ -627,14 +624,14 @@ module ActiveMerchant
         end
 
         TrackingResponse.new(success, message, Hash.from_xml(response),
-          :carrier => @@name,
-          :xml => response,
-          :request => last_request,
-          :shipment_events => shipment_events,
-          :destination => destination,
-          :tracking_number => tracking_number,
-          :status => status,
-          :actual_delivery_date => actual_delivery_date
+                             :carrier => @@name,
+                             :xml => response,
+                             :request => last_request,
+                             :shipment_events => shipment_events,
+                             :destination => destination,
+                             :tracking_number => tracking_number,
+                             :status => status,
+                             :actual_delivery_date => actual_delivery_date
         )
       end
 
@@ -694,10 +691,11 @@ module ActiveMerchant
       end
 
       private
+
       def rate_value(rate_node, service_response_node, commercial_type)
         service_response_node.get_text(rate_node).to_s.to_f
       end
-      
+
       def commercial_type(options)
         if options[:commercial_plus] == true
           :plus
@@ -705,7 +703,6 @@ module ActiveMerchant
           :base
         end
       end
-
     end
   end
 end

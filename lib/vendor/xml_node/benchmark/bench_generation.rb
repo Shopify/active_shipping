@@ -2,14 +2,13 @@ require "benchmark"
 require File.dirname(__FILE__) + "/../lib/xml_node"
 
 class XmlNode
-  
   def to_xml_as_array
     xml = []
     document = REXML::Document.new
     document << REXML::XMLDecl.new('1.0')
     document << @element
     document.write( xml, 0)
-    xml.to_s    
+    xml.to_s
   end
 
   def to_xml_no_format
@@ -18,9 +17,8 @@ class XmlNode
     document << REXML::XMLDecl.new('1.0')
     document << @element
     document.write( xml)
-    xml    
+    xml
   end
-    
 end
 
 TESTS = 10000

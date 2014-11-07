@@ -7,7 +7,7 @@ module ActiveMerchant
     class BenchmarkCarrier < Carrier
       cattr_reader :name
       @@name = "Benchmark Carrier"
-      
+
       def find_rates(origin, destination, packages, options = {})
         origin = Location.from(origin)
         destination = Location.from(destination)
@@ -18,17 +18,16 @@ module ActiveMerchant
         bogus_estimate = RateEstimate.new(
           origin, destination, @@name,
           "Free Benchmark Shipping", :total_price => 0, :currency => 'USD',
-          :packages => packages, :delivery_range => [Time.now.utc.strftime("%Y-%d-%m"), Time.now.utc.strftime("%Y-%d-%m")]
+                                     :packages => packages, :delivery_range => [Time.now.utc.strftime("%Y-%d-%m"), Time.now.utc.strftime("%Y-%d-%m")]
           )
         RateResponse.new(true, "Success (delayed #{delay_time} seconds)", {:rate => 'free'}, :rates => [bogus_estimate], :xml => "<rate>free</rate>")
       end
-      
+
       private
 
       def generate_simulated_lag(max_delay = 30)
         sleep Random.rand * max_delay
       end
-
     end
   end
 end

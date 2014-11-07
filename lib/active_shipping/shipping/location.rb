@@ -1,8 +1,8 @@
 module ActiveMerchant #:nodoc:
   module Shipping #:nodoc:
     class Location
-      ADDRESS_TYPES = %w{residential commercial po_box}
-      
+      ADDRESS_TYPES = %w(residential commercial po_box)
+
       attr_reader :options,
                   :country,
                   :postal_code,
@@ -16,14 +16,14 @@ module ActiveMerchant #:nodoc:
                   :fax,
                   :address_type,
                   :company_name
-      
+
       alias_method :zip, :postal_code
       alias_method :postal, :postal_code
       alias_method :state, :province
       alias_method :territory, :province
       alias_method :region, :province
       alias_method :company, :company_name
-      
+
       def initialize(options = {})
         @country = (options[:country].nil? or options[:country].is_a?(ActiveMerchant::Country)) ?
                       options[:country] :
@@ -41,8 +41,8 @@ module ActiveMerchant #:nodoc:
 
         self.address_type = options[:address_type]
       end
-      
-      def self.from(object, options={})
+
+      def self.from(object, options = {})
         return object if object.is_a? ActiveMerchant::Shipping::Location
         attr_mappings = {
           :name => [:name],
@@ -74,13 +74,13 @@ module ActiveMerchant #:nodoc:
           end
         end
         attributes.delete(:address_type) unless ADDRESS_TYPES.include?(attributes[:address_type].to_s)
-        self.new(attributes.update(options))
+        new(attributes.update(options))
       end
-      
+
       def country_code(format = :alpha2)
         @country.nil? ? nil : @country.code(format).value
       end
-      
+
       def residential?; @address_type == 'residential' end
       def commercial?; @address_type == 'commercial' end
       def po_box?; @address_type == 'po_box' end
@@ -109,7 +109,7 @@ module ActiveMerchant #:nodoc:
         }
       end
 
-      def to_xml(options={})
+      def to_xml(options = {})
         options[:root] ||= "location"
         to_hash.to_xml(options)
       end
@@ -117,15 +117,15 @@ module ActiveMerchant #:nodoc:
       def to_s
         prettyprint.gsub(/\n/, ' ')
       end
-      
+
       def prettyprint
         chunks = []
-        chunks << [@name, @address1,@address2,@address3].reject {|e| e.blank?}.join("\n")
-        chunks << [@city,@province,@postal_code].reject {|e| e.blank?}.join(', ')
+        chunks << [@name, @address1, @address2, @address3].reject(&:blank?).join("\n")
+        chunks << [@city, @province, @postal_code].reject(&:blank?).join(', ')
         chunks << @country
-        chunks.reject {|e| e.blank?}.join("\n")
+        chunks.reject(&:blank?).join("\n")
       end
-      
+
       def inspect
         string = prettyprint
         string << "\nPhone: #{@phone}" unless @phone.blank?
@@ -147,8 +147,6 @@ module ActiveMerchant #:nodoc:
       def address2_and_3
         [address2, address3].reject(&:blank?).join(", ")
       end
-
     end
-      
   end
 end

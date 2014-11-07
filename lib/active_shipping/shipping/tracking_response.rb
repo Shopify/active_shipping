@@ -1,20 +1,19 @@
 module ActiveMerchant #:nodoc:
   module Shipping
-    
     class TrackingResponse < Response
       attr_reader :carrier # symbol
       attr_reader :carrier_name # string
       attr_reader :status # symbol
       attr_reader :status_code # string
-      attr_reader :status_description #string
+      attr_reader :status_description # string
       attr_reader :ship_time # time
       attr_reader :scheduled_delivery_date # time
       attr_reader :actual_delivery_date # time
-      attr_reader :delivery_signature #string
+      attr_reader :delivery_signature # string
       attr_reader :tracking_number # string
       attr_reader :shipment_events # array of ShipmentEvents in chronological order
       attr_reader :shipper_address, :origin, :destination # Location objects
-      
+
       def initialize(success, message, params = {}, options = {})
         @carrier = options[:carrier].parameterize.to_sym
         @carrier_name = options[:carrier]
@@ -51,6 +50,5 @@ module ActiveMerchant #:nodoc:
       alias_method(:scheduled_delivery_time, :scheduled_delivery_date)
       alias_method(:actual_delivery_time, :actual_delivery_date)
     end
-    
   end
 end

@@ -10,7 +10,6 @@ end
 
 require File.dirname(__FILE__) + '/../lib/quantified'
 
-
 class Test::Unit::TestCase
   EPSILON = 0.00001
 

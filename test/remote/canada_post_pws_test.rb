@@ -2,75 +2,73 @@ require 'test_helper'
 
 # All remote tests require Canada Post development environment credentials
 class CanadaPostPWSTest < Test::Unit::TestCase
-  
   def setup
-
     @login = fixtures(:canada_post_pws)
-    
+
     # 100 grams, 93 cm long, 10 cm diameter, cylinders have different volume calculations
     # @pkg1 = Package.new(1000, [93,10], :value => 10.00)
     @pkg1 = Package.new(1000, nil, :value => 10.00)
 
     @line_item1 = TestFixtures.line_items1
 
-    @shipping_opts1 = {:dc => true, :cod => true, :cod_amount => 500.00, :cov => true, :cov_amount => 100.00, 
+    @shipping_opts1 = {:dc => true, :cod => true, :cod_amount => 500.00, :cov => true, :cov_amount => 100.00,
                        :so => true, :pa18 => true}
 
     @home_params = {
-      :name        => "John Smith", 
+      :name        => "John Smith",
       :company     => "test",
       :phone       => "613-555-1212",
       :address1    => "123 Elm St.",
-      :city        => 'Ottawa', 
-      :province    => 'ON', 
-      :country     => 'CA', 
+      :city        => 'Ottawa',
+      :province    => 'ON',
+      :country     => 'CA',
       :postal_code => 'K1P 1J1'
     }
     @home = Location.new(@home_params)
 
     @dom_params = {
-      :name        => "John Smith Sr.", 
+      :name        => "John Smith Sr.",
       :company     => "",
       :phone       => '123-123-1234',
       :address1    => "5500 Oak Ave",
-      :city        => 'Vancouver', 
-      :province    => 'BC', 
-      :country     => 'CA', 
-      :postal_code => 'V5J 2T4'      
+      :city        => 'Vancouver',
+      :province    => 'BC',
+      :country     => 'CA',
+      :postal_code => 'V5J 2T4'
     }
 
     @dest_params = {
       :name     => "Frank White",
       :phone    => '123-123-1234',
       :address1 => '999 Wiltshire Blvd',
-      :city     => 'Beverly Hills', 
-      :state    => 'CA', 
-      :country  => 'US', 
+      :city     => 'Beverly Hills',
+      :state    => 'CA',
+      :country  => 'US',
       :zip      => '90210'
     }
     @dest = Location.new(@dest_params)
 
     @dom_params = {
-      :name        => "Mrs. Smith", 
+      :name        => "Mrs. Smith",
       :company     => "",
       :phone       => "604-555-1212",
       :address1    => "5000 Oak St.",
       :address2    => "",
-      :city        => 'Vancouver', 
-      :province    => 'BC', 
-      :country     => 'CA', 
+      :city        => 'Vancouver',
+      :province    => 'BC',
+      :country     => 'CA',
       :postal_code => 'V5J 2N2'
     }
 
     @intl_params = {
-      :name        => "Mrs. Yamamoto", 
+      :name        => "Mrs. Yamamoto",
       :company     => "",
       :phone       => "011-123-123-1234",
       :address1    => "123 Yokohama Road",
       :address2    => "",
-      :city        => 'Tokyo', 
-      :province    => '', 
-      :country     => 'JP'      
+      :city        => 'Tokyo',
+      :province    => '',
+      :country     => 'JP'
     }
 
     @cp = CanadaPostPWS.new(@login.merge(:endpoint => "https://ct.soa-gw.canadapost.ca/"))
@@ -83,7 +81,6 @@ class CanadaPostPWSTest < Test::Unit::TestCase
       :tracking_number => "11111118901234",
       :label_url => "https://ct.soa-gw.canadapost.ca/ers/artifact/c70da5ed5a0d2c32/20238/0"
     }
-
   end
 
   def test_rates
@@ -160,7 +157,7 @@ class CanadaPostPWSTest < Test::Unit::TestCase
 
   def test_merchant_details
     token_id = "1111111111111111111111"
-    response = @cp.retrieve_merchant_details({:token_id => token_id})
+    response = @cp.retrieve_merchant_details(:token_id => token_id)
     assert response.is_a?(CPPWSMerchantDetailsResponse)
     assert_equal "0000000000", response.customer_number
     assert_equal "1234567890", response.contract_number
@@ -168,5 +165,4 @@ class CanadaPostPWSTest < Test::Unit::TestCase
     assert_equal "1a2b3c4d5e6f7a8b9c0d12", response.password
     assert_equal true, response.has_default_credit_card
   end
-
 end
