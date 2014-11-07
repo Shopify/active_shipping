@@ -3,7 +3,6 @@ require 'builder'
 
 module ActiveMerchant
   module Shipping
-
     # Stamps.com integration for rating, tracking, address validation, and label generation
     # Integration ID can be requested from Stamps.com
 
@@ -22,25 +21,25 @@ module ActiveMerchant
       REQUIRED_OPTIONS = [:integration_id, :username, :password].freeze
 
       PACKAGE = [
-                 'Postcard',
-                 'Letter',
-                 'Large Envelope or Flat',
-                 'Thick Envelope',
-                 'Package',
-                 'Flat Rate Box',
-                 'Small Flat Rate Box',
-                 'Large Flat Rate Box',
-                 'Flat Rate Envelope',
-                 'Flat Rate Padded Envelope',
-                 'Large Package',
-                 'Oversized Package',
-                 'Regional Rate Box A',
-                 'Regional Rate Box B',
-                 'Regional Rate Box C',
-                 'Legal Flat Rate Envelope'
-                ].freeze
+        'Postcard',
+        'Letter',
+        'Large Envelope or Flat',
+        'Thick Envelope',
+        'Package',
+        'Flat Rate Box',
+        'Small Flat Rate Box',
+        'Large Flat Rate Box',
+        'Flat Rate Envelope',
+        'Flat Rate Padded Envelope',
+        'Large Package',
+        'Oversized Package',
+        'Regional Rate Box A',
+        'Regional Rate Box B',
+        'Regional Rate Box C',
+        'Legal Flat Rate Envelope'
+      ].freeze
 
-      US_POSSESSIONS = ["AS", "FM", "GU", "MH", "MP", "PW", "PR", "VI"]
+      US_POSSESSIONS = %w(AS FM GU MH MP PW PR VI)
 
       SERVICE_TYPES = {
         'US-FC'  => 'USPS First-Class Mail',
@@ -131,15 +130,7 @@ module ActiveMerchant
         'EnvelopeGreeting'
       ]
 
-      IMAGE_TYPE = [
-        'Auto',
-        'Epl',
-        'Gif',
-        'Jpg',
-        'Pdf',
-        'Png',
-        'Zpl'
-      ]
+      IMAGE_TYPE = %w(Auto Epl Gif Jpg Pdf Png Zpl)
 
       def account_info
         request = build_get_account_info_request
@@ -240,12 +231,12 @@ module ActiveMerchant
       def build_header
         xml = Builder::XmlMarkup.new
         xml.instruct!
-        xml.soap(:Envelope, {
-                   'xmlns:soap' => 'http://schemas.xmlsoap.org/soap/envelope/',
-                   'xmlns:xsi'  => 'http://www.w3.org/2001/XMLSchema-instance',
-                   'xmlns:xsd'  => 'http://www.w3.org/2001/XMLSchema',
-                   'xmlns:tns'  => 'http://stamps.com/xml/namespace/2014/01/swsim/swsimv34'
-                 }) do
+        xml.soap(:Envelope,
+                 'xmlns:soap' => 'http://schemas.xmlsoap.org/soap/envelope/',
+                 'xmlns:xsi'  => 'http://www.w3.org/2001/XMLSchema-instance',
+                 'xmlns:xsd'  => 'http://www.w3.org/2001/XMLSchema',
+                 'xmlns:tns'  => 'http://stamps.com/xml/namespace/2014/01/swsim/swsimv34'
+                 ) do
           xml.soap :Body do
             yield(xml)
           end
@@ -361,7 +352,7 @@ module ActiveMerchant
 
           xml.tns(:NonMachinable,     true) unless machinable
 
-          xml.tns(:RectangularShaped, ! package.cylinder?)
+          xml.tns(:RectangularShaped, !package.cylinder?)
           xml.tns(:GEMNotes,          options[:gem_notes]) unless options[:gem_notes].blank?
 
           add_ons = Array(options[:add_ons])
@@ -684,7 +675,7 @@ module ActiveMerchant
           add_on_details[:missing_data] = add_on.get_text('MissingData').to_s if add_on.get_text('MissingData')
           add_on_details[:amount]       = add_on.get_text('Amount').to_s if add_on.get_text('Amount')
 
-          prohibited_with = add_on.get_elements('ProhibitedWithAnyOf/AddOnTypeV5').map { |p| p.text }
+          prohibited_with = add_on.get_elements('ProhibitedWithAnyOf/AddOnTypeV5').map(&:text)
           add_on_details[:prohibited_with] = prohibited_with unless prohibited_with.empty?
 
           add_ons[add_on_type] = add_on_details
@@ -696,7 +687,7 @@ module ActiveMerchant
       def parse_package(rate)
         weight = rate.get_text('WeightOz').to_s.to_f
 
-        dimensions = ['Length', 'Width', 'Height'].map do |dim|
+        dimensions = %w(Length Width Height).map do |dim|
           rate.get_text(dim) ? rate.get_text(dim).to_s.to_f : nil
         end
         dimensions.compact!
@@ -840,7 +831,7 @@ module ActiveMerchant
     class StampsRateEstimate < RateEstimate
       attr_reader :add_ons
 
-      def initialize(origin, destination, carrier, service_name, options={})
+      def initialize(origin, destination, carrier, service_name, options = {})
         super
         @add_ons = options[:add_ons]
       end
@@ -851,7 +842,6 @@ module ActiveMerchant
     end
 
     class StampsShippingResponse < ShippingResponse
-
       include PostsData
 
       self.ssl_version = :SSLv3

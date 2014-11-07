@@ -51,27 +51,27 @@ class UPSTest < Test::Unit::TestCase
   end
 
   def test_just_country_given
-     if !@options[:origin_account]
+    unless @options[:origin_account]
        response = @carrier.find_rates(
                     @locations[:beverly_hills],
                     Location.new(:country => 'CA'),
-                    Package.new(100, [5,10,20])
+                    Package.new(100, [5, 10, 20])
                   )
        assert_not_equal [], response.rates
      end
   end
 
-   def test_just_country_given_with_origin_account_fails
-     if @options[:origin_account]
-       assert_raise ResponseError do
-         response = @carrier.find_rates(
-                    @locations[:beverly_hills],
-                    Location.new(:country => 'CA'),
-                    Package.new(100, [5,10,20])
-                  )
-       end
-     end
-  end
+  def test_just_country_given_with_origin_account_fails
+    if @options[:origin_account]
+      assert_raise ResponseError do
+        response = @carrier.find_rates(
+                   @locations[:beverly_hills],
+                   Location.new(:country => 'CA'),
+                   Package.new(100, [5, 10, 20])
+                 )
+      end
+    end
+ end
 
   def test_ottawa_to_beverly_hills
     response = nil
@@ -136,7 +136,7 @@ class UPSTest < Test::Unit::TestCase
   end
 
   def test_ottawa_to_us_succeeds_with_only_zip
-    if !@options[:origin_account]
+    unless @options[:origin_account]
       assert_nothing_raised do
         @carrier.find_rates(
           @locations[:ottawa],
@@ -170,7 +170,7 @@ class UPSTest < Test::Unit::TestCase
 
   def test_bare_packages
     response = nil
-    p = Package.new(0,0)
+    p = Package.new(0, 0)
     assert_nothing_raised do
       response = @carrier.find_rates(
                    @locations[:beverly_hills], # imperial (U.S. origin)
@@ -196,7 +196,7 @@ class UPSTest < Test::Unit::TestCase
     locations = [
       :fake_home_as_residential, :fake_home_as_commercial,
       :fake_google_as_residential, :fake_google_as_commercial
-      ]
+    ]
 
     locations.each do |location|
       responses[location] = @carrier.find_rates(
@@ -206,7 +206,7 @@ class UPSTest < Test::Unit::TestCase
                             )
     end
 
-    prices_of = lambda {|sym| responses[sym].rates.map(&:price)}
+    prices_of = lambda { |sym| responses[sym].rates.map(&:price) }
 
     assert_not_equal prices_of.call(:fake_home_as_residential), prices_of.call(:fake_home_as_commercial)
     assert_not_equal prices_of.call(:fake_google_as_commercial), prices_of.call(:fake_google_as_residential)
@@ -226,8 +226,8 @@ class UPSTest < Test::Unit::TestCase
         @locations[:beverly_hills],
         @locations[:new_york_with_name],
         @packages.values_at(:chocolate_stuff, :book, :american_wii),
-        { :test => true,
-          :reference_number => { :value => "FOO-123", :code => "PO" } }
+        :test => true,
+        :reference_number => { :value => "FOO-123", :code => "PO" }
       )
     end
 
@@ -245,10 +245,9 @@ class UPSTest < Test::Unit::TestCase
         @locations[:beverly_hills],
         @locations[:new_york_with_name],
         @packages.values_at(:tshirts),
-        { :test => true }
+        :test => true
       )
     end
     assert_instance_of ActiveMerchant::Shipping::LabelResponse, response
   end
-
 end

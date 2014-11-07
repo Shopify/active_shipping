@@ -1,6 +1,5 @@
 module ActiveMerchant #:nodoc:
   module Shipping #:nodoc:
-
     class RateEstimate
       attr_reader :origin         # Location objects
       attr_reader :destination
@@ -9,20 +8,20 @@ module ActiveMerchant #:nodoc:
       attr_reader :service_name   # name of service ("First Class Ground", etc.)
       attr_reader :service_code
       attr_reader :currency       # 'USD', 'CAD', etc.
-                                  # http://en.wikipedia.org/wiki/ISO_4217
+      # http://en.wikipedia.org/wiki/ISO_4217
       attr_reader :shipping_date
       attr_reader :delivery_date  # Usually only available for express shipments
       attr_reader :delivery_range # Min and max delivery estimate in days
       attr_reader :negotiated_rate
       attr_reader :insurance_price
 
-      def initialize(origin, destination, carrier, service_name, options={})
+      def initialize(origin, destination, carrier, service_name, options = {})
         @origin, @destination, @carrier, @service_name = origin, destination, carrier, service_name
         @service_code = options[:service_code]
         if options[:package_rates]
-          @package_rates = options[:package_rates].map {|p| p.update({:rate => Package.cents_from(p[:rate])}) }
+          @package_rates = options[:package_rates].map { |p| p.update(:rate => Package.cents_from(p[:rate])) }
         else
-          @package_rates = Array(options[:packages]).map {|p| {:package => p}}
+          @package_rates = Array(options[:packages]).map { |p| {:package => p} }
         end
         @total_price = Package.cents_from(options[:total_price])
         @negotiated_rate = options[:negotiated_rate] ? Package.cents_from(options[:negotiated_rate]) : nil
@@ -34,15 +33,13 @@ module ActiveMerchant #:nodoc:
       end
 
       def total_price
-        begin
-          @total_price || @package_rates.sum {|p| p[:rate]}
-        rescue NoMethodError
-          raise ArgumentError.new("RateEstimate must have a total_price set, or have a full set of valid package rates.")
-        end
+        @total_price || @package_rates.sum { |p| p[:rate] }
+      rescue NoMethodError
+        raise ArgumentError.new("RateEstimate must have a total_price set, or have a full set of valid package rates.")
       end
       alias_method :price, :total_price
 
-      def add(package,rate=nil)
+      def add(package, rate = nil)
         cents = Package.cents_from(rate)
         raise ArgumentError.new("New packages must have valid rate information since this RateEstimate has no total_price set.") if cents.nil? and total_price.nil?
         @package_rates << {:package => package, :rate => cents}
@@ -50,7 +47,7 @@ module ActiveMerchant #:nodoc:
       end
 
       def packages
-        package_rates.map {|p| p[:package]}
+        package_rates.map { |p| p[:package] }
       end
 
       def package_count
@@ -58,6 +55,7 @@ module ActiveMerchant #:nodoc:
       end
 
       private
+
       def date_for(date)
         date && DateTime.strptime(date.to_s, "%Y-%m-%d")
       rescue ArgumentError

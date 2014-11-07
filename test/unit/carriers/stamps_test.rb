@@ -5,7 +5,7 @@ class StampsTest < Test::Unit::TestCase
     @packages = TestFixtures.packages
     @locations = TestFixtures.locations
     @carrier   = Stamps.new(integration_id: 'i', username: 'u', password: 'p')
-    @items = [ { :sku => 'AF0001', :quantity => 1 }, { :sku => 'AF0002', :quantity => 2 } ]
+    @items = [{ :sku => 'AF0001', :quantity => 1 }, { :sku => 'AF0002', :quantity => 2 }]
     @authentication_response = xml_fixture('stamps/authenticate_user_response')
   end
 
@@ -124,9 +124,9 @@ class StampsTest < Test::Unit::TestCase
     assert_equal Date.new(2014, 2, 3), rate.delivery_date
     assert_equal 1217, rate.price
     assert_equal 260, rate.insurance_price
-    assert_equal ["US-A-SC", "US-A-CM"], rate.add_ons['US-A-DC'][:prohibited_with]
+    assert_equal %w(US-A-SC US-A-CM), rate.add_ons['US-A-DC'][:prohibited_with]
     assert_equal '2.6', rate.add_ons['SC-A-INS'][:amount]
-    assert_equal ["US-A-REG", "US-A-INS"], rate.add_ons['SC-A-INS'][:prohibited_with]
+    assert_equal %w(US-A-REG US-A-INS), rate.add_ons['SC-A-INS'][:prohibited_with]
     assert_equal 17, rate.available_add_ons.length
   end
 
@@ -153,7 +153,7 @@ class StampsTest < Test::Unit::TestCase
 
     package = Package.new((12 * 16), [], units: :imperial)
 
-    options = { service: 'US-PM', insured_value: 100, add_ons: ['US-A-DC', 'SC-A-INS'] }
+    options = { service: 'US-PM', insured_value: 100, add_ons: %w(US-A-DC SC-A-INS)}
 
     indicium = @carrier.create_shipment(origin, destination, package, [], options)
 
@@ -174,7 +174,7 @@ class StampsTest < Test::Unit::TestCase
     assert_equal 185, indicium.rate.insurance_price
     assert_equal Hash.new, indicium.rate.add_ons['US-A-DC']
     assert_equal '1.85', indicium.rate.add_ons['SC-A-INS'][:amount]
-    assert_equal ['US-A-DC', 'SC-A-INS'], indicium.rate.available_add_ons
+    assert_equal %w(US-A-DC SC-A-INS), indicium.rate.available_add_ons
 
     assert_equal '0dd49299-d89c-4997-b8ac-28db5542edc9', indicium.stamps_tx_id
 

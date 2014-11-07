@@ -2,7 +2,7 @@ require 'test_helper'
 
 class LocationTest < Test::Unit::TestCase
   include ActiveMerchant::Shipping
-  
+
   def setup
     @locations = TestFixtures.locations.dup
   end
@@ -11,19 +11,19 @@ class LocationTest < Test::Unit::TestCase
     assert_instance_of ActiveMerchant::Country, @locations[:ottawa].country
     assert_equal 'CA', @locations[:ottawa].country_code(:alpha2)
   end
-  
+
   def test_location_from_strange_hash
     hash = {  :country => 'CA',
               :zip => '90210',
-              :territory_code => 'QC', 
+              :territory_code => 'QC',
               :town => 'Perth',
-              :address => '66 Gregory Ave.', 
+              :address => '66 Gregory Ave.',
               :phone => '515-555-1212',
               :fax_number => 'none to speak of',
               :address_type => :commercial
             }
     location = Location.from(hash)
-    
+
     assert_equal hash[:country], location.country_code(:alpha2)
     assert_equal hash[:zip], location.zip
     assert_equal hash[:territory_code], location.province
@@ -33,22 +33,22 @@ class LocationTest < Test::Unit::TestCase
     assert_equal hash[:fax_number], location.fax
     assert_equal hash[:address_type].to_s, location.address_type
   end
-  
+
   def to_s
     expected = "110 Laurier Avenue West\nOttawa, ON, K1P 1J1\nCanada"
     assert_equal expected, @locations[:ottawa].to_s
   end
-  
+
   def test_inspect
     expected = "110 Laurier Avenue West\nOttawa, ON, K1P 1J1\nCanada\nPhone: 1-613-580-2400\nFax: 1-613-580-2495"
     assert_equal expected, @locations[:ottawa].inspect
   end
-  
+
   def test_includes_name
     location = Location.from(:name => "Bob Bobsen")
     assert_equal "Bob Bobsen", location.name
   end
-  
+
   def test_name_is_nil_if_not_provided
     location = Location.from({})
     assert_nil location.name
@@ -127,12 +127,11 @@ class LocationTest < Test::Unit::TestCase
     address3 = 'Victory Lane'
     location = Location.from(:address2 => address2)
     assert_equal 'Apt 613', location.address2_and_3
-    
+
     location = Location.from(:address2 => address2, :address3 => address3)
     assert_equal 'Apt 613, Victory Lane', location.address2_and_3
-    
+
     location = Location.from(:address3 => address3)
     assert_equal 'Victory Lane', location.address2_and_3
   end
-
 end

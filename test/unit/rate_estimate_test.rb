@@ -20,13 +20,13 @@ class RateEstimateTest < Test::Unit::TestCase
   end
 
   def test_rate_estimate_converts_noniso_to_iso
-    rate_estimate = RateEstimate.new(@origin, @destination, @carrier, @service_name, @options.merge({:currency => 'UKL'})) 
+    rate_estimate = RateEstimate.new(@origin, @destination, @carrier, @service_name, @options.merge(:currency => 'UKL'))
     assert_equal 'GBP', rate_estimate.currency
   end
 
   def test_creating_an_estimate_with_an_invalid_currency_raises
     assert_raises ActiveMerchant::InvalidCurrencyCodeError do
-      RateEstimate.new(nil, nil, nil, nil, {:currency => 'FAKE'})
+      RateEstimate.new(nil, nil, nil, nil, :currency => 'FAKE')
     end
   end
 end

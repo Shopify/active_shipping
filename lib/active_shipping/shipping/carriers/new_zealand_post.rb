@@ -1,7 +1,6 @@
 module ActiveMerchant
   module Shipping
     class NewZealandPost < Carrier
-
       cattr_reader :name
       @@name = "New Zealand Post"
 
@@ -25,17 +24,16 @@ module ActiveMerchant
       end
 
       def self.default_location
-        Location.new({
+        Location.new(
           :country => "NZ",
           :city => "Wellington",
           :address1 => "22 Waterloo Quay",
           :address2 => "Pipitea",
           :postal_code => "6011"
-        })
+        )
       end
 
       class NewZealandPostRateResponse < RateResponse
-
         attr_reader :raw_responses
 
         def initialize(success, message, params = {}, options = {})
@@ -45,7 +43,6 @@ module ActiveMerchant
       end
 
       class RateRequest
-
         attr_reader :urls
         attr_writer :raw_responses
 
@@ -78,7 +75,7 @@ module ActiveMerchant
         protected
 
         def self.new_zealand?(location)
-          [ 'NZ', nil ].include?(Location.from(location).country_code)
+          ['NZ', nil].include?(Location.from(location).country_code)
         end
 
         def self.domestic?(locations)
@@ -113,7 +110,7 @@ module ActiveMerchant
         end
 
         def rates_hash
-          products_hash.select { |service, products| products.size == @packages.size }
+          products_hash.select { |_service, products| products.size == @packages.size }
         end
 
         def products_hash
@@ -142,14 +139,13 @@ module ActiveMerchant
         def params(package)
           @params.merge(api_params).merge(package.params)
         end
-
       end
 
       class Domestic < RateRequest
         def service_name(product)
-          [ product["service_group_description"], product["description"] ].join(" ")
+          [product["service_group_description"], product["description"]].join(" ")
         end
-        
+
         def api
           :domestic
         end
@@ -168,16 +164,15 @@ module ActiveMerchant
       end
 
       class International < RateRequest
-
         def rates
           raise "New Zealand Post packages must originate in New Zealand" unless new_zealand_origin?
           super
         end
 
         def service_name(product)
-          [ product["group"], product["name"] ].join(" ")
+          [product["group"], product["name"]].join(" ")
         end
-        
+
         def api
           :international
         end
@@ -185,14 +180,13 @@ module ActiveMerchant
         def api_params
           { :country_code => @destination.country_code }
         end
-        
+
         def price(product)
           product["price"].to_f
         end
       end
 
       class NewZealandPostPackage
-
         def initialize(package, api)
           @package = package
           @api = api
@@ -262,7 +256,6 @@ module ActiveMerchant
         def currency
           @package.currency || "NZD"
         end
-
       end
     end
   end

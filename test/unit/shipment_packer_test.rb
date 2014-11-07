@@ -6,7 +6,7 @@ class ShipmentPackerTest < Test::Unit::TestCase
   end
 
   def test_pack_divide_order_into_a_single_package
-    items = [ {:grams => 1, :quantity => 1, :price => 1.0} ]
+    items = [{:grams => 1, :quantity => 1, :price => 1.0}]
 
     packages = ShipmentPacker.pack(items, @dimensions, 1, 'USD')
     assert_equal 1, packages.size
@@ -16,7 +16,7 @@ class ShipmentPackerTest < Test::Unit::TestCase
   end
 
   def test_divide_order_with_multiple_lines_into_a_single_package
-    items = [ {:grams => 1, :quantity => 2, :price => 1.0} ]
+    items = [{:grams => 1, :quantity => 2, :price => 1.0}]
 
     packages = ShipmentPacker.pack(items, @dimensions, 2, 'USD')
     assert_equal 1, packages.size
@@ -26,7 +26,7 @@ class ShipmentPackerTest < Test::Unit::TestCase
   end
 
   def test_divide_order_with_single_line_into_two_packages
-    items = [ {:grams => 1, :quantity => 2, :price => 1.0} ]
+    items = [{:grams => 1, :quantity => 2, :price => 1.0}]
 
     packages = ShipmentPacker.pack(items, @dimensions, 1, 'USD')
     assert_equal 2, packages.size
@@ -71,11 +71,11 @@ class ShipmentPackerTest < Test::Unit::TestCase
     end
   end
 
-def test_raise_over_weight_exceptions_before_over_package_limit_exceptions
-    assert_raises(ShipmentPacker::OverweightItem) do
-      items = [{:grams => 5, :quantity => ShipmentPacker::EXCESS_PACKAGE_QUANTITY_THRESHOLD + 1, :price => 1.0}]
-      ShipmentPacker.pack(items, @dimensions, 4, 'USD')
-    end
+  def test_raise_over_weight_exceptions_before_over_package_limit_exceptions
+      assert_raises(ShipmentPacker::OverweightItem) do
+        items = [{:grams => 5, :quantity => ShipmentPacker::EXCESS_PACKAGE_QUANTITY_THRESHOLD + 1, :price => 1.0}]
+        ShipmentPacker.pack(items, @dimensions, 4, 'USD')
+      end
   end
 
   def test_returns_an_empty_list_when_no_items_provided
@@ -110,8 +110,8 @@ def test_raise_over_weight_exceptions_before_over_package_limit_exceptions
   end
 
   def test_symbolize_item_keys
-    string_key_items          = [ {'grams' => 1, 'quantity' => 1, 'price' => 1.0} ]
-    indifferent_access_items  = [ {'grams' => 1, 'quantity' => 1, 'price' => 1.0}.with_indifferent_access ]
+    string_key_items          = [{'grams' => 1, 'quantity' => 1, 'price' => 1.0}]
+    indifferent_access_items  = [{'grams' => 1, 'quantity' => 1, 'price' => 1.0}.with_indifferent_access]
 
     [string_key_items, indifferent_access_items].each do |items|
       packages = ShipmentPacker.pack(items, @dimensions, 1, 'USD')
@@ -124,7 +124,7 @@ def test_raise_over_weight_exceptions_before_over_package_limit_exceptions
   end
 
   def test_cast_quantity_and_grams_to_int
-    items = [ {:grams => '1', :quantity => '1', :price => '1.0'} ]
+    items = [{:grams => '1', :quantity => '1', :price => '1.0'}]
 
     packages = ShipmentPacker.pack(items, @dimensions, 1, 'USD')
 

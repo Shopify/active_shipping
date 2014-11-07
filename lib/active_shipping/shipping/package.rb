@@ -1,7 +1,7 @@
 module ActiveMerchant #:nodoc:
   module Shipping #:nodoc:
-    # A package item is a unique item(s) that is physically in a package. 
-    # A single package can have many items. This is only required 
+    # A package item is a unique item(s) that is physically in a package.
+    # A single package can have many items. This is only required
     # for shipping methods (label creation) right now.
     class PackageItem
       include Quantified
@@ -12,8 +12,8 @@ module ActiveMerchant #:nodoc:
         @name = name
 
         imperial = (options[:units] == :imperial) ||
-          (grams_or_ounces.respond_to?(:unit) && m.unit.to_sym == :imperial)
-        
+                   (grams_or_ounces.respond_to?(:unit) && m.unit.to_sym == :imperial)
+
         @unit_system = imperial ? :imperial : :metric
 
         @weight = attribute_from_metric_or_imperial(grams_or_ounces, Mass, :grams, :ounces)
@@ -36,28 +36,28 @@ module ActiveMerchant #:nodoc:
             @unit_system == :imperial ? m.in_ounces : m
           end
         when :billable
-          [ weight, weight(:type => :volumetric) ].max
+          [weight, weight(:type => :volumetric)].max
         end
       end
       alias_method :mass, :weight
 
-      def ounces(options={})
+      def ounces(options = {})
         weight(options).in_ounces.amount
       end
       alias_method :oz, :ounces
-  
-      def grams(options={})
+
+      def grams(options = {})
         weight(options).in_grams.amount
       end
       alias_method :g, :grams
-  
-      def pounds(options={})
+
+      def pounds(options = {})
         weight(options).in_pounds.amount
       end
       alias_method :lb, :pounds
       alias_method :lbs, :pounds
-  
-      def kilograms(options={})
+
+      def kilograms(options = {})
         weight(options).in_kilograms.amount
       end
       alias_method :kg, :kilograms
@@ -72,12 +72,11 @@ module ActiveMerchant #:nodoc:
           return klass.new(obj, (@unit_system == :imperial ? imperial_unit : metric_unit))
         end
       end
-
     end
 
     class Package
       include Quantified
-      
+
       cattr_accessor :default_options
       attr_reader :options, :value, :currency
 
@@ -88,36 +87,35 @@ module ActiveMerchant #:nodoc:
         options = @@default_options.update(options) if @@default_options
         options.symbolize_keys!
         @options = options
-        
-        @dimensions = [dimensions].flatten.reject {|d| d.nil?}
 
-        
+        @dimensions = [dimensions].flatten.reject(&:nil?)
+
         imperial = (options[:units] == :imperial) ||
-            ([grams_or_ounces, *dimensions].all? {|m| m.respond_to?(:unit) && m.unit.to_sym == :imperial})
-        
+                   ([grams_or_ounces, *dimensions].all? { |m| m.respond_to?(:unit) && m.unit.to_sym == :imperial })
+
         weight_imperial = dimensions_imperial = imperial if options.include?(:units)
 
         if options.include?(:weight_units)
           weight_imperial = (options[:weight_units] == :imperial) ||
-              (grams_or_ounces.respond_to?(:unit) && m.unit.to_sym == :imperial)
+                            (grams_or_ounces.respond_to?(:unit) && m.unit.to_sym == :imperial)
         end
 
         if options.include?(:dim_units)
           dimensions_imperial = (options[:dim_units] == :imperial) ||
-              (dimensions && dimensions.all? {|m| m.respond_to?(:unit) && m.unit.to_sym == :imperial})
+                                (dimensions && dimensions.all? { |m| m.respond_to?(:unit) && m.unit.to_sym == :imperial })
         end
-        
+
         @weight_unit_system = weight_imperial ? :imperial : :metric
         @dimensions_unit_system = dimensions_imperial ? :imperial : :metric
-        
+
         @weight = attribute_from_metric_or_imperial(grams_or_ounces, Mass, @weight_unit_system, :grams, :ounces)
-        
+
         if @dimensions.blank?
           @dimensions = [Length.new(0, (dimensions_imperial ? :inches : :centimetres))] * 3
         else
           process_dimensions
         end
-        
+
         @value = Package.cents_from(options[:value])
         @currency = options[:currency] || (options[:value].currency if options[:value].respond_to?(:currency))
         @cylinder = (options[:cylinder] || options[:tube]) ? true : false
@@ -125,7 +123,7 @@ module ActiveMerchant #:nodoc:
         @oversized = options[:oversized] ? true : false
         @unpackaged = options[:unpackaged] ? true : false
       end
-  
+
       def unpackaged?
         @unpackaged
       end
@@ -133,48 +131,48 @@ module ActiveMerchant #:nodoc:
       def oversized?
         @oversized
       end
-    
+
       def cylinder?
         @cylinder
       end
       alias_method :tube?, :cylinder?
-      
+
       def gift?; @gift end
-      
-      def ounces(options={})
+
+      def ounces(options = {})
         weight(options).in_ounces.amount
       end
       alias_method :oz, :ounces
-  
-      def grams(options={})
+
+      def grams(options = {})
         weight(options).in_grams.amount
       end
       alias_method :g, :grams
-  
-      def pounds(options={})
+
+      def pounds(options = {})
         weight(options).in_pounds.amount
       end
       alias_method :lb, :pounds
       alias_method :lbs, :pounds
-  
-      def kilograms(options={})
+
+      def kilograms(options = {})
         weight(options).in_kilograms.amount
       end
       alias_method :kg, :kilograms
       alias_method :kgs, :kilograms
-  
-      def inches(measurement=nil)
-        @inches ||= @dimensions.map {|m| m.in_inches.amount }
+
+      def inches(measurement = nil)
+        @inches ||= @dimensions.map { |m| m.in_inches.amount }
         measurement.nil? ? @inches : measure(measurement, @inches)
       end
       alias_method :in, :inches
-  
-      def centimetres(measurement=nil)
-        @centimetres ||= @dimensions.map {|m| m.in_centimetres.amount }
+
+      def centimetres(measurement = nil)
+        @centimetres ||= @dimensions.map { |m| m.in_centimetres.amount }
         measurement.nil? ? @centimetres : measure(measurement, @centimetres)
       end
       alias_method :cm, :centimetres
-      
+
       def weight(options = {})
         case options[:type]
         when nil, :actual
@@ -185,11 +183,11 @@ module ActiveMerchant #:nodoc:
             @weight_unit_system == :imperial ? m.in_ounces : m
           end
         when :billable
-          [ weight, weight(:type => :volumetric) ].max
+          [weight, weight(:type => :volumetric)].max
         end
       end
       alias_method :mass, :weight
-      
+
       def self.cents_from(money)
         return nil if money.nil?
         if money.respond_to?(:cents)
@@ -205,7 +203,7 @@ module ActiveMerchant #:nodoc:
           end
         end
       end
-  
+
       private
 
       def attribute_from_metric_or_imperial(obj, klass, unit_system, metric_unit, imperial_unit)
@@ -215,20 +213,20 @@ module ActiveMerchant #:nodoc:
           return klass.new(obj, (unit_system == :imperial ? imperial_unit : metric_unit))
         end
       end
-      
+
       def measure(measurement, ary)
         case measurement
-        when Fixnum then ary[measurement] 
+        when Fixnum then ary[measurement]
         when :x, :max, :length, :long then ary[2]
         when :y, :mid, :width, :wide then ary[1]
-        when :z, :min, :height,:depth,:high,:deep then ary[0]
-        when :girth, :around,:circumference
+        when :z, :min, :height, :depth, :high, :deep then ary[0]
+        when :girth, :around, :circumference
           self.cylinder? ? (Math::PI * (ary[0] + ary[1]) / 2) : (2 * ary[0]) + (2 * ary[1])
-        when :volume then self.cylinder? ? (Math::PI * (ary[0] + ary[1]) / 4)**2 * ary[2] : measure(:box_volume,ary)
+        when :volume then self.cylinder? ? (Math::PI * (ary[0] + ary[1]) / 4)**2 * ary[2] : measure(:box_volume, ary)
         when :box_volume then ary[0] * ary[1] * ary[2]
         end
       end
-      
+
       def process_dimensions
         @dimensions = @dimensions.map do |l|
           attribute_from_metric_or_imperial(l, Length, @dimensions_unit_system, :centimetres, :inches)
@@ -236,11 +234,10 @@ module ActiveMerchant #:nodoc:
         # [1,2] => [1,1,2]
         # [5] => [5,5,5]
         # etc..
-        2.downto(@dimensions.length) do |n|
+        2.downto(@dimensions.length) do |_n|
           @dimensions.unshift(@dimensions[0])
         end
       end
-  
     end
   end
 end

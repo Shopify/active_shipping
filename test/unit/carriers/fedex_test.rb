@@ -33,7 +33,7 @@ class FedExTest < MiniTest::Unit::TestCase
     Timecop.freeze(today) do
       delivery_date = Date.today + 7.days # FIVE_DAYS in fixture response, plus weekend
       timestamp = Time.now.iso8601
-      @carrier.expects(:commit).with do |request, options|
+      @carrier.expects(:commit).with do |request, _options|
         parsed_response = Hash.from_xml(request)
         parsed_response['RateRequest']['RequestedShipment']['ShipTimestamp'] == timestamp
       end.returns(mock_response)
@@ -49,7 +49,7 @@ class FedExTest < MiniTest::Unit::TestCase
     Timecop.freeze(DateTime.new(2013, 3, 11)) do
       delivery_date = Date.today + 8.days # FIVE_DAYS in fixture response, plus turn_around_time, plus weekend
       timestamp = (Time.now + 1.day).iso8601
-      @carrier.expects(:commit).with do |request, options|
+      @carrier.expects(:commit).with do |request, _options|
         parsed_response = Hash.from_xml(request)
         parsed_response['RateRequest']['RequestedShipment']['ShipTimestamp'] == timestamp
       end.returns(mock_response)
@@ -64,7 +64,7 @@ class FedExTest < MiniTest::Unit::TestCase
   def test_transaction_id_sent_as_customer_transaction_id
     transaction_id = '9999-test'
     @carrier = FedEx.new(:key => '1111', :password => '2222', :account => '3333', :login => '4444', :transaction_id => transaction_id)
-    @carrier.expects(:commit).with do |request, options|
+    @carrier.expects(:commit).with do |request, _options|
       parsed_request = Hash.from_xml(request)
       parsed_request['RateRequest']['TransactionDetail']['CustomerTransactionId'] == transaction_id
     end.returns(xml_fixture('fedex/ottawa_to_beverly_hills_rate_response'))
@@ -209,7 +209,7 @@ class FedExTest < MiniTest::Unit::TestCase
   def test_find_tracking_info_should_not_include_events_without_an_address
     @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('077973360403984', :test => true)
-    assert_nil response.shipment_events.find{|event| event.name == 'Shipment information sent to FedEx' }
+    assert_nil response.shipment_events.find { |event| event.name == 'Shipment information sent to FedEx' }
   end
 
   def test_building_request_with_address_type_commercial_should_not_include_residential
@@ -217,11 +217,11 @@ class FedExTest < MiniTest::Unit::TestCase
     expected_request = xml_fixture('fedex/ottawa_to_beverly_hills_commercial_rate_request')
     Time.any_instance.expects(:to_xml_value).returns("2009-07-20T12:01:55-04:00")
 
-    @carrier.expects(:commit).with {|request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode}.returns(mock_response)
+    @carrier.expects(:commit).with { |request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode }.returns(mock_response)
     destination = ActiveMerchant::Shipping::Location.from(@locations[:beverly_hills].to_hash, :address_type => :commercial)
     @carrier.find_rates( @locations[:ottawa],
-                                    destination,
-                                    @packages.values_at(:book, :wii), :test => true)
+                         destination,
+                         @packages.values_at(:book, :wii), :test => true)
   end
 
   def test_building_freight_request_and_parsing_response
@@ -229,7 +229,7 @@ class FedExTest < MiniTest::Unit::TestCase
     mock_response = xml_fixture('fedex/freight_rate_response')
     Time.any_instance.expects(:to_xml_value).returns("2013-11-01T14:04:01-07:00")
 
-    @carrier.expects(:commit).with {|request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode}.returns(mock_response)
+    @carrier.expects(:commit).with { |request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode }.returns(mock_response)
 
     # shipping and billing addresses below are provided by fedex test credentials
 
@@ -258,7 +258,7 @@ class FedExTest < MiniTest::Unit::TestCase
 
     response = @carrier.find_rates( shipping_location,
                                     @locations[:ottawa],
-                                    @packages.values_at(:wii), { :freight => freight_options, :test => true })
+                                    @packages.values_at(:wii),  :freight => freight_options, :test => true )
 
     assert_equal ["FedEx Freight Economy", "FedEx Freight Priority"], response.rates.map(&:service_name)
     assert_equal [66263, 68513], response.rates.map(&:price)
@@ -290,7 +290,7 @@ class FedExTest < MiniTest::Unit::TestCase
     mock_response = xml_fixture('fedex/ottawa_to_beverly_hills_rate_response')
     Time.any_instance.expects(:to_xml_value).returns("2009-07-20T12:01:55-04:00")
 
-    @carrier.expects(:commit).with {|request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode}.returns(mock_response)
+    @carrier.expects(:commit).with { |request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode }.returns(mock_response)
     response = @carrier.find_rates( @locations[:ottawa],
                                     @locations[:beverly_hills],
                                     @packages.values_at(:book, :wii), :test => true)
@@ -324,7 +324,7 @@ class FedExTest < MiniTest::Unit::TestCase
     mock_response = xml_fixture('fedex/unknown_fedex_document_reply')
     Time.any_instance.expects(:to_xml_value).returns("2009-07-20T12:01:55-04:00")
 
-    @carrier.expects(:commit).with {|request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode}.returns(mock_response)
+    @carrier.expects(:commit).with { |request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode }.returns(mock_response)
     exception = assert_raises ActiveMerchant::Shipping::ResponseContentError do
       response = @carrier.find_rates( @locations[:ottawa],
                                       @locations[:beverly_hills],
@@ -350,8 +350,8 @@ class FedExTest < MiniTest::Unit::TestCase
 
     @carrier.expects(:commit).returns(mock_response)
     rate_estimates = @carrier.find_rates( @locations[:ottawa],
-                                    @locations[:beverly_hills],
-                                    @packages.values_at(:book, :wii), :test => true)
+                                          @locations[:beverly_hills],
+                                          @packages.values_at(:book, :wii), :test => true)
 
     delivery_date = Date.new(2011, 7, 29)
     assert_equal delivery_date, rate_estimates.rates[0].delivery_date
@@ -367,10 +367,10 @@ class FedExTest < MiniTest::Unit::TestCase
 
     Timecop.freeze(today) do
       rate_estimates = @carrier.find_rates( @locations[:ottawa],
-                                      @locations[:beverly_hills],
-                                      @packages.values_at(:book, :wii), :test => true)
+                                            @locations[:beverly_hills],
+                                            @packages.values_at(:book, :wii), :test => true)
 
-      #the above fixture will specify a transit time of 5 days, with 2 weekend days accounted for
+      # the above fixture will specify a transit time of 5 days, with 2 weekend days accounted for
       delivery_date = Date.today + 7
       assert_equal delivery_date, rate_estimates.rates[0].delivery_date
     end
@@ -405,5 +405,4 @@ class FedExTest < MiniTest::Unit::TestCase
       )
     end
   end
-
 end

@@ -1,22 +1,21 @@
 require 'test_helper'
 class CanadaPostPwsRatingTest < Test::Unit::TestCase
-
   def setup
     login = fixtures(:canada_post_pws)
-    
+
     # 100 grams, 93 cm long, 10 cm diameter, cylinders have different volume calculations
-    @pkg1 = Package.new(25, [93,10], :cylinder => true)
+    @pkg1 = Package.new(25, [93, 10], :cylinder => true)
     # 7.5 lbs, times 16 oz/lb., 15x10x4.5 inches, not grams, not centimetres
     @pkg2 = Package.new((7.5 * 16), [15, 10, 4.5], :units => :imperial)
-    
+
     @home_params = {
-      :name        => "John Smith", 
+      :name        => "John Smith",
       :company     => "test",
       :phone       => "613-555-1212",
       :address1    => "123 Elm St.",
-      :city        => 'Ottawa', 
-      :province    => 'ON', 
-      :country     => 'CA', 
+      :city        => 'Ottawa',
+      :province    => 'ON',
+      :country     => 'CA',
       :postal_code => 'K1P 1J1'
     }
     @home = Location.new(@home_params)
@@ -24,15 +23,15 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
     @dest_params = {
       :name     => "Frank White",
       :address1 => '999 Wiltshire Blvd',
-      :city     => 'Beverly Hills', 
-      :state    => 'CA', 
-      :country  => 'US', 
+      :city     => 'Beverly Hills',
+      :state    => 'CA',
+      :country  => 'US',
       :zip      => '90210'
     }
     @dest = Location.new(@dest_params)
 
-    @shipping_opts1 = {:dc => true, :cod => :true, :cod_amount => 50.00, :cod_includes_shipping => true, 
-                       :cod_method_of_payment => 'CSH', :cov => true, :cov_amount => 100.00, 
+    @shipping_opts1 = {:dc => true, :cod => :true, :cod_amount => 50.00, :cod_includes_shipping => true,
+                       :cod_method_of_payment => 'CSH', :cov => true, :cov_amount => 100.00,
                        :so => true, :pa18 => true}
 
     @customer_number = '654321'
@@ -44,7 +43,7 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
 
     @default_options = {:customer_number => '123456'}
   end
-  
+
   # rating
 
   def test_language_header
@@ -63,7 +62,7 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
     CanadaPostPWS.any_instance.expects(:ssl_post).with(anything, anything, expected_headers).returns(response)
 
     rates_response = @cp.find_rates(@home_params, @dest_params, [@pkg1, @pkg2], @default_options)
-    
+
     assert_equal 4, rates_response.rates.size
     rate = rates_response.rates.first
     assert_equal RateEstimate, rate.class
@@ -74,16 +73,16 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
 
   def test_find_rates_with_error
     response = xml_fixture('canadapost_pws/rates_info_error')
-    http_response = mock()
+    http_response = mock
     http_response.stubs(:code).returns('400')
     http_response.stubs(:body).returns(response)
     response_error = ActiveMerchant::ResponseError.new(http_response)
     @cp.expects(:ssl_post).raises(response_error)
 
-    exception = assert_raises ActiveMerchant::Shipping::ResponseError do 
+    exception = assert_raises ActiveMerchant::Shipping::ResponseError do
       @cp.find_rates(@home_params, @dest_params, [@pkg1, @pkg2], @default_options)
     end
-    
+
     assert_equal "You cannot mail on behalf of the requested customer.", exception.message
   end
 
@@ -98,7 +97,7 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
     CanadaPostPWS.any_instance.expects(:ssl_post).with(anything, anything, expected_headers).returns(response)
 
     rates_response = @cp.find_rates(@home_params, @dest_params, @pkg1, @default_options)
-    
+
     assert_equal 4, rates_response.rates.size
     rate = rates_response.rates.first
     assert_equal RateEstimate, rate.class
@@ -154,14 +153,14 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
   end
 
   def test_build_rates_request_domestic
-    @dest_params = {       
-      :name        => "John Smith", 
+    @dest_params = {
+      :name        => "John Smith",
       :company     => "test",
       :phone       => "613-555-1212",
       :address1    => "123 Oak St.",
-      :city        => 'Vanncouver', 
-      :province    => 'BC', 
-      :country     => 'CA', 
+      :city        => 'Vanncouver',
+      :province    => 'BC',
+      :country     => 'CA',
       :postal_code => 'V5J 1J1'
     }
     xml = @cp.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2], @default_options)
@@ -173,12 +172,12 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
   end
 
   def test_build_rates_request_international
-    @dest_params = {       
-      :name        => "John Smith", 
+    @dest_params = {
+      :name        => "John Smith",
       :company     => "test",
       :phone       => "613-555-1212",
       :address1    => "123 Tokyo St",
-      :city        => 'Tokyo', 
+      :city        => 'Tokyo',
       :country     => 'JP'
     }
     xml = @cp.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2], @default_options)
@@ -190,7 +189,7 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
   end
 
   def test_build_rates_request_with_cod_option
-    opts = @default_options.merge({:cod => true, :cod_amount => 12.05})
+    opts = @default_options.merge(:cod => true, :cod_amount => 12.05)
     xml = @cp.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2], opts)
     doc = Nokogiri::HTML(xml)
 
@@ -199,7 +198,7 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
   end
 
   def test_build_rates_request_with_signature_option
-    opts = @default_options.merge({:so => true})
+    opts = @default_options.merge(:so => true)
     xml = @cp.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2], opts)
     doc = Nokogiri::HTML(xml)
 
@@ -207,7 +206,7 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
   end
 
   def test_build_rates_request_with_insurance_option
-    opts = @default_options.merge({:cov => true, :cov_amount => 122.05})
+    opts = @default_options.merge(:cov => true, :cov_amount => 122.05)
     xml = @cp.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2], opts)
     doc = Nokogiri::HTML(xml)
 
@@ -216,12 +215,12 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
   end
 
   def test_build_rates_request_with_other_options
-    opts = @default_options.merge({:pa18 => true, :pa19 => true, :hfp => true, :dns => true, :lad => true})
+    opts = @default_options.merge(:pa18 => true, :pa19 => true, :hfp => true, :dns => true, :lad => true)
     xml = @cp.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2], opts)
     doc = Nokogiri::HTML(xml)
 
-    options = doc.xpath('//options/option').map {|o| o.content }.sort
-    assert_equal ["PA18", "PA19", "HFP", "DNS", "LAD"].sort, options
+    options = doc.xpath('//options/option').map(&:content).sort
+    assert_equal %w(PA18 PA19 HFP DNS LAD).sort, options
   end
 
   def test_build_rates_request_with_single_item
@@ -233,7 +232,7 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
   end
 
   def test_build_rates_request_with_mailing_tube
-    pkg = Package.new(25, [93,10], :cylinder => true)
+    pkg = Package.new(25, [93, 10], :cylinder => true)
     opts = @default_options
     xml = @cp.build_rates_request(@home_params, @dest_params, [pkg], opts)
     doc = Nokogiri::HTML(xml)
@@ -242,7 +241,7 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
   end
 
   def test_build_rates_request_with_oversize
-    pkg = Package.new(25, [93,10], :oversized => true)
+    pkg = Package.new(25, [93, 10], :oversized => true)
     opts = @default_options
     xml = @cp.build_rates_request(@home_params, @dest_params, [pkg], opts)
     doc = Nokogiri::HTML(xml)
@@ -251,7 +250,7 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
   end
 
   def test_build_rates_request_with_unpackaged
-    pkg = Package.new(25, [93,10], :unpackaged => true)
+    pkg = Package.new(25, [93, 10], :unpackaged => true)
     opts = @default_options
     xml = @cp.build_rates_request(@home_params, @dest_params, [pkg], opts)
     doc = Nokogiri::HTML(xml)
@@ -261,7 +260,7 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
 
   def test_build_rates_request_with_zero_weight
     options = @default_options.merge(@shipping_opts1)
-    line_items = [Package.new(0, [93,10]), Package.new(0, [10,10])]
+    line_items = [Package.new(0, [93, 10]), Package.new(0, [10, 10])]
     request = @cp.build_rates_request(@home_params, @dest_params, line_items, options)
     doc = Nokogiri::HTML(request)
     assert_equal '0.001', doc.xpath('//parcel-characteristics/weight').first.content
@@ -279,7 +278,7 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
     assert_equal 'Expedited Parcel', rate.service_name
     assert_equal @home, rate.origin
     assert_equal @dest, rate.destination
-    assert_equal 1301, rate.total_price    
+    assert_equal 1301, rate.total_price
   end
 
   def test_parse_rates_response_with_invalid_response_raises
@@ -346,5 +345,4 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
     end
     assert_equal 'AA004', e.response.error_code
   end
-
 end
