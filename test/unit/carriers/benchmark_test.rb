@@ -1,7 +1,6 @@
 require 'test_helper'
 
 class BenchmarkTest < Test::Unit::TestCase
-
   def setup
     @packages = TestFixtures.packages
     @locations = TestFixtures.locations
@@ -16,5 +15,4 @@ class BenchmarkTest < Test::Unit::TestCase
     assert_equal "Free Benchmark Shipping", rate.service_name
     assert_equal 0, rate.price
   end
-
 end

@@ -1,7 +1,6 @@
 require 'test_helper'
 
 class USPSTest < Test::Unit::TestCase
-
   def setup
     @packages  = TestFixtures.packages
     @locations = TestFixtures.locations
@@ -25,7 +24,7 @@ class USPSTest < Test::Unit::TestCase
       response = @carrier.find_rates(
                    Location.new(:zip => 40524),
                    Location.new(:zip => 40515),
-                   Package.new(16, [12,6,2], :units => :imperial)
+                   Package.new(16, [12, 6, 2], :units => :imperial)
                  )
     end
   end
@@ -35,7 +34,7 @@ class USPSTest < Test::Unit::TestCase
       response = @carrier.find_rates(
                    @locations[:beverly_hills],
                    Location.new(:country => 'CZ'),
-                   Package.new(100, [5,10,20])
+                   Package.new(100, [5, 10, 20])
                  )
     end
   end
@@ -49,7 +48,7 @@ class USPSTest < Test::Unit::TestCase
                    @packages.values_at(:american_wii),
                    :test => true
                  )
-    assert_not_equal [], response.rates.length
+      assert_not_equal [], response.rates.length
     end
   end
 
@@ -84,7 +83,7 @@ class USPSTest < Test::Unit::TestCase
     assert_instance_of Package, package_rate[:package]
     assert_not_nil package_rate[:rate]
 
-    other_than_two = response.rates.map(&:package_count).reject {|n| n == 2}
+    other_than_two = response.rates.map(&:package_count).reject { |n| n == 2 }
     assert_equal [], other_than_two, "Some RateEstimates do not refer to the right number of packages (#{other_than_two.inspect})"
   end
 
@@ -120,7 +119,7 @@ class USPSTest < Test::Unit::TestCase
     assert_instance_of Package, package_rate[:package]
     assert_not_nil package_rate[:rate]
 
-    other_than_two = response.rates.map(&:package_count).reject {|n| n == 2}
+    other_than_two = response.rates.map(&:package_count).reject { |n| n == 2 }
     assert_equal [], other_than_two, "Some RateEstimates do not refer to the right number of packages (#{other_than_two.inspect})"
   end
 
@@ -143,7 +142,7 @@ class USPSTest < Test::Unit::TestCase
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
         @locations[:new_york],
-        Package.new(0,0),
+        Package.new(0, 0),
         :test => true
       )
     rescue ResponseError => e
@@ -158,7 +157,7 @@ class USPSTest < Test::Unit::TestCase
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
         @locations[:ottawa],
-        Package.new(0,0),
+        Package.new(0, 0),
         :test => true
       )
     rescue ResponseError => e
@@ -173,12 +172,12 @@ class USPSTest < Test::Unit::TestCase
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
         @locations[:new_york],
-        Package.new(0,0),
-        {
-          :test => true,
-          :service => :first_class,
-          :first_class_mail_type => :parcel
-        }
+        Package.new(0, 0),
+
+        :test => true,
+        :service => :first_class,
+        :first_class_mail_type => :parcel
+
       )
     rescue ResponseError => e
       e.response
@@ -192,11 +191,11 @@ class USPSTest < Test::Unit::TestCase
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
         @locations[:new_york],
-        Package.new(0,0),
-        {
-          :test => true,
-          :service => :first_class
-        }
+        Package.new(0, 0),
+
+        :test => true,
+        :service => :first_class
+
       )
     rescue ResponseError => e
       assert_equal "Invalid First Class Mail Type.", e.message
@@ -209,12 +208,12 @@ class USPSTest < Test::Unit::TestCase
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
         @locations[:new_york],
-        Package.new(0,0),
-        {
-          :test => true,
-          :service => :first_class,
-          :first_class_mail_tpe => :invalid
-        }
+        Package.new(0, 0),
+
+        :test => true,
+        :service => :first_class,
+        :first_class_mail_tpe => :invalid
+
       )
     rescue ResponseError => e
       assert_equal "Invalid First Class Mail Type.", e.message

@@ -1,7 +1,6 @@
 require 'test_helper'
 
 class UPSTest < Test::Unit::TestCase
-
   def setup
     @packages  = TestFixtures.packages
     @locations = TestFixtures.locations
@@ -11,7 +10,6 @@ class UPSTest < Test::Unit::TestCase
                    :password => 'password'
                  )
     @tracking_response = xml_fixture('ups/shipment_from_tiger_direct')
-
   end
 
   def test_initialize_options_requirements
@@ -113,16 +111,15 @@ class UPSTest < Test::Unit::TestCase
   def test_find_tracking_info_should_have_correct_names_for_shipment_events
     @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('1Z5FX0076803466397')
-    assert_equal [ "BILLING INFORMATION RECEIVED",
-                   "IMPORT SCAN",
-                   "LOCATION SCAN",
-                   "LOCATION SCAN",
-                   "DEPARTURE SCAN",
-                   "ARRIVAL SCAN",
-                   "OUT FOR DELIVERY",
-                   "DELIVERED" ], response.shipment_events.map(&:name)
+    assert_equal ["BILLING INFORMATION RECEIVED",
+                  "IMPORT SCAN",
+                  "LOCATION SCAN",
+                  "LOCATION SCAN",
+                  "DEPARTURE SCAN",
+                  "ARRIVAL SCAN",
+                  "OUT FOR DELIVERY",
+                  "DELIVERED"], response.shipment_events.map(&:name)
   end
-
 
   def test_add_origin_and_destination_data_to_shipment_events_where_appropriate
     @carrier.expects(:commit).returns(@tracking_response)
@@ -143,12 +140,12 @@ class UPSTest < Test::Unit::TestCase
     response = @carrier.find_rates( @locations[:beverly_hills],
                                     @locations[:real_home_as_residential],
                                     @packages.values_at(:chocolate_stuff))
-    assert_equal [ "UPS Ground",
-                   "UPS Three-Day Select",
-                   "UPS Second Day Air",
-                   "UPS Next Day Air Saver",
-                   "UPS Next Day Air Early A.M.",
-                   "UPS Next Day Air"], response.rates.map(&:service_name)
+    assert_equal ["UPS Ground",
+                  "UPS Three-Day Select",
+                  "UPS Second Day Air",
+                  "UPS Next Day Air Saver",
+                  "UPS Next Day Air Early A.M.",
+                  "UPS Next Day Air"], response.rates.map(&:service_name)
     assert_equal [992, 2191, 3007, 5509, 9401, 6124], response.rates.map(&:price)
     assert_equal [0, 0, 0, 0, 0, 0], response.rates.map(&:negotiated_rate)
   end
@@ -159,12 +156,12 @@ class UPSTest < Test::Unit::TestCase
     response = @carrier.find_rates( @locations[:beverly_hills],
                                     @locations[:real_home_as_residential],
                                     @packages.values_at(:declared_value))
-    assert_equal [ "UPS Ground",
-                   "UPS Three-Day Select",
-                   "UPS Second Day Air",
-                   "UPS Next Day Air Saver",
-                   "UPS Next Day Air Early A.M.",
-                   "UPS Next Day Air"], response.rates.map(&:service_name)
+    assert_equal ["UPS Ground",
+                  "UPS Three-Day Select",
+                  "UPS Second Day Air",
+                  "UPS Next Day Air Saver",
+                  "UPS Next Day Air Early A.M.",
+                  "UPS Next Day Air"], response.rates.map(&:service_name)
     assert_equal [2254, 4002, 5107, 8726, 12730, 9430], response.rates.map(&:price)
     assert_equal [850, 850, 850, 850, 850, 850], response.rates.map(&:insurance_price)
     assert_equal [0, 0, 0, 0, 0, 0], response.rates.map(&:negotiated_rate)
@@ -174,12 +171,12 @@ class UPSTest < Test::Unit::TestCase
     mock_response = xml_fixture('ups/test_real_home_as_residential_destination_with_origin_account_response')
     @carrier.expects(:commit).returns(mock_response)
     response = @carrier.find_rates( @locations[:beverly_hills],
-                                     @locations[:real_home_as_residential],
-                                     @packages[:chocolate_stuff])
-    assert_equal [ "UPS Express",
-                   "UPS Worldwide Expedited",
-                   "UPS Worldwide Express Plus",
-                   "UPS Saver"], response.rates.map(&:service_name)
+                                    @locations[:real_home_as_residential],
+                                    @packages[:chocolate_stuff])
+    assert_equal ["UPS Express",
+                  "UPS Worldwide Expedited",
+                  "UPS Worldwide Express Plus",
+                  "UPS Saver"], response.rates.map(&:service_name)
     assert_equal [18893, 17856, 23473, 18286], response.rates.map(&:price)
     assert_equal [18704, 17677, 23238, 18103], response.rates.map(&:negotiated_rate)
    end
@@ -201,9 +198,9 @@ class UPSTest < Test::Unit::TestCase
   end
 
   def test_maximum_weight
-    assert Package.new(150 * 16, [5,5,5], :units => :imperial).mass == @carrier.maximum_weight
-    assert Package.new((150 * 16) + 0.01, [5,5,5], :units => :imperial).mass > @carrier.maximum_weight
-    assert Package.new((150 * 16) - 0.01, [5,5,5], :units => :imperial).mass < @carrier.maximum_weight
+    assert Package.new(150 * 16, [5, 5, 5], :units => :imperial).mass == @carrier.maximum_weight
+    assert Package.new((150 * 16) + 0.01, [5, 5, 5], :units => :imperial).mass > @carrier.maximum_weight
+    assert Package.new((150 * 16) - 0.01, [5, 5, 5], :units => :imperial).mass < @carrier.maximum_weight
   end
 
   def test_obtain_multiple_labels
@@ -215,13 +212,13 @@ class UPSTest < Test::Unit::TestCase
       @locations[:beverly_hills],
       @locations[:new_york],
       @packages.values_at(:chocolate_stuff, :book, :american_wii),
-      { :test => true,
-        :destination => {
-          :company_name => 'N.A.',
-          :phone_number => '123-123-1234',
-          :attention_name => 'Jane Doe'
-        }
-      }
+      :test => true,
+      :destination => {
+         :company_name => 'N.A.',
+         :phone_number => '123-123-1234',
+         :attention_name => 'Jane Doe'
+       }
+
     )
 
     # Sanity checks.  Hmm.  That looks a lot like a type check.
@@ -248,13 +245,13 @@ class UPSTest < Test::Unit::TestCase
       @locations[:beverly_hills],
       @locations[:new_york],
       @packages.values_at(:chocolate_stuff),
-      { :test => true,
-        :destination => {
-          :company_name => 'N.A.',
-          :phone_number => '123-123-1234',
-          :attention_name => 'Jane Doe'
-        }
-      }
+      :test => true,
+      :destination => {
+         :company_name => 'N.A.',
+         :phone_number => '123-123-1234',
+         :attention_name => 'Jane Doe'
+       }
+
     )
 
     # Sanity checks.  Hmm.  That looks a lot like a type check.
@@ -273,13 +270,13 @@ class UPSTest < Test::Unit::TestCase
   def test_saturday_delivery
     # It's ok to use Nokogiri for development, right?
     response = Nokogiri::XML @carrier.send(:build_shipment_request,
-      @locations[:beverly_hills],
-      @locations[:annapolis],
-      @packages.values_at(:chocolate_stuff),
-      options = {
-        :test => true,
-        :saturday_delivery => true
-      })
+                                           @locations[:beverly_hills],
+                                           @locations[:annapolis],
+                                           @packages.values_at(:chocolate_stuff),
+                                           options = {
+                                             :test => true,
+                                             :saturday_delivery => true
+                                           })
 
     saturday = response.search '/ShipmentConfirmRequest/Shipment/ShipmentServiceOptions/SaturdayDelivery'
     refute_empty saturday
@@ -287,14 +284,14 @@ class UPSTest < Test::Unit::TestCase
 
   def test_label_request_negotiated_rates_presence
     response = Nokogiri::XML @carrier.send(:build_shipment_request,
-      @locations[:beverly_hills],
-      @locations[:annapolis],
-      @packages.values_at(:chocolate_stuff),
-      options = {
-        :test => true,
-        :saturday_delivery => true,
-        :origin_account => 'A01B23' # without this option, a negotiated rate will not be requested
-      })
+                                           @locations[:beverly_hills],
+                                           @locations[:annapolis],
+                                           @packages.values_at(:chocolate_stuff),
+                                           options = {
+                                             :test => true,
+                                             :saturday_delivery => true,
+                                             :origin_account => 'A01B23' # without this option, a negotiated rate will not be requested
+                                           })
 
     negotiated_rates = response.search '/ShipmentConfirmRequest/Shipment/RateInformation/NegotiatedRatesIndicator'
     refute_empty negotiated_rates
@@ -307,11 +304,10 @@ class UPSTest < Test::Unit::TestCase
     packages = @packages.values_at(:chocolate_stuff)
 
     result   = Nokogiri::XML(@carrier.send(:build_shipment_request,
-      pickup, deliver, packages, { :test => true, :shipper => shipper }))
+                                           pickup, deliver, packages,  :test => true, :shipper => shipper ))
 
     address = result.search '/ShipmentConfirmRequest/Shipment/Shipper/Address/AddressLine1'
     assert_equal address.text, shipper.address1
     refute_equal address.text, pickup.address1
   end
-
 end

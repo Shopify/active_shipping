@@ -133,12 +133,12 @@ class StampsTest < Test::Unit::TestCase
         @locations[:new_york_with_name],
         @packages[:book],
         [],
-        {
-          service: 'US-PM',
-          image_type: 'Epl',
-          return_image_data: true,
-          sample_only: true
-        }
+
+        service: 'US-PM',
+        image_type: 'Epl',
+        return_image_data: true,
+        sample_only: true
+
       )
     end
 
@@ -168,11 +168,11 @@ class StampsTest < Test::Unit::TestCase
         ottawa_with_name,
         @packages[:declared_value],
         @line_items,
-        {
-          service: 'US-PMI',
-          content_type: 'Merchandise',
-          sample_only: true
-        }
+
+        service: 'US-PMI',
+        content_type: 'Merchandise',
+        sample_only: true
+
       )
     end
 
@@ -202,11 +202,11 @@ class StampsTest < Test::Unit::TestCase
         @locations[:new_york_with_name],
         @packages[:book],
         [],
-        {
-          service: 'US-MM',
-          insured_value: 70,
-          add_ons: [ 'US-A-INS', 'US-A-DC' ]
-        }
+
+        service: 'US-MM',
+        insured_value: 70,
+        add_ons: %w(US-A-INS US-A-DC)
+
       )
       tracking = @carrier.find_tracking_info(shipment.tracking_number)
     end
@@ -235,11 +235,11 @@ class StampsTest < Test::Unit::TestCase
         @locations[:new_york_with_name],
         @packages[:book],
         [],
-        {
-          service: 'US-MM',
-          insured_value: 70,
-          add_ons: [ 'US-A-INS', 'US-A-DC' ]
-        }
+
+        service: 'US-MM',
+        insured_value: 70,
+        add_ons: %w(US-A-INS US-A-DC)
+
       )
       tracking = @carrier.find_tracking_info(shipment.stamps_tx_id, stamps_tx_id: true)
     end
@@ -271,7 +271,7 @@ class StampsTest < Test::Unit::TestCase
       response = @carrier.find_rates(
         Location.new(:zip => 40524),
         Location.new(:zip => 40515),
-        Package.new(16, [12,6,2], units: :imperial)
+        Package.new(16, [12, 6, 2], units: :imperial)
       )
     end
   end
@@ -283,7 +283,7 @@ class StampsTest < Test::Unit::TestCase
         @locations[:beverly_hills],
         @locations[:new_york],
         @packages[:book],
-        { add_ons: 'US-A-DC' }
+        add_ons: 'US-A-DC'
       )
     end
   end
@@ -294,7 +294,7 @@ class StampsTest < Test::Unit::TestCase
       response = @carrier.find_rates(
         @locations[:beverly_hills],
         Location.new(:country => 'CZ'),
-        Package.new(100, [5,10,20])
+        Package.new(100, [5, 10, 20])
       )
     end
   end
@@ -393,7 +393,7 @@ class StampsTest < Test::Unit::TestCase
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
         @locations[:new_york],
-        Package.new(0,0)
+        Package.new(0, 0)
       )
     rescue ResponseError => e
       e.response
@@ -408,7 +408,7 @@ class StampsTest < Test::Unit::TestCase
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
         @locations[:ottawa],
-        Package.new(0,0)
+        Package.new(0, 0)
       )
     rescue ResponseError => e
       e.response
@@ -423,11 +423,11 @@ class StampsTest < Test::Unit::TestCase
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
         @locations[:new_york],
-        Package.new(0,0),
-        {
-          service: 'US-FC',
-          package_type: 'Package'
-        }
+        Package.new(0, 0),
+
+        service: 'US-FC',
+        package_type: 'Package'
+
       )
     rescue ResponseError => e
       e.response
@@ -442,11 +442,11 @@ class StampsTest < Test::Unit::TestCase
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
         @locations[:new_york],
-        Package.new(0,0),
-        {
-          service: 'US-FC',
-          package_type: 'Invalid'
-        }
+        Package.new(0, 0),
+
+        service: 'US-FC',
+        package_type: 'Invalid'
+
       )
     end
   end

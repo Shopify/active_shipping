@@ -11,8 +11,8 @@ class BaseTest < Test::Unit::TestCase
   def test_get_usps_by_name
     assert_equal USPS, Base.carrier(:usps)
   end
-  
+
   def test_get_unknown_carrier
-    assert_raise(NameError){ Base.carrier(:polar_north) }
+    assert_raise(NameError) { Base.carrier(:polar_north) }
   end
 end
