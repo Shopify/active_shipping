@@ -313,7 +313,7 @@ class USPSTest < Test::Unit::TestCase
   def test_first_class_packages_without_mail_type
     @carrier.expects(:commit).returns(xml_fixture('usps/first_class_packages_without_mail_type_response'))
 
-    response = begin
+    begin
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
         @locations[:new_york],
@@ -331,7 +331,7 @@ class USPSTest < Test::Unit::TestCase
   def test_first_class_packages_with_invalid_mail_type
     @carrier.expects(:commit).returns(xml_fixture('usps/first_class_packages_with_invalid_mail_type_response'))
 
-    response = begin
+    begin
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
         @locations[:new_york],
@@ -398,8 +398,6 @@ class USPSTest < Test::Unit::TestCase
       :test => true
     )
 
-    rates = Hash[response.rates.map { |rate| [rate.service_name, rate.price] }]
-
     assert_equal [4112, 6047, 7744, 7744], response.rates.map(&:price) # note these prices are higher than the normal/retail unit tests because the rates from that test is years older than from this test
   end
 
@@ -435,8 +433,6 @@ class USPSTest < Test::Unit::TestCase
       @packages.values_at(:american_wii),
       :test => true
     )
-
-    rates = Hash[response.rates.map { |rate| [rate.service_name, rate.price] }]
 
     assert_equal [3767, 5526, 7231, 7231], response.rates.map(&:price)
   end

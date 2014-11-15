@@ -12,13 +12,13 @@ class ShipwireTest < Test::Unit::TestCase
     @carrier.expects(:ssl_post).returns(xml_fixture('shipwire/no_rates_response'))
 
     assert_raises(ResponseError) do
-      response = @carrier.find_rates(
-                   @locations[:ottawa],
-                   @locations[:beverly_hills],
-                   @packages.values_at(:book, :wii),
-                   :order_id => '#1000',
-                   :items => @items
-                 )
+      @carrier.find_rates(
+        @locations[:ottawa],
+        @locations[:beverly_hills],
+        @packages.values_at(:book, :wii),
+        :order_id => '#1000',
+        :items => @items
+      )
     end
   end
 

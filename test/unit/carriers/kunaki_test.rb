@@ -13,12 +13,12 @@ class KunakiTest < Test::Unit::TestCase
 
     assert_raises(ResponseError) do
       begin
-        response = @carrier.find_rates(
-                     @locations[:ottawa],
-                     @locations[:beverly_hills],
-                     @packages.values_at(:book, :wii),
-                     :items => @items
-                   )
+        @carrier.find_rates(
+          @locations[:ottawa],
+          @locations[:beverly_hills],
+          @packages.values_at(:book, :wii),
+          :items => @items
+        )
       rescue ResponseError => e
         assert_equal "Request contains invalid XML syntax", e.response.message
         assert_equal "100", e.response.params["ErrorCode"]
