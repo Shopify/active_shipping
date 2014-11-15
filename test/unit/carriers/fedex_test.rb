@@ -326,9 +326,9 @@ class FedExTest < MiniTest::Unit::TestCase
 
     @carrier.expects(:commit).with { |request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode }.returns(mock_response)
     exception = assert_raises ActiveMerchant::Shipping::ResponseContentError do
-      response = @carrier.find_rates( @locations[:ottawa],
-                                      @locations[:beverly_hills],
-                                      @packages.values_at(:book, :wii), :test => true)
+      @carrier.find_rates( @locations[:ottawa],
+                           @locations[:beverly_hills],
+                           @packages.values_at(:book, :wii), :test => true)
     end
     message = "Invalid document \n\n<?xml version='1.0' encoding='UTF-8'?>\n<RandomElement xmlns:v6='http://fedex.com/ws/rate/v6' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\n</RandomElement>\n"
     assert_equal message, exception.message

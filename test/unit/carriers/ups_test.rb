@@ -179,7 +179,7 @@ class UPSTest < Test::Unit::TestCase
                   "UPS Saver"], response.rates.map(&:service_name)
     assert_equal [18893, 17856, 23473, 18286], response.rates.map(&:price)
     assert_equal [18704, 17677, 23238, 18103], response.rates.map(&:negotiated_rate)
-   end
+  end
 
   def test_delivery_range_takes_weekend_into_consideration
     mock_response = xml_fixture('ups/test_real_home_as_residential_destination_response')

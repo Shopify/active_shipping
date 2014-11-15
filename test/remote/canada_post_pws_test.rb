@@ -79,7 +79,7 @@ class CanadaPostPWSTest < Test::Unit::TestCase
     @DEFAULT_RESPONSE = {
       :shipping_id => "406951321983787352",
       :tracking_number => "11111118901234",
-      :label_url => "https://ct.soa-gw.canadapost.ca/ers/artifact/c70da5ed5a0d2c32/20238/0"
+      :label_url => "https://ct.soa-gw.canadapost.ca/ers/artifact/#{@login[:api_key]}/20238/0"
     }
   end
 

@@ -28,6 +28,7 @@ class FedExTest < Test::Unit::TestCase
   end
 
   def test_freight
+    skip 'Cannot find the fedex freight creds. Whomp, whomp.'
     response = nil
     freight = fixtures(:fedex_freight)
 

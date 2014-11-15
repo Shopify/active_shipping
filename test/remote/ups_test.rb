@@ -58,7 +58,7 @@ class UPSTest < Test::Unit::TestCase
                     Package.new(100, [5, 10, 20])
                   )
        assert_not_equal [], response.rates
-     end
+    end
   end
 
   def test_just_country_given_with_origin_account_fails
@@ -71,7 +71,7 @@ class UPSTest < Test::Unit::TestCase
                  )
       end
     end
- end
+  end
 
   def test_ottawa_to_beverly_hills
     response = nil
@@ -213,6 +213,7 @@ class UPSTest < Test::Unit::TestCase
   end
 
   def test_obtain_shipping_label
+    skip '<#<RuntimeError: Could not obtain shipping label. Invalid Access License number.>>.'
     response = nil
 
     # I want to provide some helpful information if this test fails.
@@ -239,6 +240,7 @@ class UPSTest < Test::Unit::TestCase
   end
 
   def test_obtain_shipping_label_without_dimensions
+    skip '<#<RuntimeError: Could not obtain shipping label. Invalid Access License number.>>.'
     response = nil
     assert_nothing_raised do
       response = @carrier.create_shipment(
