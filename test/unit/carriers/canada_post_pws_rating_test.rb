@@ -293,7 +293,6 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
     body = xml_fixture('canadapost_pws/services_response')
     response = @cp.parse_services_response(body)
     assert_equal 6, response.size
-    service = response.first
     assert service = response['INT.PW.ENV']
     assert_equal "Priority Worldwide envelope INT'L", service[:name]
   end

@@ -87,7 +87,7 @@ class CanadaPostTest < Test::Unit::TestCase
     @carrier.expects(:ssl_post).returns(@bad_response)
 
     error = assert_raise ActiveMerchant::Shipping::ResponseError do
-      rate_estimates = @carrier.find_rates(@origin, @destination, @line_items)
+      @carrier.find_rates(@origin, @destination, @line_items)
     end
 
     assert_equal 'Parcel too heavy to be shipped with CPC.', error.message
@@ -111,9 +111,8 @@ class CanadaPostTest < Test::Unit::TestCase
 
   def test_non_iso_country_names
     @destination[:country] = 'RU'
-
     @carrier.expects(:ssl_post).with(anything, regexp_matches(%r{<country>Russia</country>})).returns(@response)
-    rate_estimates = @carrier.find_rates(@origin, @destination, @line_items)
+    @carrier.find_rates(@origin, @destination, @line_items)
   end
 
   def test_delivery_range_based_on_delivery_date

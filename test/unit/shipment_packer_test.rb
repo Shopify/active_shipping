@@ -161,16 +161,14 @@ class ShipmentPackerTest < Test::Unit::TestCase
   def test_dont_modify_input_item_quantities
     items = [{:grams => 1, :quantity => 5, :price => 1.0}]
 
-    packages = ShipmentPacker.pack(items, @dimensions, 10, 'USD')
-
+    ShipmentPacker.pack(items, @dimensions, 10, 'USD')
     assert_equal 5, items.first[:quantity]
   end
 
   def test_items_with_negative_weight
     items = [{:grams => -1, :quantity => 5, :price => 1.0}]
 
-    packages = ShipmentPacker.pack(items, @dimensions, 10, 'USD')
-
+    ShipmentPacker.pack(items, @dimensions, 10, 'USD')
     assert_equal 5, items.first[:quantity]
   end
 end

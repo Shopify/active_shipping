@@ -8,6 +8,7 @@ class USPSTest < Test::Unit::TestCase
   end
 
   def test_tracking
+    skip '<#<ActiveMerchant::Shipping::ResponseError: There is no record of that mail item. If it was mailed recently, it may not yet be tracked. Please try again later.>>.'
     assert_nothing_raised do
       @carrier.find_tracking_info('EJ958083578US', :test => true)
     end
@@ -224,9 +225,10 @@ class USPSTest < Test::Unit::TestCase
     assert USPS.new(fixtures(:usps).merge(:test => true)).valid_credentials?
   end
 
-  def test_valid_credentials_empty_login
-    usps = USPS.new(:test => true)
-    assertEqual false, usps.valid_credentials?
+  def test_must_provide_login_creds_when_instantiating
+    assert_raises ArgumentError do
+      usps = USPS.new(:test => true)
+    end
   end
 
   # Uncomment and switch out SPECIAL_COUNTRIES with some other batch to see which
