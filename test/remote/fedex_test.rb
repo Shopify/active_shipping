@@ -93,22 +93,22 @@ class FedExTest < Test::Unit::TestCase
   end
 
   def test_rates_for_location_with_only_country_code
-    response = @carrier.find_rates(
-                 @locations[:bare_beverly_hills],
-                 Location.new(:country => 'CA'),
-                 @packages.values_at(:wii)
-               )
+    @carrier.find_rates(
+      @locations[:bare_beverly_hills],
+      Location.new(:country => 'CA'),
+      @packages.values_at(:wii)
+    )
   rescue ResponseError => e
     assert_match /postal code/i, e.message
     assert_match /(missing|invalid)/i, e.message
   end
 
   def test_invalid_recipient_country
-    response = @carrier.find_rates(
-                 @locations[:bare_beverly_hills],
-                 Location.new(:country => 'JP', :zip => '108-8361'),
-                 @packages.values_at(:wii)
-               )
+    @carrier.find_rates(
+      @locations[:bare_beverly_hills],
+      Location.new(:country => 'JP', :zip => '108-8361'),
+      @packages.values_at(:wii)
+    )
   rescue ResponseError => e
     assert_match /postal code/i, e.message
     assert_match /(missing|invalid)/i, e.message
@@ -202,7 +202,7 @@ class FedExTest < Test::Unit::TestCase
 
   def test_tracking_with_bad_number
     assert_raises ResponseError do
-      response = @carrier.find_tracking_info('12345')
+      @carrier.find_tracking_info('12345')
     end
   end
 

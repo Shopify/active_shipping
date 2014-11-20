@@ -346,7 +346,6 @@ module ActiveMerchant
 
       def parse_rate_response(origin, destination, packages, response, options)
         rate_estimates = []
-        success, message = nil
 
         xml = build_document(response)
         root_node = xml.elements['RateReply']
@@ -422,14 +421,12 @@ module ActiveMerchant
         message = response_message(xml)
 
         if success
-          tracking_number, shipper_address, origin, destination, status = nil
-          status_code, status_description, ship_time = nil
-          scheduled_delivery_time, actual_delivery_time, delivery_signature = nil
+          origin = nil
+          delivery_signature = nil
           shipment_events = []
 
           tracking_details = root_node.elements['TrackDetails']
           tracking_number = tracking_details.get_text('TrackingNumber').to_s
-
           status_code = tracking_details.get_text('StatusCode').to_s
           status_description = tracking_details.get_text('StatusDescription').to_s
           status = TRACKING_STATUS_CODES[status_code]

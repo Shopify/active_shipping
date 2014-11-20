@@ -218,12 +218,8 @@ module ActiveMerchant
         destination = Location.from(destination)
         packages = Array(packages)
 
-        # raise ArgumentError.new("USPS packages must originate in the U.S.") unless ['US',nil].include?(origin.country_code(:alpha2))
-
-        # domestic or international?
-
         domestic_codes = US_POSSESSIONS + ['US', nil]
-        response = if domestic_codes.include?(destination.country_code(:alpha2))
+        if domestic_codes.include?(destination.country_code(:alpha2))
           us_rates(origin, destination, packages, options)
         else
           world_rates(origin, destination, packages, options)
@@ -250,7 +246,7 @@ module ActiveMerchant
         time = Time.parse(timestamp)
         zoneless_time = Time.utc(time.year, time.month, time.mday, time.hour, time.min, time.sec)
         location = Location.new(city: city, state: state, postal_code: zip_code, country: 'USA')
-        EventDetails.new($1.upcase, time, zoneless_time, location)
+        EventDetails.new(description, time, zoneless_time, location)
       end
 
       protected
@@ -611,7 +607,7 @@ module ActiveMerchant
         message = response_message(xml)
 
         if success
-          tracking_number, origin, destination = nil
+          destination = nil
           shipment_events = []
           tracking_details = xml.elements.collect('*/*/TrackDetail') { |e| e }
 
