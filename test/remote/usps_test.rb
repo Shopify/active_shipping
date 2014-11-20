@@ -16,27 +16,27 @@ class USPSTest < Test::Unit::TestCase
 
   def test_tracking_with_bad_number
     assert_raises ResponseError do
-      response = @carrier.find_tracking_info('abc123xyz')
+      @carrier.find_tracking_info('abc123xyz')
     end
   end
 
   def test_zip_to_zip
     assert_nothing_raised do
-      response = @carrier.find_rates(
-                   Location.new(:zip => 40524),
-                   Location.new(:zip => 40515),
-                   Package.new(16, [12, 6, 2], :units => :imperial)
-                 )
+      @carrier.find_rates(
+        Location.new(:zip => 40524),
+        Location.new(:zip => 40515),
+        Package.new(16, [12, 6, 2], :units => :imperial)
+      )
     end
   end
 
   def test_just_country_given
     assert_nothing_raised do
-      response = @carrier.find_rates(
-                   @locations[:beverly_hills],
-                   Location.new(:country => 'CZ'),
-                   Package.new(100, [5, 10, 20])
-                 )
+      @carrier.find_rates(
+        @locations[:beverly_hills],
+        Location.new(:country => 'CZ'),
+        Package.new(100, [5, 10, 20])
+      )
     end
   end
 
@@ -138,7 +138,6 @@ class USPSTest < Test::Unit::TestCase
   end
 
   def test_bare_packages_domestic
-    response = nil
     response = begin
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
@@ -153,7 +152,6 @@ class USPSTest < Test::Unit::TestCase
   end
 
   def test_bare_packages_international
-    response = nil
     response = begin
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
@@ -168,7 +166,6 @@ class USPSTest < Test::Unit::TestCase
   end
 
   def test_first_class_packages_with_mail_type
-    response = nil
     response = begin
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
@@ -187,38 +184,32 @@ class USPSTest < Test::Unit::TestCase
   end
 
   def test_first_class_packages_without_mail_type
-    response = nil
-    response = begin
-      @carrier.find_rates(
-        @locations[:beverly_hills], # imperial (U.S. origin)
-        @locations[:new_york],
-        Package.new(0, 0),
+    @carrier.find_rates(
+      @locations[:beverly_hills], # imperial (U.S. origin)
+      @locations[:new_york],
+      Package.new(0, 0),
 
-        :test => true,
-        :service => :first_class
+      :test => true,
+      :service => :first_class
 
-      )
-    rescue ResponseError => e
-      assert_equal "Invalid First Class Mail Type.", e.message
-    end
+    )
+  rescue ResponseError => e
+    assert_equal "Invalid First Class Mail Type.", e.message
   end
 
   def test_first_class_packages_with_invalid_mail_type
-    response = nil
-    response = begin
-      @carrier.find_rates(
-        @locations[:beverly_hills], # imperial (U.S. origin)
-        @locations[:new_york],
-        Package.new(0, 0),
+    @carrier.find_rates(
+      @locations[:beverly_hills], # imperial (U.S. origin)
+      @locations[:new_york],
+      Package.new(0, 0),
 
-        :test => true,
-        :service => :first_class,
-        :first_class_mail_tpe => :invalid
+      :test => true,
+      :service => :first_class,
+      :first_class_mail_tpe => :invalid
 
-      )
-    rescue ResponseError => e
-      assert_equal "Invalid First Class Mail Type.", e.message
-    end
+    )
+  rescue ResponseError => e
+    assert_equal "Invalid First Class Mail Type.", e.message
   end
 
   def test_valid_credentials
@@ -227,7 +218,7 @@ class USPSTest < Test::Unit::TestCase
 
   def test_must_provide_login_creds_when_instantiating
     assert_raises ArgumentError do
-      usps = USPS.new(:test => true)
+      USPS.new(:test => true)
     end
   end
 

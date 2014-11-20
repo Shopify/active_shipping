@@ -273,10 +273,9 @@ class UPSTest < Test::Unit::TestCase
                                            @locations[:beverly_hills],
                                            @locations[:annapolis],
                                            @packages.values_at(:chocolate_stuff),
-                                           options = {
-                                             :test => true,
-                                             :saturday_delivery => true
-                                           })
+                                           :test => true,
+                                           :saturday_delivery => true
+                             )
 
     saturday = response.search '/ShipmentConfirmRequest/Shipment/ShipmentServiceOptions/SaturdayDelivery'
     refute_empty saturday
@@ -287,11 +286,10 @@ class UPSTest < Test::Unit::TestCase
                                            @locations[:beverly_hills],
                                            @locations[:annapolis],
                                            @packages.values_at(:chocolate_stuff),
-                                           options = {
-                                             :test => true,
-                                             :saturday_delivery => true,
-                                             :origin_account => 'A01B23' # without this option, a negotiated rate will not be requested
-                                           })
+                                           :test => true,
+                                           :saturday_delivery => true,
+                                           :origin_account => 'A01B23' # without this option, a negotiated rate will not be requested
+                             )
 
     negotiated_rates = response.search '/ShipmentConfirmRequest/Shipment/RateInformation/NegotiatedRatesIndicator'
     refute_empty negotiated_rates

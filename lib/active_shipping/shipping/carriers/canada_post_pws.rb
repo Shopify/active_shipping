@@ -83,7 +83,7 @@ module ActiveMerchant
         else
           CPPWSTrackingResponse.new(false, e.message, {}, :carrier => @@name)
         end
-      rescue InvalidPinFormatError => e
+      rescue InvalidPinFormatError
         CPPWSTrackingResponse.new(false, "Invalid Pin Format", {}, :carrier => @@name)
       end
 
@@ -94,18 +94,18 @@ module ActiveMerchant
         parse_shipment_response(response)
       rescue ActiveMerchant::ResponseError, ActiveMerchant::Shipping::ResponseError => e
         error_response(e.response.body, CPPWSShippingResponse)
-      rescue MissingCustomerNumberError => e
+      rescue MissingCustomerNumberError
         CPPWSShippingResponse.new(false, "Missing Customer Number", {}, :carrier => @@name)
       end
 
       def retrieve_shipment(shipping_id, options = {})
         response = ssl_post(shipment_url(shipping_id, options), nil, headers(options, SHIPMENT_MIMETYPE, SHIPMENT_MIMETYPE))
-        shipping_response = parse_shipment_response(response)
+        parse_shipment_response(response)
       end
 
       def find_shipment_receipt(shipping_id, options = {})
         response = ssl_get(shipment_receipt_url(shipping_id, options), headers(options, SHIPMENT_MIMETYPE, SHIPMENT_MIMETYPE))
-        shipping_response = parse_shipment_receipt_response(response)
+        parse_shipment_receipt_response(response)
       end
 
       def retrieve_shipping_label(shipping_response, options = {})

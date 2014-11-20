@@ -361,7 +361,7 @@ module ActiveMerchant
         #                   * Shipment/(ShipTo|ShipFrom)/CompanyName element
         #                   * Shipment/(Shipper|ShipTo|ShipFrom)/AttentionName element
         #                   * Shipment/(Shipper|ShipTo|ShipFrom)/TaxIdentificationNumber element
-        location_node = XmlNode.new(name) do |location_node|
+        XmlNode.new(name) do |location_node|
           # You must specify the shipper name when creating labels.
           if shipper_name = (options[:origin_name] || @options[:origin_name])
             location_node << XmlNode.new('Name', shipper_name)
@@ -447,8 +447,6 @@ module ActiveMerchant
       end
 
       def parse_rate_response(origin, destination, packages, response, options = {})
-        rates = []
-
         xml = REXML::Document.new(response)
         success = response_success?(xml)
         message = response_message(xml)
@@ -480,11 +478,10 @@ module ActiveMerchant
         message = response_message(xml)
 
         if success
-          tracking_number, origin, destination, status_code, status_description, delivery_signature = nil
+          delivery_signature = nil
           exception_event, scheduled_delivery_date, actual_delivery_date = nil
           delivered, exception = false
           shipment_events = []
-          status = {}
 
           first_shipment = xml.elements['/*/Shipment']
           first_package = first_shipment.elements['Package']
@@ -614,7 +611,7 @@ module ActiveMerchant
       end
 
       def parse_ship_confirm(response)
-        xml = REXML::Document.new(response)
+        REXML::Document.new(response)
       end
 
       def parse_ship_accept(response)
@@ -646,7 +643,7 @@ module ActiveMerchant
         end
 
         name ||= OTHER_NON_US_ORIGIN_SERVICES[code] unless name == 'US'
-        name ||= DEFAULT_SERVICES[code]
+        name || DEFAULT_SERVICES[code]
       end
     end
   end

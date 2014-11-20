@@ -25,7 +25,7 @@ $:.unshift File.dirname(__FILE__)
 
 begin
   require 'active_support/all'
-rescue LoadError => e
+rescue LoadError
   require 'rubygems'
   gem "activesupport", ">= 2.3.5"
   require "active_support/all"
