@@ -24,7 +24,7 @@ class StampsTest < Test::Unit::TestCase
     purchase_amount = 10.62 # Based on the amount used in the track shipment tests
     assert_nothing_raised do
       account = @carrier.account_info
-      purchase = @carrier.purchase_postage(purchase_amount, account.control_total)
+      @carrier.purchase_postage(purchase_amount, account.control_total)
     end
   end
 
@@ -392,7 +392,6 @@ class StampsTest < Test::Unit::TestCase
   end
 
   def test_bare_packages_domestic
-    response = nil
     response = begin
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
@@ -407,7 +406,6 @@ class StampsTest < Test::Unit::TestCase
   end
 
   def test_bare_packages_international
-    response = nil
     response = begin
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
@@ -422,7 +420,6 @@ class StampsTest < Test::Unit::TestCase
   end
 
   def test_first_class_packages_with_mail_type
-    response = nil
     response = begin
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)
@@ -441,7 +438,6 @@ class StampsTest < Test::Unit::TestCase
   end
 
   def test_first_class_packages_with_invalid_mail_type
-    response = nil
     assert_raise ResponseError do
       @carrier.find_rates(
         @locations[:beverly_hills], # imperial (U.S. origin)

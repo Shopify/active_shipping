@@ -140,7 +140,7 @@ class CanadaPostPWSPlatformTest < Test::Unit::TestCase
   def test_tracking_invalid_pin_raises_exception
     pin = "000000000000000"
     exception = assert_raise ResponseError do
-      response = @cp.find_tracking_info(pin, build_options)
+      @cp.find_tracking_info(pin, build_options)
     end
     assert_equal "No Pin History", exception.message
   end
@@ -178,7 +178,7 @@ class CanadaPostPWSPlatformTest < Test::Unit::TestCase
 
   def test_find_services_invalid_country
     exception = assert_raise ResponseError do
-      response = @cp.find_services('XX', build_options)
+      @cp.find_services('XX', build_options)
     end
     assert_equal "A valid destination country must be supplied.", exception.message
   end

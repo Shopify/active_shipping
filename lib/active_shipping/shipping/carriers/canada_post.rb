@@ -104,7 +104,7 @@ module ActiveMerchant
       protected
 
       def commit(request, origin, destination, options = {})
-        response = parse_rate_response(ssl_post(URL, request), origin, destination, options)
+        parse_rate_response(ssl_post(URL, request), origin, destination, options)
       end
 
       private

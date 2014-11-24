@@ -135,45 +135,42 @@ module ActiveMerchant
 
       def account_info
         request = build_get_account_info_request
-        response = commit(:GetAccountInfo, request)
+        commit(:GetAccountInfo, request)
       end
 
       def purchase_postage(purchase_amount, control_total)
         request = build_purchase_postage_request(purchase_amount, control_total)
-        response = commit(:PurchasePostage, request)
+        commit(:PurchasePostage, request)
       end
 
       def purchase_status(transaction_id)
         request = build_get_purchase_status(transaction_id)
-        response = commit(:GetPurchaseStatus, request)
+        commit(:GetPurchaseStatus, request)
       end
 
       def validate_address(address, options = {})
         address = standardize_address(address)
-
         request = build_cleanse_address_request(address)
-        response = commit(:CleanseAddress, request)
+        commit(:CleanseAddress, request)
       end
 
       def find_rates(origin, destination, package, options = {})
         origin = standardize_address(origin)
         destination = standardize_address(destination)
-
         request = build_rate_request(origin, destination, package, options)
-        response = commit(:GetRates, request)
+        commit(:GetRates, request)
       end
 
       def create_shipment(origin, destination, package, line_items = [], options = {})
         origin = standardize_address(origin)
         destination = standardize_address(destination)
-
         request = build_create_indicium_request(origin, destination, package, line_items, options)
-        response = commit(:CreateIndicium, request)
+        commit(:CreateIndicium, request)
       end
 
       def find_tracking_info(shipment_id, options = {})
         request = build_track_shipment_request(shipment_id, options)
-        response = commit(:TrackShipment, request)
+        commit(:TrackShipment, request)
       end
 
       def namespace
@@ -226,7 +223,7 @@ module ActiveMerchant
 
       def get_authenticator
         request = build_authenticate_user_request
-        response = commit(:AuthenticateUser, request)
+        commit(:AuthenticateUser, request)
       end
 
       def build_header
