@@ -14,6 +14,7 @@ module ActiveMerchant
 
       attr_reader :last_swsim_method
 
+      # TODO: Update to latest API. Documentation for the latest WSDL version is available here: http://support.stamps.com/outgoing/swsimv39doc.zip
       LIVE_URL = 'https://swsim.stamps.com/swsim/swsimv34.asmx'
       TEST_URL = 'https://swsim.testing.stamps.com/swsim/swsimv34.asmx'
       NAMESPACE = 'http://stamps.com/xml/namespace/2014/01/swsim/swsimv34'
