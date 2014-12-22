@@ -34,17 +34,13 @@ module MiniTest
       end
 
       def load_fixtures
-        file = File.exist?(LOCAL_CREDENTIALS) ? LOCAL_CREDENTIALS : DEFAULT_CREDENTIALS
-        yaml_data = YAML.load(File.read(file))
-        model_fixtures = Dir.glob(File.join(MODEL_FIXTURES, '**', '*.yml'))
-        model_fixtures.each do |file|
-          name = File.basename(file, '.yml')
-          yaml_data[name] = YAML.load(File.read(file))
+        [DEFAULT_CREDENTIALS, LOCAL_CREDENTIALS, *Dir.glob(File.join(MODEL_FIXTURES, '**', '*.yml'))].inject({}) do |credentials, file_name|
+          if File.exist?(file_name)
+            yaml_data = YAML.load(File.read(file_name))
+            credentials.merge!(symbolize_keys(yaml_data))
+          end
+          credentials
         end
-
-        symbolize_keys(yaml_data)
-
-        yaml_data
       end
 
       def xml_fixture(path) # where path is like 'usps/beverly_hills_to_ottawa_response'
