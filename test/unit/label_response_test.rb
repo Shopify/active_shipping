@@ -1,7 +1,7 @@
 require 'test_helper'
 
 class LabelResponseTest < Test::Unit::TestCase
-  include ActiveMerchant::Shipping
+  include ActiveShipping
 
   def setup
     @locations = TestFixtures.locations.dup

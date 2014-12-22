@@ -9,13 +9,11 @@ require 'active_shipping/shipping/carriers/new_zealand_post'
 require 'active_shipping/shipping/carriers/canada_post_pws'
 require 'active_shipping/shipping/carriers/stamps'
 
-module ActiveMerchant
-  module Shipping
-    module Carriers
-      class <<self
-        def all
-          [BenchmarkCarrier, BogusCarrier, USPS, FedEx, Shipwire, Kunaki, CanadaPost, NewZealandPost, CanadaPostPWS, Stamps]
-        end
+module ActiveShipping
+  module Carriers
+    class <<self
+      def all
+        [BenchmarkCarrier, BogusCarrier, USPS, FedEx, Shipwire, Kunaki, CanadaPost, NewZealandPost, CanadaPostPWS, Stamps]
       end
     end
   end

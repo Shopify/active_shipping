@@ -41,9 +41,9 @@ class USPSTest < Test::Unit::TestCase
 
   def test_find_tracking_info_should_return_a_tracking_response
     @carrier.expects(:commit).returns(@tracking_response)
-    assert_instance_of ActiveMerchant::Shipping::TrackingResponse, @carrier.find_tracking_info('9102901000462189604217', :test => true)
+    assert_instance_of ActiveShipping::TrackingResponse, @carrier.find_tracking_info('9102901000462189604217', :test => true)
     @carrier.expects(:commit).returns(@tracking_response)
-    assert_equal 'ActiveMerchant::Shipping::TrackingResponse', @carrier.find_tracking_info('EJ958083578US').class.name
+    assert_equal 'ActiveShipping::TrackingResponse', @carrier.find_tracking_info('EJ958083578US').class.name
   end
 
   def test_find_tracking_info_should_parse_response_into_correct_number_of_shipment_events

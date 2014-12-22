@@ -21,10 +21,10 @@ class CanadaPostPwsRegisterTest < Test::Unit::TestCase
     http_response = mock
     http_response.stubs(:code).returns('400')
     http_response.stubs(:body).returns(response)
-    response_error = ActiveMerchant::ResponseError.new(http_response)
+    response_error = ActiveUtils::ResponseError.new(http_response)
     @cp.expects(:ssl_post).with(endpoint, anything, anything).raises(response_error)
 
-    exception = assert_raises ActiveMerchant::Shipping::ResponseError do
+    exception = assert_raises ActiveShipping::ResponseError do
       @cp.register_merchant
     end
 
@@ -60,10 +60,10 @@ class CanadaPostPwsRegisterTest < Test::Unit::TestCase
     http_response = mock
     http_response.stubs(:code).returns('400')
     http_response.stubs(:body).returns(response)
-    response_error = ActiveMerchant::ResponseError.new(http_response)
+    response_error = ActiveUtils::ResponseError.new(http_response)
     @cp.expects(:ssl_get).with(endpoint, anything).raises(response_error)
 
-    exception = assert_raises ActiveMerchant::Shipping::ResponseError do
+    exception = assert_raises ActiveShipping::ResponseError do
       @cp.retrieve_merchant_details(:token_id => '1234567890')
     end
 

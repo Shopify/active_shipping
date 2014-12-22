@@ -25,7 +25,7 @@ class RateEstimateTest < Test::Unit::TestCase
   end
 
   def test_creating_an_estimate_with_an_invalid_currency_raises
-    assert_raises ActiveMerchant::InvalidCurrencyCodeError do
+    assert_raises ActiveUtils::InvalidCurrencyCodeError do
       RateEstimate.new(nil, nil, nil, nil, :currency => 'FAKE')
     end
   end

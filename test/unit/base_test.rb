@@ -1,7 +1,7 @@
 require 'test_helper'
 
 class BaseTest < Test::Unit::TestCase
-  include ActiveMerchant::Shipping
+  include ActiveShipping
 
   def test_get_usps_by_string
     assert_equal USPS, Base.carrier('usps')

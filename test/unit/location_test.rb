@@ -1,14 +1,14 @@
 require 'test_helper'
 
 class LocationTest < Test::Unit::TestCase
-  include ActiveMerchant::Shipping
+  include ActiveShipping
 
   def setup
     @locations = TestFixtures.locations.dup
   end
 
   def test_countries
-    assert_instance_of ActiveMerchant::Country, @locations[:ottawa].country
+    assert_instance_of ActiveUtils::Country, @locations[:ottawa].country
     assert_equal 'CA', @locations[:ottawa].country_code(:alpha2)
   end
 
