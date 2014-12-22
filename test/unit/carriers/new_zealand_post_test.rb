@@ -67,7 +67,7 @@ class NewZealandPostTest < Test::Unit::TestCase
   def test_domestic_shipping_container_response_error
     @carrier.expects(:commit).returns([json_fixture("newzealandpost/domestic_error")])
     error = @carrier.find_rates(@wellington, @auckland, @packages[:shipping_container]) rescue $!
-    assert_equal ActiveMerchant::Shipping::ResponseError, error.class
+    assert_equal ActiveShipping::ResponseError, error.class
     assert_equal "Weight can only be between 0 and 25kg", error.message
     assert_equal [json_fixture("newzealandpost/domestic_error")], error.response.raw_responses
     response_params = { "responses" => [JSON.parse(json_fixture("newzealandpost/domestic_error"))] }
@@ -144,7 +144,7 @@ class NewZealandPostTest < Test::Unit::TestCase
   def test_international_empty_json_response_error
     @carrier.expects(:commit).returns([""])
     error = @carrier.find_rates(@wellington, @ottawa, @packages[:book]) rescue $!
-    assert_equal ActiveMerchant::Shipping::ResponseError, error.class
+    assert_equal ActiveShipping::ResponseError, error.class
     assert_equal "A JSON text must at least contain two octets!", error.message
     assert_equal [""], error.response.raw_responses
     response_params = { "responses" => [] }
@@ -154,7 +154,7 @@ class NewZealandPostTest < Test::Unit::TestCase
   def test_international_invalid_json_response_error
     @carrier.expects(:commit).returns(["<>"])
     error = @carrier.find_rates(@wellington, @ottawa, @packages[:book]) rescue $!
-    assert_equal ActiveMerchant::Shipping::ResponseError, error.class
+    assert_equal ActiveShipping::ResponseError, error.class
     assert error.message.include?("unexpected token")
     assert_equal ["<>"], error.response.raw_responses
     response_params = { "responses" => [] }
@@ -163,7 +163,7 @@ class NewZealandPostTest < Test::Unit::TestCase
 
   def test_international_invalid_origin_country_response
     error = @carrier.find_rates(@ottawa, @wellington, @packages[:book]) rescue $!
-    assert_equal ActiveMerchant::Shipping::ResponseError, error.class
+    assert_equal ActiveShipping::ResponseError, error.class
     assert_equal "New Zealand Post packages must originate in New Zealand", error.message
     assert_equal [], error.response.raw_responses
     assert_equal Array, error.response.request.class

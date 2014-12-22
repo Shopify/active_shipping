@@ -38,7 +38,7 @@ class FedExTest < MiniTest::Unit::TestCase
         parsed_response['RateRequest']['RequestedShipment']['ShipTimestamp'] == timestamp
       end.returns(mock_response)
 
-      destination = ActiveMerchant::Shipping::Location.from(@locations[:beverly_hills].to_hash, :address_type => :commercial)
+      destination = ActiveShipping::Location.from(@locations[:beverly_hills].to_hash, :address_type => :commercial)
       response = @carrier.find_rates @locations[:ottawa], destination, @packages[:book], :test => true
       assert_equal [delivery_date, delivery_date], response.rates.first.delivery_range
     end
@@ -54,7 +54,7 @@ class FedExTest < MiniTest::Unit::TestCase
         parsed_response['RateRequest']['RequestedShipment']['ShipTimestamp'] == timestamp
       end.returns(mock_response)
 
-      destination = ActiveMerchant::Shipping::Location.from(@locations[:beverly_hills].to_hash, :address_type => :commercial)
+      destination = ActiveShipping::Location.from(@locations[:beverly_hills].to_hash, :address_type => :commercial)
       response = @carrier.find_rates @locations[:ottawa], destination, @packages[:book], :turn_around_time => 24, :test => true
 
       assert_equal [delivery_date, delivery_date], response.rates.first.delivery_range
@@ -69,13 +69,13 @@ class FedExTest < MiniTest::Unit::TestCase
       parsed_request['RateRequest']['TransactionDetail']['CustomerTransactionId'] == transaction_id
     end.returns(xml_fixture('fedex/ottawa_to_beverly_hills_rate_response'))
 
-    destination = ActiveMerchant::Shipping::Location.from(@locations[:beverly_hills].to_hash, :address_type => :commercial)
+    destination = ActiveShipping::Location.from(@locations[:beverly_hills].to_hash, :address_type => :commercial)
     @carrier.find_rates @locations[:ottawa], destination, @packages[:book], :test => true
   end
 
   def test_find_tracking_info_should_return_a_tracking_response
     @carrier.expects(:commit).returns(@tracking_response)
-    assert_instance_of ActiveMerchant::Shipping::TrackingResponse, @carrier.find_tracking_info('077973360403984', :test => true)
+    assert_instance_of ActiveShipping::TrackingResponse, @carrier.find_tracking_info('077973360403984', :test => true)
   end
 
   def test_find_tracking_info_should_mark_shipment_as_delivered
@@ -218,7 +218,7 @@ class FedExTest < MiniTest::Unit::TestCase
     Time.any_instance.expects(:to_xml_value).returns("2009-07-20T12:01:55-04:00")
 
     @carrier.expects(:commit).with { |request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode }.returns(mock_response)
-    destination = ActiveMerchant::Shipping::Location.from(@locations[:beverly_hills].to_hash, :address_type => :commercial)
+    destination = ActiveShipping::Location.from(@locations[:beverly_hills].to_hash, :address_type => :commercial)
     @carrier.find_rates( @locations[:ottawa],
                          destination,
                          @packages.values_at(:book, :wii), :test => true)
@@ -325,7 +325,7 @@ class FedExTest < MiniTest::Unit::TestCase
     Time.any_instance.expects(:to_xml_value).returns("2009-07-20T12:01:55-04:00")
 
     @carrier.expects(:commit).with { |request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode }.returns(mock_response)
-    exception = assert_raises ActiveMerchant::Shipping::ResponseContentError do
+    exception = assert_raises ActiveShipping::ResponseContentError do
       @carrier.find_rates( @locations[:ottawa],
                            @locations[:beverly_hills],
                            @packages.values_at(:book, :wii), :test => true)
@@ -381,7 +381,7 @@ class FedExTest < MiniTest::Unit::TestCase
 
     @carrier.expects(:commit).returns(mock_response)
 
-    assert_raises ActiveMerchant::Shipping::ResponseContentError do
+    assert_raises ActiveShipping::ResponseContentError do
     @carrier.find_rates(
         @locations[:ottawa],
         @locations[:beverly_hills],
@@ -396,7 +396,7 @@ class FedExTest < MiniTest::Unit::TestCase
 
     @carrier.expects(:commit).returns(mock_response)
 
-    assert_raises ActiveMerchant::Shipping::ResponseError do
+    assert_raises ActiveShipping::ResponseError do
     @carrier.find_rates(
         @locations[:ottawa],
         @locations[:beverly_hills],

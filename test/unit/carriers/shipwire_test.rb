@@ -121,7 +121,7 @@ class ShipwireTest < Test::Unit::TestCase
   def test_validate_credentials_with_invalid_credentials
     response = stub(:code => '401', :body => 'Could not verify Username/EmailAddress and Password combination')
 
-    @carrier.expects(:ssl_post).raises(ActiveMerchant::ResponseError.new(response))
+    @carrier.expects(:ssl_post).raises(ActiveUtils::ResponseError.new(response))
     assert !@carrier.valid_credentials?
   end
 

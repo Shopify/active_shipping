@@ -234,7 +234,7 @@ class UPSTest < Test::Unit::TestCase
     # context of UPS label data is a matter for unit tests.  If
     # the data changes substantially, the create_shipment
     # ought to raise an exception and this test will fail.
-    assert_instance_of ActiveMerchant::Shipping::LabelResponse, response
+    assert_instance_of ActiveShipping::LabelResponse, response
   end
 
   def test_obtain_shipping_label_without_dimensions
@@ -248,6 +248,6 @@ class UPSTest < Test::Unit::TestCase
         :test => true
       )
     end
-    assert_instance_of ActiveMerchant::Shipping::LabelResponse, response
+    assert_instance_of ActiveShipping::LabelResponse, response
   end
 end

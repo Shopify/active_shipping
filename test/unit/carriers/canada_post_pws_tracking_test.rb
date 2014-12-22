@@ -57,10 +57,10 @@ class CanadaPostPwsTrackingTest < Test::Unit::TestCase
     http_response = mock
     http_response.stubs(:code).returns('400')
     http_response.stubs(:body).returns(response)
-    response_error = ActiveMerchant::ResponseError.new(http_response)
+    response_error = ActiveUtils::ResponseError.new(http_response)
     @cp.expects(:ssl_get).raises(response_error)
 
-    exception = assert_raises ActiveMerchant::Shipping::ResponseError do
+    exception = assert_raises ActiveShipping::ResponseError do
       @cp.find_tracking_info(pin)
     end
 
@@ -71,7 +71,7 @@ class CanadaPostPwsTrackingTest < Test::Unit::TestCase
     pin = '123'
     @cp.expects(:ssl_get).never
 
-    exception = assert_raises ActiveMerchant::Shipping::ResponseError do
+    exception = assert_raises ActiveShipping::ResponseError do
       @cp.find_tracking_info(pin)
     end
     assert_equal "Invalid Pin Format", exception.message

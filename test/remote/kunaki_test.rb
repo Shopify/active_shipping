@@ -24,7 +24,7 @@ class RemoteKunakiTest < Test::Unit::TestCase
   end
 
   def test_send_no_items
-    assert_raise(ActiveMerchant::ResponseError) do
+    assert_raise(ActiveUtils::ResponseError) do
       begin
         @carrier.find_rates(
           @locations[:ottawa],
@@ -32,7 +32,7 @@ class RemoteKunakiTest < Test::Unit::TestCase
           @packages.values_at(:book, :wii),
           :items => []
         )
-      rescue ActiveMerchant::ResponseError => e
+      rescue ActiveUtils::ResponseError => e
         assert_equal 500, e.response.code.to_i
         raise
       end

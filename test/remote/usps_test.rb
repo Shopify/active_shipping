@@ -8,7 +8,7 @@ class USPSTest < Test::Unit::TestCase
   end
 
   def test_tracking
-    skip '<#<ActiveMerchant::Shipping::ResponseError: There is no record of that mail item. If it was mailed recently, it may not yet be tracked. Please try again later.>>.'
+    skip '<#<ActiveShipping::ResponseError: There is no record of that mail item. If it was mailed recently, it may not yet be tracked. Please try again later.>>.'
     assert_nothing_raised do
       @carrier.find_tracking_info('EJ958083578US', :test => true)
     end
@@ -226,12 +226,12 @@ class USPSTest < Test::Unit::TestCase
   # countries are currently working. Commented out here just because it's a lot of
   # hits to their server at once:
 
-  # ALL_COUNTRIES = ActiveMerchant::Country.const_get('COUNTRIES').map {|c| c[:alpha2]}
+  # ALL_COUNTRIES = ActiveUtils::Country.const_get('COUNTRIES').map {|c| c[:alpha2]}
   # SPECIAL_COUNTRIES = USPS.const_get('COUNTRY_NAME_CONVERSIONS').keys.sort
   # NORMAL_COUNTRIES = (ALL_COUNTRIES - SPECIAL_COUNTRIES)
   #
   # SPECIAL_COUNTRIES.each do |code|
-  #   unless ActiveMerchant::Country.find(code).name == USPS.const_get('COUNTRY_NAME_CONVERSIONS')[code]
+  #   unless ActiveUtils::Country.find(code).name == USPS.const_get('COUNTRY_NAME_CONVERSIONS')[code]
   #     define_method("test_country_#{code}") do
   #       response = nil
   #       begin

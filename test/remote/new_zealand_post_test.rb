@@ -45,8 +45,8 @@ class NewZealandPostTest < Test::Unit::TestCase
   end
 
   def test_domestic_failed_response_raises
-    skip 'ActiveMerchant::Shipping::ResponseError expected but nothing was raised.'
-    assert_raises ActiveMerchant::Shipping::ResponseError do
+    skip 'ActiveShipping::ResponseError expected but nothing was raised.'
+    assert_raises ActiveShipping::ResponseError do
       @carrier.find_rates(@wellington, @auckland, @packages[:shipping_container])
     end
   end

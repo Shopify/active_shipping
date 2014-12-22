@@ -22,7 +22,7 @@ class UPSTest < Test::Unit::TestCase
 
   def test_find_tracking_info_should_return_a_tracking_response
     @carrier.expects(:commit).returns(@tracking_response)
-    assert_equal 'ActiveMerchant::Shipping::TrackingResponse', @carrier.find_tracking_info('1Z5FX0076803466397').class.name
+    assert_equal 'ActiveShipping::TrackingResponse', @carrier.find_tracking_info('1Z5FX0076803466397').class.name
   end
 
   def test_find_tracking_info_should_mark_shipment_as_delivered

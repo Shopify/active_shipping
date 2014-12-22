@@ -18,10 +18,6 @@ class CanadaPostTest < Test::Unit::TestCase
   end
 
   def test_parse_rate_response_french
-    assert_equal @request, @french_carrier.build_rate_request(@origin, @destination, 24, @line_items)
-  end
-
-  def test_parse_rate_response_french
     @french_carrier.expects(:ssl_post).returns(@response_french)
     rate_estimates = @french_carrier.find_rates(@origin, @destination, @line_items)
     # rate_response = @french_carrier.send :parse_rate_response, @response_french, @origin, @desination
@@ -86,7 +82,7 @@ class CanadaPostTest < Test::Unit::TestCase
   def test_non_success_parse_rate_response
     @carrier.expects(:ssl_post).returns(@bad_response)
 
-    error = assert_raise ActiveMerchant::Shipping::ResponseError do
+    error = assert_raise ActiveShipping::ResponseError do
       @carrier.find_rates(@origin, @destination, @line_items)
     end
 
