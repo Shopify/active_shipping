@@ -118,8 +118,7 @@ module ActiveShipping #:nodoc:
     end
 
     def prettyprint
-      chunks = []
-      chunks << [@name, @address1, @address2, @address3].reject(&:blank?).join("\n")
+      chunks = [@name, @address1, @address2, @address3]
       chunks << [@city, @province, @postal_code].reject(&:blank?).join(', ')
       chunks << @country
       chunks.reject(&:blank?).join("\n")

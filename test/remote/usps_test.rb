@@ -1,73 +1,72 @@
 require 'test_helper'
 
-class USPSTest < Test::Unit::TestCase
+class USPSTest < Minitest::Test
+  include ActiveShipping::Test::Credentials
+  include ActiveShipping::Test::Fixtures
+
   def setup
-    @packages  = TestFixtures.packages
-    @locations = TestFixtures.locations
-    @carrier   = USPS.new(fixtures(:usps))
+    @carrier = USPS.new(credentials(:usps))
   end
 
   def test_tracking
     skip '<#<ActiveShipping::ResponseError: There is no record of that mail item. If it was mailed recently, it may not yet be tracked. Please try again later.>>.'
-    assert_nothing_raised do
-      @carrier.find_tracking_info('EJ958083578US', :test => true)
-    end
+
+    @carrier.find_tracking_info('EJ958083578US', :test => true)
+    assert response.success?, response.message
   end
 
   def test_tracking_with_bad_number
-    assert_raises ResponseError do
+    assert_raises(ResponseError) do
       @carrier.find_tracking_info('abc123xyz')
     end
   end
 
   def test_zip_to_zip
-    assert_nothing_raised do
-      @carrier.find_rates(
-        Location.new(:zip => 40524),
-        Location.new(:zip => 40515),
-        Package.new(16, [12, 6, 2], :units => :imperial)
-      )
-    end
+    response = @carrier.find_rates(
+      Location.new(:zip => 40524),
+      Location.new(:zip => 40515),
+      Package.new(16, [12, 6, 2], :units => :imperial)
+    )
+
+    assert response.success?, response.message
+    refute response.rates.empty?
   end
 
   def test_just_country_given
-    assert_nothing_raised do
-      @carrier.find_rates(
-        @locations[:beverly_hills],
-        Location.new(:country => 'CZ'),
-        Package.new(100, [5, 10, 20])
-      )
-    end
+    @carrier.find_rates(
+      location_fixtures[:beverly_hills],
+      Location.new(:country => 'CZ'),
+      Package.new(100, [5, 10, 20])
+    )
+    assert response.success?, response.message
+    refute response.rates.empty?
   end
 
   def test_us_to_canada
-    response = nil
-    assert_nothing_raised do
-      response = @carrier.find_rates(
-                   @locations[:beverly_hills],
-                   @locations[:ottawa],
-                   @packages.values_at(:american_wii),
-                   :test => true
-                 )
-      assert_not_equal [], response.rates.length
-    end
+    response = @carrier.find_rates(
+      location_fixtures[:beverly_hills],
+      location_fixtures[:ottawa],
+      package_fixtures.values_at(:american_wii),
+      :test => true
+    )
+
+    assert response.success?, response.message
+    refute response.rates.empty?
   end
 
   def test_domestic_rates
-    response = nil
-    assert_nothing_raised do
-      response = @carrier.find_rates(
-                   @locations[:new_york],
-                   @locations[:beverly_hills],
-                   @packages.values_at(:book, :american_wii),
-                   :test => true
-                 )
-    end
+    response = @carrier.find_rates(
+      location_fixtures[:new_york],
+      location_fixtures[:beverly_hills],
+      package_fixtures.values_at(:book, :american_wii),
+      :test => true
+    )
+
     assert response.success?, response.message
     assert_instance_of Hash, response.params
     assert_instance_of String, response.xml
     assert_instance_of Array, response.rates
-    assert_not_equal [], response.rates
+    refute response.rates.empty?
 
     rate = response.rates.first
     assert_equal 'USPS', rate.carrier
@@ -77,7 +76,7 @@ class USPSTest < Test::Unit::TestCase
     assert_instance_of String, rate.service_name
     assert_instance_of String, rate.service_code
     assert_instance_of Array, rate.package_rates
-    assert_equal @packages.values_at(:book, :american_wii), rate.packages
+    assert_equal package_fixtures.values_at(:book, :american_wii), rate.packages
 
     package_rate = rate.package_rates.first
     assert_instance_of Hash, package_rate
@@ -89,21 +88,18 @@ class USPSTest < Test::Unit::TestCase
   end
 
   def test_international_rates
-    response = nil
-    assert_nothing_raised do
-      response = @carrier.find_rates(
-                   @locations[:beverly_hills],
-                   @locations[:ottawa],
-                   @packages.values_at(:book, :american_wii),
-                   :test => true
-                 )
-    end
+    response = @carrier.find_rates(
+      location_fixtures[:beverly_hills],
+      location_fixtures[:ottawa],
+      package_fixtures.values_at(:book, :american_wii),
+      :test => true
+    )
 
     assert response.success?, response.message
     assert_instance_of Hash, response.params
     assert_instance_of String, response.xml
     assert_instance_of Array, response.rates
-    assert_not_equal [], response.rates
+    refute response.rates.empty?
 
     rate = response.rates.first
     assert_equal 'USPS', rate.carrier
@@ -113,7 +109,7 @@ class USPSTest < Test::Unit::TestCase
     assert_instance_of String, rate.service_name
     assert_instance_of String, rate.service_code
     assert_instance_of Array, rate.package_rates
-    assert_equal @packages.values_at(:book, :american_wii), rate.packages
+    assert_equal package_fixtures.values_at(:book, :american_wii), rate.packages
 
     package_rate = rate.package_rates.first
     assert_instance_of Hash, package_rate
@@ -125,95 +121,85 @@ class USPSTest < Test::Unit::TestCase
   end
 
   def test_us_to_us_possession
-    response = nil
-    assert_nothing_raised do
-      response = @carrier.find_rates(
-                   @locations[:beverly_hills],
-                   @locations[:puerto_rico],
-                   @packages.values_at(:american_wii),
-                   :test => true
-                 )
-      assert_not_equal [], response.rates.length
-    end
+    response = @carrier.find_rates(
+      location_fixtures[:beverly_hills],
+      location_fixtures[:puerto_rico],
+      package_fixtures.values_at(:american_wii),
+      :test => true
+    )
+
+    assert response.success?, response.message
+    refute response.rates.empty?
   end
 
   def test_bare_packages_domestic
-    response = begin
-      @carrier.find_rates(
-        @locations[:beverly_hills], # imperial (U.S. origin)
-        @locations[:new_york],
-        Package.new(0, 0),
-        :test => true
-      )
-    rescue ResponseError => e
-      e.response
-    end
+    response = @carrier.find_rates(
+      location_fixtures[:beverly_hills], # imperial (U.S. origin)
+      location_fixtures[:new_york],
+      Package.new(0, 0),
+      :test => true
+    )
+
     assert response.success?, response.message
+    refute response.rates.empty?
   end
 
   def test_bare_packages_international
-    response = begin
-      @carrier.find_rates(
-        @locations[:beverly_hills], # imperial (U.S. origin)
-        @locations[:ottawa],
-        Package.new(0, 0),
-        :test => true
-      )
-    rescue ResponseError => e
-      e.response
-    end
+    response = @carrier.find_rates(
+      location_fixtures[:beverly_hills], # imperial (U.S. origin)
+      location_fixtures[:ottawa],
+      Package.new(0, 0),
+      :test => true
+    )
+
     assert response.success?, response.message
+    refute response.rates.empty?
   end
 
   def test_first_class_packages_with_mail_type
-    response = begin
-      @carrier.find_rates(
-        @locations[:beverly_hills], # imperial (U.S. origin)
-        @locations[:new_york],
-        Package.new(0, 0),
-
-        :test => true,
-        :service => :first_class,
-        :first_class_mail_type => :parcel
-
-      )
-    rescue ResponseError => e
-      e.response
-    end
-    assert response.success?, response.message
-  end
-
-  def test_first_class_packages_without_mail_type
-    @carrier.find_rates(
-      @locations[:beverly_hills], # imperial (U.S. origin)
-      @locations[:new_york],
-      Package.new(0, 0),
-
-      :test => true,
-      :service => :first_class
-
-    )
-  rescue ResponseError => e
-    assert_equal "Invalid First Class Mail Type.", e.message
-  end
-
-  def test_first_class_packages_with_invalid_mail_type
-    @carrier.find_rates(
-      @locations[:beverly_hills], # imperial (U.S. origin)
-      @locations[:new_york],
+    response = @carrier.find_rates(
+      location_fixtures[:beverly_hills], # imperial (U.S. origin)
+      location_fixtures[:new_york],
       Package.new(0, 0),
 
       :test => true,
       :service => :first_class,
-      :first_class_mail_tpe => :invalid
-
+      :first_class_mail_type => :parcel
     )
-  rescue ResponseError => e
-    assert_equal "Invalid First Class Mail Type.", e.message
+
+    assert response.success?, response.message
+    refute response.rates.empty?
+  end
+
+  def test_first_class_packages_without_mail_type
+    assert_raises(ResponseError, "Invalid First Class Mail Type.") do
+      @carrier.find_rates(
+        location_fixtures[:beverly_hills], # imperial (U.S. origin)
+        location_fixtures[:new_york],
+        Package.new(0, 0),
+
+        :test => true,
+        :service => :first_class
+      )
+    end
+  end
+
+  def test_first_class_packages_with_invalid_mail_type
+    assert_raises(ResponseError, "Invalid First Class Mail Type.") do
+      @carrier.find_rates(
+        location_fixtures[:beverly_hills], # imperial (U.S. origin)
+        location_fixtures[:new_york],
+        Package.new(0, 0),
+
+        :test => true,
+        :service => :first_class,
+        :first_class_mail_tpe => :invalid
+      )
+    end
   end
 
   def test_valid_credentials
-    assert USPS.new(fixtures(:usps).merge(:test => true)).valid_credentials?
+    assert USPS.new(credentials(:usps).merge(:test => true)).valid_credentials?
   end
 
   def test_must_provide_login_creds_when_instantiating
@@ -235,9 +221,9 @@ class USPSTest < Test::Unit::TestCase
   #     define_method("test_country_#{code}") do
   #       response = nil
   #       begin
-  #         response = @carrier.find_rates( @locations[:beverly_hills],
+  #         response = @carrier.find_rates( location_fixtures[:beverly_hills],
   #                                         Location.new(:country => code),
-  #                                         @packages.values_at(:american_wii),
+  #                                         package_fixtures.values_at(:american_wii),
   #                                         :test => true)
   #       rescue Exception => e
   #         flunk(e.inspect + "\nrequest: " + @carrier.last_request)

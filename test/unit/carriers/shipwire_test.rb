@@ -1,11 +1,11 @@
 require 'test_helper'
 
-class ShipwireTest < Test::Unit::TestCase
+class ShipwireTest < Minitest::Test
+  include ActiveShipping::Test::Fixtures
+
   def setup
-    @packages  = TestFixtures.packages
-    @locations = TestFixtures.locations
-    @carrier   = Shipwire.new(:login => 'l', :password => 'p')
-    @items = [{ :sku => 'AF0001', :quantity => 1 }, { :sku => 'AF0002', :quantity => 2 }]
+    @carrier = Shipwire.new(:login => 'l', :password => 'p')
+    @items   = [{ :sku => 'AF0001', :quantity => 1 }, { :sku => 'AF0002', :quantity => 2 }]
   end
 
   def test_response_with_no_rates_is_unsuccessful
@@ -13,9 +13,9 @@ class ShipwireTest < Test::Unit::TestCase
 
     assert_raises(ResponseError) do
       @carrier.find_rates(
-        @locations[:ottawa],
-        @locations[:beverly_hills],
-        @packages.values_at(:book, :wii),
+        location_fixtures[:ottawa],
+        location_fixtures[:beverly_hills],
+        package_fixtures.values_at(:book, :wii),
         :order_id => '#1000',
         :items => @items
       )
@@ -28,9 +28,9 @@ class ShipwireTest < Test::Unit::TestCase
     @carrier.expects(:ssl_post).returns(xml_fixture('shipwire/international_rates_response'))
 
     response = @carrier.find_rates(
-                 @locations[:ottawa],
-                 @locations[:london],
-                 @packages.values_at(:book, :wii),
+                 location_fixtures[:ottawa],
+                 location_fixtures[:london],
+                 package_fixtures.values_at(:book, :wii),
                  :order_id => '#1000',
                  :items => @items
                )
@@ -54,9 +54,9 @@ class ShipwireTest < Test::Unit::TestCase
     @carrier.expects(:ssl_post).returns(xml_fixture('shipwire/rates_response'))
 
     response = @carrier.find_rates(
-                 @locations[:ottawa],
-                 @locations[:beverly_hills],
-                 @packages.values_at(:book, :wii),
+                 location_fixtures[:ottawa],
+                 location_fixtures[:beverly_hills],
+                 package_fixtures.values_at(:book, :wii),
                  :order_id => '#1000',
                  :items => @items
                )
@@ -91,9 +91,9 @@ class ShipwireTest < Test::Unit::TestCase
     @carrier.expects(:ssl_post).returns(xml_fixture('shipwire/new_carrier_rate_response'))
 
     response = @carrier.find_rates(
-                 @locations[:ottawa],
-                 @locations[:beverly_hills],
-                 @packages.values_at(:book, :wii),
+                 location_fixtures[:ottawa],
+                 location_fixtures[:beverly_hills],
+                 package_fixtures.values_at(:book, :wii),
                  :order_id => '#1000',
                  :items => @items
                )
@@ -106,9 +106,9 @@ class ShipwireTest < Test::Unit::TestCase
   def test_find_rates_requires_items_option
     assert_raises(ArgumentError) do
       @carrier.find_rates(
-        @locations[:ottawa],
-        @locations[:beverly_hills],
-        @packages.values_at(:book, :wii)
+        location_fixtures[:ottawa],
+        location_fixtures[:beverly_hills],
+        package_fixtures.values_at(:book, :wii)
       )
     end
   end
@@ -130,9 +130,9 @@ class ShipwireTest < Test::Unit::TestCase
     @carrier.expects(:ssl_post).with(anything, includes(name)).returns(xml_fixture('shipwire/rates_response'))
 
     response = @carrier.find_rates(
-                 @locations[:ottawa],
-                 @locations[:new_york_with_name],
-                 @packages.values_at(:book, :wii),
+                 location_fixtures[:ottawa],
+                 location_fixtures[:new_york_with_name],
+                 package_fixtures.values_at(:book, :wii),
                  :order_id => '#1000',
                  :items => @items
                )
@@ -145,9 +145,9 @@ class ShipwireTest < Test::Unit::TestCase
     @carrier.expects(:ssl_post).with(anything, Not(regexp_matches(Regexp.new(name)))).returns(xml_fixture('shipwire/rates_response'))
 
     response = @carrier.find_rates(
-                 @locations[:ottawa],
-                 @locations[:new_york],
-                 @packages.values_at(:book, :wii),
+                 location_fixtures[:ottawa],
+                 location_fixtures[:new_york],
+                 package_fixtures.values_at(:book, :wii),
                  :order_id => '#1000',
                  :items => @items
                )
@@ -158,9 +158,9 @@ class ShipwireTest < Test::Unit::TestCase
   def test_rate_request_without_delivery_estimate
     @carrier.expects(:ssl_post).returns(xml_fixture('shipwire/rates_response_no_estimate'))
     response = @carrier.find_rates(
-                 @locations[:ottawa],
-                 @locations[:new_york],
-                 @packages.values_at(:book, :wii),
+                 location_fixtures[:ottawa],
+                 location_fixtures[:new_york],
+                 package_fixtures.values_at(:book, :wii),
                  :order_id => '#1000',
                  :items => @items
                )
@@ -175,9 +175,9 @@ class ShipwireTest < Test::Unit::TestCase
     @carrier.expects(:ssl_post).with(anything, includes(company)).returns(xml_fixture('shipwire/rates_response'))
 
     response = @carrier.find_rates(
-                 @locations[:ottawa],
-                 @locations[:real_home_as_commercial],
-                 @packages.values_at(:book, :wii),
+                 location_fixtures[:ottawa],
+                 location_fixtures[:real_home_as_commercial],
+                 package_fixtures.values_at(:book, :wii),
                  :order_id => '#1000',
                  :items => @items
                )

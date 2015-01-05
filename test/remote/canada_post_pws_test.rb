@@ -1,15 +1,18 @@
 require 'test_helper'
 
-# All remote tests require Canada Post development environment credentials
-class CanadaPostPWSTest < Test::Unit::TestCase
+class CanadaPostPWSTest < Minitest::Test
+  # All remote tests require Canada Post development environment credentials
+  include ActiveShipping::Test::Credentials
+  include ActiveShipping::Test::Fixtures
+
   def setup
-    @login = fixtures(:canada_post_pws)
+    @login = credentials(:canada_post_pws)
 
     # 100 grams, 93 cm long, 10 cm diameter, cylinders have different volume calculations
     # @pkg1 = Package.new(1000, [93,10], :value => 10.00)
     @pkg1 = Package.new(1000, nil, :value => 10.00)
 
-    @line_item1 = TestFixtures.line_items1
+    @line_item1 = line_item_fixture
 
     @shipping_opts1 = {:dc => true, :cod => true, :cod_amount => 500.00, :cov => true, :cov_amount => 100.00,
                        :so => true, :pa18 => true}
@@ -92,7 +95,7 @@ class CanadaPostPWSTest < Test::Unit::TestCase
 
   def test_rates_with_invalid_customer_raises_exception
     opts = {:customer_number => "0000000000", :service => "DOM.XP"}
-    assert_raise ResponseError do
+    assert_raises(ResponseError) do
       @cp.find_rates(@home_params, @dom_params, [@pkg1], opts)
     end
   end
@@ -109,7 +112,7 @@ class CanadaPostPWSTest < Test::Unit::TestCase
   def test_tracking_when_no_tracking_info_raises_exception
     pin = "4442172020196022" # valid pin
 
-    error = assert_raise ActiveShipping::ResponseError do
+    error = assert_raises(ActiveShipping::ResponseError) do
       @cp.find_tracking_info(pin, {})
     end
 
@@ -144,7 +147,7 @@ class CanadaPostPWSTest < Test::Unit::TestCase
 
   def test_create_shipment_with_invalid_customer_raises_exception
     opts = {:customer_number => "0000000000", :service => "DOM.XP"}
-    assert_raise ResponseError do
+    assert_raises(ResponseError) do
       @cp.create_shipment(@home_params, @dom_params, @pkg1, @line_item1, opts)
     end
   end

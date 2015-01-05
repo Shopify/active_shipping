@@ -1,12 +1,14 @@
 require 'test_helper'
 
-class RateEstimateTest < Test::Unit::TestCase
+class RateEstimateTest < Minitest::Test
+  include ActiveShipping::Test::Credentials
+
   def setup
     @origin      = {:address1 => "61A York St", :city => "Ottawa", :province => "ON", :country => "Canada", :postal_code => "K1N 5T2"}
     @destination = {:city => "Beverly Hills", :state => "CA", :country => "United States", :postal_code => "90210"}
     @line_items  = [Package.new(500, [2, 3, 4], :description => "a box full of stuff", :value => 2500)]
-    @carrier = CanadaPost.new(fixtures(:canada_post))
-    @options = {:currency => 'USD'}
+    @carrier     = CanadaPost.new(credentials(:canada_post))
+    @options     = {:currency => 'USD'}
 
     @rate_estimate = RateEstimate.new(@origin, @destination, @carrier, @service_name, @options)
   end
@@ -25,7 +27,7 @@ class RateEstimateTest < Test::Unit::TestCase
   end
 
   def test_creating_an_estimate_with_an_invalid_currency_raises
-    assert_raises ActiveUtils::InvalidCurrencyCodeError do
+    assert_raises(ActiveUtils::InvalidCurrencyCodeError) do
       RateEstimate.new(nil, nil, nil, nil, :currency => 'FAKE')
     end
   end

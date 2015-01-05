@@ -21,15 +21,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
 
-$:.unshift File.dirname(__FILE__)
-
-begin
-  require 'active_support/all'
-rescue LoadError
-  require 'rubygems'
-  gem "activesupport", ">= 2.3.5"
-  require "active_support/all"
-end
+require 'active_support/all'
 
 autoload :XmlNode, 'vendor/xml_node/lib/xml_node'
 autoload :Quantified, 'vendor/quantified/lib/quantified'

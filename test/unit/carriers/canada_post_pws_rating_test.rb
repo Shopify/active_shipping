@@ -1,8 +1,9 @@
 require 'test_helper'
-class CanadaPostPwsRatingTest < Test::Unit::TestCase
-  def setup
-    login = fixtures(:canada_post_pws)
+class CanadaPostPwsRatingTest < Minitest::Test
+  include ActiveShipping::Test::Credentials
+  include ActiveShipping::Test::Fixtures
 
+  def setup
     # 100 grams, 93 cm long, 10 cm diameter, cylinders have different volume calculations
     @pkg1 = Package.new(25, [93, 10], :cylinder => true)
     # 7.5 lbs, times 16 oz/lb., 15x10x4.5 inches, not grams, not centimetres
@@ -36,10 +37,10 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
 
     @customer_number = '654321'
 
-    @cp = CanadaPostPWS.new(login)
-    @cp.logger = Logger.new(STDOUT)
-    @french_cp = CanadaPostPWS.new(login.merge(:language => 'fr'))
-    @cp_customer_number = CanadaPostPWS.new(login.merge(:customer_number => @customer_number))
+    @cp = CanadaPostPWS.new(credentials(:canada_post_pws))
+    @cp.logger = Logger.new(StringIO.new)
+    @french_cp = CanadaPostPWS.new(credentials(:canada_post_pws).merge(:language => 'fr'))
+    @cp_customer_number = CanadaPostPWS.new(credentials(:canada_post_pws).merge(:customer_number => @customer_number))
 
     @default_options = {:customer_number => '123456'}
   end
