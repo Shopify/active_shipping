@@ -758,7 +758,7 @@ module ActiveShipping
 
     def origin_hash_for(root_node)
       occurrences = root_node.get_elements('significant-events').first.get_elements('occurrence')
-      earliest = occurrences.sort_by { |occurrence| time_of_occurrence occurrence }.first
+      earliest = occurrences.sort_by { |occurrence| time_of_occurrence(occurrence) }.first
 
       {
         city: earliest.get_text('event-site').to_s,
@@ -769,7 +769,7 @@ module ActiveShipping
     end
 
     def time_of_occurrence(occurrence)
-      time = occurrence.get_text('event_time')
+      time = occurrence.get_text('event-time')
       date = occurrence.get_text('event-date')
       time_zone = occurrence.get_text('event-date')
       DateTime.parse "#{date} #{time} #{time_zone}"
