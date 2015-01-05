@@ -103,25 +103,6 @@ To log requests and responses, just set the `logger` on your carrier class to so
 
 After you've pushed your well-tested changes to your github fork, make a pull request and we'll take it from there!
 
-## Contributors
-
-* James MacAulay (<http://jmacaulay.net>)
-* Tobias Luetke (<http://blog.leetsoft.com>)
-* Cody Fauser (<http://codyfauser.com>)
-* Jimmy Baker (<http://jimmyville.com/>)
-* William Lang (<http://williamlang.net/>)
-* Cameron Fowler
-* Christopher Saunders (<http://christophersaunders.ca>)
-* Denis Odorcic
-* Dennis O'Connor
-* Dennis Theisen
-* Edward Ocampo-Gooding
-* Isaac Kearse
-* John Duff
-* Nigel Ramsay
-* Philip Arndt
-* Vikram Oberoi
-
 ## Legal Mumbo Jumbo
 
 Unless otherwise noted in specific files, all code in the Active Shipping project is under the copyright and license described in the included MIT-LICENSE file.

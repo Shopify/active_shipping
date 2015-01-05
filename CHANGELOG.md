@@ -1,17 +1,21 @@
+# ActiveShipping CHANGELOG
+
 ### v0.10.1
+
  - Canada Post PWS: Makes wrapper act more consistently with the rest of the API [jnormore]
  - UPS: Adds insurance charge to package object declarations [pbonnell]
  - USPS: Improves how unavailable delivery information is handled [cyu]
  - Shipment Packer: Prevents packing errors and consistently return an array when packing [christianblais]
  - General: Improves tests such that they work with ruby 2.0 [Sirupsen]
 
+### 2011/04/21
 
-2011/04/21:
 * USPS updated to use new APIs [james]
 * new :gift boolean option for Package [james]
 * Location's :address_type can be "po_box" [james]
 
-Earlier:
+### Earlier
+
 * New Zealand Post [AbleTech]
 * Include address name for rate requests to Shipwire if provided [dennis]
 * Add support for address name to Location [dennis]
