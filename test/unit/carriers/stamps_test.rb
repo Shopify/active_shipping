@@ -1,11 +1,11 @@
 require 'test_helper'
 
-class StampsTest < Test::Unit::TestCase
+class StampsTest < Minitest::Test
+  include ActiveShipping::Test::Fixtures
+
   def setup
-    @packages = TestFixtures.packages
-    @locations = TestFixtures.locations
-    @carrier   = Stamps.new(integration_id: 'i', username: 'u', password: 'p')
-    @items = [{ :sku => 'AF0001', :quantity => 1 }, { :sku => 'AF0002', :quantity => 2 }]
+    @carrier = Stamps.new(integration_id: 'i', username: 'u', password: 'p')
+    @items   = [{ :sku => 'AF0001', :quantity => 1 }, { :sku => 'AF0002', :quantity => 2 }]
     @authentication_response = xml_fixture('stamps/authenticate_user_response')
   end
 

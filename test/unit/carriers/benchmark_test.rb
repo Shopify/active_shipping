@@ -1,15 +1,15 @@
 require 'test_helper'
 
-class BenchmarkTest < Test::Unit::TestCase
+class BenchmarkTest < Minitest::Test
+  include ActiveShipping::Test::Fixtures
+
   def setup
-    @packages = TestFixtures.packages
-    @locations = TestFixtures.locations
     @carrier = BenchmarkCarrier.new
   end
 
   def test_benchmark_response_is_valid
     @carrier.stubs(:generate_simulated_lag).returns(0)
-    response = @carrier.find_rates(@locations[:london], @locations[:new_york], @packages.values_at(:wii))
+    response = @carrier.find_rates(location_fixtures[:london], location_fixtures[:new_york], package_fixtures[:wii])
     assert_equal 1, response.rates.count
     rate = response.rates.first
     assert_equal "Free Benchmark Shipping", rate.service_name

@@ -1,15 +1,16 @@
 require 'test_helper'
-class CanadaPostPwsShippingTest < Test::Unit::TestCase
-  def setup
-    login = fixtures(:canada_post_pws)
+class CanadaPostPwsShippingTest < Minitest::Test
+  include ActiveShipping::Test::Credentials
+  include ActiveShipping::Test::Fixtures
 
+  def setup
     # 100 grams, 93 cm long, 10 cm diameter, cylinders have different volume calculations
     @pkg1 = Package.new(25, [93, 10], :cylinder => true)
 
     # 7.5 lbs, times 16 oz/lb., 15x10x4.5 inches, not grams, not centimetres
     @pkg2 = Package.new(  (7.5 * 16), [15, 10, 4.5], :units => :imperial)
 
-    @line_item1 = TestFixtures.line_items1
+    @line_item1 = line_item_fixture
 
     @home_params = {
       :name        => "John Smith",
@@ -70,13 +71,13 @@ class CanadaPostPwsShippingTest < Test::Unit::TestCase
       :label_url => "https://ct.soa-gw.canadapost.ca/ers/artifact/c70da5ed5a0d2c32/20238/0"
     }
 
-    @cp = CanadaPostPWS.new(login)
+    @cp = CanadaPostPWS.new(credentials(:canada_post_pws))
   end
 
   def test_build_shipment_customs_node
     options = @default_options.dup
     destination = Location.new(@us_params)
-    assert_not_nil response = @cp.shipment_customs_node(destination, @line_item1, options)
+    assert_instance_of XmlNode, response = @cp.shipment_customs_node(destination, @line_item1, options)
     doc = REXML::Document.new(response.to_s)
     assert root_node = doc.elements['customs']
     assert_equal "CAD", root_node.get_text('currency').to_s
@@ -88,13 +89,13 @@ class CanadaPostPwsShippingTest < Test::Unit::TestCase
   def test_build_shipment_request_for_domestic
     options = @default_options.dup
     request = @cp.build_shipment_request(@home_params, @dom_params, @pkg1, @line_item1, options)
-    assert_not_nil request
+    refute request.blank?
   end
 
   def test_build_shipment_request_for_US
     options = @default_options.dup
     request = @cp.build_shipment_request(@home_params, @us_params, @pkg1, @line_item1, options)
-    assert_not_nil request
+    refute request.blank?
     doc = REXML::Document.new(request)
     assert root_node = doc.elements['non-contract-shipment']
     assert delivery_spec = root_node.elements['delivery-spec']
@@ -106,19 +107,19 @@ class CanadaPostPwsShippingTest < Test::Unit::TestCase
   def test_build_shipment_request_for_international
     options = @default_options.dup
     request = @cp.build_shipment_request(@home_params, @paris_params, @pkg1, @line_item1, options)
-    assert_not_nil request
+    refute request.blank?
   end
 
   def test_build_shipment_request_location_object
     options = @default_options.dup
     request = @cp.build_shipment_request(Location.new(@home_params), Location.new(@dom_params), @pkg1, @line_item1, options)
-    assert_not_nil request
+    refute request.blank?
   end
 
   def test_create_shipment_request_with_options
     options = @default_options.merge(@shipping_opts1)
     request = @cp.build_shipment_request(@home_params, @paris_params, @pkg1, @line_item1, options)
-    assert_not_nil request
+    refute request.blank?
     doc = REXML::Document.new(request)
     assert root_node = doc.elements['non-contract-shipment']
     assert delivery_spec = root_node.elements['delivery-spec']
@@ -130,7 +131,7 @@ class CanadaPostPwsShippingTest < Test::Unit::TestCase
     options = @default_options.merge(@shipping_opts1)
     package = Package.new(0, [93, 10])
     request = @cp.build_shipment_request(@home_params, @dom_params, package, @line_item1, options)
-    assert_not_nil request
+    refute request.blank?
     doc = REXML::Document.new(request)
     assert root_node = doc.elements['non-contract-shipment']
     assert delivery_spec = root_node.elements['delivery-spec']
@@ -175,7 +176,6 @@ class CanadaPostPwsShippingTest < Test::Unit::TestCase
     shipping_response = CPPWSShippingResponse.new(true, '', {}, @DEFAULT_RESPONSE)
     @cp.expects(:ssl_get).once.returns(file_fixture('label1.pdf'))
     response = @cp.retrieve_shipping_label(shipping_response)
-    assert_not_nil response
     assert_equal "%PDF", response[0...4]
   end
 

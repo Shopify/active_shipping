@@ -6,7 +6,7 @@ require File.dirname(__FILE__) + "/../lib/xml_node"
 
 class TestXmlNode < Test::Unit::TestCase
   def test_parse_sanity
-    assert_raise(ArgumentError) { XmlNode.parse }
+    assert_raises(ArgumentError) { XmlNode.parse }
     assert_nothing_raised { XmlNode.parse('<feed/>') }
   end
 

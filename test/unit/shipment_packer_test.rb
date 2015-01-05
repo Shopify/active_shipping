@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class ShipmentPackerTest < Test::Unit::TestCase
+class ShipmentPackerTest < Minitest::Test
   def setup
     @dimensions = [5.1, 15.2, 30.5]
   end

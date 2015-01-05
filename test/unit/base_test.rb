@@ -1,7 +1,6 @@
 require 'test_helper'
 
-class BaseTest < Test::Unit::TestCase
-  include ActiveShipping
+class BaseTest < Minitest::Test
 
   def test_get_usps_by_string
     assert_equal USPS, Base.carrier('usps')
@@ -13,6 +12,6 @@ class BaseTest < Test::Unit::TestCase
   end
 
   def test_get_unknown_carrier
-    assert_raise(NameError) { Base.carrier(:polar_north) }
+    assert_raises(NameError) { Base.carrier(:polar_north) }
   end
 end

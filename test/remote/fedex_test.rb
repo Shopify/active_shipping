@@ -1,10 +1,11 @@
 require 'test_helper'
 
-class FedExTest < Test::Unit::TestCase
+class FedExTest < Minitest::Test
+  include ActiveShipping::Test::Credentials
+  include ActiveShipping::Test::Fixtures
+
   def setup
-    @packages  = TestFixtures.packages
-    @locations = TestFixtures.locations
-    @carrier   = FedEx.new(fixtures(:fedex).merge(:test => true))
+    @carrier = FedEx.new(credentials(:fedex).merge(:test => true))
   end
 
   def test_valid_credentials
@@ -12,25 +13,23 @@ class FedExTest < Test::Unit::TestCase
   end
 
   def test_us_to_canada
-    response = nil
-    assert_nothing_raised do
-      response = @carrier.find_rates(
-                   @locations[:beverly_hills],
-                   @locations[:ottawa],
-                   @packages.values_at(:wii)
-                 )
-      assert !response.rates.blank?
-      response.rates.each do |rate|
-        assert_instance_of String, rate.service_name
-        assert_instance_of Fixnum, rate.price
-      end
+    response = @carrier.find_rates(
+      location_fixtures[:beverly_hills],
+      location_fixtures[:ottawa],
+      package_fixtures.values_at(:wii)
+    )
+
+    assert_instance_of Array, response.rates
+    assert response.rates.length > 0
+    response.rates.each do |rate|
+      assert_instance_of String, rate.service_name
+      assert_instance_of Fixnum, rate.price
     end
   end
 
   def test_freight
     skip 'Cannot find the fedex freight creds. Whomp, whomp.'
-    response = nil
-    freight = fixtures(:fedex_freight)
+    freight = credentials(:fedex_freight)
 
     shipping_location = Location.new( address1: freight[:shipping_address1],
                                       address2: freight[:shipping_address2],
@@ -55,18 +54,18 @@ class FedExTest < Test::Unit::TestCase
       role: freight[:role]
     }
 
-    assert_nothing_raised do
-      response = @carrier.find_rates(
-                   shipping_location,
-                   @locations[:ottawa],
-                   @packages.values_at(:wii),
-                   freight: freight_options
-                 )
-      assert !response.rates.blank?
-      response.rates.each do |rate|
-        assert_instance_of String, rate.service_name
-        assert_instance_of Fixnum, rate.price
-      end
+    response = @carrier.find_rates(
+      shipping_location,
+      location_fixtures[:ottawa],
+      package_fixtures.values_at(:wii),
+      freight: freight_options
+    )
+
+    assert_instance_of Array, response.rates
+    assert response.rates.length > 0
+    response.rates.each do |rate|
+      assert_instance_of String, rate.service_name
+      assert_instance_of Fixnum, rate.price
     end
   end
 
@@ -74,7 +73,7 @@ class FedExTest < Test::Unit::TestCase
     @carrier.find_rates(
       Location.new(:zip => 40524),
       Location.new(:zip => 40515),
-      @packages[:wii]
+      package_fixtures[:wii]
     )
   rescue ResponseError => e
     assert_match /country\s?code/i, e.message
@@ -84,9 +83,9 @@ class FedExTest < Test::Unit::TestCase
   # FedEx requires a valid origin and destination postal code
   def test_rates_for_locations_with_only_zip_and_country
     response = @carrier.find_rates(
-                 @locations[:bare_beverly_hills],
-                 @locations[:bare_ottawa],
-                 @packages.values_at(:wii)
+                 location_fixtures[:bare_beverly_hills],
+                 location_fixtures[:bare_ottawa],
+                 package_fixtures.values_at(:wii)
                )
 
     assert response.rates.size > 0
@@ -94,9 +93,9 @@ class FedExTest < Test::Unit::TestCase
 
   def test_rates_for_location_with_only_country_code
     @carrier.find_rates(
-      @locations[:bare_beverly_hills],
+      location_fixtures[:bare_beverly_hills],
       Location.new(:country => 'CA'),
-      @packages.values_at(:wii)
+      package_fixtures.values_at(:wii)
     )
   rescue ResponseError => e
     assert_match /postal code/i, e.message
@@ -105,9 +104,9 @@ class FedExTest < Test::Unit::TestCase
 
   def test_invalid_recipient_country
     @carrier.find_rates(
-      @locations[:bare_beverly_hills],
+      location_fixtures[:bare_beverly_hills],
       Location.new(:country => 'JP', :zip => '108-8361'),
-      @packages.values_at(:wii)
+      package_fixtures.values_at(:wii)
     )
   rescue ResponseError => e
     assert_match /postal code/i, e.message
@@ -115,107 +114,101 @@ class FedExTest < Test::Unit::TestCase
   end
 
   def test_ottawa_to_beverly_hills
-    response = nil
-    assert_nothing_raised do
-      response = @carrier.find_rates(
-                   @locations[:ottawa],
-                   @locations[:beverly_hills],
-                   @packages.values_at(:book, :wii)
-                 )
-      assert !response.rates.blank?
-      response.rates.each do |rate|
-        assert_instance_of String, rate.service_name
-        assert_instance_of Fixnum, rate.price
-      end
+    response = @carrier.find_rates(
+      location_fixtures[:ottawa],
+      location_fixtures[:beverly_hills],
+      package_fixtures.values_at(:book, :wii)
+    )
+
+    assert_instance_of Array, response.rates
+    assert response.rates.length > 0
+    response.rates.each do |rate|
+      assert_instance_of String, rate.service_name
+      assert_instance_of Fixnum, rate.price
     end
   end
 
   def test_ottawa_to_london
-    response = nil
-    assert_nothing_raised do
-      response = @carrier.find_rates(
-                   @locations[:ottawa],
-                   @locations[:london],
-                   @packages.values_at(:book, :wii)
-                 )
-      assert !response.rates.blank?
-      response.rates.each do |rate|
-        assert_instance_of String, rate.service_name
-        assert_instance_of Fixnum, rate.price
-      end
+    response = @carrier.find_rates(
+      location_fixtures[:ottawa],
+      location_fixtures[:london],
+      package_fixtures.values_at(:book, :wii)
+    )
+
+    assert_instance_of Array, response.rates
+    assert response.rates.length > 0
+    response.rates.each do |rate|
+      assert_instance_of String, rate.service_name
+      assert_instance_of Fixnum, rate.price
     end
   end
 
   def test_beverly_hills_to_netherlands
-    response = nil
-    assert_nothing_raised do
-      response = @carrier.find_rates(
-                   @locations[:beverly_hills],
-                   @locations[:netherlands],
-                   @packages.values_at(:book, :wii)
-                 )
-      assert !response.rates.blank?
-      response.rates.each do |rate|
-        assert_instance_of String, rate.service_name
-        assert_instance_of Fixnum, rate.price
-      end
+    response = @carrier.find_rates(
+      location_fixtures[:beverly_hills],
+      location_fixtures[:netherlands],
+      package_fixtures.values_at(:book, :wii)
+    )
+
+    assert_instance_of Array, response.rates
+    assert response.rates.length > 0
+    response.rates.each do |rate|
+      assert_instance_of String, rate.service_name
+      assert_instance_of Fixnum, rate.price
     end
   end
 
   def test_beverly_hills_to_new_york
-    response = nil
-    assert_nothing_raised do
-      response = @carrier.find_rates(
-                   @locations[:beverly_hills],
-                   @locations[:new_york],
-                   @packages.values_at(:book, :wii)
-                 )
-      assert !response.rates.blank?
-      response.rates.each do |rate|
-        assert_instance_of String, rate.service_name
-        assert_instance_of Fixnum, rate.price
-      end
+    response = @carrier.find_rates(
+      location_fixtures[:beverly_hills],
+      location_fixtures[:new_york],
+      package_fixtures.values_at(:book, :wii)
+    )
+
+    assert_instance_of Array, response.rates
+    assert response.rates.length > 0
+    response.rates.each do |rate|
+      assert_instance_of String, rate.service_name
+      assert_instance_of Fixnum, rate.price
     end
   end
 
   def test_beverly_hills_to_london
-    response = nil
-    assert_nothing_raised do
-      response = @carrier.find_rates(
-                   @locations[:beverly_hills],
-                   @locations[:london],
-                   @packages.values_at(:book, :wii)
-                 )
-      assert !response.rates.blank?
-      response.rates.each do |rate|
-        assert_instance_of String, rate.service_name
-        assert_instance_of Fixnum, rate.price
-      end
+    response = @carrier.find_rates(
+      location_fixtures[:beverly_hills],
+      location_fixtures[:london],
+      package_fixtures.values_at(:book, :wii)
+    )
+
+    assert_instance_of Array, response.rates
+    assert response.rates.length > 0
+    response.rates.each do |rate|
+      assert_instance_of String, rate.service_name
+      assert_instance_of Fixnum, rate.price
     end
   end
 
   def test_tracking
-    assert_nothing_raised do
-      @carrier.find_tracking_info('123456789012', :test => true)
-    end
+    p response = @carrier.find_tracking_info('123456789012', :test => true)
+    assert response
   end
 
   def test_tracking_with_bad_number
-    assert_raises ResponseError do
+    assert_raises(ResponseError) do
       @carrier.find_tracking_info('12345')
     end
   end
 
   def test_different_rates_for_commercial
     residential_response = @carrier.find_rates(
-                             @locations[:beverly_hills],
-                             @locations[:ottawa],
-                             @packages.values_at(:chocolate_stuff)
+                             location_fixtures[:beverly_hills],
+                             location_fixtures[:ottawa],
+                             package_fixtures.values_at(:chocolate_stuff)
                            )
     commercial_response  = @carrier.find_rates(
-                             @locations[:beverly_hills],
-                             Location.from(@locations[:ottawa].to_hash, :address_type => :commercial),
-                             @packages.values_at(:chocolate_stuff)
+                             location_fixtures[:beverly_hills],
+                             Location.from(location_fixtures[:ottawa].to_hash, :address_type => :commercial),
+                             package_fixtures.values_at(:chocolate_stuff)
                            )
 
     assert_not_equal residential_response.rates.map(&:price), commercial_response.rates.map(&:price)

@@ -1,8 +1,11 @@
 require 'test_helper'
-class CanadaPostPwsRegisterTest < Test::Unit::TestCase
+
+class CanadaPostPwsRegisterTest < Minitest::Test
+  include ActiveShipping::Test::Credentials
+  include ActiveShipping::Test::Fixtures
+
   def setup
-    login = fixtures(:canada_post_pws)
-    @cp = CanadaPostPWS.new(login)
+    @cp = CanadaPostPWS.new(credentials(:canada_post_pws))
   end
 
   def test_register_merchant

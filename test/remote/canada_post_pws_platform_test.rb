@@ -3,16 +3,19 @@
 require 'test_helper'
 
 # All remote tests require Canada Post development environment credentials
-class CanadaPostPWSPlatformTest < Test::Unit::TestCase
+class CanadaPostPWSPlatformTest < Minitest::Test
+  include ActiveShipping::Test::Credentials
+  include ActiveShipping::Test::Fixtures
+
   def setup
-    @login = fixtures(:canada_post_pws_production)
+    @login = credentials(:canada_post_pws)
 
     # 100 grams, 93 cm long, 10 cm diameter, cylinders have different volume calculations
     # @pkg1 = Package.new(1000, [93,10], :value => 10.00)
     @pkg1 = Package.new(10, nil, :value => 10.00)
     @pkg2 = Package.new(10, [20.0, 10.0, 1.0], :value => 10.00)
 
-    @line_item1 = TestFixtures.line_items1
+    @line_item1 = line_item_fixture
 
     @shipping_opts1 = {:dc => true, :cod => true, :cod_amount => 500.00, :cov => true, :cov_amount => 100.00,
                        :so => true, :pa18 => true}
@@ -87,11 +90,11 @@ class CanadaPostPWSPlatformTest < Test::Unit::TestCase
     }
 
     @cp = CanadaPostPWS.new(@login)
-    @cp.logger = Logger.new(STDOUT)
+    @cp.logger = Logger.new(StringIO.new)
 
-    @customer_number = @login[:customer_number]
+    @customer_number  = @login[:customer_number]
     @customer_api_key = @login[:customer_api_key]
-    @customer_secret = @login[:customer_secret]
+    @customer_secret  = @login[:customer_secret]
   end
 
   def build_options
@@ -116,7 +119,7 @@ class CanadaPostPWSPlatformTest < Test::Unit::TestCase
 
   def test_rates_with_invalid_customer_raises_exception
     opts = {:customer_number => "0000000000", :service => "DOM.XP"}
-    assert_raise ResponseError do
+    assert_raises(ResponseError) do
       @cp.find_rates(@home_params, @dom_params, [@pkg1], opts)
     end
   end
@@ -139,7 +142,7 @@ class CanadaPostPWSPlatformTest < Test::Unit::TestCase
 
   def test_tracking_invalid_pin_raises_exception
     pin = "000000000000000"
-    exception = assert_raise ResponseError do
+    exception = assert_raises(ResponseError) do
       @cp.find_tracking_info(pin, build_options)
     end
     assert_equal "No Pin History", exception.message
@@ -147,7 +150,7 @@ class CanadaPostPWSPlatformTest < Test::Unit::TestCase
 
   def test_create_shipment_with_invalid_customer_raises_exception
     opts = {:customer_number => "0000000000", :service => "DOM.XP"}
-    assert_raise ResponseError do
+    assert_raises(ResponseError) do
       @cp.create_shipment(@home_params, @dom_params, @pkg1, @line_item1, opts)
     end
   end
@@ -160,7 +163,7 @@ class CanadaPostPWSPlatformTest < Test::Unit::TestCase
 
   def test_merchant_details_empty_details
     response = @cp.register_merchant
-    exception = assert_raise ResponseError do
+    exception = assert_raises(ResponseError) do
       response = @cp.retrieve_merchant_details(:token_id => response.token_id)
     end
     assert_equal "No Merchant Info", exception.message
@@ -177,7 +180,7 @@ class CanadaPostPWSPlatformTest < Test::Unit::TestCase
   end
 
   def test_find_services_invalid_country
-    exception = assert_raise ResponseError do
+    exception = assert_raises(ResponseError) do
       @cp.find_services('XX', build_options)
     end
     assert_equal "A valid destination country must be supplied.", exception.message

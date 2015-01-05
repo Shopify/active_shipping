@@ -1,9 +1,14 @@
 require 'test_helper'
 
-class ResponseTest < Test::Unit::TestCase
-  def test_initialize
-    assert_nothing_raised do
-      RateResponse.new(true, "success!", {:rate => 'Free!'}, :rates => [stub(:service_name => 'Free!', :total_price => 0)], :xml => "<rate>Free!</rate>")
+class ResponseTest < Minitest::Test
+  def test_initialize_success
+    response = RateResponse.new(true, "success!", {:rate => 'Free!'}, :rates => [stub(:service_name => 'Free!', :total_price => 0)], :xml => "<rate>Free!</rate>")
+    assert response.success?
+  end
+
+  def test_initialize_failure
+    assert_raises(ActiveShipping::ResponseError) do
+      RateResponse.new(false, "fail!", {:rate => 'Free!'}, :rates => [stub(:service_name => 'Free!', :total_price => 0)], :xml => "<rate>Free!</rate>")
     end
   end
 end

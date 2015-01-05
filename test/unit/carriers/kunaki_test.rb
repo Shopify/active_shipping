@@ -1,9 +1,9 @@
 require 'test_helper'
 
-class KunakiTest < Test::Unit::TestCase
+class KunakiTest < Minitest::Test
+  include ActiveShipping::Test::Fixtures
+
   def setup
-    @packages  = TestFixtures.packages
-    @locations = TestFixtures.locations
     @carrier   = Kunaki.new
     @items = [{ :sku => 'AF0001', :quantity => 1 }, { :sku => 'AF0002', :quantity => 2 }]
   end
@@ -14,9 +14,9 @@ class KunakiTest < Test::Unit::TestCase
     assert_raises(ResponseError) do
       begin
         @carrier.find_rates(
-          @locations[:ottawa],
-          @locations[:beverly_hills],
-          @packages.values_at(:book, :wii),
+          location_fixtures[:ottawa],
+          location_fixtures[:beverly_hills],
+          package_fixtures.values_at(:book, :wii),
           :items => @items
         )
       rescue ResponseError => e
@@ -31,9 +31,9 @@ class KunakiTest < Test::Unit::TestCase
     @carrier.expects(:ssl_post).returns(xml_fixture('kunaki/successful_rates_response'))
 
     response = @carrier.find_rates(
-                 @locations[:ottawa],
-                 @locations[:london],
-                 @packages.values_at(:book, :wii),
+                 location_fixtures[:ottawa],
+                 location_fixtures[:london],
+                 package_fixtures.values_at(:book, :wii),
                  :items => @items
                )
 

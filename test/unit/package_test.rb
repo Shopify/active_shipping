@@ -1,6 +1,8 @@
 require 'test_helper'
 
-class PackageTest < Test::Unit::TestCase
+class PackageTest < Minitest::Test
+  include ActiveShipping::Test::Fixtures
+
   GRAMS_IN_AN_OUNCE = 28.349523125
   OUNCES_IN_A_GRAM = 0.0352739619495804
   INCHES_IN_A_CM = 0.393700787401575
@@ -17,13 +19,11 @@ class PackageTest < Test::Unit::TestCase
                                   :value => 860,
                                   :currency => 'CAD'
                       )
-
-    @packages = TestFixtures.packages
   end
 
   def test_accessors
     # :wii => Package.new((7.5 * 16), [15, 10, 4.5], :units => :imperial, :value => 269.99, :currency => 'GBP')
-    wii = @packages[:wii]
+    wii = package_fixtures[:wii]
     [:x, :max, :long, :length].each do |sym|
       assert_equal 15, wii.inches(sym)
       assert_equal 15, wii.in(sym)
