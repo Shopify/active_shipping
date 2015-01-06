@@ -30,7 +30,6 @@ require 'active_utils'
 require 'vendor/quantified/lib/quantified'
 require 'vendor/xml_node/lib/xml_node'
 
-require 'active_shipping/base'
 require 'active_shipping/response'
 require 'active_shipping/rate_response'
 require 'active_shipping/tracking_response'
