@@ -1,14 +1,12 @@
 require 'bundler/setup'
 
-require 'active_shipping'
-
 require 'minitest/autorun'
 require 'mocha/setup'
 require 'timecop'
 
+require 'active_shipping'
 require 'nokogiri'
-
-XmlNode # trigger autorequire
+require 'logger'
 
 class Minitest::Test
   include ActiveShipping
@@ -19,12 +17,6 @@ module ActiveShipping::Test
     LOCAL_CREDENTIALS = ENV['HOME'] + '/.active_shipping/credentials.yml'
     DEFAULT_CREDENTIALS = File.dirname(__FILE__) + '/credentials.yml'
 
-    MODEL_FIXTURES = File.dirname(__FILE__) + '/fixtures/'
-
-    def all_credentials
-      @@all_credentials ||= load_credentials
-    end
-
     def credentials(key)
       data = all_credentials[key] || raise(StandardError, "No credentials were found for '#{key}'")
       data.symbolize_keys
@@ -32,19 +24,22 @@ module ActiveShipping::Test
 
     private
 
-    def load_credentials
-      [DEFAULT_CREDENTIALS, LOCAL_CREDENTIALS, *Dir.glob(File.join(MODEL_FIXTURES, '**', '*.yml'))].inject({}) do |credentials, file_name|
-        if File.exist?(file_name)
-          yaml_data = YAML.load(File.read(file_name)).symbolize_keys
-          credentials.merge!(yaml_data)
+    def all_credentials
+      @@all_credentials ||= begin
+        [DEFAULT_CREDENTIALS, LOCAL_CREDENTIALS].inject({}) do |credentials, file_name|
+          if File.exist?(file_name)
+            yaml_data = YAML.load(File.read(file_name)).symbolize_keys
+            credentials.merge!(yaml_data)
+          end
+          credentials
         end
-        credentials
       end
     end
   end
 
   module Fixtures
     include ActiveShipping
+
     def xml_fixture(path) # where path is like 'usps/beverly_hills_to_ottawa_response'
       File.read(File.join(File.dirname(__FILE__), 'fixtures', 'xml', "#{path}.xml"))
     end

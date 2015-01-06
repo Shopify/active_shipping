@@ -1,5 +1,3 @@
-require 'cgi'
-
 module ActiveShipping
   class CanadaPost < Carrier
     # NOTE!

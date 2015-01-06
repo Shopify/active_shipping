@@ -1,5 +1,4 @@
 # -*- encoding: utf-8 -*-
-require 'cgi'
 
 module ActiveShipping
   # After getting an API login from USPS (looks like '123YOURNAME456'),

@@ -75,7 +75,7 @@ class CanadaPostPWSTest < Minitest::Test
     }
 
     @cp = CanadaPostPWS.new(@login.merge(:endpoint => "https://ct.soa-gw.canadapost.ca/"))
-    @cp.logger = Logger.new(STDOUT)
+    @cp.logger = Logger.new(StringIO.new)
 
     @customer_number = @login[:customer_number]
 

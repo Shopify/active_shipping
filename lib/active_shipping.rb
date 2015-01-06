@@ -21,13 +21,14 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
 
-require 'active_support/all'
-
-autoload :XmlNode, 'vendor/xml_node/lib/xml_node'
-autoload :Quantified, 'vendor/quantified/lib/quantified'
-
-require 'net/https'
+require 'active_support'
+require 'active_support/json'
+require 'active_support/core_ext/enumerable'
+require 'active_support/core_ext/class/attribute_accessors'
 require 'active_utils'
+
+require 'vendor/quantified/lib/quantified'
+require 'vendor/xml_node/lib/xml_node'
 
 require 'active_shipping/base'
 require 'active_shipping/response'

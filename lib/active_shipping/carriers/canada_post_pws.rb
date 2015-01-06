@@ -1,5 +1,3 @@
-require 'cgi'
-
 module ActiveShipping
   class CanadaPostPWS < Carrier
     @@name = "Canada Post PWS"
@@ -847,7 +845,7 @@ module ActiveShipping
     end
 
     def redirect_url(customer_id, return_url)
-      "http://www.canadapost.ca/cpotools/apps/drc/merchant?return-url=#{CGI::escape(return_url)}&token-id=#{token_id}&platform-id=#{customer_id}"
+      "http://www.canadapost.ca/cpotools/apps/drc/merchant?return-url=#{CGI.escape(return_url)}&token-id=#{token_id}&platform-id=#{customer_id}"
     end
   end
 
