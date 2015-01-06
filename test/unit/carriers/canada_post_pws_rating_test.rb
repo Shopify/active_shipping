@@ -1,4 +1,5 @@
 require 'test_helper'
+
 class CanadaPostPwsRatingTest < Minitest::Test
   include ActiveShipping::Test::Credentials
   include ActiveShipping::Test::Fixtures

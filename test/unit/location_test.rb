@@ -87,7 +87,7 @@ class LocationTest < Minitest::Test
 
   def test_to_json
     location_json = location_fixtures[:ottawa].to_json
-    assert_equal location_fixtures[:ottawa].to_hash, ActiveSupport::JSON.decode(location_json).symbolize_keys
+    assert_equal location_fixtures[:ottawa].to_hash, JSON.parse(location_json).symbolize_keys
   end
 
   def test_default_to_xml
