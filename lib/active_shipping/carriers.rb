@@ -13,6 +13,10 @@ module ActiveShipping
     def all
       ActiveShipping::Carriers.registered.map { |name| ActiveShipping.const_get(name) }
     end
+
+    def find(name)
+      all.find { |c| c.name.downcase == name.to_s.downcase } or raise NameError, "unknown carrier #{name}"
+    end
   end
 end
 
