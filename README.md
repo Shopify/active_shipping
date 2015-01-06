@@ -2,11 +2,13 @@
 
 [![Build Status](https://travis-ci.org/Shopify/active_shipping.png)](https://travis-ci.org/Shopify/active_shipping)
 
-This library interfaces with the web services of various shipping carriers. The goal is to abstract the features that are most frequently used into a pleasant and consistent Ruby API. Active Shipping is an extension of [Active Merchant][], and as such, it borrows heavily from conventions used in the latter.
+This library interfaces with the web services of various shipping carriers. The goal is to abstract the features that are most frequently used into a pleasant and consistent Ruby API.
+
+- Finding shipping rates
+- Tracking shipments
 
 Active Shipping is currently being used and improved in a production environment for [Shopify][]. Development is being done by the Shopify integrations team (<integrations-team@shopify.com>). Discussion is welcome in the [Active Merchant Google Group][discuss].
 
-[Active Merchant]:http://www.activemerchant.org
 [Shopify]:http://www.shopify.com
 [discuss]:http://groups.google.com/group/activemerchant
 
@@ -17,45 +19,46 @@ Active Shipping is currently being used and improved in a production environment
 * [FedEx](http://www.fedex.com)
 * [Canada Post](http://www.canadapost.ca)
 * [New Zealand Post](http://www.nzpost.co.nz)
-* more soon!
+* [Shipwire](http://www.shipwire.com)
+* [Stamps](http://www.stamps.com)
+* [Kunaki](http://www.kunaki.com)
 
 ## Installation
 
     gem install active_shipping
 
-...or add it to your [Gemfile](http://gembundler.com/).
+...or add it to your project's [Gemfile](http://bundler.io/).
 
 ## Sample Usage
 
 ### Compare rates from different carriers
 
     require 'active_shipping'
-    include ActiveShipping
 
     # Package up a poster and a Wii for your nephew.
     packages = [
-      Package.new(  100,                        # 100 grams
-                    [93,10],                    # 93 cm long, 10 cm diameter
-                    :cylinder => true),         # cylinders have different volume calculations
+      ActiveShipping::Package.new( 100,                  # 100 grams
+                                   [93,10],              # 93 cm long, 10 cm diameter
+                                   :cylinder => true),   # cylinders have different volume calculations
 
-      Package.new(  (7.5 * 16),                 # 7.5 lbs, times 16 oz/lb.
-                    [15, 10, 4.5],              # 15x10x4.5 inches
-                    :units => :imperial)        # not grams, not centimetres
+      ActiveShipping::Package.new( 7.5 * 16,             # 7.5 lbs, times 16 oz/lb.
+                                   [15, 10, 4.5],        # 15x10x4.5 inches
+                                   :units => :imperial)  # not grams, not centimetres
     ]
 
     # You live in Beverly Hills, he lives in Ottawa
-    origin = Location.new(      :country => 'US',
-                                :state => 'CA',
-                                :city => 'Beverly Hills',
-                                :zip => '90210')
+    origin = ActiveShipping::Location.new( :country => 'US',
+                                           :state => 'CA',
+                                           :city => 'Beverly Hills',
+                                           :zip => '90210')
 
-    destination = Location.new( :country => 'CA',
-                                :province => 'ON',
-                                :city => 'Ottawa',
-                                :postal_code => 'K1P 1J1')
+    destination = ActiveShipping::Location.new( :country => 'CA',
+                                                :province => 'ON',
+                                                :city => 'Ottawa',
+                                                :postal_code => 'K1P 1J1')
 
     # Find out how much it'll be.
-    ups = UPS.new(:login => 'auntjudy', :password => 'secret', :key => 'xml-access-key')
+    ups = ActiveShipping::UPS.new(:login => 'auntjudy', :password => 'secret', :key => 'xml-access-key')
     response = ups.find_rates(origin, destination, packages)
 
     ups_rates = response.rates.sort_by(&:price).collect {|rate| [rate.service_name, rate.price]}
@@ -66,7 +69,7 @@ Active Shipping is currently being used and improved in a production environment
     #     ["UPS Worldwide Express Plus", 14502]]
 
     # Check out USPS for comparison...
-    usps = USPS.new(:login => 'developer-key')
+    usps = ActiveShipping::USPS.new(:login => 'developer-key')
     response = usps.find_rates(origin, destination, packages)
 
     usps_rates = response.rates.sort_by(&:price).collect {|rate| [rate.service_name, rate.price]}
@@ -79,7 +82,7 @@ Active Shipping is currently being used and improved in a production environment
 
 ### Track a FedEx package
 
-    fedex = FedEx.new(:login => '999999999', :password => '7777777', key: '1BXXXXXXXXXxrcB', account: '51XXXXX20')
+    fedex = ActiveShipping::FedEx.new(login: '999999999', password: '7777777', key: '1BXXXXXXXXXxrcB', account: '51XXXXX20')
     tracking_info = fedex.find_tracking_info('tracking-number', :carrier_code => 'fedex_ground') # Ground package
 
     tracking_info.shipment_events.each do |event|
@@ -95,7 +98,7 @@ Active Shipping is currently being used and improved in a production environment
 
 ## Running the tests
 
-After installing dependencies with `bundle install`, you can run the unit tests with `rake test:units` and the remote tests with `rake test:remote`. The unit tests mock out requests and responses so that everything runs locally, while the remote tests actually hit the carrier servers. For the remote tests, you'll need valid test credentials for any carriers' tests you want to run. The credentials should go in ~/.active_merchant/fixtures.yml, and the format of that file can be seen in the included [fixtures.yml](https://github.com/Shopify/active_shipping/blob/master/test/fixtures.yml).
+After installing dependencies with `bundle install`, you can run the unit tests with `rake test:units` and the remote tests with `rake test:remote`. The unit tests mock out requests and responses so that everything runs locally, while the remote tests actually hit the carrier servers. For the remote tests, you'll need valid test credentials for any carriers' tests you want to run. The credentials should go in ~/.active_shipping/credentials.yml, and the format of that file can be seen in the included [credentials.yml](https://github.com/Shopify/active_shipping/blob/master/test/credentials.yml).
 
 ## Contributing
 
@@ -109,12 +112,12 @@ https://github.com/Shopify/active_shipping/tree/master/test/fixtures/xml/usps
 
 To log requests and responses, just set the `logger` on your carrier class to some kind of `Logger` object:
 
-    USPS.logger = Logger.new($stdout)
+    ActiveShipping::USPS.logger = Logger.new($stdout)
 
-(This logging functionality is provided by the [`PostsData` module](https://github.com/Shopify/active_utils/blob/master/lib/active_utils/common/posts_data.rb) in the `active_utils` dependency.)
+(This logging functionality is provided by the [`PostsData` module](https://github.com/Shopify/active_utils/blob/master/lib/active_utils/posts_data.rb) in the `active_utils` dependency.)
 
 After you've pushed your well-tested changes to your github fork, make a pull request and we'll take it from there!
 
 ## Legal Mumbo Jumbo
 
-Unless otherwise noted in specific files, all code in the Active Shipping project is under the copyright and license described in the included MIT-LICENSE file.
+Unless otherwise noted in specific files, all code in the ActiveShipping project is under the copyright and license described in the included MIT-LICENSE file.
