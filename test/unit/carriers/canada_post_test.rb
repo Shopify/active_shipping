@@ -1,8 +1,11 @@
 require 'test_helper'
 
-class CanadaPostTest < Test::Unit::TestCase
+class CanadaPostTest < Minitest::Test
+  include ActiveShipping::Test::Credentials
+  include ActiveShipping::Test::Fixtures
+
   def setup
-    login = fixtures(:canada_post)
+    login = credentials(:canada_post)
 
     @carrier  = CanadaPost.new(login)
     @french_carrier  = CanadaPost.new(login.merge(:french => true))
@@ -18,13 +21,8 @@ class CanadaPostTest < Test::Unit::TestCase
   end
 
   def test_parse_rate_response_french
-    assert_equal @request, @french_carrier.build_rate_request(@origin, @destination, 24, @line_items)
-  end
-
-  def test_parse_rate_response_french
     @french_carrier.expects(:ssl_post).returns(@response_french)
     rate_estimates = @french_carrier.find_rates(@origin, @destination, @line_items)
-    # rate_response = @french_carrier.send :parse_rate_response, @response_french, @origin, @desination
 
     rate_estimates.rates.each do |rate|
       assert_instance_of RateEstimate, rate
@@ -86,7 +84,7 @@ class CanadaPostTest < Test::Unit::TestCase
   def test_non_success_parse_rate_response
     @carrier.expects(:ssl_post).returns(@bad_response)
 
-    error = assert_raise ActiveMerchant::Shipping::ResponseError do
+    error = assert_raises(ActiveShipping::ResponseError) do
       @carrier.find_rates(@origin, @destination, @line_items)
     end
 

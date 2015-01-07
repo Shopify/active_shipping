@@ -1,8 +1,11 @@
 require 'test_helper'
-class CanadaPostPwsRegisterTest < Test::Unit::TestCase
+
+class CanadaPostPwsRegisterTest < Minitest::Test
+  include ActiveShipping::Test::Credentials
+  include ActiveShipping::Test::Fixtures
+
   def setup
-    login = fixtures(:canada_post_pws)
-    @cp = CanadaPostPWS.new(login)
+    @cp = CanadaPostPWS.new(credentials(:canada_post_pws))
   end
 
   def test_register_merchant
@@ -21,10 +24,10 @@ class CanadaPostPwsRegisterTest < Test::Unit::TestCase
     http_response = mock
     http_response.stubs(:code).returns('400')
     http_response.stubs(:body).returns(response)
-    response_error = ActiveMerchant::ResponseError.new(http_response)
+    response_error = ActiveUtils::ResponseError.new(http_response)
     @cp.expects(:ssl_post).with(endpoint, anything, anything).raises(response_error)
 
-    exception = assert_raises ActiveMerchant::Shipping::ResponseError do
+    exception = assert_raises ActiveShipping::ResponseError do
       @cp.register_merchant
     end
 
@@ -37,7 +40,7 @@ class CanadaPostPwsRegisterTest < Test::Unit::TestCase
     @cp.expects(:ssl_post).with(endpoint, anything, anything).returns(response)
 
     response = @cp.register_merchant
-    assert "http://www.canadapost.ca/cpotools/apps/drc/merchant?return-url=#{CGI::escape('http://localhost:3000/cp-register/')}&token-id=#{response.token_id}&platform-id=111111111", response.redirect_url('http://localhost:3000/cp-register/', '111111111')
+    assert "http://www.canadapost.ca/cpotools/apps/drc/merchant?return-url=#{CGI.escape('http://localhost:3000/cp-register/')}&token-id=#{response.token_id}&platform-id=111111111", response.redirect_url('http://localhost:3000/cp-register/', '111111111')
   end
 
   def test_retrieve_merchant_details
@@ -60,10 +63,10 @@ class CanadaPostPwsRegisterTest < Test::Unit::TestCase
     http_response = mock
     http_response.stubs(:code).returns('400')
     http_response.stubs(:body).returns(response)
-    response_error = ActiveMerchant::ResponseError.new(http_response)
+    response_error = ActiveUtils::ResponseError.new(http_response)
     @cp.expects(:ssl_get).with(endpoint, anything).raises(response_error)
 
-    exception = assert_raises ActiveMerchant::Shipping::ResponseError do
+    exception = assert_raises ActiveShipping::ResponseError do
       @cp.retrieve_merchant_details(:token_id => '1234567890')
     end
 

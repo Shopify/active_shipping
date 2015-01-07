@@ -75,10 +75,10 @@ class LengthTest < Test::Unit::TestCase
   end
 
   def test_numeric_methods_not_added_for_some_units
-    assert_raises NoMethodError do
+    assert_raises(NoMethodError) do
       2.yards
     end
-    assert_raises NoMethodError do
+    assert_raises(NoMethodError) do
       2.millimetres
     end
   end

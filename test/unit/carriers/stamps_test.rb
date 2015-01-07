@@ -1,11 +1,11 @@
 require 'test_helper'
 
-class StampsTest < Test::Unit::TestCase
+class StampsTest < Minitest::Test
+  include ActiveShipping::Test::Fixtures
+
   def setup
-    @packages = TestFixtures.packages
-    @locations = TestFixtures.locations
-    @carrier   = Stamps.new(integration_id: 'i', username: 'u', password: 'p')
-    @items = [{ :sku => 'AF0001', :quantity => 1 }, { :sku => 'AF0002', :quantity => 2 }]
+    @carrier = Stamps.new(integration_id: 'i', username: 'u', password: 'p')
+    @items   = [{ :sku => 'AF0001', :quantity => 1 }, { :sku => 'AF0002', :quantity => 2 }]
     @authentication_response = xml_fixture('stamps/authenticate_user_response')
   end
 
@@ -19,7 +19,7 @@ class StampsTest < Test::Unit::TestCase
 
     account_info = @carrier.account_info
 
-    assert_equal 'ActiveMerchant::Shipping::StampsAccountInfoResponse', account_info.class.name
+    assert_equal 'ActiveShipping::StampsAccountInfoResponse', account_info.class.name
 
     assert_equal '1234567', account_info.customer_id
     assert_equal '1029384756', account_info.meter_number
@@ -52,7 +52,7 @@ class StampsTest < Test::Unit::TestCase
 
     purchase_status = @carrier.purchase_postage('543.21', '123.45')
 
-    assert_equal 'ActiveMerchant::Shipping::StampsPurchasePostageResponse', purchase_status.class.name
+    assert_equal 'ActiveShipping::StampsPurchasePostageResponse', purchase_status.class.name
 
     assert_equal 'Pending', purchase_status.purchase_status
     assert_equal '1234', purchase_status.transaction_id
@@ -65,7 +65,7 @@ class StampsTest < Test::Unit::TestCase
 
     purchase_status = @carrier.purchase_status('1234')
 
-    assert_equal 'ActiveMerchant::Shipping::StampsPurchasePostageResponse', purchase_status.class.name
+    assert_equal 'ActiveShipping::StampsPurchasePostageResponse', purchase_status.class.name
 
     assert_equal 'Success', purchase_status.purchase_status
     assert_equal nil, purchase_status.transaction_id
@@ -84,7 +84,7 @@ class StampsTest < Test::Unit::TestCase
     )
     cleansed_address = @carrier.validate_address(location)
 
-    assert_equal 'ActiveMerchant::Shipping::StampsCleanseAddressResponse', cleansed_address.class.name
+    assert_equal 'ActiveShipping::StampsCleanseAddressResponse', cleansed_address.class.name
 
     assert_equal true, cleansed_address.address_match?
     assert_equal true, cleansed_address.city_state_zip_ok?
@@ -107,11 +107,11 @@ class StampsTest < Test::Unit::TestCase
 
     rates = @carrier.find_rates(origin, destination, package)
 
-    assert_equal 'ActiveMerchant::Shipping::RateResponse', rates.class.name
+    assert_equal 'ActiveShipping::RateResponse', rates.class.name
 
     assert_equal 2, rates.rates.length
 
-    assert_equal 'ActiveMerchant::Shipping::StampsRateEstimate', rates.rates[0].class.name
+    assert_equal 'ActiveShipping::StampsRateEstimate', rates.rates[0].class.name
 
     rate = rates.rates.first
     assert_equal '90405', rate.origin.zip
@@ -157,7 +157,7 @@ class StampsTest < Test::Unit::TestCase
 
     indicium = @carrier.create_shipment(origin, destination, package, [], options)
 
-    assert_equal 'ActiveMerchant::Shipping::StampsShippingResponse', indicium.class.name
+    assert_equal 'ActiveShipping::StampsShippingResponse', indicium.class.name
 
     assert_equal '1234567890ABCDEF', indicium.shipping_id
     assert_equal '9101010521290895036903', indicium.tracking_number
@@ -187,7 +187,7 @@ class StampsTest < Test::Unit::TestCase
 
     tracking_response = @carrier.find_tracking_info('c605aec1-322e-48d5-bf81-b0bb820f9c22', stamps_tx_id: true)
 
-    assert_equal 'ActiveMerchant::Shipping::TrackingResponse', tracking_response.class.name
+    assert_equal 'ActiveShipping::TrackingResponse', tracking_response.class.name
 
     assert_equal 3, tracking_response.shipment_events.length
 
@@ -230,7 +230,7 @@ class StampsTest < Test::Unit::TestCase
     @carrier.account_info
     account_info = @carrier.account_info
 
-    assert_equal 'ActiveMerchant::Shipping::StampsAccountInfoResponse', account_info.class.name
+    assert_equal 'ActiveShipping::StampsAccountInfoResponse', account_info.class.name
   end
 
   private

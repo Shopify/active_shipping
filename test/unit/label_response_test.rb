@@ -1,11 +1,7 @@
 require 'test_helper'
 
-class LabelResponseTest < Test::Unit::TestCase
-  include ActiveMerchant::Shipping
-
-  def setup
-    @locations = TestFixtures.locations.dup
-  end
+class LabelResponseTest < Minitest::Test
+  include ActiveShipping::Test::Fixtures
 
   def test_build_label_from_xml_response
     str      = xml_fixture('ups/shipment_accept_response')

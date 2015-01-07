@@ -1,10 +1,10 @@
 require 'test_helper'
 
-class RemoteKunakiTest < Test::Unit::TestCase
+class RemoteKunakiTest < Minitest::Test
+  include ActiveShipping::Test::Fixtures
+
   def setup
-    @packages   = TestFixtures.packages
-    @locations  = TestFixtures.locations
-    @carrier    = Kunaki.new
+    @carrier = Kunaki.new
     @item1 = { :sku => 'XZZ1111111', :quantity => 2 }
     @item2 = { :sku => 'PXZZ111112', :quantity => 1 }
     @items = [@item1, @item2]
@@ -12,9 +12,9 @@ class RemoteKunakiTest < Test::Unit::TestCase
 
   def test_successful_rates_request
     response = @carrier.find_rates(
-                 @locations[:ottawa],
-                 @locations[:beverly_hills],
-                 @packages.values_at(:book, :wii),
+                 location_fixtures[:ottawa],
+                 location_fixtures[:beverly_hills],
+                 package_fixtures.values_at(:book, :wii),
                  :items => @items
                )
 
@@ -24,18 +24,13 @@ class RemoteKunakiTest < Test::Unit::TestCase
   end
 
   def test_send_no_items
-    assert_raise(ActiveMerchant::ResponseError) do
-      begin
-        @carrier.find_rates(
-          @locations[:ottawa],
-          @locations[:beverly_hills],
-          @packages.values_at(:book, :wii),
-          :items => []
-        )
-      rescue ActiveMerchant::ResponseError => e
-        assert_equal 500, e.response.code.to_i
-        raise
-      end
+    assert_raises(ActiveUtils::ResponseError) do
+      @carrier.find_rates(
+        location_fixtures[:ottawa],
+        location_fixtures[:beverly_hills],
+        package_fixtures.values_at(:book, :wii),
+        :items => []
+      )
     end
   end
 end

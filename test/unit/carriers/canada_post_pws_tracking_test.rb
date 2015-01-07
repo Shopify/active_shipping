@@ -1,8 +1,9 @@
 require 'test_helper'
-class CanadaPostPwsTrackingTest < Test::Unit::TestCase
-  def setup
-    login = fixtures(:canada_post_pws)
+class CanadaPostPwsTrackingTest < Minitest::Test
+  include ActiveShipping::Test::Credentials
+  include ActiveShipping::Test::Fixtures
 
+  def setup
     # 100 grams, 93 cm long, 10 cm diameter, cylinders have different volume calculations
     @pkg1 = Package.new(25, [93, 10], :cylinder => true)
     # 7.5 lbs, times 16 oz/lb., 15x10x4.5 inches, not grams, not centimetres
@@ -28,7 +29,7 @@ class CanadaPostPwsTrackingTest < Test::Unit::TestCase
       :zip      => '90210'
     )
 
-    @cp = CanadaPostPWS.new(login)
+    @cp = CanadaPostPWS.new(credentials(:canada_post_pws))
   end
 
   def test_find_tracking_info_with_valid_pin
@@ -57,10 +58,10 @@ class CanadaPostPwsTrackingTest < Test::Unit::TestCase
     http_response = mock
     http_response.stubs(:code).returns('400')
     http_response.stubs(:body).returns(response)
-    response_error = ActiveMerchant::ResponseError.new(http_response)
+    response_error = ActiveUtils::ResponseError.new(http_response)
     @cp.expects(:ssl_get).raises(response_error)
 
-    exception = assert_raises ActiveMerchant::Shipping::ResponseError do
+    exception = assert_raises ActiveShipping::ResponseError do
       @cp.find_tracking_info(pin)
     end
 
@@ -71,7 +72,7 @@ class CanadaPostPwsTrackingTest < Test::Unit::TestCase
     pin = '123'
     @cp.expects(:ssl_get).never
 
-    exception = assert_raises ActiveMerchant::Shipping::ResponseError do
+    exception = assert_raises ActiveShipping::ResponseError do
       @cp.find_tracking_info(pin)
     end
     assert_equal "Invalid Pin Format", exception.message

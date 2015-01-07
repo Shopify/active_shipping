@@ -1,5 +1,14 @@
 language: ruby
+script: bundle exec rake
+sudo: false
+
 rvm:
-  - 1.9
-  - 2.0
-  - 2.1
+- 2.0
+- 2.1
+- 2.2
+
+gemfile:
+- Gemfile.activesupport32
+- Gemfile.activesupport40
+- Gemfile.activesupport41
+- Gemfile.activesupport42

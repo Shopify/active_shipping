@@ -1,8 +1,10 @@
 require 'test_helper'
-class CanadaPostPwsRatingTest < Test::Unit::TestCase
-  def setup
-    login = fixtures(:canada_post_pws)
 
+class CanadaPostPwsRatingTest < Minitest::Test
+  include ActiveShipping::Test::Credentials
+  include ActiveShipping::Test::Fixtures
+
+  def setup
     # 100 grams, 93 cm long, 10 cm diameter, cylinders have different volume calculations
     @pkg1 = Package.new(25, [93, 10], :cylinder => true)
     # 7.5 lbs, times 16 oz/lb., 15x10x4.5 inches, not grams, not centimetres
@@ -36,10 +38,10 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
 
     @customer_number = '654321'
 
-    @cp = CanadaPostPWS.new(login)
-    @cp.logger = Logger.new(STDOUT)
-    @french_cp = CanadaPostPWS.new(login.merge(:language => 'fr'))
-    @cp_customer_number = CanadaPostPWS.new(login.merge(:customer_number => @customer_number))
+    @cp = CanadaPostPWS.new(credentials(:canada_post_pws))
+    @cp.logger = Logger.new(StringIO.new)
+    @french_cp = CanadaPostPWS.new(credentials(:canada_post_pws).merge(:language => 'fr'))
+    @cp_customer_number = CanadaPostPWS.new(credentials(:canada_post_pws).merge(:customer_number => @customer_number))
 
     @default_options = {:customer_number => '123456'}
   end
@@ -76,10 +78,10 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
     http_response = mock
     http_response.stubs(:code).returns('400')
     http_response.stubs(:body).returns(response)
-    response_error = ActiveMerchant::ResponseError.new(http_response)
+    response_error = ActiveUtils::ResponseError.new(http_response)
     @cp.expects(:ssl_post).raises(response_error)
 
-    exception = assert_raises ActiveMerchant::Shipping::ResponseError do
+    exception = assert_raises ActiveShipping::ResponseError do
       @cp.find_rates(@home_params, @dest_params, [@pkg1, @pkg2], @default_options)
     end
 
@@ -283,7 +285,7 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
 
   def test_parse_rates_response_with_invalid_response_raises
     body = xml_fixture('canadapost_pws/rates_info_error')
-    exception = assert_raises ActiveMerchant::Shipping::ResponseError do
+    exception = assert_raises ActiveShipping::ResponseError do
       @response = @cp.parse_rates_response(body, @home, @dest)
     end
     assert_equal "No Quotes", exception.message
@@ -339,7 +341,7 @@ class CanadaPostPwsRatingTest < Test::Unit::TestCase
 
   def test_error_response_includes_error_code
     response = xml_fixture('canadapost_pws/rates_info_error')
-    e = assert_raises ActiveMerchant::Shipping::ResponseError do
+    e = assert_raises ActiveShipping::ResponseError do
       @cp.error_response(response, CPPWSRateResponse)
     end
     assert_equal 'AA004', e.response.error_code

@@ -1,15 +1,11 @@
 require 'test_helper'
 
-class LocationTest < Test::Unit::TestCase
-  include ActiveMerchant::Shipping
-
-  def setup
-    @locations = TestFixtures.locations.dup
-  end
+class LocationTest < Minitest::Test
+  include ActiveShipping::Test::Fixtures
 
   def test_countries
-    assert_instance_of ActiveMerchant::Country, @locations[:ottawa].country
-    assert_equal 'CA', @locations[:ottawa].country_code(:alpha2)
+    assert_instance_of ActiveUtils::Country, location_fixtures[:ottawa].country
+    assert_equal 'CA', location_fixtures[:ottawa].country_code(:alpha2)
   end
 
   def test_location_from_strange_hash
@@ -34,14 +30,19 @@ class LocationTest < Test::Unit::TestCase
     assert_equal hash[:address_type].to_s, location.address_type
   end
 
-  def to_s
+  def test_pretty_print
     expected = "110 Laurier Avenue West\nOttawa, ON, K1P 1J1\nCanada"
-    assert_equal expected, @locations[:ottawa].to_s
+    assert_equal expected, location_fixtures[:ottawa].prettyprint
+  end
+
+  def test_to_s
+    expected = "110 Laurier Avenue West Ottawa, ON, K1P 1J1 Canada"
+    assert_equal expected, location_fixtures[:ottawa].to_s
   end
 
   def test_inspect
     expected = "110 Laurier Avenue West\nOttawa, ON, K1P 1J1\nCanada\nPhone: 1-613-580-2400\nFax: 1-613-580-2495"
-    assert_equal expected, @locations[:ottawa].inspect
+    assert_equal expected, location_fixtures[:ottawa].inspect
   end
 
   def test_includes_name
@@ -63,7 +64,7 @@ class LocationTest < Test::Unit::TestCase
   end
 
   def test_set_address_type
-    location = @locations[:ottawa]
+    location = location_fixtures[:ottawa]
     assert !location.commercial?
 
     location.address_type = :commercial
@@ -71,32 +72,32 @@ class LocationTest < Test::Unit::TestCase
   end
 
   def test_set_address_type_invalid
-    location = @locations[:ottawa]
+    location = location_fixtures[:ottawa]
 
-    assert_raises ArgumentError do
+    assert_raises(ArgumentError) do
       location.address_type = :new_address_type
     end
 
-    assert_not_equal "new_address_type", location.address_type
+    refute_equal "new_address_type", location.address_type
   end
 
   def test_to_hash_attributes
-    assert_equal %w(address1 address2 address3 address_type city company_name country fax name phone postal_code province), @locations[:ottawa].to_hash.stringify_keys.keys.sort
+    assert_equal %w(address1 address2 address3 address_type city company_name country fax name phone postal_code province), location_fixtures[:ottawa].to_hash.stringify_keys.keys.sort
   end
 
   def test_to_json
-    location_json = @locations[:ottawa].to_json
-    assert_equal @locations[:ottawa].to_hash, ActiveSupport::JSON.decode(location_json).symbolize_keys
+    location_json = location_fixtures[:ottawa].to_json
+    assert_equal location_fixtures[:ottawa].to_hash, JSON.parse(location_json).symbolize_keys
   end
 
   def test_default_to_xml
-    location_xml = @locations[:ottawa].to_xml
-    assert_equal @locations[:ottawa].to_hash, Hash.from_xml(location_xml)["location"].symbolize_keys
+    location_xml = location_fixtures[:ottawa].to_xml
+    assert_equal location_fixtures[:ottawa].to_hash, Hash.from_xml(location_xml)["location"].symbolize_keys
   end
 
   def test_custom_root_to_xml
-    location_xml = @locations[:ottawa].to_xml(:root => "destination")
-    assert_equal @locations[:ottawa].to_hash, Hash.from_xml(location_xml)["destination"].symbolize_keys
+    location_xml = location_fixtures[:ottawa].to_xml(:root => "destination")
+    assert_equal location_fixtures[:ottawa].to_hash, Hash.from_xml(location_xml)["destination"].symbolize_keys
   end
 
   def test_zip_plus_4_with_no_dash
@@ -116,7 +117,7 @@ class LocationTest < Test::Unit::TestCase
   end
 
   def test_address2_and_3_is_nil
-    location = @locations[:ottawa]
+    location = location_fixtures[:ottawa]
     assert_nil location.address2
     assert_nil location.address3
     assert location.address2_and_3.blank?
