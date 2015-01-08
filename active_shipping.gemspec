@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
   s.add_dependency('active_utils',  '~> 3.0.0.pre2')
   s.add_dependency('builder',       '>= 2.1.2', '< 4.0.0')
 
-  s.add_development_dependency('minitest', '~> 5.0')
+  s.add_development_dependency('minitest')
   s.add_development_dependency('rake')
   s.add_development_dependency('mocha', '~> 0.14.0')
   s.add_development_dependency('timecop')
