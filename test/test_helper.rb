@@ -1,7 +1,7 @@
 require 'bundler/setup'
 
 require 'minitest/autorun'
-require 'mocha/setup'
+require 'mocha/mini_test'
 require 'timecop'
 
 require 'active_shipping'
