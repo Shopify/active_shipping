@@ -100,11 +100,13 @@ class CanadaPostTest < Minitest::Test
   end
 
   def test_build_line_items
-    xml_line_items = @carrier.send(:build_line_items, @line_items)
-    assert_instance_of XmlNode, xml_line_items
+    line_items_xml = Nokogiri::XML::Builder.new do |xml|
+      @carrier.send(:build_line_items, xml, @line_items)
+    end
 
-    xml_string = xml_line_items.to_s
-    assert_match /a box full of stuff/, xml_string
+    assert_instance_of Nokogiri::XML::Builder, line_items_xml
+    assert_equal "a box full of stuff", line_items_xml.doc.at_xpath('//description').text
+    assert_equal "0.5", line_items_xml.doc.at_xpath('//weight').text
   end
 
   def test_non_iso_country_names
