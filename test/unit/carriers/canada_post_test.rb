@@ -132,7 +132,12 @@ class CanadaPostTest < Minitest::Test
   end
 
   def test_line_items_with_nil_values
+    @response = xml_fixture('canadapost/example_response_with_nil_value')
+    @carrier.expects(:ssl_post).returns(@response)
+
     @line_items << Package.new(500, [2, 3, 4], :description => "another box full of stuff", :value => nil)
-    @carrier.find_rates(@origin, @destination, @line_items)
+    rate_response = @carrier.find_rates(@origin, @destination, @line_items)
+
+    assert rate_response.rates.length > 0, "Expecting rateestimates even without a value specified."
   end
 end
