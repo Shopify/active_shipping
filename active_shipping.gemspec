@@ -20,12 +20,12 @@ Gem::Specification.new do |s|
   s.add_dependency('i18n',          '>= 0.6.9')
   s.add_dependency('active_utils',  '~> 3.0.0.pre2')
   s.add_dependency('builder',       '>= 2.1.2', '< 4.0.0')
+  s.add_dependency('nokogiri',      '>= 1.6')
 
   s.add_development_dependency('minitest')
   s.add_development_dependency('rake')
   s.add_development_dependency('mocha', '~> 1')
   s.add_development_dependency('timecop')
-  s.add_development_dependency('nokogiri')
 
   s.files        = Dir.glob("lib/**/*") + %w(MIT-LICENSE README.md CHANGELOG.md CONTRIBUTING.md)
   s.require_path = 'lib'

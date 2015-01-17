@@ -23,7 +23,8 @@ module ActiveShipping
     PostalOutlet = Struct.new(:sequence_no, :distance, :name, :business_name, :postal_address, :business_hours)
 
     URL = "http://sellonline.canadapost.ca:30000"
-    DOCTYPE = '<!DOCTYPE eparcel SYSTEM "http://sellonline.canadapost.ca/DevelopersResources/protocolV3/eParcel.dtd">'
+    DTD_NAME = 'eparcel'
+    DTD_URI  = "http://sellonline.canadapost.ca/DevelopersResources/protocolV3/eParcel.dtd"
 
     RESPONSE_CODES = {
      '1'     =>	"All calculation was done",
@@ -106,92 +107,96 @@ module ActiveShipping
 
     private
 
+    def generate_xml(&block)
+      builder = Nokogiri::XML::Builder.new do |xml|
+        xml.doc.create_internal_subset(DTD_NAME, nil, DTD_URI)
+        yield(xml)
+      end
+      builder.to_xml
+    end
+
     def build_rate_request(origin, destination, line_items = [], options = {})
-      line_items = [line_items] unless line_items.is_a?(Array)
-      origin = origin.is_a?(Location) ? origin : Location.new(origin)
+      line_items  = [line_items] unless line_items.is_a?(Array)
+      origin      = origin.is_a?(Location) ? origin : Location.new(origin)
       destination = destination.is_a?(Location) ? destination : Location.new(destination)
 
-      xml_request = XmlNode.new('eparcel') do |root_node|
-        root_node << XmlNode.new('language', @options[:french] ? 'fr' : 'en')
-        root_node << XmlNode.new('ratesAndServicesRequest') do |request|
+      generate_xml do |xml|
+        xml.eparcel do
+          xml.language(@options[:french] ? 'fr' : 'en')
+          xml.ratesAndServicesRequest do
+            xml.merchantCPCID(@options[:login])
+            xml.fromPostalCode(origin.postal_code)
+            xml.turnAroundTime(options[:turn_around_time]) if options[:turn_around_time]
+            xml.itemsPrice(dollar_amount(line_items.map(&:value).compact.sum))
 
-          request << XmlNode.new('merchantCPCID', @options[:login])
-          request << XmlNode.new('fromPostalCode', origin.postal_code)
-          request << XmlNode.new('turnAroundTime', options[:turn_around_time]) if options[:turn_around_time]
-          request << XmlNode.new('itemsPrice', dollar_amount(line_items.map(&:value).compact.sum))
+            build_line_items(xml, line_items)
 
-          # line items
-          request << build_line_items(line_items)
-
-          # delivery info
-          # NOTE: These tags MUST be after line items
-          request << XmlNode.new('city', destination.city)
-          request << XmlNode.new('provOrState', destination.province)
-          request << XmlNode.new('country', handle_non_iso_country_names(destination.country))
-          request << XmlNode.new('postalCode', destination.postal_code)
+            xml.city(destination.city)
+            xml.provOrState(destination.province)
+            xml.country(handle_non_iso_country_names(destination.country))
+            xml.postalCode(destination.postal_code)
+          end
         end
       end
-
-      DOCTYPE + xml_request.to_s
     end
 
     def parse_rate_response(response, origin, destination, options = {})
-      xml = REXML::Document.new(response)
+      xml = Nokogiri.XML(response)
       success = response_success?(xml)
       message = response_message(xml)
 
       rate_estimates = []
       boxes = []
       if success
-        xml.elements.each('eparcel/ratesAndServicesResponse/product') do |product|
-          service_name = (@options[:french] ? @@name_french : @@name) + " " + product.get_text('name').to_s
-          service_code = product.attribute('id').to_s
+        xml.xpath('eparcel/ratesAndServicesResponse/product').each do |product|
+          service_name = (@options[:french] ? @@name_french : @@name) + " " + product.at('name').text
+          service_code = product['id']
 
           rate_estimates << RateEstimate.new(origin, destination, @@name, service_name,
                                              :service_code => service_code,
-                                             :total_price => product.get_text('rate').to_s,
+                                             :total_price => product.at('rate').text,
                                              :currency => 'CAD',
-                                             :shipping_date => product.get_text('shippingDate').to_s,
-                                             :delivery_range => [product.get_text('deliveryDate').to_s] * 2
+                                             :shipping_date => product.at('shippingDate').text,
+                                             :delivery_range => [product.at('deliveryDate').text] * 2
           )
         end
 
-        boxes = xml.elements.collect('eparcel/ratesAndServicesResponse/packing/box') do |box|
+        boxes = xml.xpath('eparcel/ratesAndServicesResponse/packing/box').map do |box|
           b = Box.new
           b.packedItems = []
-          b.name = box.get_text('name').to_s
-          b.weight = box.get_text('weight').to_s.to_f
-          b.expediter_weight = box.get_text('expediterWeight').to_s.to_f
-          b.length = box.get_text('length').to_s.to_f
-          b.width = box.get_text('width').to_s.to_f
-          b.height = box.get_text('height').to_s.to_f
-          b.packedItems = box.elements.collect('packedItem') do |item|
+          b.name = box.at('name').text
+          b.weight = box.at('weight').text.to_f
+          b.expediter_weight = box.at('expediterWeight').text.to_f
+          b.length = box.at('length').text.to_f
+          b.width = box.at('width').text.to_f
+          b.height = box.at('height').text.to_f
+          b.packedItems = box.xpath('packedItem').map do |item|
             p = PackedItem.new
-            p.quantity = item.get_text('quantity').to_s.to_i
-            p.description = item.get_text('description').to_s
+            p.quantity = item.at('quantity').text.to_i
+            p.description = item.at('description').text
             p
           end
           b
         end
 
-        postal_outlets = xml.elements.collect('eparcel/ratesAndServicesResponse/nearestPostalOutlet') do |outlet|
+        postal_outlets = xml.xpath('eparcel/ratesAndServicesResponse/nearestPostalOutlet').map do |outlet|
           postal_outlet = PostalOutlet.new
-          postal_outlet.sequence_no    = outlet.get_text('postalOutletSequenceNo').to_s
-          postal_outlet.distance       = outlet.get_text('distance').to_s
-          postal_outlet.name           = outlet.get_text('outletName').to_s
-          postal_outlet.business_name  = outlet.get_text('businessName').to_s
+          postal_outlet.sequence_no    = outlet.at('postalOutletSequenceNo').text
+          postal_outlet.distance       = outlet.at('distance').text
+          postal_outlet.name           = outlet.at('outletName').text
+          postal_outlet.business_name  = outlet.at('businessName').text
 
           postal_outlet.postal_address = Location.new(
-            :address1     => outlet.get_text('postalAddress/addressLine').to_s,
-            :postal_code  => outlet.get_text('postalAddress/postal_code').to_s,
-            :city         => outlet.get_text('postalAddress/municipality').to_s,
-            :province     => outlet.get_text('postalAddress/province').to_s,
+            :address1     => outlet.at('postalAddress/addressLine').text,
+            :postal_code  => outlet.at('postalAddress/postal_code').text,
+            :city         => outlet.at('postalAddress/municipality').text,
+            :province     => outlet.at('postalAddress/province').text,
             :country      => 'Canada',
-            :phone_number => outlet.get_text('phoneNumber').to_s
+            :phone_number => outlet.at('phoneNumber').text
           )
 
           postal_outlet.business_hours = outlet.elements.collect('businessHours') do |hour|
-            { :day_of_week => hour.get_text('dayOfWeek').to_s, :time => hour.get_text('time').to_s }
+            { :day_of_week => hour.at('dayOfWeek').text, :time => hour.at('time').text }
           end
 
           postal_outlet
@@ -202,17 +207,17 @@ module ActiveShipping
     end
 
     def response_success?(xml)
-      return false unless xml.get_text('eparcel/error').nil?
+      return false unless xml.at('eparcel/error').nil?
 
-      value = xml.get_text('eparcel/ratesAndServicesResponse/statusCode').to_s
+      value = xml.at('eparcel/ratesAndServicesResponse/statusCode').text
       value == '1' || value == '2'
     end
 
     def response_message(xml)
       if response_success?(xml)
-        xml.get_text('eparcel/ratesAndServicesResponse/statusMessage').to_s
+        xml.at('eparcel/ratesAndServicesResponse/statusMessage').text
       else
-        xml.get_text('eparcel/error/statusMessage').to_s
+        xml.at('eparcel/error/statusMessage').text
       end
     end
 
@@ -225,17 +230,17 @@ module ActiveShipping
     # <!--   - description (mandatory)      -->
     # <!--   - ready to ship (optional)     -->
 
-    def build_line_items(line_items)
-      XmlNode.new('lineItems') do |line_items_node|
+    def build_line_items(xml, line_items)
+      xml.lineItems do
         line_items.each do |line_item|
-          line_items_node << XmlNode.new('item') do |item|
-            item << XmlNode.new('quantity', 1)
-            item << XmlNode.new('weight', line_item.kilograms)
-            item << XmlNode.new('length', line_item.cm(:length).to_s)
-            item << XmlNode.new('width', line_item.cm(:width).to_s)
-            item << XmlNode.new('height', line_item.cm(:height).to_s)
-            item << XmlNode.new('description', line_item.options[:description] || ' ')
-            item << XmlNode.new('readyToShip', line_item.options[:ready_to_ship] || nil)
+          xml.item do
+            xml.quantity(1)
+            xml.weight(line_item.kilograms)
+            xml.length(line_item.cm(:length).to_s)
+            xml.width(line_item.cm(:width).to_s)
+            xml.height(line_item.cm(:height).to_s)
+            xml.description(line_item.options[:description] || ' ')
+            xml.readyToShip(line_item.options[:ready_to_ship] || nil)
             # By setting the 'readyToShip' tag to true, Sell Online will not pack this item in the boxes defined in the merchant profile.
           end
         end
