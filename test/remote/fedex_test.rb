@@ -191,7 +191,7 @@ class RemoteFedExTest < Minitest::Test
   end
 
   def test_tracking
-    p response = @carrier.find_tracking_info('123456789012', :test => true)
+    response = @carrier.find_tracking_info('123456789012', :test => true)
     assert response
   end
 
@@ -213,6 +213,6 @@ class RemoteFedExTest < Minitest::Test
                              package_fixtures.values_at(:chocolate_stuff)
                            )
 
-    assert_not_equal residential_response.rates.map(&:price), commercial_response.rates.map(&:price)
+    refute_equal residential_response.rates.map(&:price), commercial_response.rates.map(&:price)
   end
 end
