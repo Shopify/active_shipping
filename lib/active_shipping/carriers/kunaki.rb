@@ -1,5 +1,3 @@
-require 'builder'
-
 module ActiveShipping
   class Kunaki < Carrier
     self.retry_safe = true
@@ -77,31 +75,30 @@ module ActiveShipping
     private
 
     def build_request(destination, options)
-      xml = Builder::XmlMarkup.new
-      xml.instruct!
-      xml.tag! 'ShippingOptions' do
-        xml.tag! 'AddressInfo' do
-          xml.tag! 'Country', COUNTRIES[destination.country_code]
+      country = COUNTRIES[destination.country_code]
+      state_province = %w(US CA).include?(destination.country_code.to_s) ? destination.state : ''
 
-          state = %w(US CA).include?(destination.country_code.to_s) ? destination.state : ''
+      builder = Nokogiri::XML::Builder.new do |xml|
+        xml.ShippingOptions do
+          xml.AddressInfo do
+            xml.Country(country)
+            xml.State_Province(state_province)
+            xml.PostalCode(destination.zip)
+          end
 
-          xml.tag! 'State_Province', state
-          xml.tag! 'PostalCode', destination.zip
-        end
-
-        options[:items].each do |item|
-          xml.tag! 'Product' do
-            xml.tag! 'ProductId', item[:sku]
-            xml.tag! 'Quantity', item[:quantity]
+          options[:items].each do |item|
+            xml.Product do
+              xml.ProductId(item[:sku])
+              xml.Quantity(item[:quantity])
+            end
           end
         end
       end
-      xml.target!
+      builder.to_xml
     end
 
     def commit(origin, destination, options)
       request = build_request(destination, options)
-
       response = parse( ssl_post(URL, request, "Content-Type" => "text/xml") )
 
       RateResponse.new(success?(response), message_from(response), response,
@@ -126,15 +123,15 @@ module ActiveShipping
       response = {}
       response["Options"] = []
 
-      document = REXML::Document.new(sanitize(xml))
+      document = Nokogiri.XML(sanitize(xml))
 
-      response["ErrorCode"] = parse_child_text(document.root, "ErrorCode")
-      response["ErrorText"] = parse_child_text(document.root, "ErrorText")
+      response["ErrorCode"] = document.at('/Response/ErrorCode').text
+      response["ErrorText"] = document.at('/Response/ErrorText').text
 
-      document.root.elements.each("Option") do |e|
+      document.xpath("Response/Option").each do |node|
         rate = {}
-        rate["Description"] = parse_child_text(e, "Description")
-        rate["Price"]       = parse_child_text(e, "Price")
+        rate["Description"] = node.at("Description").text
+        rate["Price"]       = node.at("Price").text
         response["Options"] << rate
       end
       response
@@ -145,12 +142,6 @@ module ActiveShipping
       result.gsub!("\r\n", "")
       result.gsub!(/<(\/)?(BODY|HTML)>/, '')
       result
-    end
-
-    def parse_child_text(parent, name)
-      if element = parent.elements[name]
-        element.text
-      end
     end
 
     def success?(response)
