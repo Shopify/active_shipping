@@ -215,8 +215,8 @@ class FedExTest < Minitest::Test
   def test_building_request_with_address_type_commercial_should_not_include_residential
     mock_response = xml_fixture('fedex/ottawa_to_beverly_hills_rate_response')
     expected_request = xml_fixture('fedex/ottawa_to_beverly_hills_commercial_rate_request')
-    Time.any_instance.expects(:to_xml_value).returns("2009-07-20T12:01:55-04:00")
 
+    @carrier.expects(:ship_timestamp).returns(Time.parse("2009-07-20T12:01:55-04:00").in_time_zone('US/Eastern'))
     @carrier.expects(:commit).with { |request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode }.returns(mock_response)
     destination = ActiveShipping::Location.from(location_fixtures[:beverly_hills].to_hash, :address_type => :commercial)
     @carrier.find_rates( location_fixtures[:ottawa],
@@ -227,8 +227,8 @@ class FedExTest < Minitest::Test
   def test_building_freight_request_and_parsing_response
     expected_request = xml_fixture('fedex/freight_rate_request')
     mock_response = xml_fixture('fedex/freight_rate_response')
-    Time.any_instance.expects(:to_xml_value).returns("2013-11-01T14:04:01-07:00")
 
+    @carrier.expects(:ship_timestamp).returns(Time.parse("2013-11-01T14:04:01-07:00").in_time_zone('US/Pacific'))
     @carrier.expects(:commit).with { |request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode }.returns(mock_response)
 
     # shipping and billing addresses below are provided by fedex test credentials
@@ -288,8 +288,7 @@ class FedExTest < Minitest::Test
   def test_building_request_and_parsing_response
     expected_request = xml_fixture('fedex/ottawa_to_beverly_hills_rate_request')
     mock_response = xml_fixture('fedex/ottawa_to_beverly_hills_rate_response')
-    Time.any_instance.expects(:to_xml_value).returns("2009-07-20T12:01:55-04:00")
-
+    @carrier.expects(:ship_timestamp).returns(Time.parse("2009-07-20T12:01:55-04:00").in_time_zone('US/Eastern'))
     @carrier.expects(:commit).with { |request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode }.returns(mock_response)
     response = @carrier.find_rates( location_fixtures[:ottawa],
                                     location_fixtures[:beverly_hills],
@@ -322,15 +321,15 @@ class FedExTest < Minitest::Test
   def test_parsing_response_with_no_rate_reply
     expected_request = xml_fixture('fedex/ottawa_to_beverly_hills_rate_request')
     mock_response = xml_fixture('fedex/unknown_fedex_document_reply')
-    Time.any_instance.expects(:to_xml_value).returns("2009-07-20T12:01:55-04:00")
 
+    @carrier.expects(:ship_timestamp).returns(Time.parse("2009-07-20T12:01:55-04:00").in_time_zone('US/Eastern'))
     @carrier.expects(:commit).with { |request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode }.returns(mock_response)
-    exception = assert_raises ActiveShipping::ResponseContentError do
+    exception = assert_raises(ActiveShipping::ResponseContentError) do
       @carrier.find_rates( location_fixtures[:ottawa],
                            location_fixtures[:beverly_hills],
                            package_fixtures.values_at(:book, :wii), :test => true)
     end
-    message = "Invalid document \n\n<?xml version='1.0' encoding='UTF-8'?>\n<RandomElement xmlns:v6='http://fedex.com/ws/rate/v6' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\n</RandomElement>\n"
+    message = "Invalid document \n\n#{mock_response}"
     assert_equal message, exception.message
   end
 
@@ -396,13 +395,13 @@ class FedExTest < Minitest::Test
 
     @carrier.expects(:commit).returns(mock_response)
 
-    assert_raises ActiveShipping::ResponseError do
-    @carrier.find_rates(
-        location_fixtures[:ottawa],
-        location_fixtures[:beverly_hills],
-        package_fixtures.values_at(:book, :wii),
-        :test => true
-      )
-    end
+    response = @carrier.find_rates(
+      location_fixtures[:ottawa],
+      location_fixtures[:beverly_hills],
+      package_fixtures.values_at(:book, :wii),
+      :test => true
+    )
+
+    assert response.success?
   end
 end
