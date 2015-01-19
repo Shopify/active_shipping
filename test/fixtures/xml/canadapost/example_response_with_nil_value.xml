@@ -1,0 +1,164 @@
+<?xml version="1.0"?>
+<!DOCTYPE eparcel [
+<!-- EVERY REQUEST CONTAIN THE eparcel TAG -->
+<!ELEMENT eparcel (ratesAndServicesResponse)>
+  <!-- *********************************************************  -->
+  <!-- * Standard response for request for rates and services  *  -->
+  <!-- *********************************************************  -->
+  <!ELEMENT ratesAndServicesResponse (statusCode, statusMessage+, requestID, handling, language, product+, packing*, emptySpace*, shippingOptions, comment, nearestPostalOutlet*)>
+    <!ELEMENT statusCode (#PCDATA)>
+    <!ELEMENT statusMessage (#PCDATA)>
+    <!ELEMENT requestID (#PCDATA)>
+    <!ELEMENT handling (#PCDATA)>
+    <!ELEMENT language (#PCDATA)>
+    <!ELEMENT product (name, rate, shippingDate, deliveryDate, deliveryDayOfWeek, nextDayAM?, packingID)>
+      <!ATTLIST product
+        id CDATA #REQUIRED
+        sequence CDATA #REQUIRED
+      >
+      <!ELEMENT name (#PCDATA)>
+      <!ELEMENT rate (#PCDATA)>
+      <!ELEMENT shippingDate (#PCDATA)>
+      <!ELEMENT deliveryDate (#PCDATA)>
+      <!ELEMENT deliveryDayOfWeek (#PCDATA)>
+      <!ELEMENT nextDayAM (#PCDATA)>
+      <!ELEMENT packingID (#PCDATA)>
+    <!ELEMENT packing (packingID, box+)>
+    <!ELEMENT box (name, weight, expediterWeight, length, width, height, packedItem+)>
+      <!ELEMENT weight (#PCDATA)>
+      <!ELEMENT expediterWeight (#PCDATA)>
+      <!ELEMENT length (#PCDATA)>
+      <!ELEMENT width (#PCDATA)>
+      <!ELEMENT height (#PCDATA)>
+      <!ELEMENT packedItem (quantity, description)>
+    <!ELEMENT quantity (#PCDATA)>
+    <!ELEMENT description (#PCDATA)>
+    <!ELEMENT emptySpace (length, width, height, weight)>
+    <!ELEMENT shippingOptions (insurance, deliveryConfirmation, signature, flexiblePaymentAvailable?)>
+      <!ELEMENT insurance (#PCDATA)>
+      <!ELEMENT deliveryConfirmation (#PCDATA)>
+      <!ELEMENT signature (#PCDATA)>
+      <!ELEMENT flexiblePaymentAvailable EMPTY>
+    <!ELEMENT comment (#PCDATA)>
+    <!-- *********************************************************  -->
+    <!-- * 'nearestPostalOutlet'  is optional and is returned    *  -->
+    <!-- * only if the merchant profile has this option enabled  *  -->
+    <!-- *********************************************************  -->
+    <!ELEMENT nearestPostalOutlet (postalOutletSequenceNo, distance, outletName, businessName, postalAddress, phoneNumber, businessHours+)>
+      <!ELEMENT postalOutletSequenceNo (#PCDATA)>
+      <!ELEMENT distance (#PCDATA)>
+      <!ELEMENT outletName (#PCDATA)>
+      <!ELEMENT businessName (#PCDATA)>
+      <!ELEMENT postalAddress (addressLine+, postalCode, municipality, province?)>
+        <!ELEMENT addressLine (#PCDATA)>
+        <!ELEMENT postalCode (#PCDATA)>
+        <!ELEMENT municipality (#PCDATA)>
+        <!ELEMENT province (#PCDATA)>
+      <!ELEMENT phoneNumber (#PCDATA)>
+      <!ELEMENT businessHours (dayId, dayOfWeek, time)>
+      <!ELEMENT dayId (#PCDATA)>
+      <!ELEMENT dayOfWeek (#PCDATA)>
+      <!ELEMENT time (#PCDATA)>
+
+]>
+<eparcel>
+  <ratesAndServicesResponse>
+
+    <statusCode>1</statusCode>
+    <statusMessage>OK</statusMessage>
+    <requestID>12471821</requestID>
+    <handling>1.0</handling>
+    <language>0</language>
+    <product id="2040" sequence="1">
+      <name>Priority Worldwide USA</name>
+      <rate>139.36</rate>
+      <shippingDate>2015-01-21</shippingDate>
+      <deliveryDate>www.canadapost.ca</deliveryDate>
+      <deliveryDayOfWeek>4</deliveryDayOfWeek>
+      <nextDayAM>false</nextDayAM>
+      <packingID>P_0</packingID>
+    </product>
+    <product id="2030" sequence="2">
+      <name>Xpresspost USA</name>
+      <rate>64.6</rate>
+      <shippingDate>2015-01-21</shippingDate>
+      <deliveryDate>2015-01-24</deliveryDate>
+      <deliveryDayOfWeek>7</deliveryDayOfWeek>
+      <nextDayAM>false</nextDayAM>
+      <packingID>P_0</packingID>
+    </product>
+    <product id="2020" sequence="3">
+      <name>Expedited US Business</name>
+      <rate>38.0</rate>
+      <shippingDate>2015-01-21</shippingDate>
+      <deliveryDate>2015-01-27</deliveryDate>
+      <deliveryDayOfWeek>3</deliveryDayOfWeek>
+      <nextDayAM>false</nextDayAM>
+      <packingID>P_0</packingID>
+    </product>
+    <product id="2000" sequence="4">
+      <name>Tracked Packet - USA</name>
+      <rate>32.82</rate>
+      <shippingDate>2015-01-21</shippingDate>
+      <deliveryDate>2015-01-29</deliveryDate>
+      <deliveryDayOfWeek>5</deliveryDayOfWeek>
+      <nextDayAM>false</nextDayAM>
+      <packingID>P_0</packingID>
+    </product>
+    <product id="2015" sequence="5">
+      <name>Small Packets Air</name>
+      <rate>21.58</rate>
+      <shippingDate>2015-01-21</shippingDate>
+      <deliveryDate>up to 2 weeks</deliveryDate>
+      <deliveryDayOfWeek>4</deliveryDayOfWeek>
+      <nextDayAM>false</nextDayAM>
+      <packingID>P_0</packingID>
+    </product>
+
+
+    <packing>
+      <packingID>P_0</packingID>
+                        <box>
+        <name>a box full of stuff</name>
+        <weight>0.5</weight>
+        <expediterWeight>0.5</expediterWeight>
+        <length>4.0</length>
+        <width>3.0</width>
+        <height>2.0</height>
+                    <packedItem>
+          <quantity>1</quantity>
+          <description>a box full of stuff</description>
+        </packedItem>
+
+
+      </box>
+      <box>
+        <name>another box full of stuff</name>
+        <weight>0.5</weight>
+        <expediterWeight>0.5</expediterWeight>
+        <length>4.0</length>
+        <width>3.0</width>
+        <height>2.0</height>
+                    <packedItem>
+          <quantity>1</quantity>
+          <description>another box full of stuff</description>
+        </packedItem>
+
+
+      </box>
+
+    </packing>
+
+    <shippingOptions>
+      <insurance>No</insurance>
+      <deliveryConfirmation>Yes</deliveryConfirmation>
+      <signature>No</signature>
+
+    </shippingOptions>
+
+    <comment>* For major centres only. Add 1 to 3 business days for other destinations.</comment>
+
+
+  </ratesAndServicesResponse>
+</eparcel>
+<!--END_OF_EPARCEL-->
