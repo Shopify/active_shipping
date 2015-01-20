@@ -1,4 +1,5 @@
-<?xml version=\"1.0\"?>\n<RatingServiceSelectionResponse>
+<?xml version="1.0"?>
+<RatingServiceSelectionResponse>
 <Response>
   <ResponseStatusCode>1</ResponseStatusCode>
   <ResponseStatusDescription>Success</ResponseStatusDescription>
