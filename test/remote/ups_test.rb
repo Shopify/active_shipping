@@ -21,7 +21,7 @@ class UPSTest < Minitest::Test
   end
 
   def test_tracking_with_another_number
-    @carrier.find_tracking_info('1Z12345E6692804405')
+    response = @carrier.find_tracking_info('1Z12345E6692804405')
     assert response.success?
   end
 
@@ -38,7 +38,7 @@ class UPSTest < Minitest::Test
   end
 
   def test_puerto_rico
-    @carrier.find_rates(
+    response = @carrier.find_rates(
       location_fixtures[:beverly_hills],
       Location.new(:city => 'Ponce', :country => 'PR', :zip => '00733-1283'),
       package_fixtures.values_at(:big_half_pound),
