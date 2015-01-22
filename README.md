@@ -1,10 +1,9 @@
-# Active Shipping
-
-[![Build Status](https://travis-ci.org/Shopify/active_shipping.png)](https://travis-ci.org/Shopify/active_shipping)
+# ActiveShipping [![Build status](https://travis-ci.org/Shopify/active_shipping.svg?branch=master)](https://travis-ci.org/Shopify/active_shipping)
 
 This library interfaces with the web services of various shipping carriers. The goal is to abstract the features that are most frequently used into a pleasant and consistent Ruby API.
 
 - Finding shipping rates
+- Registering shipments
 - Tracking shipments
 
 Active Shipping is currently being used and improved in a production environment for [Shopify][]. Development is being done by the Shopify integrations team (<integrations-team@shopify.com>). Discussion is welcome in the [Active Merchant Google Group][discuss].
