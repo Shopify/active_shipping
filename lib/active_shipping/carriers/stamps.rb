@@ -1,5 +1,3 @@
-require 'builder'
-
 module ActiveShipping
   # Stamps.com integration for rating, tracking, address validation, and label generation
   # Integration ID can be requested from Stamps.com
@@ -225,27 +223,27 @@ module ActiveShipping
     end
 
     def build_header
-      xml = Builder::XmlMarkup.new
-      xml.instruct!
-      xml.soap(:Envelope,
-               'xmlns:soap' => 'http://schemas.xmlsoap.org/soap/envelope/',
-               'xmlns:xsi'  => 'http://www.w3.org/2001/XMLSchema-instance',
-               'xmlns:xsd'  => 'http://www.w3.org/2001/XMLSchema',
-               'xmlns:tns'  => 'http://stamps.com/xml/namespace/2014/01/swsim/swsimv34'
-               ) do
-        xml.soap :Body do
-          yield(xml)
+      Nokogiri::XML::Builder.new do |xml|
+        xml['soap'].Envelope(
+                 'xmlns:soap' => 'http://schemas.xmlsoap.org/soap/envelope/',
+                 'xmlns:xsi'  => 'http://www.w3.org/2001/XMLSchema-instance',
+                 'xmlns:xsd'  => 'http://www.w3.org/2001/XMLSchema',
+                 'xmlns:tns'  => 'http://stamps.com/xml/namespace/2014/01/swsim/swsimv34'
+                ) do
+          xml['soap'].Body do
+            yield(xml)
+          end
         end
-      end
+      end.to_xml
     end
 
     def build_authenticate_user_request
       build_header do |xml|
-        xml.tns :AuthenticateUser do
-          xml.tns :Credentials do
-            xml.tns(:IntegrationID, @options[:integration_id])
-            xml.tns(:Username, @options[:username])
-            xml.tns(:Password, @options[:password])
+        xml['tns'].AuthenticateUser do
+          xml['tns'].Credentials do
+            xml['tns'].IntegrationID(@options[:integration_id])
+            xml['tns'].Username(@options[:username])
+            xml['tns'].Password(@options[:password])
           end
         end
       end
@@ -253,67 +251,67 @@ module ActiveShipping
 
     def build_get_account_info_request
       build_header do |xml|
-        xml.tns :GetAccountInfo do
-          xml.tns(:Authenticator, authenticator)
+        xml['tns'].GetAccountInfo do
+          xml['tns'].Authenticator(authenticator)
         end
       end
     end
 
     def build_purchase_postage_request(purchase_amount, control_total)
       build_header do |xml|
-        xml.tns :PurchasePostage do
-          xml.tns(:Authenticator, authenticator)
-          xml.tns(:PurchaseAmount, purchase_amount)
-          xml.tns(:ControlTotal, control_total)
+        xml['tns'].PurchasePostage do
+          xml['tns'].Authenticator(authenticator)
+          xml['tns'].PurchaseAmount(purchase_amount)
+          xml['tns'].ControlTotal(control_total)
         end
       end
     end
 
     def build_get_purchase_status(transaction_id)
       build_header do |xml|
-        xml.tns :GetPurchaseStatus do
-          xml.tns(:Authenticator, authenticator)
-          xml.tns(:TransactionID, transaction_id)
+        xml['tns'].GetPurchaseStatus do
+          xml['tns'].Authenticator(authenticator)
+          xml['tns'].TransactionID(transaction_id)
         end
       end
     end
 
     def build_cleanse_address_request(address)
       build_header do |xml|
-        xml.tns :CleanseAddress do
-          xml.tns(:Authenticator, authenticator)
+        xml['tns'].CleanseAddress do
+          xml['tns'].Authenticator(authenticator)
           add_address(xml, address)
         end
       end
     end
 
     def add_address(xml, address, object_type = :Address)
-      xml.tns object_type do
-        xml.tns(:FullName,       address.name) unless address.name.blank?
-        xml.tns(:Company,        address.company) unless address.company.blank?
-        xml.tns(:Address1,       address.address1)
-        xml.tns(:Address2,       address.address2) unless address.address2.blank?
-        xml.tns(:Address3,       address.address3) unless address.address3.blank?
-        xml.tns(:City,           address.city) unless address.city.blank?
+      xml['tns'].public_send(object_type) do
+        xml['tns'].FullName(      address.name) unless address.name.blank?
+        xml['tns'].Company(       address.company) unless address.company.blank?
+        xml['tns'].Address1(      address.address1)
+        xml['tns'].Address2(      address.address2) unless address.address2.blank?
+        xml['tns'].Address3(      address.address3) unless address.address3.blank?
+        xml['tns'].City(          address.city) unless address.city.blank?
         if domestic?(address)
-          xml.tns(:State,        address.state) unless address.state.blank?
+          xml['tns'].State(       address.state) unless address.state.blank?
 
           zip = (address.postal_code || '').match(/^(\d{5})?-?(\d{4})?$/)
-          xml.tns(:ZIPCode,      zip[1]) unless zip[1].nil?
-          xml.tns(:ZIPCodeAddOn, zip[2]) unless zip[2].nil?
+          xml['tns'].ZIPCode(     zip[1]) unless zip[1].nil?
+          xml['tns'].ZIPCodeAddOn(zip[2]) unless zip[2].nil?
         else
-          xml.tns(:Province,     address.province) unless address.province.blank?
-          xml.tns(:PostalCode,   address.postal_code) unless address.postal_code.blank?
+          xml['tns'].Province(    address.province) unless address.province.blank?
+          xml['tns'].PostalCode(  address.postal_code) unless address.postal_code.blank?
         end
-        xml.tns(:Country,        address.country_code) unless address.country_code.blank?
-        xml.tns(:PhoneNumber,    address.phone) unless address.phone.blank?
+        xml['tns'].Country(       address.country_code) unless address.country_code.blank?
+        xml['tns'].PhoneNumber(   address.phone) unless address.phone.blank?
       end
     end
 
     def build_rate_request(origin, destination, package, options)
       build_header do |xml|
-        xml.tns :GetRates do
-          xml.tns(:Authenticator, authenticator)
+        xml['tns'].GetRates do
+          xml['tns'].Authenticator(authenticator)
           add_rate(xml, origin, destination, package, options)
         end
       end
@@ -324,21 +322,21 @@ module ActiveShipping
       options[:insured_value] ||= value
       options[:declared_value] ||= value if international?(destination)
 
-      xml.tns :Rate do
-        xml.tns(:FromZIPCode,       origin.postal_code) unless origin.postal_code.blank?
-        xml.tns(:ToZIPCode,         destination.postal_code) unless destination.postal_code.blank?
-        xml.tns(:ToCountry,         destination.country_code) unless destination.country_code.blank?
-        xml.tns(:ServiceType,       options[:service]) unless options[:service].blank?
-        xml.tns(:PrintLayout,       options[:print_layout]) unless options[:print_layout].blank?
-        xml.tns(:WeightOz,          [package.ounces, 1].max)
-        xml.tns(:PackageType,       options[:package_type] || 'Package')
-        xml.tns(:Length,            package.inches(:length)) if package.inches(:length)
-        xml.tns(:Width,             package.inches(:width)) if package.inches(:width)
-        xml.tns(:Height,            package.inches(:height)) if package.inches(:height)
-        xml.tns(:ShipDate,          options[:ship_date] || Date.today)
-        xml.tns(:InsuredValue,      options[:insured_value]) unless options[:insured_value].blank?
-        xml.tns(:CODValue,          options[:cod_value]) unless options[:cod_value].blank?
-        xml.tns(:DeclaredValue,     options[:declared_value]) unless options[:declared_value].blank?
+      xml['tns'].Rate do
+        xml['tns'].FromZIPCode(      origin.postal_code) unless origin.postal_code.blank?
+        xml['tns'].ToZIPCode(        destination.postal_code) unless destination.postal_code.blank?
+        xml['tns'].ToCountry(        destination.country_code) unless destination.country_code.blank?
+        xml['tns'].ServiceType(      options[:service]) unless options[:service].blank?
+        xml['tns'].PrintLayout(      options[:print_layout]) unless options[:print_layout].blank?
+        xml['tns'].WeightOz(         [package.ounces, 1].max)
+        xml['tns'].PackageType(      options[:package_type] || 'Package')
+        xml['tns'].Length(           package.inches(:length)) if package.inches(:length)
+        xml['tns'].Width(            package.inches(:width)) if package.inches(:width)
+        xml['tns'].Height(           package.inches(:height)) if package.inches(:height)
+        xml['tns'].ShipDate(         options[:ship_date] || Date.today)
+        xml['tns'].InsuredValue(     options[:insured_value]) unless options[:insured_value].blank?
+        xml['tns'].CODValue(         options[:cod_value]) unless options[:cod_value].blank?
+        xml['tns'].DeclaredValue(    options[:declared_value]) unless options[:declared_value].blank?
 
         machinable = if package.options.has_key?(:machinable)
           package.options[:machinable] ? true : false
@@ -346,54 +344,54 @@ module ActiveShipping
           USPS.package_machinable?(package)
         end
 
-        xml.tns(:NonMachinable,     true) unless machinable
+        xml['tns'].NonMachinable(    true) unless machinable
 
-        xml.tns(:RectangularShaped, !package.cylinder?)
-        xml.tns(:GEMNotes,          options[:gem_notes]) unless options[:gem_notes].blank?
+        xml['tns'].RectangularShaped(!package.cylinder?)
+        xml['tns'].GEMNotes(         options[:gem_notes]) unless options[:gem_notes].blank?
 
         add_ons = Array(options[:add_ons])
         unless add_ons.empty?
-          xml.tns(:AddOns) do
+          xml['tns'].AddOns do
             add_ons.each do |add_on|
-              xml.tns(:AddOnV5) do
-                xml.tns(:AddOnType, add_on)
+              xml['tns'].AddOnV5 do
+                xml['tns'].AddOnType(add_on)
               end
             end
           end
         end
 
-        xml.tns(:ToState,           destination.province) unless destination.province.blank?
+        xml['tns'].ToState(destination.province) unless destination.province.blank?
       end
     end
 
     def build_create_indicium_request(origin, destination, package, line_items, options)
       build_header do |xml|
-        xml.tns :CreateIndicium do
-          xml.tns(:Authenticator,             authenticator)
-          xml.tns(:IntegratorTxID,            options[:integrator_tx_id] || SecureRandom::uuid)
+        xml['tns'].CreateIndicium do
+          xml['tns'].Authenticator(            authenticator)
+          xml['tns'].IntegratorTxID(           options[:integrator_tx_id] || SecureRandom::uuid)
 
           add_rate(xml, origin, destination, package, options)
           add_address(xml, origin, :From)
           add_address(xml, destination, :To)
           add_customs(xml, line_items, options) unless options[:content_type].blank?
 
-          xml.tns(:SampleOnly,                options[:sample_only]) unless options[:sample_only].blank?
-          xml.tns(:ImageType,                 options[:image_type]) unless options[:image_type].blank?
-          xml.tns(:EltronPrinterDPIType,      options[:label_resolution]) unless options[:label_resolution].blank?
-          xml.tns(:memo,                      options[:memo]) unless options[:memo].blank?
-          xml.tns(:deliveryNotification,      options[:delivery_notification]) unless options[:delivery_notification].blank?
+          xml['tns'].SampleOnly(               options[:sample_only]) unless options[:sample_only].blank?
+          xml['tns'].ImageType(                options[:image_type]) unless options[:image_type].blank?
+          xml['tns'].EltronPrinterDPIType(     options[:label_resolution]) unless options[:label_resolution].blank?
+          xml['tns'].memo(                     options[:memo]) unless options[:memo].blank?
+          xml['tns'].deliveryNotification(     options[:delivery_notification]) unless options[:delivery_notification].blank?
 
           add_shipment_notification(xml, options) unless options[:email].blank?
 
-          xml.tns(:horizontalOffset,          options[:horizontal_offset]) unless options[:horizontal_offest].blank?
-          xml.tns(:verticalOffset,            options[:vertical_offset]) unless options[:vertical_offest].blank?
-          xml.tns(:printDensity,              options[:print_density]) unless options[:print_density].blank?
-          xml.tns(:rotationDegrees,           options[:rotation]) unless options[:rotation].blank?
-          xml.tns(:printMemo,                 options[:print_memo]) unless options[:print_memo].blank?
-          xml.tns(:printInstructions,         options[:print_instructions]) unless options[:print_instructions].blank?
-          xml.tns(:ReturnImageData,           options[:return_image_data]) unless options[:return_image_data].blank?
-          xml.tns(:InternalTransactionNumber, options[:internal_transaction_number]) unless options[:internal_transaction_number].blank?
-          xml.tns(:PaperSize,                 options[:paper_size]) unless options[:paper_size].blank?
+          xml['tns'].horizontalOffset(         options[:horizontal_offset]) unless options[:horizontal_offest].blank?
+          xml['tns'].verticalOffset(           options[:vertical_offset]) unless options[:vertical_offest].blank?
+          xml['tns'].printDensity(             options[:print_density]) unless options[:print_density].blank?
+          xml['tns'].rotationDegrees(          options[:rotation]) unless options[:rotation].blank?
+          xml['tns'].printMemo(                options[:print_memo]) unless options[:print_memo].blank?
+          xml['tns'].printInstructions(        options[:print_instructions]) unless options[:print_instructions].blank?
+          xml['tns'].ReturnImageData(          options[:return_image_data]) unless options[:return_image_data].blank?
+          xml['tns'].InternalTransactionNumber(options[:internal_transaction_number]) unless options[:internal_transaction_number].blank?
+          xml['tns'].PaperSize(                options[:paper_size]) unless options[:paper_size].blank?
 
           add_label_recipient_info(xml, options) unless options[:label_email_address].blank?
         end
@@ -401,32 +399,32 @@ module ActiveShipping
     end
 
     def add_shipment_notification(xml, options)
-      xml.tns :ShipmentNotification do
-        xml.tns(:Email,                    options[:email])
-        xml.tns(:CCToAccountHolder,        options[:cc_to_account_holder]) unless options[:cc_to_account_holder].blank?
-        xml.tns(:UseCompanyNameInFromLine, options[:use_company_name_in_from_name]) unless options[:use_company_name_in_from_line].blank?
-        xml.tns(:UseCompanyNameInSubject,  options[:use_company_name_in_subject]) unless options[:use_company_name_in_subject].blank?
+      xml['tns'].ShipmentNotification do
+        xml['tns'].Email(                   options[:email])
+        xml['tns'].CCToAccountHolder(       options[:cc_to_account_holder]) unless options[:cc_to_account_holder].blank?
+        xml['tns'].UseCompanyNameInFromLine(options[:use_company_name_in_from_name]) unless options[:use_company_name_in_from_line].blank?
+        xml['tns'].UseCompanyNameInSubject( options[:use_company_name_in_subject]) unless options[:use_company_name_in_subject].blank?
       end
     end
 
     def add_customs(xml, line_items, options)
-      xml.tns :Customs do
-        xml.tns(:ContentType,       options[:content_type])
-        xml.tns(:Comments,          options[:comments]) unless options[:comments].blank?
-        xml.tns(:LicenseNumber,     options[:license_number]) unless options[:license_number].blank?
-        xml.tns(:CertificateNumber, options[:certificate_number]) unless options[:certificate_number].blank?
-        xml.tns(:InvoiceNumber,     options[:invoice_number]) unless options[:invoice_number].blank?
-        xml.tns(:OtherDescribe,     options[:other_describe]) unless options[:other_describe].blank?
+      xml['tns'].Customs do
+        xml['tns'].ContentType(      options[:content_type])
+        xml['tns'].Comments(         options[:comments]) unless options[:comments].blank?
+        xml['tns'].LicenseNumber(    options[:license_number]) unless options[:license_number].blank?
+        xml['tns'].CertificateNumber(options[:certificate_number]) unless options[:certificate_number].blank?
+        xml['tns'].InvoiceNumber(    options[:invoice_number]) unless options[:invoice_number].blank?
+        xml['tns'].OtherDescribe(    options[:other_describe]) unless options[:other_describe].blank?
 
-        xml.tns :CustomsLines do
+        xml['tns'].CustomsLines do
           line_items.each do |customs_line|
-            xml.tns :CustomsLine do
-              xml.tns(:Description,     customs_line.name)
-              xml.tns(:Quantity,        customs_line.quantity)
-              xml.tns(:Value,           '%.2f' % (customs_line.value.to_f / 100))
-              xml.tns(:WeightOz,        customs_line.ounces) unless customs_line.ounces.blank?
-              xml.tns(:HSTariffNumber,  customs_line.hs_code.tr('.', '')[0..5]) unless customs_line.hs_code.blank?
-              xml.tns(:CountryOfOrigin, customs_line.options[:country]) unless customs_line.options[:country].blank?
+            xml['tns'].CustomsLine do
+              xml['tns'].Description(    customs_line.name)
+              xml['tns'].Quantity(       customs_line.quantity)
+              xml['tns'].Value(          '%.2f' % (customs_line.value.to_f / 100))
+              xml['tns'].WeightOz(       customs_line.ounces) unless customs_line.ounces.blank?
+              xml['tns'].HSTariffNumber( customs_line.hs_code.tr('.', '')[0..5]) unless customs_line.hs_code.blank?
+              xml['tns'].CountryOfOrigin(customs_line.options[:country]) unless customs_line.options[:country].blank?
             end
           end
         end
@@ -434,19 +432,19 @@ module ActiveShipping
     end
 
     def add_label_recipient_info(xml, options)
-      xml.tns :LabelRecipientInfo do
-        xml.tns(:EmailAddress,     options[:label_email_address])
-        xml.tns(:Name,             options[:name]) unless options[:name].blank?
-        xml.tns(:Note,             options[:note]) unless options[:note].blank?
-        xml.tns(:CopyToOriginator, options[:copy_to_originator]) unless options[:copy_to_originator].blank?
+      xml['tns'].LabelRecipientInfo do
+        xml['tns'].EmailAddress(    options[:label_email_address])
+        xml['tns'].Name(            options[:name]) unless options[:name].blank?
+        xml['tns'].Note(            options[:note]) unless options[:note].blank?
+        xml['tns'].CopyToOriginator(options[:copy_to_originator]) unless options[:copy_to_originator].blank?
       end
     end
 
     def build_track_shipment_request(shipment_id, options)
       build_header do |xml|
-        xml.tns :TrackShipment do
-          xml.tns(:Authenticator, authenticator)
-          xml.tns(options[:stamps_tx_id] ? :StampsTxID : :TrackingNumber, shipment_id)
+        xml['tns'].TrackShipment do
+          xml['tns'].Authenticator(authenticator)
+          xml['tns'].public_send(options[:stamps_tx_id] ? :StampsTxID : :TrackingNumber, shipment_id)
         end
       end
     end
