@@ -1,5 +1,3 @@
-require 'builder'
-
 module ActiveShipping
   class Shipwire < Carrier
     self.retry_safe = true
@@ -47,24 +45,23 @@ module ActiveShipping
     end
 
     def build_request(destination, options)
-      xml = Builder::XmlMarkup.new
-      xml.instruct!
-      xml.declare! :DOCTYPE, :RateRequest, :SYSTEM, SCHEMA_URL
-      xml.tag! 'RateRequest' do
-        add_credentials(xml)
-        add_order(xml, destination, options)
-      end
-      xml.target!
+      Nokogiri::XML::Builder.new do |xml|
+        xml.doc.create_internal_subset('RateRequest', nil, SCHEMA_URL)
+        xml.RateRequest do
+          add_credentials(xml)
+          add_order(xml, destination, options)
+        end
+      end.to_xml
     end
 
     def add_credentials(xml)
-      xml.tag! 'EmailAddress', @options[:login]
-      xml.tag! 'Password', @options[:password]
+      xml.EmailAddress @options[:login]
+      xml.Password @options[:password]
     end
 
     def add_order(xml, destination, options)
-      xml.tag! 'Order', :id => options[:order_id] do
-        xml.tag! 'Warehouse', options[:warehouse] || '00'
+      xml.Order :id => options[:order_id] do
+        xml.Warehouse options[:warehouse] || '00'
 
         add_address(xml, destination)
         Array(options[:items]).each_with_index do |line_item, index|
@@ -74,28 +71,28 @@ module ActiveShipping
     end
 
     def add_address(xml, destination)
-      xml.tag! 'AddressInfo', :type => 'Ship' do
+      xml.AddressInfo :type => 'Ship' do
         if destination.name.present?
-          xml.tag! 'Name' do
-            xml.tag! 'Full', destination.name
+          xml.Name do
+            xml.Full destination.name
           end
         end
-        xml.tag! 'Address1', destination.address1
-        xml.tag! 'Address2', destination.address2 unless destination.address2.blank?
-        xml.tag! 'Address3', destination.address3 unless destination.address3.blank?
-        xml.tag! 'Company', destination.company unless destination.company.blank?
-        xml.tag! 'City', destination.city
-        xml.tag! 'State', destination.state unless destination.state.blank?
-        xml.tag! 'Country', destination.country_code
-        xml.tag! 'Zip', destination.zip  unless destination.zip.blank?
+        xml.Address1 destination.address1
+        xml.Address2 destination.address2 unless destination.address2.blank?
+        xml.Address3 destination.address3 unless destination.address3.blank?
+        xml.Company destination.company unless destination.company.blank?
+        xml.City destination.city
+        xml.State destination.state unless destination.state.blank?
+        xml.Country destination.country_code
+        xml.Zip destination.zip  unless destination.zip.blank?
       end
     end
 
     # Code is limited to 12 characters
     def add_item(xml, item, index)
-      xml.tag! 'Item', :num => index do
-        xml.tag! 'Code', item[:sku]
-        xml.tag! 'Quantity', item[:quantity]
+      xml.Item :num => index do
+        xml.Code item[:sku]
+        xml.Quantity item[:quantity]
       end
     end
 
