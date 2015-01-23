@@ -168,15 +168,15 @@ module ActiveShipping
       /Delivery status information is not available/
     ]
 
-    ESCAPING_AND_SYMBOLS = /&amp;lt;\S*&amp;gt;/
-    LEADING_USPS = /^USPS/
+    ESCAPING_AND_SYMBOLS = /&lt;\S*&gt;/
+    LEADING_USPS = /^USPS /
     TRAILING_ASTERISKS = /\*+$/
     SERVICE_NAME_SUBSTITUTIONS = /#{ESCAPING_AND_SYMBOLS}|#{LEADING_USPS}|#{TRAILING_ASTERISKS}/
 
     def find_tracking_info(tracking_number, options = {})
       options = @options.update(options)
       tracking_request = build_tracking_request(tracking_number, options)
-      response = commit(:track, tracking_request, (options[:test] || false))
+      response = commit(:track, tracking_request, options[:test] || false)
       parse_tracking_response(response, options)
     end
 
@@ -249,22 +249,24 @@ module ActiveShipping
     protected
 
     def build_tracking_request(tracking_number, options = {})
-      xml_request = XmlNode.new('TrackRequest', 'USERID' => @options[:login]) do |root_node|
-        root_node << XmlNode.new('TrackID', :ID => tracking_number)
+      xml_builder = Nokogiri::XML::Builder.new do |xml|
+        xml.TrackRequest('USERID' => @options[:login]) do
+          xml.TrackID('ID' => tracking_number)
+        end
       end
-      URI.encode(xml_request.to_s)
+      xml_builder.to_xml
     end
 
     def us_rates(origin, destination, packages, options = {})
       request = build_us_rate_request(packages, origin.zip, destination.zip, options)
       # never use test mode; rate requests just won't work on test servers
-      parse_rate_response origin, destination, packages, commit(:us_rates, request, false), options
+      parse_rate_response(origin, destination, packages, commit(:us_rates, request, false), options)
     end
 
     def world_rates(origin, destination, packages, options = {})
       request = build_world_rate_request(packages, destination, options)
       # never use test mode; rate requests just won't work on test servers
-      parse_rate_response origin, destination, packages, commit(:world_rates, request, false), options
+      parse_rate_response(origin, destination, packages, commit(:world_rates, request, false), options)
     end
 
     # Once the address verification API is implemented, remove this and have valid_credentials? build the request using that instead.
@@ -283,8 +285,8 @@ module ActiveShipping
         <ZIP4>9411</ZIP4>
       </CarrierPickupAvailabilityRequest>
       EOF
-      xml = REXML::Document.new(commit(:test, URI.encode(request), true))
-      xml.get_text('/CarrierPickupAvailabilityResponse/City').to_s == 'SAN FRANCISCO' && xml.get_text('/CarrierPickupAvailabilityResponse/Address2').to_s == '18 FAIR AVE'
+      xml = Nokogiri.XML(commit(:test, request, true)) { |config| config.strict }
+      xml.at('/CarrierPickupAvailabilityResponse/City').text == 'SAN FRANCISCO' && xml.at('/CarrierPickupAvailabilityResponse/Address2').text == '18 FAIR AVE'
     end
 
     # options[:service] --    One of [:first_class, :priority, :express, :bpm, :parcel,
@@ -296,40 +298,41 @@ module ActiveShipping
     # package.options[:machinable] -- Either true or false. Overrides the detection of
     #                                  "machinability" entirely.
     def build_us_rate_request(packages, origin_zip, destination_zip, options = {})
-      packages = Array(packages)
-      request = XmlNode.new('RateV4Request', :USERID => @options[:login]) do |rate_request|
-        packages.each_with_index do |p, id|
-          rate_request << XmlNode.new('Package', :ID => id.to_s) do |package|
-            commercial_type = commercial_type(options)
-            default_service = DEFAULT_SERVICE[commercial_type]
-            service         = options.fetch(:service, default_service).to_sym
+      xml_builder = Nokogiri::XML::Builder.new do |xml|
+        xml.RateV4Request('USERID' => @options[:login]) do
+          Array(packages).each_with_index do |package, id|
+            xml.Package('ID' => id) do
+              commercial_type = commercial_type(options)
+              default_service = DEFAULT_SERVICE[commercial_type]
+              service         = options.fetch(:service, default_service).to_sym
 
-            if commercial_type && service != default_service
-              raise ArgumentError, "Commercial #{commercial_type} rates are only provided with the #{default_service.inspect} service."
-            end
+              if commercial_type && service != default_service
+                raise ArgumentError, "Commercial #{commercial_type} rates are only provided with the #{default_service.inspect} service."
+              end
 
-            package << XmlNode.new('Service', US_SERVICES[service])
-            package << XmlNode.new('FirstClassMailType', FIRST_CLASS_MAIL_TYPES[options[:first_class_mail_type].try(:to_sym)])
-            package << XmlNode.new('ZipOrigination', strip_zip(origin_zip))
-            package << XmlNode.new('ZipDestination', strip_zip(destination_zip))
-            package << XmlNode.new('Pounds', 0)
-            package << XmlNode.new('Ounces', "%0.1f" % [p.ounces, 1].max)
-            package << XmlNode.new('Container', CONTAINERS[p.options[:container]])
-            package << XmlNode.new('Size', USPS.size_code_for(p))
-            package << XmlNode.new('Width', "%0.2f" % p.inches(:width))
-            package << XmlNode.new('Length', "%0.2f" % p.inches(:length))
-            package << XmlNode.new('Height', "%0.2f" % p.inches(:height))
-            package << XmlNode.new('Girth', "%0.2f" % p.inches(:girth))
-            is_machinable = if p.options.has_key?(:machinable)
-              p.options[:machinable] ? true : false
-            else
-              USPS.package_machinable?(p)
+              xml.Service(US_SERVICES[service])
+              xml.FirstClassMailType(FIRST_CLASS_MAIL_TYPES[options[:first_class_mail_type].try(:to_sym)])
+              xml.ZipOrigination(strip_zip(origin_zip))
+              xml.ZipDestination(strip_zip(destination_zip))
+              xml.Pounds(0)
+              xml.Ounces("%0.1f" % [package.ounces, 1].max)
+              xml.Container(CONTAINERS[package.options[:container]])
+              xml.Size(USPS.size_code_for(package))
+              xml.Width("%0.2f" % package.inches(:width))
+              xml.Length("%0.2f" % package.inches(:length))
+              xml.Height("%0.2f" % package.inches(:height))
+              xml.Girth("%0.2f" % package.inches(:girth))
+              is_machinable = if package.options.has_key?(:machinable)
+                package.options[:machinable] ? true : false
+              else
+                USPS.package_machinable?(package)
+              end
+              xml.Machinable(is_machinable.to_s.upcase)
             end
-            package << XmlNode.new('Machinable', is_machinable.to_s.upcase)
           end
         end
       end
-      URI.encode(save_request(request.to_s))
+      save_request(xml_builder.to_xml)
     end
 
     # important difference with international rate requests:
@@ -343,39 +346,40 @@ module ActiveShipping
     #                                 Defaults to :package.
     def build_world_rate_request(packages, destination, options)
       country = COUNTRY_NAME_CONVERSIONS[destination.country.code(:alpha2).value] || destination.country.name
-      request = XmlNode.new('IntlRateV2Request', :USERID => @options[:login]) do |rate_request|
-        packages.each_index do |id|
-          p = packages[id]
-          rate_request << XmlNode.new('Package', :ID => id.to_s) do |package|
-            package << XmlNode.new('Pounds', 0)
-            package << XmlNode.new('Ounces', [p.ounces, 1].max.ceil) # takes an integer for some reason, must be rounded UP
-            package << XmlNode.new('MailType', MAIL_TYPES[p.options[:mail_type]] || 'Package')
-            package << XmlNode.new('GXG') do |gxg|
-              gxg << XmlNode.new('POBoxFlag', destination.po_box? ? 'Y' : 'N')
-              gxg << XmlNode.new('GiftFlag', p.gift? ? 'Y' : 'N')
-            end
-            value = if p.value && p.value > 0 && p.currency && p.currency != 'USD'
-              0.0
-            else
-              (p.value || 0) / 100.0
-            end
-            package << XmlNode.new('ValueOfContents', value)
-            package << XmlNode.new('Country') do |node|
-              node.cdata = country
-            end
-            package << XmlNode.new('Container', p.cylinder? ? 'NONRECTANGULAR' : 'RECTANGULAR')
-            package << XmlNode.new('Size', USPS.size_code_for(p))
-            package << XmlNode.new('Width', "%0.2f" % [p.inches(:width), 0.01].max)
-            package << XmlNode.new('Length', "%0.2f" % [p.inches(:length), 0.01].max)
-            package << XmlNode.new('Height', "%0.2f" % [p.inches(:height), 0.01].max)
-            package << XmlNode.new('Girth', "%0.2f" % [p.inches(:girth), 0.01].max)
-            if commercial_type = commercial_type(options)
-              package << XmlNode.new(COMMERCIAL_FLAG_NAME.fetch(commercial_type), 'Y')
+      xml_builder = Nokogiri::XML::Builder.new do |xml|
+        xml.IntlRateV2Request('USERID' => @options[:login]) do
+          Array(packages).each_with_index do |package, id|
+            xml.Package('ID' => id) do
+              xml.Pounds(0)
+              xml.Ounces([package.ounces, 1].max.ceil) # takes an integer for some reason, must be rounded UP
+              xml.MailType(MAIL_TYPES[package.options[:mail_type]] || 'Package')
+              xml.GXG do
+                xml.POBoxFlag(destination.po_box? ? 'Y' : 'N')
+                xml.GiftFlag(package.gift? ? 'Y' : 'N')
+              end
+
+              value = if package.value && package.value > 0 && package.currency && package.currency != 'USD'
+                0.0
+              else
+                (package.value || 0) / 100.0
+              end
+              xml.ValueOfContents(value)
+
+              xml.Country(country)
+              xml.Container(package.cylinder? ? 'NONRECTANGULAR' : 'RECTANGULAR')
+              xml.Size(USPS.size_code_for(package))
+              xml.Width("%0.2f" % [package.inches(:width), 0.01].max)
+              xml.Length("%0.2f" % [package.inches(:length), 0.01].max)
+              xml.Height("%0.2f" % [package.inches(:height), 0.01].max)
+              xml.Girth("%0.2f" % [package.inches(:girth), 0.01].max)
+              if commercial_type = commercial_type(options)
+                xml.public_send(COMMERCIAL_FLAG_NAME.fetch(commercial_type), 'Y')
+              end
             end
           end
         end
       end
-      URI.encode(save_request(request.to_s))
+      save_request(xml_builder.to_xml)
     end
 
     def parse_rate_response(origin, destination, packages, response, options = {})
@@ -383,16 +387,16 @@ module ActiveShipping
       message = ''
       rate_hash = {}
 
-      xml = REXML::Document.new(response)
+      xml = Nokogiri.XML(response)
 
-      if error = xml.elements['/Error']
+      if error = xml.at('/Error')
         success = false
-        message = error.elements['Description'].text
+        message = error.at('Description').text
       else
-        xml.elements.each('/*/Package') do |package|
-          if package.elements['Error']
+        xml.root.xpath('Package').each do |package|
+          if package.at('Error')
             success = false
-            message = package.get_text('Error/Description').to_s
+            message = package.at('Error/Description').text
             break
           end
         end
@@ -423,7 +427,7 @@ module ActiveShipping
 
     def rates_from_response_node(response_node, packages, options = {})
       rate_hash = {}
-      return false unless (root_node = response_node.elements['/IntlRateV2Response | /RateV4Response'])
+      return false unless (root_node = response_node.at_xpath('/IntlRateV2Response | /RateV4Response'))
 
       commercial_type = commercial_type(options)
       service_node, service_code_node, service_name_node, rate_node = if root_node.name == 'RateV4Response'
@@ -432,20 +436,19 @@ module ActiveShipping
         %w(Service ID SvcDescription)   << INTERNATIONAL_RATE_FIELD[commercial_type]
       end
 
-      root_node.each_element('Package') do |package_node|
-        this_package = packages[package_node.attributes['ID'].to_i]
+      root_node.xpath('Package').each do |package_node|
+        this_package = packages[package_node['ID'].to_i]
 
-        package_node.each_element(service_node) do |service_response_node|
-          service_name = service_response_node.get_text(service_name_node).to_s
+        package_node.xpath(service_node).each do |service_response_node|
+          service_name = service_response_node.at(service_name_node).text
 
           service_name.gsub!(SERVICE_NAME_SUBSTITUTIONS, '')
-          service_name.strip!
 
           # aggregate specific package rates into a service-centric RateEstimate
           # first package with a given service name will initialize these;
           # later packages with same service will add to them
           this_service = rate_hash[service_name] ||= {}
-          this_service[:service_code] ||= service_response_node.attributes[service_code_node]
+          this_service[:service_code] ||= service_response_node.attributes[service_code_node].value
           package_rates = this_service[:package_rates] ||= []
           this_package_rate = {:package => this_package,
                                :rate => Package.cents_from(rate_value(rate_node, service_response_node, commercial_type))}
@@ -457,9 +460,9 @@ module ActiveShipping
     end
 
     def package_valid_for_service(package, service_node)
-      return true if service_node.elements['MaxWeight'].nil?
-      max_weight = service_node.get_text('MaxWeight').to_s.to_f
-      name = service_node.get_text('SvcDescription | MailService').to_s.downcase
+      return true if service_node.at('MaxWeight').nil?
+      max_weight = service_node.at('MaxWeight').text.to_f
+      name = service_node.at_xpath('SvcDescription | MailService').text.downcase
 
       if name =~ /flat.rate.box/ # domestic or international flat rate box
         # flat rate dimensions from http://www.usps.com/shipping/flatrate.htm
@@ -479,7 +482,7 @@ module ActiveShipping
                                                 :length => 12.5,
                                                 :width => 9.5,
                                                 :height => 0.75)
-      elsif service_node.elements['MailService'] # domestic non-flat rates
+      elsif service_node.at('MailService') # domestic non-flat rates
         return true
       else # international non-flat rates
         # Some sample english that this is required to parse:
@@ -487,7 +490,7 @@ module ActiveShipping
         # 'Max. length 46", width 35", height 46" and max. length plus girth 108"'
         # 'Max. length 24", Max. length, height, depth combined 36"'
         #
-        sentence = CGI.unescapeHTML(service_node.get_text('MaxDimensions').to_s)
+        sentence = CGI.unescapeHTML(service_node.at('MaxDimensions').text)
         tokens = sentence.downcase.split(/[^\d]*"/).reject(&:empty?)
         max_dimensions = {:weight => max_weight}
         single_axis_values = []
@@ -525,8 +528,8 @@ module ActiveShipping
 
     def parse_tracking_response(response, options)
       actual_delivery_date, status = nil
-      xml = REXML::Document.new(response)
-      root_node = xml.elements['TrackResponse']
+      xml = Nokogiri.XML(response)
+      root_node = xml.root
 
       success = response_success?(xml)
       message = response_message(xml)
@@ -534,15 +537,15 @@ module ActiveShipping
       if success
         destination = nil
         shipment_events = []
-        tracking_details = xml.elements.collect('*/*/TrackDetail') { |e| e }
+        tracking_details = xml.root.xpath('TrackInfo/TrackDetail')
 
-        tracking_summary = xml.elements.collect('*/*/TrackSummary') { |e| e }.first
+        tracking_summary = xml.root.at('TrackInfo/TrackSummary')
         tracking_details << tracking_summary
 
-        tracking_number = root_node.elements['TrackInfo'].attributes['ID'].to_s
+        tracking_number = xml.root.at('TrackInfo').attributes['ID'].value
 
         tracking_details.each do |event|
-          details = extract_event_details(event.get_text.to_s)
+          details = extract_event_details(event.text)
           shipment_events << ShipmentEvent.new(details.description, details.zoneless_time, details.location) if details.location
         end
 
@@ -567,7 +570,7 @@ module ActiveShipping
     end
 
     def track_summary_node(document)
-      document.elements['*/*/TrackSummary']
+      document.root.xpath('TrackInfo/TrackSummary')
     end
 
     def error_description_node(document)
@@ -583,13 +586,13 @@ module ActiveShipping
     end
 
     def has_error?(document)
-      !!document.elements['Error']
+      !document.at('Error').nil?
     end
 
     def no_record?(document)
       summary_node = track_summary_node(document)
       if summary_node
-        summary = summary_node.get_text.to_s
+        summary = summary_node.text
         RESPONSE_ERROR_MESSAGES.detect { |re| summary =~ re }
         summary =~ /There is no record of that mail item/ || summary =~ /This Information has not been included in this Test Server\./
       else
@@ -598,7 +601,7 @@ module ActiveShipping
     end
 
     def tracking_info_error?(document)
-      document.elements['*/TrackInfo/Error']
+      !document.root.at('TrackInfo/Error').nil?
     end
 
     def response_success?(document)
@@ -606,8 +609,7 @@ module ActiveShipping
     end
 
     def response_message(document)
-      response_node = response_status_node(document)
-      response_node.get_text.to_s
+      response_status_node(document).text
     end
 
     def commit(action, request, test = false)
@@ -618,7 +620,7 @@ module ActiveShipping
       scheme = USE_SSL[action] ? 'https://' : 'http://'
       host = test ? TEST_DOMAINS[USE_SSL[action]] : LIVE_DOMAIN
       resource = test ? TEST_RESOURCE : LIVE_RESOURCE
-      "#{scheme}#{host}/#{resource}?API=#{API_CODES[action]}&XML=#{request}"
+      "#{scheme}#{host}/#{resource}?API=#{API_CODES[action]}&XML=#{URI.encode(request)}"
     end
 
     def strip_zip(zip)
@@ -628,7 +630,7 @@ module ActiveShipping
     private
 
     def rate_value(rate_node, service_response_node, commercial_type)
-      service_response_node.get_text(rate_node).to_s.to_f
+      service_response_node.at(rate_node).try(:text).to_f
     end
 
     def commercial_type(options)
