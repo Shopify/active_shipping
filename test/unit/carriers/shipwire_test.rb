@@ -126,7 +126,7 @@ class ShipwireTest < Minitest::Test
   end
 
   def test_rate_request_includes_address_name_if_provided
-    name = CGI.escape("<Name><Full>Bob Bobsen</Full></Name>")
+    name = CGI.escape("<Full>Bob Bobsen</Full>")
     @carrier.expects(:ssl_post).with(anything, includes(name)).returns(xml_fixture('shipwire/rates_response'))
 
     response = @carrier.find_rates(
