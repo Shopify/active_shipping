@@ -3,8 +3,6 @@ module ActiveShipping
   # Integration ID can be requested from Stamps.com
 
   class Stamps < Carrier
-    self.ssl_version = :SSLv3
-
     cattr_reader :name
     @@name = 'Stamps'
 
@@ -837,8 +835,6 @@ module ActiveShipping
 
   class StampsShippingResponse < ShippingResponse
     include ActiveUtils::PostsData
-
-    self.ssl_version = :SSLv3
 
     attr_reader :rate, :stamps_tx_id, :label_url, :available_postage, :control_total
 
