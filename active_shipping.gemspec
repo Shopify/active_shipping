@@ -10,14 +10,13 @@ Gem::Specification.new do |s|
   s.authors     = ["James MacAulay", "Tobi Lutke", "Cody Fauser", "Jimmy Baker"]
   s.email       = ["james@shopify.com"]
   s.homepage    = "http://github.com/shopify/active_shipping"
-  s.summary     = "Shipping API extension for Active Merchant"
-  s.description = "Get rates and tracking info from various shipping carriers."
+  s.summary     = "Simple shipping abstraction library"
+  s.description = "Get rates and tracking info from various shipping carriers. Extracted from Shopify."
 
   s.required_rubygems_version = ">= 1.3.6"
   s.rubyforge_project         = "active_shipping"
 
   s.add_dependency('activesupport', '>= 3.2', '< 5.0.0')
-  s.add_dependency('i18n',          '>= 0.6.9')
   s.add_dependency('active_utils',  '~> 3.0.0')
   s.add_dependency('builder',       '>= 2.1.2', '< 4.0.0')
   s.add_dependency('nokogiri',      '>= 1.6')
