@@ -129,18 +129,18 @@ module ActiveShipping
       response = {}
       response["rates"] = []
 
-      document = REXML::Document.new(xml)
+      document = Nokogiri.XML(xml)
 
       response["status"] = parse_child_text(document.root, "Status")
 
-      document.root.elements.each("Order/Quotes/Quote") do |e|
+      document.root.xpath("Order/Quotes/Quote").each do |e|
         rate = {}
-        rate["method"]    = e.attributes["method"]
+        rate["method"]    = e["method"]
         rate["warehouse"] = parse_child_text(e, "Warehouse")
         rate["service"]   = parse_child_text(e, "Service")
         rate["cost"]      = parse_child_text(e, "Cost")
         rate["currency"]  = parse_child_attribute(e, "Cost", "currency")
-        if delivery_estimate = e.elements["DeliveryEstimate"]
+        if delivery_estimate = e.at("DeliveryEstimate")
           rate["delivery_min"]  = parse_child_text(delivery_estimate, "Minimum").to_i
           rate["delivery_max"]  = parse_child_text(delivery_estimate, "Maximum").to_i
         end
@@ -164,14 +164,14 @@ module ActiveShipping
     end
 
     def parse_child_text(parent, name)
-      if element = parent.elements[name]
+      if element = parent.at(name)
         element.text
       end
     end
 
     def parse_child_attribute(parent, name, attribute)
-      if element = parent.elements[name]
-        element.attributes[attribute]
+      if element = parent.at(name)
+        element[attribute]
       end
     end
   end
