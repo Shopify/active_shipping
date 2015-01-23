@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrackReply xmlns="http://fedex.com/ws/track/v7" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <HighestSeverity>SUCCESS</HighestSeverity>
+  <Notifications>
+    <Severity>SUCCESS</Severity>
+    <Source>trck</Source>
+    <Code>0</Code>
+    <Message>Request was successfully processed.</Message>
+    <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+  </Notifications>
+  <TransactionDetail>
+    <CustomerTransactionId>ActiveShipping</CustomerTransactionId>
+  </TransactionDetail>
+  <Version>
+    <ServiceId>trck</ServiceId>
+    <Major>7</Major>
+    <Intermediate>0</Intermediate>
+    <Minor>0</Minor>
+  </Version>
+  <CompletedTrackDetails>
+    <HighestSeverity>SUCCESS</HighestSeverity>
+    <Notifications>
+      <Severity>SUCCESS</Severity>
+      <Source>trck</Source>
+      <Code>0</Code>
+      <Message>Request was successfully processed.</Message>
+      <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+    </Notifications>
+    <DuplicateWaybill>false</DuplicateWaybill>
+    <MoreData>false</MoreData>
+    <TrackDetails>
+      <Notification>
+        <Severity>SUCCESS</Severity>
+        <Source>trck</Source>
+        <Code>0</Code>
+        <Message>Request was successfully processed.</Message>
+        <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+      </Notification>
+      <TrackingNumber>449044304137821</TrackingNumber>
+      <TrackingNumberUniqueIdentifier>12013~449044304137821~FDEG</TrackingNumberUniqueIdentifier>
+      <StatusDetail>
+        <CreationTime>2014-01-02T00:00:00</CreationTime>
+        <Code>DL</Code>
+        <Description>Delivered</Description>
+        <Location>
+          <StreetLines>6703 NW 7TH ST</StreetLines>
+          <City>Miami</City>
+          <StateOrProvinceCode>FL</StateOrProvinceCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Location>
+      </StatusDetail>
+      <CarrierCode>FDXG</CarrierCode>
+      <OperatingCompanyOrCarrierDescription>FedEx Ground</OperatingCompanyOrCarrierDescription>
+      <OtherIdentifiers>
+        <PackageIdentifier>
+          <Type>CUSTOMER_REFERENCE</Type>
+          <Value>115380173</Value>
+        </PackageIdentifier>
+      </OtherIdentifiers>
+      <OtherIdentifiers>
+        <PackageIdentifier>
+          <Type>GROUND_SHIPMENT_ID</Type>
+          <Value>DMWsGWdnN</Value>
+        </PackageIdentifier>
+      </OtherIdentifiers>
+      <Service>
+        <Type>GROUND_HOME_DELIVERY</Type>
+        <Description>FedEx Home Delivery</Description>
+        <ShortDescription>HD</ShortDescription>
+      </Service>
+      <PackageWeight>
+        <Units>LB</Units>
+        <Value>3.0</Value>
+      </PackageWeight>
+      <PackageDimensions>
+        <Length>14</Length>
+        <Width>11</Width>
+        <Height>5</Height>
+        <Units>IN</Units>
+      </PackageDimensions>
+      <Packaging>Package</Packaging>
+      <PackagingType>YOUR_PACKAGING</PackagingType>
+      <PackageSequenceNumber>1</PackageSequenceNumber>
+      <PackageCount>1</PackageCount>
+      <OriginLocationAddress>
+        <City>JEFFERSONVILLE</City>
+        <StateOrProvinceCode>IN</StateOrProvinceCode>
+        <CountryCode>US</CountryCode>
+        <CountryName>United States</CountryName>
+        <Residential>false</Residential>
+      </OriginLocationAddress>
+      <ShipTimestamp>2013-12-30T00:00:00</ShipTimestamp>
+      <DestinationAddress>
+        <City>Miami</City>
+        <StateOrProvinceCode>FL</StateOrProvinceCode>
+        <CountryCode>US</CountryCode>
+        <CountryName>United States</CountryName>
+        <Residential>false</Residential>
+      </DestinationAddress>
+      <ActualDeliveryTimestamp>2014-01-02T13:23:29-05:00</ActualDeliveryTimestamp>
+      <ActualDeliveryAddress>
+        <City>Miami</City>
+        <StateOrProvinceCode>FL</StateOrProvinceCode>
+        <CountryCode>US</CountryCode>
+        <CountryName>United States</CountryName>
+        <Residential>false</Residential>
+      </ActualDeliveryAddress>
+      <DeliveryAttempts>0</DeliveryAttempts>
+      <DeliverySignatureName>AVILLALON</DeliverySignatureName>
+      <TotalUniqueAddressCountInConsolidation>0</TotalUniqueAddressCountInConsolidation>
+      <AvailableImages>SIGNATURE_PROOF_OF_DELIVERY</AvailableImages>
+      <RedirectToHoldEligibility>INELIGIBLE</RedirectToHoldEligibility>
+      <Events>
+        <Timestamp>2014-01-02T13:23:29-05:00</Timestamp>
+        <EventType>DL</EventType>
+        <EventDescription>Delivered</EventDescription>
+        <Address>
+          <City>Miami</City>
+          <StateOrProvinceCode>FL</StateOrProvinceCode>
+          <PostalCode>33126</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>DELIVERY_LOCATION</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-02T10:13:00-05:00</Timestamp>
+        <EventType>OD</EventType>
+        <EventDescription>On FedEx vehicle for delivery</EventDescription>
+        <Address>
+          <City>MIAMI</City>
+          <StateOrProvinceCode>FL</StateOrProvinceCode>
+          <PostalCode>33178</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>VEHICLE</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-02T03:26:00-05:00</Timestamp>
+        <EventType>AR</EventType>
+        <EventDescription>Arrived at FedEx location</EventDescription>
+        <Address>
+          <City>MIAMI</City>
+          <StateOrProvinceCode>FL</StateOrProvinceCode>
+          <PostalCode>33178</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-02T03:23:00-05:00</Timestamp>
+        <EventType>AR</EventType>
+        <EventDescription>At local FedEx facility</EventDescription>
+        <Address>
+          <City>MIAMI</City>
+          <StateOrProvinceCode>FL</StateOrProvinceCode>
+          <PostalCode>33178</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>DESTINATION_FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2013-12-31T20:09:00-05:00</Timestamp>
+        <EventType>AR</EventType>
+        <EventDescription>Arrived at FedEx location</EventDescription>
+        <Address>
+          <City>ORLANDO</City>
+          <StateOrProvinceCode>FL</StateOrProvinceCode>
+          <PostalCode>32809</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2013-12-31T08:27:45-05:00</Timestamp>
+        <EventType>IT</EventType>
+        <EventDescription>In transit</EventDescription>
+        <Address>
+          <City>ELLENWOOD</City>
+          <StateOrProvinceCode>GA</StateOrProvinceCode>
+          <PostalCode>30294</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2013-12-30T23:41:40-06:00</Timestamp>
+        <EventType>IT</EventType>
+        <EventDescription>In transit</EventDescription>
+        <Address>
+          <City>NASHVILLE</City>
+          <StateOrProvinceCode>TN</StateOrProvinceCode>
+          <PostalCode>37207</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2013-12-30T21:45:31-05:00</Timestamp>
+        <EventType>DP</EventType>
+        <EventDescription>Left FedEx origin facility</EventDescription>
+        <Address>
+          <City>JEFFERSONVILLE</City>
+          <StateOrProvinceCode>IN</StateOrProvinceCode>
+          <PostalCode>47130</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>ORIGIN_FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2013-12-30T15:54:00-05:00</Timestamp>
+        <EventType>AR</EventType>
+        <EventDescription>Arrived at FedEx location</EventDescription>
+        <Address>
+          <City>JEFFERSONVILLE</City>
+          <StateOrProvinceCode>IN</StateOrProvinceCode>
+          <PostalCode>47130</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2013-12-30T13:24:00-05:00</Timestamp>
+        <EventType>OC</EventType>
+        <EventDescription>Shipment information sent to FedEx</EventDescription>
+        <Address>
+          <PostalCode>471307761</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>CUSTOMER</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2013-12-30T13:15:00-05:00</Timestamp>
+        <EventType>PU</EventType>
+        <EventDescription>Picked up</EventDescription>
+        <Address>
+          <City>JEFFERSONVILLE</City>
+          <StateOrProvinceCode>IN</StateOrProvinceCode>
+          <PostalCode>47130</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>PICKUP_LOCATION</ArrivalLocation>
+      </Events>
+    </TrackDetails>
+  </CompletedTrackDetails>
+</TrackReply>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrackReply xmlns="http://fedex.com/ws/track/v7" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <HighestSeverity>SUCCESS</HighestSeverity>
+  <Notifications>
+    <Severity>SUCCESS</Severity>
+    <Source>trck</Source>
+    <Code>0</Code>
+    <Message>Request was successfully processed.</Message>
+    <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+  </Notifications>
+  <TransactionDetail>
+    <CustomerTransactionId>ActiveShipping</CustomerTransactionId>
+  </TransactionDetail>
+  <Version>
+    <ServiceId>trck</ServiceId>
+    <Major>7</Major>
+    <Intermediate>0</Intermediate>
+    <Minor>0</Minor>
+  </Version>
+  <CompletedTrackDetails>
+    <HighestSeverity>SUCCESS</HighestSeverity>
+    <Notifications>
+      <Severity>SUCCESS</Severity>
+      <Source>trck</Source>
+      <Code>0</Code>
+      <Message>Request was successfully processed.</Message>
+      <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+    </Notifications>
+    <DuplicateWaybill>false</DuplicateWaybill>
+    <MoreData>false</MoreData>
+    <TrackDetails>
+      <Notification>
+        <Severity>ERROR</Severity>
+        <Source>trck</Source>
+        <Code>9040</Code>
+        <Message>This tracking number cannot be found. Please check the number or contact the sender.</Message>
+        <LocalizedMessage>This tracking number cannot be found. Please check the number or contact the sender.</LocalizedMessage>
+      </Notification>
+      <TrackingNumber>123456789013</TrackingNumber>
+      <StatusDetail>
+        <Location>
+          <Residential>false</Residential>
+        </Location>
+      </StatusDetail>
+      <PackageSequenceNumber>0</PackageSequenceNumber>
+      <PackageCount>0</PackageCount>
+      <DeliveryAttempts>0</DeliveryAttempts>
+      <TotalUniqueAddressCountInConsolidation>0</TotalUniqueAddressCountInConsolidation>
+      <RedirectToHoldEligibility>INELIGIBLE</RedirectToHoldEligibility>
+    </TrackDetails>
+  </CompletedTrackDetails>
+</TrackReply>

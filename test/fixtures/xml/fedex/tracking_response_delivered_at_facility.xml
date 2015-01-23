@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrackReply xmlns="http://fedex.com/ws/track/v7" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <HighestSeverity>SUCCESS</HighestSeverity>
+  <Notifications>
+    <Severity>SUCCESS</Severity>
+    <Source>trck</Source>
+    <Code>0</Code>
+    <Message>Request was successfully processed.</Message>
+    <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+  </Notifications>
+  <TransactionDetail>
+    <CustomerTransactionId>ActiveShipping</CustomerTransactionId>
+  </TransactionDetail>
+  <Version>
+    <ServiceId>trck</ServiceId>
+    <Major>7</Major>
+    <Intermediate>0</Intermediate>
+    <Minor>0</Minor>
+  </Version>
+  <CompletedTrackDetails>
+    <HighestSeverity>SUCCESS</HighestSeverity>
+    <Notifications>
+      <Severity>SUCCESS</Severity>
+      <Source>trck</Source>
+      <Code>0</Code>
+      <Message>Request was successfully processed.</Message>
+      <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+    </Notifications>
+    <DuplicateWaybill>false</DuplicateWaybill>
+    <MoreData>false</MoreData>
+    <TrackDetails>
+      <Notification>
+        <Severity>SUCCESS</Severity>
+        <Source>trck</Source>
+        <Code>0</Code>
+        <Message>Request was successfully processed.</Message>
+        <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+      </Notification>
+      <TrackingNumber>843119172384577</TrackingNumber>
+      <TrackingNumberUniqueIdentifier>12013~843119172384577~FDEG</TrackingNumberUniqueIdentifier>
+      <StatusDetail>
+        <CreationTime>2014-01-08T00:00:00</CreationTime>
+        <Code>DL</Code>
+        <Description>Delivered</Description>
+        <Location>
+          <StreetLines>2201 SHATTUCK AVE</StreetLines>
+          <City>Berkeley</City>
+          <StateOrProvinceCode>CA</StateOrProvinceCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Location>
+        <AncillaryDetails>
+          <Reason>005</Reason>
+          <ReasonDescription>Delivered to recipient at FedEx Office</ReasonDescription>
+        </AncillaryDetails>
+      </StatusDetail>
+      <CarrierCode>FDXG</CarrierCode>
+      <OperatingCompanyOrCarrierDescription>FedEx Ground</OperatingCompanyOrCarrierDescription>
+      <OtherIdentifiers>
+        <PackageIdentifier>
+          <Type>TRACKING_NUMBER_OR_DOORTAG</Type>
+          <Value>DT702642496002</Value>
+        </PackageIdentifier>
+      </OtherIdentifiers>
+      <OtherIdentifiers>
+        <PackageIdentifier>
+          <Type>TRACKING_NUMBER_OR_DOORTAG</Type>
+          <Value>DT702642495040</Value>
+        </PackageIdentifier>
+      </OtherIdentifiers>
+      <OtherIdentifiers>
+        <PackageIdentifier>
+          <Type>TRACKING_NUMBER_OR_DOORTAG</Type>
+          <Value>DT704745970857</Value>
+        </PackageIdentifier>
+      </OtherIdentifiers>
+      <Service>
+        <Type>GROUND_HOME_DELIVERY</Type>
+        <Description>FedEx Home Delivery</Description>
+        <ShortDescription>HD</ShortDescription>
+      </Service>
+      <PackageWeight>
+        <Units>LB</Units>
+        <Value>5.4</Value>
+      </PackageWeight>
+      <PackageDimensions>
+        <Length>17</Length>
+        <Width>16</Width>
+        <Height>11</Height>
+        <Units>IN</Units>
+      </PackageDimensions>
+      <Packaging>Package</Packaging>
+      <PackagingType>YOUR_PACKAGING</PackagingType>
+      <PackageSequenceNumber>1</PackageSequenceNumber>
+      <PackageCount>1</PackageCount>
+      <OriginLocationAddress>
+        <City>NASHVILLE</City>
+        <StateOrProvinceCode>TN</StateOrProvinceCode>
+        <CountryCode>US</CountryCode>
+        <CountryName>United States</CountryName>
+        <Residential>false</Residential>
+      </OriginLocationAddress>
+      <ShipTimestamp>2013-12-26T00:00:00</ShipTimestamp>
+      <DestinationAddress>
+        <City>BERKELEY</City>
+        <StateOrProvinceCode>CA</StateOrProvinceCode>
+        <CountryCode>US</CountryCode>
+        <CountryName>United States</CountryName>
+        <Residential>false</Residential>
+      </DestinationAddress>
+      <ActualDeliveryTimestamp>2014-01-08T18:03:00-08:00</ActualDeliveryTimestamp>
+      <ActualDeliveryAddress>
+        <City>Berkeley</City>
+        <StateOrProvinceCode>CA</StateOrProvinceCode>
+        <CountryCode>US</CountryCode>
+        <CountryName>United States</CountryName>
+        <Residential>false</Residential>
+      </ActualDeliveryAddress>
+      <DeliveryAttempts>0</DeliveryAttempts>
+      <DeliverySignatureName>KKRAUS</DeliverySignatureName>
+      <TotalUniqueAddressCountInConsolidation>0</TotalUniqueAddressCountInConsolidation>
+      <RedirectToHoldEligibility>INELIGIBLE</RedirectToHoldEligibility>
+      <Events>
+        <Timestamp>2014-01-08T18:03:00-08:00</Timestamp>
+        <EventType>DL</EventType>
+        <EventDescription>Delivered</EventDescription>
+        <StatusExceptionCode>005</StatusExceptionCode>
+        <StatusExceptionDescription>Delivered to recipient at FedEx Office</StatusExceptionDescription>
+        <Address>
+          <City>Berkeley</City>
+          <StateOrProvinceCode>CA</StateOrProvinceCode>
+          <PostalCode>94704</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>DESTINATION_FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-08T15:23:00-08:00</Timestamp>
+        <EventType>HP</EventType>
+        <EventDescription>Held at FedEx location for recipient pickup</EventDescription>
+        <StatusExceptionCode>015A</StatusExceptionCode>
+        <StatusExceptionDescription>Package available for pickup at FedEx Office: 2201 SHATTUCK AVE</StatusExceptionDescription>
+        <Address>
+          <StreetLines>2201 SHATTUCK AVE </StreetLines>
+          <City>BERKELEY</City>
+          <StateOrProvinceCode>CA</StateOrProvinceCode>
+          <PostalCode>94704</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>DESTINATION_FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-08T15:22:50-08:00</Timestamp>
+        <EventType>AF</EventType>
+        <EventDescription>At local FedEx facility</EventDescription>
+        <StatusExceptionCode>A3</StatusExceptionCode>
+        <StatusExceptionDescription>Tendered at FedEx Office</StatusExceptionDescription>
+        <Address>
+          <PostalCode>94577</PostalCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-08T08:28:00-08:00</Timestamp>
+        <EventType>OD</EventType>
+        <EventDescription>On FedEx vehicle for delivery</EventDescription>
+        <Address>
+          <City>SAN LEANDRO</City>
+          <StateOrProvinceCode>CA</StateOrProvinceCode>
+          <PostalCode>94577</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>VEHICLE</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-08T04:08:00-08:00</Timestamp>
+        <EventType>AR</EventType>
+        <EventDescription>At local FedEx facility</EventDescription>
+        <Address>
+          <City>SAN LEANDRO</City>
+          <StateOrProvinceCode>CA</StateOrProvinceCode>
+          <PostalCode>94577</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>DESTINATION_FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-07T11:22:33-08:00</Timestamp>
+        <EventType>DE</EventType>
+        <EventDescription>Delivery exception</EventDescription>
+        <StatusExceptionCode>A13</StatusExceptionCode>
+        <StatusExceptionDescription>Redirecting to FedEx Office</StatusExceptionDescription>
+        <Address>
+          <City>SAN LEANDRO</City>
+          <StateOrProvinceCode>CA</StateOrProvinceCode>
+          <PostalCode>94577</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>DESTINATION_FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-07T08:08:00-08:00</Timestamp>
+        <EventType>OD</EventType>
+        <EventDescription>On FedEx vehicle for delivery</EventDescription>
+        <Address>
+          <City>SAN LEANDRO</City>
+          <StateOrProvinceCode>CA</StateOrProvinceCode>
+          <PostalCode>94577</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>VEHICLE</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-05T19:19:19-08:00</Timestamp>
+        <EventType>RR</EventType>
+        <EventDescription>Delivery option requested</EventDescription>
+        <StatusExceptionCode>A12</StatusExceptionCode>
+        <StatusExceptionDescription>Hold at FedEx location request received - Check back later for shipment status</StatusExceptionDescription>
+        <Address>
+          <PostalCode>94704</PostalCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>ENROUTE</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-04T14:55:45-08:00</Timestamp>
+        <EventType>DE</EventType>
+        <EventDescription>Delivery exception</EventDescription>
+        <StatusExceptionCode>007</StatusExceptionCode>
+        <StatusExceptionDescription>Customer not available or business closed</StatusExceptionDescription>
+        <Address>
+          <City>SAN LEANDRO</City>
+          <StateOrProvinceCode>CA</StateOrProvinceCode>
+          <PostalCode>94577</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>DESTINATION_FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-04T08:58:00-08:00</Timestamp>
+        <EventType>OD</EventType>
+        <EventDescription>On FedEx vehicle for delivery</EventDescription>
+        <Address>
+          <City>SAN LEANDRO</City>
+          <StateOrProvinceCode>CA</StateOrProvinceCode>
+          <PostalCode>94577</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>VEHICLE</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-03T14:51:07-08:00</Timestamp>
+        <EventType>DE</EventType>
+        <EventDescription>Delivery exception</EventDescription>
+        <StatusExceptionCode>007</StatusExceptionCode>
+        <StatusExceptionDescription>Customer not available or business closed</StatusExceptionDescription>
+        <Address>
+          <City>SAN LEANDRO</City>
+          <StateOrProvinceCode>CA</StateOrProvinceCode>
+          <PostalCode>94577</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>DESTINATION_FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-03T08:43:00-08:00</Timestamp>
+        <EventType>OD</EventType>
+        <EventDescription>On FedEx vehicle for delivery</EventDescription>
+        <Address>
+          <City>SAN LEANDRO</City>
+          <StateOrProvinceCode>CA</StateOrProvinceCode>
+          <PostalCode>94577</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>VEHICLE</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-02T14:30:44-08:00</Timestamp>
+        <EventType>DE</EventType>
+        <EventDescription>Delivery exception</EventDescription>
+        <StatusExceptionCode>007</StatusExceptionCode>
+        <StatusExceptionDescription>Customer not available or business closed</StatusExceptionDescription>
+        <Address>
+          <City>SAN LEANDRO</City>
+          <StateOrProvinceCode>CA</StateOrProvinceCode>
+          <PostalCode>94577</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>DESTINATION_FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-02T09:05:00-08:00</Timestamp>
+        <EventType>OD</EventType>
+        <EventDescription>On FedEx vehicle for delivery</EventDescription>
+        <Address>
+          <City>SAN LEANDRO</City>
+          <StateOrProvinceCode>CA</StateOrProvinceCode>
+          <PostalCode>94577</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>VEHICLE</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-02T06:37:00-08:00</Timestamp>
+        <EventType>AR</EventType>
+        <EventDescription>At local FedEx facility</EventDescription>
+        <Address>
+          <City>SAN LEANDRO</City>
+          <StateOrProvinceCode>CA</StateOrProvinceCode>
+          <PostalCode>94577</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>DESTINATION_FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2013-12-31T15:26:00-08:00</Timestamp>
+        <EventType>AR</EventType>
+        <EventDescription>Arrived at FedEx location</EventDescription>
+        <Address>
+          <City>SACRAMENTO</City>
+          <StateOrProvinceCode>CA</StateOrProvinceCode>
+          <PostalCode>95824</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2013-12-27T15:46:20-06:00</Timestamp>
+        <EventType>DP</EventType>
+        <EventDescription>Departed FedEx location</EventDescription>
+        <Address>
+          <City>NASHVILLE</City>
+          <StateOrProvinceCode>TN</StateOrProvinceCode>
+          <PostalCode>37207</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2013-12-27T00:42:00-06:00</Timestamp>
+        <EventType>AR</EventType>
+        <EventDescription>Arrived at FedEx location</EventDescription>
+        <Address>
+          <City>NASHVILLE</City>
+          <StateOrProvinceCode>TN</StateOrProvinceCode>
+          <PostalCode>37207</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2013-12-26T20:59:00-06:00</Timestamp>
+        <EventType>PU</EventType>
+        <EventDescription>Picked up</EventDescription>
+        <Address>
+          <City>NASHVILLE</City>
+          <StateOrProvinceCode>TN</StateOrProvinceCode>
+          <PostalCode>37207</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>PICKUP_LOCATION</ArrivalLocation>
+      </Events>
+    </TrackDetails>
+  </CompletedTrackDetails>
+</TrackReply>

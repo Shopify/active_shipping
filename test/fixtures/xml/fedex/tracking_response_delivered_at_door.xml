@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrackReply xmlns="http://fedex.com/ws/track/v7" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <HighestSeverity>SUCCESS</HighestSeverity>
+  <Notifications>
+    <Severity>SUCCESS</Severity>
+    <Source>trck</Source>
+    <Code>0</Code>
+    <Message>Request was successfully processed.</Message>
+    <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+  </Notifications>
+  <TransactionDetail>
+    <CustomerTransactionId>ActiveShipping</CustomerTransactionId>
+  </TransactionDetail>
+  <Version>
+    <ServiceId>trck</ServiceId>
+    <Major>7</Major>
+    <Intermediate>0</Intermediate>
+    <Minor>0</Minor>
+  </Version>
+  <CompletedTrackDetails>
+    <HighestSeverity>SUCCESS</HighestSeverity>
+    <Notifications>
+      <Severity>SUCCESS</Severity>
+      <Source>trck</Source>
+      <Code>0</Code>
+      <Message>Request was successfully processed.</Message>
+      <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+    </Notifications>
+    <DuplicateWaybill>false</DuplicateWaybill>
+    <MoreData>false</MoreData>
+    <TrackDetails>
+      <Notification>
+        <Severity>SUCCESS</Severity>
+        <Source>trck</Source>
+        <Code>0</Code>
+        <Message>Request was successfully processed.</Message>
+        <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+      </Notification>
+      <TrackingNumber>403934084723025</TrackingNumber>
+      <TrackingNumberUniqueIdentifier>12013~403934084723025~FDEG</TrackingNumberUniqueIdentifier>
+      <StatusDetail>
+        <CreationTime>2014-01-08T00:00:00</CreationTime>
+        <Code>DL</Code>
+        <Description>Delivered</Description>
+        <Location>
+          <StreetLines>11304 E 33RD AVE</StreetLines>
+          <City>Spokane</City>
+          <StateOrProvinceCode>WA</StateOrProvinceCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Location>
+        <AncillaryDetails>
+          <Reason>014</Reason>
+          <ReasonDescription>Left at front door.Signature Service not requested.</ReasonDescription>
+        </AncillaryDetails>
+      </StatusDetail>
+      <CarrierCode>FDXG</CarrierCode>
+      <OperatingCompanyOrCarrierDescription>FedEx Ground</OperatingCompanyOrCarrierDescription>
+      <OtherIdentifiers>
+        <PackageIdentifier>
+          <Type>GROUND_SHIPMENT_ID</Type>
+          <Value>403934084723025</Value>
+        </PackageIdentifier>
+      </OtherIdentifiers>
+      <OtherIdentifiers>
+        <PackageIdentifier>
+          <Type>DEPARTMENT</Type>
+          <Value>31826722</Value>
+        </PackageIdentifier>
+      </OtherIdentifiers>
+      <Service>
+        <Type>GROUND_HOME_DELIVERY</Type>
+        <Description>FedEx Home Delivery</Description>
+        <ShortDescription>HD</ShortDescription>
+      </Service>
+      <PackageWeight>
+        <Units>LB</Units>
+        <Value>0.4</Value>
+      </PackageWeight>
+      <Packaging>Package</Packaging>
+      <PackagingType>YOUR_PACKAGING</PackagingType>
+      <PackageSequenceNumber>1</PackageSequenceNumber>
+      <PackageCount>1</PackageCount>
+      <OriginLocationAddress>
+        <City>CAMBRIDGE</City>
+        <StateOrProvinceCode>OH</StateOrProvinceCode>
+        <CountryCode>US</CountryCode>
+        <CountryName>United States</CountryName>
+        <Residential>false</Residential>
+      </OriginLocationAddress>
+      <ShipTimestamp>2014-01-03T00:00:00</ShipTimestamp>
+      <DestinationAddress>
+        <City>Spokane Valley</City>
+        <StateOrProvinceCode>WA</StateOrProvinceCode>
+        <CountryCode>US</CountryCode>
+        <CountryName>United States</CountryName>
+        <Residential>false</Residential>
+      </DestinationAddress>
+      <ActualDeliveryTimestamp>2014-01-08T12:53:10-08:00</ActualDeliveryTimestamp>
+      <ActualDeliveryAddress>
+        <City>Spokane</City>
+        <StateOrProvinceCode>WA</StateOrProvinceCode>
+        <CountryCode>US</CountryCode>
+        <CountryName>United States</CountryName>
+        <Residential>false</Residential>
+      </ActualDeliveryAddress>
+      <DeliveryAttempts>0</DeliveryAttempts>
+      <DeliverySignatureName>Signature not required</DeliverySignatureName>
+      <TotalUniqueAddressCountInConsolidation>0</TotalUniqueAddressCountInConsolidation>
+      <RedirectToHoldEligibility>INELIGIBLE</RedirectToHoldEligibility>
+      <Events>
+        <Timestamp>2014-01-08T12:53:10-08:00</Timestamp>
+        <EventType>DL</EventType>
+        <EventDescription>Delivered</EventDescription>
+        <StatusExceptionCode>014</StatusExceptionCode>
+        <StatusExceptionDescription>Left at front door. Signature Service not requested.</StatusExceptionDescription>
+        <Address>
+          <City>Spokane</City>
+          <StateOrProvinceCode>WA</StateOrProvinceCode>
+          <PostalCode>99206</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>DELIVERY_LOCATION</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-08T06:33:00-08:00</Timestamp>
+        <EventType>OD</EventType>
+        <EventDescription>On FedEx vehicle for delivery</EventDescription>
+        <Address>
+          <City>SPOKANE</City>
+          <StateOrProvinceCode>WA</StateOrProvinceCode>
+          <PostalCode>99216</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>VEHICLE</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-08T05:46:00-08:00</Timestamp>
+        <EventType>AR</EventType>
+        <EventDescription>At local FedEx facility</EventDescription>
+        <Address>
+          <City>SPOKANE</City>
+          <StateOrProvinceCode>WA</StateOrProvinceCode>
+          <PostalCode>99216</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>DESTINATION_FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-08T02:15:57-08:00</Timestamp>
+        <EventType>IT</EventType>
+        <EventDescription>In transit</EventDescription>
+        <Address>
+          <City>PASCO</City>
+          <StateOrProvinceCode>WA</StateOrProvinceCode>
+          <PostalCode>99301</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-07T21:54:07-08:00</Timestamp>
+        <EventType>DP</EventType>
+        <EventDescription>Departed FedEx location</EventDescription>
+        <Address>
+          <City>TROUTDALE</City>
+          <StateOrProvinceCode>OR</StateOrProvinceCode>
+          <PostalCode>97060</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-07T20:14:00-08:00</Timestamp>
+        <EventType>AR</EventType>
+        <EventDescription>Arrived at FedEx location</EventDescription>
+        <Address>
+          <City>TROUTDALE</City>
+          <StateOrProvinceCode>OR</StateOrProvinceCode>
+          <PostalCode>97060</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-04T14:30:17-05:00</Timestamp>
+        <EventType>DP</EventType>
+        <EventDescription>Departed FedEx location</EventDescription>
+        <Address>
+          <City>GROVE CITY</City>
+          <StateOrProvinceCode>OH</StateOrProvinceCode>
+          <PostalCode>43123</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-04T00:43:00-05:00</Timestamp>
+        <EventType>AR</EventType>
+        <EventDescription>Arrived at FedEx location</EventDescription>
+        <Address>
+          <City>GROVE CITY</City>
+          <StateOrProvinceCode>OH</StateOrProvinceCode>
+          <PostalCode>43123</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-03T15:03:00-05:00</Timestamp>
+        <EventType>OC</EventType>
+        <EventDescription>Shipment information sent to FedEx</EventDescription>
+        <Address>
+          <PostalCode>43822</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>CUSTOMER</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-03T00:00:00</Timestamp>
+        <EventType>PU</EventType>
+        <EventDescription>Picked up</EventDescription>
+        <Address>
+          <City>CAMBRIDGE</City>
+          <StateOrProvinceCode>OH</StateOrProvinceCode>
+          <PostalCode>43725</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>PICKUP_LOCATION</ArrivalLocation>
+      </Events>
+    </TrackDetails>
+  </CompletedTrackDetails>
+</TrackReply>
