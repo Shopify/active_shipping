@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrackReply xmlns="http://fedex.com/ws/track/v7" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <HighestSeverity>ERROR</HighestSeverity>
+  <Notifications>
+    <Severity>ERROR</Severity>
+    <Source>trck</Source>
+    <Code>5508</Code>
+    <Message>Invalid tracking number.</Message>
+    <LocalizedMessage>Invalid tracking number.</LocalizedMessage>
+  </Notifications>
+  <TransactionDetail>
+    <CustomerTransactionId>ActiveShipping</CustomerTransactionId>
+  </TransactionDetail>
+  <Version>
+    <ServiceId>trck</ServiceId>
+    <Major>7</Major>
+    <Intermediate>0</Intermediate>
+    <Minor>0</Minor>
+  </Version>
+</TrackReply>

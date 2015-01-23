@@ -10,9 +10,17 @@ class RemoteFedExTest < Minitest::Test
     skip(e.message)
   end
 
+  ### valid_credentials?
+
   def test_valid_credentials
-    assert @carrier.valid_credentials?
+    valid_carrier = FedEx.new(credentials(:fedex))
+    assert valid_carrier.valid_credentials?
+
+    invalid_carrier = FedEx.new(credentials(:fedex).merge(password: 'invalid'))
+    refute invalid_carrier.valid_credentials?
   end
+
+  ### find_rates
 
   def test_us_to_canada
     response = @carrier.find_rates(
@@ -190,17 +198,6 @@ class RemoteFedExTest < Minitest::Test
     end
   end
 
-  def test_tracking
-    response = @carrier.find_tracking_info('123456789012', :test => true)
-    assert response
-  end
-
-  def test_tracking_with_bad_number
-    assert_raises(ResponseError) do
-      @carrier.find_tracking_info('12345')
-    end
-  end
-
   def test_different_rates_for_commercial
     residential_response = @carrier.find_rates(
                              location_fixtures[:beverly_hills],
@@ -214,5 +211,90 @@ class RemoteFedExTest < Minitest::Test
                            )
 
     refute_equal residential_response.rates.map(&:price), commercial_response.rates.map(&:price)
+  end
+
+  ### find_tracking_info
+
+  def test_find_tracking_info_for_delivered_shipment
+    # unfortunately, we have to use Fedex unique identifiers, because the test tracking numbers are overloaded.
+    response = @carrier.find_tracking_info('123456789012', unique_identifier: '2456987000~123456789012~FX')
+    assert response.success?
+    assert response.delivered?
+    assert_equal '123456789012', response.tracking_number
+    assert_equal :delivered, response.status
+    assert_equal 'DL', response.status_code
+    assert_equal "Delivered", response.status_description
+
+    assert_equal Time.parse('2014-11-14T03:49:00Z'), response.ship_time
+    assert_equal nil, response.scheduled_delivery_date
+    assert_equal Time.parse('2014-12-05T00:28:00Z'), response.actual_delivery_date
+
+    assert_equal nil, response.origin
+
+    destination_address = ActiveShipping::Location.new(
+      city: 'COLLIERVILLE',
+      country: 'US',
+      state: 'TN'
+    )
+    assert_equal destination_address.to_hash, response.destination.to_hash
+    assert_equal 1, response.shipment_events.length
+  end
+
+  def test_find_tracking_info_for_in_transit_shipment_1
+    # unfortunately, we have to use Fedex unique identifiers, because the test tracking numbers are overloaded.
+    response = @carrier.find_tracking_info('123456789012', unique_identifier: '2456979001~123456789012~FX')
+    assert response.success?
+    refute response.delivered?
+    assert_equal '123456789012', response.tracking_number
+    assert_equal :in_transit, response.status
+    assert_equal 'IT', response.status_code
+    assert_equal "Package available for clearance", response.status_description
+    assert_equal 1, response.shipment_events.length
+    assert_nil response.actual_delivery_date
+    assert_equal nil, response.scheduled_delivery_date
+  end
+
+  def test_find_tracking_info_for_in_transit_shipment_2
+    # unfortunately, we have to use Fedex unique identifiers, because the test tracking numbers are overloaded.
+    response = @carrier.find_tracking_info('123456789012', unique_identifier: '2456979000~123456789012~FX')
+    assert response.success?
+    refute response.delivered?
+    assert_equal '123456789012', response.tracking_number
+    assert_equal :in_transit, response.status
+    assert_equal 'IT', response.status_code
+    assert_equal "In transit", response.status_description
+
+    assert_equal Time.parse('2014-11-25T20:04:00Z'), response.ship_time
+    assert_equal nil, response.scheduled_delivery_date
+    assert_equal nil, response.actual_delivery_date
+
+    assert_equal nil, response.origin
+
+    destination_address = ActiveShipping::Location.new(
+      city: 'TONNESSEE',
+      country: 'US',
+      state: 'TN'
+    )
+    assert_equal destination_address.to_hash, response.destination.to_hash
+    assert_equal 9, response.shipment_events.length
+  end
+
+  def test_find_tracking_info_with_multiple_matches
+    exception = assert_raises(ActiveShipping::Error) do
+      response = @carrier.find_tracking_info('123456789012')
+    end
+    assert_match 'Multiple matches were found.', exception.message
+  end
+
+  def test_find_tracking_info_not_found
+    assert_raises(ActiveShipping::ShipmentNotFound) do
+      @carrier.find_tracking_info('123456789013')
+    end
+  end
+
+  def test_find_tracking_info_with_invalid_tracking_number
+    assert_raises(ActiveShipping::ResponseError) do
+      @carrier.find_tracking_info('abc')
+    end
   end
 end

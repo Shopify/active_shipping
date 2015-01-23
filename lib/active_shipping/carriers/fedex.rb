@@ -1,10 +1,9 @@
-# FedEx module by Jimmy Baker (http://github.com/jimmyebaker)
 module ActiveShipping
 
-  # :key is your developer API key
-  # :password is your API password
-  # :account is your FedEx account number
-  # :login is your meter number
+  # FedEx carrier implementation.
+  #
+  # FedEx module by Jimmy Baker (http://github.com/jimmyebaker)
+  # Documentation can be found here: http://images.fedex.com/us/developer/product/WebServices/MyWebHelp/PropDevGuide.pdf
   class FedEx < Carrier
     self.retry_safe = true
 
@@ -85,7 +84,8 @@ module ActiveShipping
       'ground_customer_reference' => 'GROUND_CUSTOMER_REFERENCE',
       'ground_po' => 'GROUND_PO',
       'express_reference' => 'EXPRESS_REFERENCE',
-      'express_mps_master' => 'EXPRESS_MPS_MASTER'
+      'express_mps_master' => 'EXPRESS_MPS_MASTER',
+      'shipper_reference' => 'SHIPPER_REFERENCE',
     }
 
     TRANSIT_TIMES = %w(UNKNOWN ONE_DAY TWO_DAYS THREE_DAYS FOUR_DAYS FIVE_DAYS SIX_DAYS SEVEN_DAYS EIGHT_DAYS NINE_DAYS TEN_DAYS ELEVEN_DAYS TWELVE_DAYS THIRTEEN_DAYS FOURTEEN_DAYS FIFTEEN_DAYS SIXTEEN_DAYS SEVENTEEN_DAYS EIGHTEEN_DAYS)
@@ -161,14 +161,7 @@ module ActiveShipping
       xml_builder = Nokogiri::XML::Builder.new do |xml|
         xml.RateRequest(xmlns: 'http://fedex.com/ws/rate/v13') do
           build_request_header(xml)
-
-          # Version
-          xml.Version do
-            xml.ServiceId('crs')
-            xml.Major('13')
-            xml.Intermediate('0')
-            xml.Minor('0')
-          end
+          build_version_node(xml, 'crs', 13, 0 ,0)
 
           # Returns delivery dates
           xml.ReturnTransitAndCommit(true)
@@ -281,25 +274,22 @@ module ActiveShipping
 
     def build_tracking_request(tracking_number, options = {})
       xml_builder = Nokogiri::XML::Builder.new do |xml|
-        xml.TrackRequest(xmlns: 'http://fedex.com/ws/track/v3') do
+        xml.TrackRequest(xmlns: 'http://fedex.com/ws/track/v7') do
           build_request_header(xml)
+          build_version_node(xml, 'trck', 7, 0, 0)
 
-          # Version
-          xml.Version do
-            xml.ServiceId('trck')
-            xml.Major('3')
-            xml.Intermediate('0')
-            xml.Minor('0')
+          xml.SelectionDetails do
+            xml.PackageIdentifier do
+              xml.Type(PACKAGE_IDENTIFIER_TYPES[options[:package_identifier_type] || 'tracking_number'])
+              xml.Value(tracking_number)
+            end
+
+            xml.ShipDateRangeBegin(options[:ship_date_range_begin])         if options[:ship_date_range_begin]
+            xml.ShipDateRangeEnd(options[:ship_date_range_end])             if options[:ship_date_range_end]
+            xml.TrackingNumberUniqueIdentifier(options[:unique_identifier]) if options[:unique_identifier]
           end
 
-          xml.PackageIdentifier do
-            xml.Value(tracking_number)
-            xml.Type(PACKAGE_IDENTIFIER_TYPES[options['package_identifier_type'] || 'tracking_number'])
-          end
-
-          xml.ShipDateRangeBegin(options['ship_date_range_begin']) if options['ship_date_range_begin']
-          xml.ShipDateRangeEnd(options['ship_date_range_end']) if options['ship_date_range_end']
-          xml.IncludeDetailedScans(1)
+          xml.ProcessingOptions('INCLUDE_DETAILED_SCANS')
         end
       end
       xml_builder.to_xml
@@ -320,6 +310,15 @@ module ActiveShipping
 
       xml.TransactionDetail do
         xml.CustomerTransactionId(@options[:transaction_id] || 'ActiveShipping') # TODO: Need to do something better with this...
+      end
+    end
+
+    def build_version_node(xml, service_id, major, intermediate, minor)
+      xml.Version do
+        xml.ServiceId(service_id)
+        xml.Major(major)
+        xml.Intermediate(intermediate)
+        xml.Minor(minor)
       end
     end
 
@@ -411,14 +410,39 @@ module ActiveShipping
         delivery_signature = nil
         shipment_events = []
 
-        tracking_details = xml.root.at('TrackDetails')
+        all_tracking_details = xml.root.xpath('CompletedTrackDetails/TrackDetails')
+        tracking_details = case all_tracking_details.length
+          when 1
+            all_tracking_details.first
+          when 0
+            raise ActiveShipping::Error, "The response did not contain tracking details"
+          else
+            all_unique_identifiers = xml.root.xpath('CompletedTrackDetails/TrackDetails/TrackingNumberUniqueIdentifier').map(&:text)
+            raise ActiveShipping::Error, "Multiple matches were found. Specify a unqiue identifier: #{all_unique_identifiers.join(', ')}"
+        end
+
+
+        first_notification = tracking_details.at('Notification')
+        if first_notification.at('Severity').text == 'ERROR'
+          case first_notification.at('Code').text
+          when '9040'
+            raise ActiveShipping::ShipmentNotFound, first_notification.at('Message').text
+          else
+            raise ActiveShipping::ResponseContentError, first_notification.at('Message').text
+          end
+        end
 
         tracking_number = tracking_details.at('TrackingNumber').text
-        status_code = tracking_details.at('StatusCode').text
-        status_description = tracking_details.at('StatusDescription').text
+        status_detail = tracking_details.at('StatusDetail')
+        if status_detail.nil?
+          raise ActiveShipping::Error, "Tracking response does not contain status information"
+        end
+
+        status_code = status_detail.at('Code').text
+        status_description = (status_detail.at('AncillaryDetails/ReasonDescription') || status_detail.at('Description')).text
         status = TRACKING_STATUS_CODES[status_code]
 
-        if status_code == 'DL' && tracking_details.at('SignatureProofOfDeliveryAvailable').text == 'true'
+        if status_code == 'DL' && tracking_details.at('AvailableImages').try(:text) == 'SIGNATURE_PROOF_OF_DELIVERY'
           delivery_signature = tracking_details.at('DeliverySignatureName').text
         end
 
@@ -539,20 +563,17 @@ module ActiveShipping
 
     def extract_timestamp(document, node_name)
       if timestamp_node = document.at(node_name)
-        Time.parse(timestamp_node.text).utc
-      end
-    end
-
-    def remove_version_prefix(xml)
-      if xml =~ /xmlns:v[0-9]/
-        xml.gsub(/<(\/)?.*?\:(.*?)>/, '<\1\2>')
-      else
-        xml
+        if timestamp_node.text =~ /\A(\d{4}-\d{2}-\d{2})T00:00:00\Z/
+          Date.parse($1)
+        else
+          Time.parse(timestamp_node.text)
+        end
       end
     end
 
     def build_document(xml, expected_root_tag)
-      document = Nokogiri.XML(remove_version_prefix(xml)) { |config| config.strict }
+      document = Nokogiri.XML(xml) { |config| config.strict }
+      document.remove_namespaces!
       if document.root.nil? || document.root.name != expected_root_tag
         raise ActiveShipping::ResponseContentError.new(StandardError.new('Invalid document'), xml)
       end

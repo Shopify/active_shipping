@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrackReply xmlns="http://fedex.com/ws/track/v7" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <HighestSeverity>SUCCESS</HighestSeverity>
+  <Notifications>
+    <Severity>SUCCESS</Severity>
+    <Source>trck</Source>
+    <Code>0</Code>
+    <Message>Request was successfully processed.</Message>
+    <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+  </Notifications>
+  <TransactionDetail>
+    <CustomerTransactionId>ActiveShipping</CustomerTransactionId>
+  </TransactionDetail>
+  <Version>
+    <ServiceId>trck</ServiceId>
+    <Major>7</Major>
+    <Intermediate>0</Intermediate>
+    <Minor>0</Minor>
+  </Version>
+  <CompletedTrackDetails>
+    <HighestSeverity>SUCCESS</HighestSeverity>
+    <Notifications>
+      <Severity>SUCCESS</Severity>
+      <Source>trck</Source>
+      <Code>0</Code>
+      <Message>Request was successfully processed.</Message>
+      <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+    </Notifications>
+    <DuplicateWaybill>false</DuplicateWaybill>
+    <MoreData>false</MoreData>
+    <TrackDetails>
+      <Notification>
+        <Severity>SUCCESS</Severity>
+        <Source>trck</Source>
+        <Code>0</Code>
+        <Message>Request was successfully processed.</Message>
+        <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+      </Notification>
+      <TrackingNumber>957794015041323</TrackingNumber>
+      <TrackingNumberUniqueIdentifier>12013~957794015041323~FDEG</TrackingNumberUniqueIdentifier>
+      <StatusDetail>
+        <CreationTime>2014-01-28T00:00:00</CreationTime>
+        <Code>SE</Code>
+        <Description>Shipment exception</Description>
+        <Location>
+          <StreetLines>4901 Village Creek Road</StreetLines>
+          <City>FORT WORTH</City>
+          <StateOrProvinceCode>TX</StateOrProvinceCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Location>
+        <AncillaryDetails>
+          <Reason>099</Reason>
+          <ReasonDescription>Unable to deliver</ReasonDescription>
+        </AncillaryDetails>
+      </StatusDetail>
+      <ServiceCommitMessage>No estimated delivery date available at this time.</ServiceCommitMessage>
+      <DestinationServiceArea>EDDUNAVAILABLE</DestinationServiceArea>
+      <CarrierCode>FDXG</CarrierCode>
+      <OperatingCompanyOrCarrierDescription>FedEx Ground</OperatingCompanyOrCarrierDescription>
+      <Service>
+        <Type>GROUND_HOME_DELIVERY</Type>
+        <Description>FedEx Home Delivery</Description>
+        <ShortDescription>HD</ShortDescription>
+      </Service>
+      <PackageWeight>
+        <Units>LB</Units>
+        <Value>1.0</Value>
+      </PackageWeight>
+      <Packaging>Package</Packaging>
+      <PackagingType>YOUR_PACKAGING</PackagingType>
+      <PackageSequenceNumber>1</PackageSequenceNumber>
+      <PackageCount>1</PackageCount>
+      <OriginLocationAddress>
+        <City>AUSTIN</City>
+        <StateOrProvinceCode>TX</StateOrProvinceCode>
+        <CountryCode>US</CountryCode>
+        <CountryName>United States</CountryName>
+        <Residential>false</Residential>
+      </OriginLocationAddress>
+      <ShipTimestamp>2014-01-27T00:00:00</ShipTimestamp>
+      <DestinationAddress>
+        <City>GOOSE CREEK</City>
+        <StateOrProvinceCode>SC</StateOrProvinceCode>
+        <CountryCode>US</CountryCode>
+        <CountryName>United States</CountryName>
+        <Residential>false</Residential>
+      </DestinationAddress>
+      <DeliveryAttempts>0</DeliveryAttempts>
+      <TotalUniqueAddressCountInConsolidation>0</TotalUniqueAddressCountInConsolidation>
+      <RedirectToHoldEligibility>POSSIBLY_ELIGIBLE</RedirectToHoldEligibility>
+      <Events>
+        <Timestamp>2014-01-28T17:43:08-06:00</Timestamp>
+        <EventType>SE</EventType>
+        <EventDescription>Shipment exception</EventDescription>
+        <StatusExceptionCode>099</StatusExceptionCode>
+        <StatusExceptionDescription>Unable to deliver</StatusExceptionDescription>
+        <Address>
+          <City>FORT WORTH</City>
+          <StateOrProvinceCode>TX</StateOrProvinceCode>
+          <PostalCode>76119</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-28T10:23:34-06:00</Timestamp>
+        <EventType>DP</EventType>
+        <EventDescription>Departed FedEx location</EventDescription>
+        <Address>
+          <City>FORT WORTH</City>
+          <StateOrProvinceCode>TX</StateOrProvinceCode>
+          <PostalCode>76119</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-28T02:41:00-06:00</Timestamp>
+        <EventType>AR</EventType>
+        <EventDescription>Arrived at FedEx location</EventDescription>
+        <Address>
+          <City>FORT WORTH</City>
+          <StateOrProvinceCode>TX</StateOrProvinceCode>
+          <PostalCode>76119</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-27T22:05:41-06:00</Timestamp>
+        <EventType>DP</EventType>
+        <EventDescription>Left FedEx origin facility</EventDescription>
+        <Address>
+          <City>AUSTIN</City>
+          <StateOrProvinceCode>TX</StateOrProvinceCode>
+          <PostalCode>78744</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>ORIGIN_FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-27T20:23:00-06:00</Timestamp>
+        <EventType>AR</EventType>
+        <EventDescription>Arrived at FedEx location</EventDescription>
+        <Address>
+          <City>AUSTIN</City>
+          <StateOrProvinceCode>TX</StateOrProvinceCode>
+          <PostalCode>78744</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-27T19:13:00-06:00</Timestamp>
+        <EventType>PU</EventType>
+        <EventDescription>Picked up</EventDescription>
+        <Address>
+          <City>AUSTIN</City>
+          <StateOrProvinceCode>TX</StateOrProvinceCode>
+          <PostalCode>78744</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>PICKUP_LOCATION</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-27T18:10:00-06:00</Timestamp>
+        <EventType>IP</EventType>
+        <EventDescription>In FedEx possession</EventDescription>
+        <StatusExceptionCode>084</StatusExceptionCode>
+        <StatusExceptionDescription>Tendered at FedEx location</StatusExceptionDescription>
+        <Address>
+          <City>AUSTIN</City>
+          <StateOrProvinceCode>TX</StateOrProvinceCode>
+          <PostalCode>78704</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_OFFICE_LOCATION</ArrivalLocation>
+      </Events>
+      <Events>
+        <Timestamp>2014-01-27T17:00:00-05:00</Timestamp>
+        <EventType>OC</EventType>
+        <EventDescription>Shipment information sent to FedEx</EventDescription>
+        <Address>
+          <PostalCode>13502</PostalCode>
+          <CountryCode>US</CountryCode>
+          <CountryName>United States</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>CUSTOMER</ArrivalLocation>
+      </Events>
+    </TrackDetails>
+  </CompletedTrackDetails>
+</TrackReply>
