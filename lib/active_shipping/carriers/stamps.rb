@@ -469,10 +469,11 @@ module ActiveShipping
       response_options[:request] = last_request
       response_options[:test] = test_mode?
 
-      document = REXML::Document.new(xml)
-      child_element = document.get_elements('//soap:Body/*').first
+      document = Nokogiri.XML(xml)
+      child_element = document.at_xpath('/soap:Envelope/soap:Body/*')
       parse_method = 'parse_' + child_element.name.underscore
       if respond_to?(parse_method, true)
+        child_element.document.remove_namespaces!
         send(parse_method, child_element, response_options)
       else
         Response.new(false, "Unknown response object #{child_element.name}", response_options)
@@ -480,22 +481,22 @@ module ActiveShipping
     end
 
     def parse_fault(fault, response_options)
-      @authenticator = fault.get_text('detail/authenticator').value if fault.get_text('detail/authenticator')
+      @authenticator = fault.at('detail/authenticator').text if fault.at('detail/authenticator')
 
-      error_code = if fault.elements['detail/stamps_exception']
-        fault.elements['detail/stamps_exception'].attributes['code']
-      elsif fault.elements['detail/sdcerror']
-        fault.elements['detail/sdcerror'].attributes['code']
+      error_code = if fault.at('detail/stamps_exception')
+        fault.at('detail/stamps_exception')['code']
+      elsif fault.at('detail/sdcerror')
+        fault.at('detail/sdcerror')['code']
       else
         nil
       end
 
       # Renew the Authenticator if it has expired and retry the request
-      if error_code and error_code.downcase == '002b0202'
+      if error_code && error_code.downcase == '002b0202'
         request = renew_authenticator(last_request)
         commit(last_swsim_method, request)
       else
-        raise ResponseError.new(fault.get_text('faultstring').to_s)
+        raise ResponseError.new(fault.at('faultstring').text)
       end
     end
 
@@ -504,37 +505,37 @@ module ActiveShipping
     end
 
     def parse_authenticator(response)
-      @authenticator = response.get_text('Authenticator').value
+      @authenticator = response.at_xpath('Authenticator').text
     end
 
     def parse_get_account_info_response(account_info_response, response_options)
       parse_authenticator(account_info_response)
 
-      account_info = account_info_response.elements['AccountInfo']
-      response_options[:customer_id]         = account_info.get_text('CustomerID').to_s
-      response_options[:meter_number]        = account_info.get_text('MeterNumber').to_s
-      response_options[:user_id]             = account_info.get_text('UserID').to_s
-      response_options[:max_postage_balance] = account_info.get_text('MaxPostageBalance').to_s
-      response_options[:lpo_city]            = account_info.get_text('LPOCity').to_s
-      response_options[:lpo_state]           = account_info.get_text('LPOState').to_s
-      response_options[:lpo_zip]             = account_info.get_text('LPOZip').to_s
+      account_info = account_info_response.at('AccountInfo')
+      response_options[:customer_id]         = account_info.at('CustomerID').text
+      response_options[:meter_number]        = account_info.at('MeterNumber').text
+      response_options[:user_id]             = account_info.at('UserID').text
+      response_options[:max_postage_balance] = account_info.at('MaxPostageBalance').text
+      response_options[:lpo_city]            = account_info.at('LPOCity').text
+      response_options[:lpo_state]           = account_info.at('LPOState').text
+      response_options[:lpo_zip]             = account_info.at('LPOZip').text
 
-      postage_balance_node = account_info.elements['PostageBalance']
-      response_options[:available_postage] = postage_balance_node.get_text('AvailablePostage').to_s
-      response_options[:control_total]     = postage_balance_node.get_text('ControlTotal').to_s
+      postage_balance_node = account_info.at('PostageBalance')
+      response_options[:available_postage] = postage_balance_node.at('AvailablePostage').text
+      response_options[:control_total]     = postage_balance_node.at('ControlTotal').text
 
-      capabilities_node = account_info.elements['Capabilities']
-      response_options[:can_print_shipping]         = capabilities_node.get_text('CanPrintShipping').to_s == 'true'
-      response_options[:can_use_cost_codes]         = capabilities_node.get_text('CanUseCostCodes').to_s == 'true'
-      response_options[:can_use_hidden_postage]     = capabilities_node.get_text('CanUseHiddenPostage').to_s == 'true'
-      response_options[:can_purchase_sdc_insurance] = capabilities_node.get_text('CanPurchaseSDCInsurance').to_s == 'true'
-      response_options[:can_print_memo]             = capabilities_node.get_text('CanPrintMemoOnShippingLabel').to_s == 'true'
-      response_options[:can_print_international]    = capabilities_node.get_text('CanPrintInternational').to_s == 'true'
-      response_options[:can_purchase_postage]       = capabilities_node.get_text('CanPurchasePostage').to_s == 'true'
-      response_options[:can_edit_cost_codes]        = capabilities_node.get_text('CanEditCostCodes').to_s == 'true'
-      response_options[:must_use_cost_codes]        = capabilities_node.get_text('MustUseCostCodes').to_s == 'true'
-      response_options[:can_view_online_reports]    = capabilities_node.get_text('CanViewOnlineReports').to_s == 'true'
-      response_options[:per_print_limit]            = capabilities_node.get_text('PerPrintLimit').to_s
+      capabilities_node = account_info.at('Capabilities')
+      response_options[:can_print_shipping]         = capabilities_node.at('CanPrintShipping').text == 'true'
+      response_options[:can_use_cost_codes]         = capabilities_node.at('CanUseCostCodes').text == 'true'
+      response_options[:can_use_hidden_postage]     = capabilities_node.at('CanUseHiddenPostage').text == 'true'
+      response_options[:can_purchase_sdc_insurance] = capabilities_node.at('CanPurchaseSDCInsurance').text == 'true'
+      response_options[:can_print_memo]             = capabilities_node.at('CanPrintMemoOnShippingLabel').text == 'true'
+      response_options[:can_print_international]    = capabilities_node.at('CanPrintInternational').text == 'true'
+      response_options[:can_purchase_postage]       = capabilities_node.at('CanPurchasePostage').text == 'true'
+      response_options[:can_edit_cost_codes]        = capabilities_node.at('CanEditCostCodes').text == 'true'
+      response_options[:must_use_cost_codes]        = capabilities_node.at('MustUseCostCodes').text == 'true'
+      response_options[:can_view_online_reports]    = capabilities_node.at('CanViewOnlineReports').text == 'true'
+      response_options[:per_print_limit]            = capabilities_node.at('PerPrintLimit').text
 
       StampsAccountInfoResponse.new(true, '', {}, response_options)
     end
@@ -542,13 +543,13 @@ module ActiveShipping
     def parse_purchase_postage_response(postage, response_options)
       parse_authenticator(postage)
 
-      response_options[:purchase_status]   = postage.get_text('PurchaseStatus').to_s
-      response_options[:rejection_reason]  = postage.get_text('RejectionReason').to_s if postage.get_text('RejectionReason')
-      response_options[:transaction_id]    = postage.get_text('TransactionID').to_s if postage.get_text('TransactionID')
+      response_options[:purchase_status]   = postage.at('PurchaseStatus').text
+      response_options[:rejection_reason]  = postage.at('RejectionReason').text if postage.at('RejectionReason')
+      response_options[:transaction_id]    = postage.at('TransactionID').text if postage.at('TransactionID')
 
-      balance = postage.elements['PostageBalance']
-      response_options[:available_postage] = balance.get_text('AvailablePostage').to_s
-      response_options[:control_total]     = balance.get_text('ControlTotal').to_s if balance.get_text('ControlTotal')
+      balance = postage.at('PostageBalance')
+      response_options[:available_postage] = balance.at('AvailablePostage').text
+      response_options[:control_total]     = balance.at('ControlTotal').text if balance.at('ControlTotal')
 
       StampsPurchasePostageResponse.new(true, '', {}, response_options)
     end
@@ -557,19 +558,18 @@ module ActiveShipping
     def parse_cleanse_address_response(cleanse_address, response_options)
       parse_authenticator(cleanse_address)
 
-      response_options[:address_match]     = cleanse_address.get_text('AddressMatch').to_s == 'true'
-      response_options[:city_state_zip_ok] = cleanse_address.get_text('CityStateZipOK').to_s == 'true'
+      response_options[:address_match]     = cleanse_address.at('AddressMatch').text == 'true'
+      response_options[:city_state_zip_ok] = cleanse_address.at('CityStateZipOK').text == 'true'
 
-      address = cleanse_address.elements['Address']
-      response_options[:cleanse_hash]  = address.get_text('CleanseHash').to_s if address.get_text('CleanseHash')
-      response_options[:override_hash] = address.get_text('OverrideHash').to_s if address.get_text('OverrideHash')
+      address = cleanse_address.at('Address')
+      response_options[:cleanse_hash]  = address.at('CleanseHash').text if address.at('CleanseHash')
+      response_options[:override_hash] = address.at('OverrideHash').text if address.at('OverrideHash')
 
-      address_node = cleanse_address.elements['Address']
-      indicator_node = cleanse_address.get_text('ResidentialDeliveryIndicatorType').to_s
-      po_box_node    = cleanse_address.get_text('IsPOBox').to_s
-      response_options[:address] = parse_address(address_node, indicator_node, po_box_node)
+      indicator_node = cleanse_address.at('ResidentialDeliveryIndicatorType')
+      po_box_node    = cleanse_address.at('IsPOBox')
+      response_options[:address] = parse_address(address, indicator_node, po_box_node)
 
-      candidate_addresses = cleanse_address.get_elements('CandidateAddresses/Address')
+      candidate_addresses = cleanse_address.xpath('CandidateAddresses/Address')
       response_options[:candidate_addresses] = candidate_addresses.map do |candidate_address|
         parse_address(candidate_address)
       end
@@ -580,23 +580,23 @@ module ActiveShipping
     def parse_address(address_node, residential_indicator_node = nil, po_box_node = nil)
       address = {}
 
-      address[:name]     = address_node.get_text('FullName').to_s if address_node.get_text('FullName')
-      address[:company]  = address_node.get_text('Company').to_s if address_node.get_text('Company')
-      address[:address1] = address_node.get_text('Address1').to_s if address_node.get_text('Address1')
-      address[:address2] = address_node.get_text('Address2').to_s if address_node.get_text('Address2')
-      address[:address3] = address_node.get_text('Address3').to_s if address_node.get_text('Address3')
-      address[:city]     = address_node.get_text('City').to_s if address_node.get_text('City')
-      address[:country]  = address_node.get_text('Country').to_s if address_node.get_text('Country')
-      address[:phone]    = address_node.get_text('PhoneNumber').to_s if address_node.get_text('PhoneNumber')
+      address[:name]     = address_node.at('FullName').text if address_node.at('FullName')
+      address[:company]  = address_node.at('Company').text if address_node.at('Company')
+      address[:address1] = address_node.at('Address1').text if address_node.at('Address1')
+      address[:address2] = address_node.at('Address2').text if address_node.at('Address2')
+      address[:address3] = address_node.at('Address3').text if address_node.at('Address3')
+      address[:city]     = address_node.at('City').text if address_node.at('City')
+      address[:country]  = address_node.at('Country').text if address_node.at('Country')
+      address[:phone]    = address_node.at('PhoneNumber').text if address_node.at('PhoneNumber')
 
       if address[:country] == 'US' || address[:country].nil?
-        address[:state]  = address_node.get_text('State').to_s if address_node.get_text('State')
+        address[:state]  = address_node.at('State').text if address_node.at('State')
 
-        address[:postal_code] = address_node.get_text('ZIPCode').to_s if address_node.get_text('ZIPCode')
-        address[:postal_code] += '-' + address_node.get_text('ZIPCodeAddOn').to_s if address_node.get_text('ZIPCodeAddOn')
+        address[:postal_code] = address_node.at('ZIPCode').text if address_node.at('ZIPCode')
+        address[:postal_code] += '-' + address_node.at('ZIPCodeAddOn').text if address_node.at('ZIPCodeAddOn')
       else
-        address[:province]    = address_node.get_text('Province').to_s if address_node.get_text('Province')
-        address[:postal_code] = address_node.get_text('PostalCode').to_s if address_node.get_text('PostalCode')
+        address[:province]    = address_node.at('Province').text if address_node.at('Province')
+        address[:postal_code] = address_node.at('PostalCode').text if address_node.at('PostalCode')
       end
 
       address[:address_type] = if residential_indicator_node == 'Yes'
@@ -615,7 +615,7 @@ module ActiveShipping
     def parse_get_rates_response(get_rates, response_options)
       parse_authenticator(get_rates)
 
-      response_options[:estimates] = get_rates.get_elements('Rates/Rate').map do |rate|
+      response_options[:estimates] = get_rates.xpath('Rates/Rate').map do |rate|
         parse_rate(rate)
       end
 
@@ -625,25 +625,25 @@ module ActiveShipping
     def parse_rate(rate)
       rate_options = {}
 
-      origin = Location.new(zip: rate.get_text('FromZIPCode').to_s)
+      origin = Location.new(zip: rate.at('FromZIPCode').text)
 
       location_values = {}
-      location_values[:zip]     = rate.get_text('ToZIPCode').to_s if rate.get_text('ToZIPCode')
-      location_values[:country] = rate.get_text('ToCountry').to_s if rate.get_text('ToCountry')
+      location_values[:zip]     = rate.at('ToZIPCode').text if rate.at('ToZIPCode')
+      location_values[:country] = rate.at('ToCountry').text if rate.at('ToCountry')
       destination = Location.new(location_values)
 
-      service_name = SERVICE_TYPES[rate.get_text('ServiceType').to_s]
+      service_name = SERVICE_TYPES[rate.at('ServiceType').text]
 
-      rate_options[:service_code]  = rate.get_text('ServiceType').to_s
+      rate_options[:service_code]  = rate.at('ServiceType').text
       rate_options[:currency]      = 'USD'
-      rate_options[:shipping_date] = Date.parse(rate.get_text('ShipDate').to_s)
+      rate_options[:shipping_date] = Date.parse(rate.at('ShipDate').text)
 
-      if delivery_days = rate.get_text('DeliverDays')
-        delivery_days = delivery_days.to_s.split('-')
+      if delivery_days = rate.at('DeliverDays')
+        delivery_days = delivery_days.text.split('-')
         rate_options[:delivery_range] = delivery_days.map { |day| rate_options[:shipping_date] + day.to_i.days }
       end
 
-      rate_options[:total_price] = rate.get_text('Amount').to_s
+      rate_options[:total_price] = rate.at('Amount').text
 
       rate_options[:add_ons]     = parse_add_ons(rate)
       rate_options[:packages]    = parse_package(rate)
@@ -660,14 +660,14 @@ module ActiveShipping
 
     def parse_add_ons(rate)
       add_ons = {}
-      rate.get_elements('AddOns/AddOnV5').each do |add_on|
-        add_on_type = add_on.get_text('AddOnType').to_s
+      rate.xpath('AddOns/AddOnV5').each do |add_on|
+        add_on_type = add_on.at('AddOnType').text
 
         add_on_details = {}
-        add_on_details[:missing_data] = add_on.get_text('MissingData').to_s if add_on.get_text('MissingData')
-        add_on_details[:amount]       = add_on.get_text('Amount').to_s if add_on.get_text('Amount')
+        add_on_details[:missing_data] = add_on.at('MissingData').text if add_on.at('MissingData')
+        add_on_details[:amount]       = add_on.at('Amount').text if add_on.at('Amount')
 
-        prohibited_with = add_on.get_elements('ProhibitedWithAnyOf/AddOnTypeV5').map(&:text)
+        prohibited_with = add_on.xpath('ProhibitedWithAnyOf/AddOnTypeV5').map(&:text)
         add_on_details[:prohibited_with] = prohibited_with unless prohibited_with.empty?
 
         add_ons[add_on_type] = add_on_details
@@ -677,17 +677,17 @@ module ActiveShipping
     end
 
     def parse_package(rate)
-      weight = rate.get_text('WeightOz').to_s.to_f
+      weight = rate.at('WeightOz').text.to_f
 
       dimensions = %w(Length Width Height).map do |dim|
-        rate.get_text(dim) ? rate.get_text(dim).to_s.to_f : nil
+        rate.at(dim) ? rate.at(dim).text.to_f : nil
       end
       dimensions.compact!
 
       package_options = { units: :imperial }
 
-      if value = rate.get_text('InsuredValue') || rate.get_text('DeclaredValue')
-        package_options[:value] = value.to_s.to_f
+      if value = rate.at('InsuredValue') || rate.at('DeclaredValue')
+        package_options[:value] = value.text.to_f
         package_options[:currency] = 'USD'
       end
 
@@ -697,14 +697,14 @@ module ActiveShipping
     def parse_create_indicium_response(indicium, response_options)
       parse_authenticator(indicium)
 
-      response_options[:shipping_id]       = indicium.get_text('IntegratorTxID').to_s
-      response_options[:tracking_number]   = indicium.get_text('TrackingNumber').to_s if indicium.get_text('TrackingNumber')
-      response_options[:stamps_tx_id]      = indicium.get_text('StampsTxID').to_s
-      response_options[:label_url]         = indicium.get_text('URL').to_s if indicium.get_text('URL')
-      response_options[:available_postage] = indicium.get_text('PostageBalance/AvailablePostage').to_s
-      response_options[:control_total]     = indicium.get_text('PostageBalance/ControlTotal').to_s
-      response_options[:image_data]        = Base64.decode64(indicium.get_text('ImageData/base64Binary').to_s) if indicium.get_text('ImageData/base64Binary')
-      response_options[:rate]              = parse_rate(indicium.elements['Rate'])
+      response_options[:shipping_id]       = indicium.at('IntegratorTxID').text
+      response_options[:tracking_number]   = indicium.at('TrackingNumber').text if indicium.at('TrackingNumber')
+      response_options[:stamps_tx_id]      = indicium.at('StampsTxID').text
+      response_options[:label_url]         = indicium.at('URL').text if indicium.at('URL')
+      response_options[:available_postage] = indicium.at('PostageBalance/AvailablePostage').text
+      response_options[:control_total]     = indicium.at('PostageBalance/ControlTotal').text
+      response_options[:image_data]        = Base64.decode64(indicium.at('ImageData/base64Binary').text) if indicium.at('ImageData/base64Binary')
+      response_options[:rate]              = parse_rate(indicium.at('Rate'))
 
       StampsShippingResponse.new(true, '', {}, response_options)
     end
@@ -714,27 +714,27 @@ module ActiveShipping
 
       response_options[:carrier] = @@name
 
-      shipment_events = track_shipment.get_elements('TrackingEvents/TrackingEvent').map do |event|
+      shipment_events = track_shipment.xpath('TrackingEvents/TrackingEvent').map do |event|
         unless response_options[:status]
-          response_options[:status_code] = event.get_text('TrackingEventType').to_s
+          response_options[:status_code] = event.at('TrackingEventType').text
           response_options[:status] = response_options[:status_code].underscore.to_sym
         end
 
-        response_options[:delivery_signature] = event.get_text('SignedBy').to_s if event.get_text('SignedBy')
+        response_options[:delivery_signature] = event.at('SignedBy').text if event.at('SignedBy')
 
-        description = event.get_text('Event').to_s
+        description = event.at('Event').text
 
-        timestamp = event.get_text('Timestamp').to_s
+        timestamp = event.at('Timestamp').text
         date, time = timestamp.split('T')
         year, month, day = date.split('-')
         hour, minute, second = time.split(':')
         zoneless_time = Time.utc(year, month, day, hour, minute, second)
 
         location = Location.new(
-          city:    event.get_text('City').to_s,
-          state:   event.get_text('State').to_s,
-          zip:     event.get_text('Zip').to_s,
-          country: event.get_text('Country').to_s
+          city:    event.at('City').text,
+          state:   event.at('State').text,
+          zip:     event.at('Zip').text,
+          country: event.at('Country').text
         )
 
         ShipmentEvent.new(description, zoneless_time, location)
