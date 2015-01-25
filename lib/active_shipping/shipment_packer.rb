@@ -7,8 +7,8 @@ module ActiveShipping
     class ExcessPackageQuantity < StandardError; end
 
     # items           - array of hashes containing quantity, grams and price.
-    #                   ex. [{:quantity => 2, :price => 1.0, :grams => 50}]
-    # dimensions      - [5.0, 15.0, 30.0]
+    #                   ex. `[{:quantity => 2, :price => 1.0, :grams => 50}]`
+    # dimensions      - `[5.0, 15.0, 30.0]`
     # maximum_weight  - maximum weight in grams
     # currency        - ISO currency code
     def self.pack(items, dimensions, maximum_weight, currency)

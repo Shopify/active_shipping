@@ -136,7 +136,7 @@ module ActiveShipping
 
     # Calculates a timestamp that corresponds a given number if business days in the future
     #
-    # @param [Integer] The number of business days from now.
+    # @param days [Integer] The number of business days from now.
     # @return [DateTime] A timestamp, the provided number of business days in the future.
     def timestamp_from_business_day(days)
       return unless days
