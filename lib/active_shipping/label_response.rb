@@ -1,7 +1,7 @@
 module ActiveShipping
+
   # This is UPS specific for now; the hash is not at all generic
   # or common between carriers.
-
   class LabelResponse < Response
     attr :params # maybe?
 
