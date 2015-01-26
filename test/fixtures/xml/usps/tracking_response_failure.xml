@@ -1,3 +1,2 @@
-<?xml version="1.0"?>
-<TrackResponse><TrackInfo ID="ABC123XYZ"><TrackSummary>There is no record of that mail item. If it was mailed recently, it may not yet be tracked. Please try again later.</TrackSummary></TrackInfo>
-</TrackResponse>
+<?xml version="1.0" encoding="UTF-8"?>
+<TrackResponse><TrackInfo ID="abc123xyz"><TrackSummary>The Postal Service could not locate the tracking information for your request. Please verify your tracking number and try again later.</TrackSummary></TrackInfo></TrackResponse>
