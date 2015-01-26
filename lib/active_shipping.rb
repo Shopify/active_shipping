@@ -29,8 +29,8 @@ require 'active_utils'
 
 require 'rexml/document'
 require 'nokogiri'
+require 'quantified'
 
-require 'vendor/quantified/lib/quantified'
 require 'vendor/xml_node/lib/xml_node'
 
 require 'active_shipping/response'
