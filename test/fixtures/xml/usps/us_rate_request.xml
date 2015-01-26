@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<RateV4Request USERID="login">
+  <Package ID="0">
+    <Service>ALL</Service>
+    <FirstClassMailType/>
+    <ZipOrigination>90210</ZipOrigination>
+    <ZipDestination>10017</ZipDestination>
+    <Pounds>0</Pounds>
+    <Ounces>8.8</Ounces>
+    <Container>RECTANGULAR</Container>
+    <Size>REGULAR</Size>
+    <Width>5.51</Width>
+    <Length>7.48</Length>
+    <Height>0.79</Height>
+    <Girth>12.60</Girth>
+    <Machinable>TRUE</Machinable>
+  </Package>
+</RateV4Request>

@@ -112,7 +112,7 @@ module ActiveShipping
       packages = Array(packages)
       access_request = build_access_request
       rate_request = build_rate_request(origin, destination, packages, options)
-      response = commit(:rates, save_request(access_request + rate_request), (options[:test] || false))
+      response = commit(:rates, save_request(access_request + rate_request), options[:test])
       parse_rate_response(origin, destination, packages, response, options)
     end
 
@@ -120,7 +120,7 @@ module ActiveShipping
       options = @options.update(options)
       access_request = build_access_request
       tracking_request = build_tracking_request(tracking_number, options)
-      response = commit(:track, save_request(access_request + tracking_request), (options[:test] || false))
+      response = commit(:track, save_request(access_request + tracking_request), options[:test])
       parse_tracking_response(response, options)
     end
 

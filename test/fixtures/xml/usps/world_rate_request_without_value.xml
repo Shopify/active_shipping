@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<IntlRateV2Request USERID="login">
+  <Package ID="0">
+    <Pounds>0</Pounds>
+    <Ounces>9</Ounces>
+    <MailType>Package</MailType>
+    <GXG>
+      <POBoxFlag>N</POBoxFlag>
+      <GiftFlag>N</GiftFlag>
+    </GXG>
+    <ValueOfContents>0.0</ValueOfContents>
+    <Country>Canada</Country>
+    <Container>RECTANGULAR</Container>
+    <Size>REGULAR</Size>
+    <Width>5.51</Width>
+    <Length>7.48</Length>
+    <Height>0.79</Height>
+    <Girth>12.60</Girth>
+  </Package>
+</IntlRateV2Request>

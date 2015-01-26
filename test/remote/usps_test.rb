@@ -33,7 +33,7 @@ class USPSTest < Minitest::Test
   end
 
   def test_just_country_given
-    @carrier.find_rates(
+    response = @carrier.find_rates(
       location_fixtures[:beverly_hills],
       Location.new(:country => 'CZ'),
       Package.new(100, [5, 10, 20])
@@ -81,7 +81,7 @@ class USPSTest < Minitest::Test
     package_rate = rate.package_rates.first
     assert_instance_of Hash, package_rate
     assert_instance_of Package, package_rate[:package]
-    assert_not_nil package_rate[:rate]
+    refute_nil package_rate[:rate]
 
     other_than_two = response.rates.map(&:package_count).reject { |n| n == 2 }
     assert_equal [], other_than_two, "Some RateEstimates do not refer to the right number of packages (#{other_than_two.inspect})"
@@ -114,7 +114,7 @@ class USPSTest < Minitest::Test
     package_rate = rate.package_rates.first
     assert_instance_of Hash, package_rate
     assert_instance_of Package, package_rate[:package]
-    assert_not_nil package_rate[:rate]
+    refute_nil package_rate[:rate]
 
     other_than_two = response.rates.map(&:package_count).reject { |n| n == 2 }
     assert_equal [], other_than_two, "Some RateEstimates do not refer to the right number of packages (#{other_than_two.inspect})"

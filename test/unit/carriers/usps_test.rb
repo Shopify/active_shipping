@@ -127,8 +127,8 @@ class USPSTest < Minitest::Test
   # TODO: test_parse_domestic_rate_response
 
   def test_build_us_rate_request_uses_proper_container
-    expected_request = "<RateV4Request USERID='login'><Package ID='0'><Service>ALL</Service><FirstClassMailType/><ZipOrigination>90210</ZipOrigination><ZipDestination>10017</ZipDestination><Pounds>0</Pounds><Ounces>8.8</Ounces><Container>RECTANGULAR</Container><Size>REGULAR</Size><Width>5.51</Width><Length>7.48</Length><Height>0.79</Height><Girth>12.60</Girth><Machinable>TRUE</Machinable></Package></RateV4Request>"
-    @carrier.expects(:commit).with(:us_rates, URI.encode(expected_request), false).returns(expected_request)
+    expected_request = xml_fixture('usps/us_rate_request')
+    @carrier.expects(:commit).with(:us_rates, expected_request, false).returns(expected_request)
     @carrier.expects(:parse_rate_response)
     package = package_fixtures[:book]
     package.options[:container] = :rectangular
@@ -136,15 +136,15 @@ class USPSTest < Minitest::Test
   end
 
   def test_build_world_rate_request
-    expected_request = "<IntlRateV2Request USERID='login'><Package ID='0'><Pounds>0</Pounds><Ounces>9</Ounces><MailType>Package</MailType><GXG><POBoxFlag>N</POBoxFlag><GiftFlag>N</GiftFlag></GXG><ValueOfContents>0.0</ValueOfContents><Country><![CDATA[Canada]]></Country><Container>RECTANGULAR</Container><Size>REGULAR</Size><Width>5.51</Width><Length>7.48</Length><Height>0.79</Height><Girth>12.60</Girth></Package></IntlRateV2Request>"
-    @carrier.expects(:commit).with(:world_rates, URI.encode(expected_request), false).returns(expected_request)
+    expected_request = xml_fixture('usps/world_rate_request_without_value')
+    @carrier.expects(:commit).with(:world_rates, expected_request, false).returns(expected_request)
     @carrier.expects(:parse_rate_response)
     @carrier.find_rates(location_fixtures[:beverly_hills], location_fixtures[:ottawa], package_fixtures[:book], :test => true)
   end
 
   def test_build_world_rate_request_with_package_value
-    expected_request = "<IntlRateV2Request USERID='login'><Package ID='0'><Pounds>0</Pounds><Ounces>120</Ounces><MailType>Package</MailType><GXG><POBoxFlag>N</POBoxFlag><GiftFlag>N</GiftFlag></GXG><ValueOfContents>269.99</ValueOfContents><Country><![CDATA[Canada]]></Country><Container>RECTANGULAR</Container><Size>LARGE</Size><Width>10.00</Width><Length>15.00</Length><Height>4.50</Height><Girth>29.00</Girth></Package></IntlRateV2Request>"
-    @carrier.expects(:commit).with(:world_rates, URI.encode(expected_request), false).returns(expected_request)
+    expected_request = xml_fixture('usps/world_rate_request_with_value')
+    @carrier.expects(:commit).with(:world_rates, expected_request, false).returns(expected_request)
     @carrier.expects(:parse_rate_response)
     @carrier.find_rates(location_fixtures[:beverly_hills], location_fixtures[:ottawa], package_fixtures[:american_wii], :test => true)
   end
@@ -451,18 +451,21 @@ class USPSTest < Minitest::Test
   private
 
   def build_service_node(options = {})
-    XmlNode.new('Service') do |service_node|
-      service_node << XmlNode.new('Pounds', options[:pounds] || "0")
-      service_node << XmlNode.new('SvcCommitments', options[:svc_commitments] || "Varies")
-      service_node << XmlNode.new('Country', options[:country] || "CANADA")
-      service_node << XmlNode.new('ID', options[:id] || "3")
-      service_node << XmlNode.new('MaxWeight', options[:max_weight] || "64")
-      service_node << XmlNode.new('SvcDescription', options[:name] || "First-Class Mail International")
-      service_node << XmlNode.new('MailType', options[:mail_type] || "Package")
-      service_node << XmlNode.new('Postage', options[:postage] || "3.76")
-      service_node << XmlNode.new('Ounces', options[:ounces] || "9")
-      service_node << XmlNode.new('MaxDimensions', options[:max_dimensions].dup || "Max. length 24\", Max. length, height, depth combined 36\"")
-    end.to_xml_element
+    builder = Nokogiri::XML::Builder.new do |xml|
+      xml.Service do
+        xml.Pounds(options[:pounds] || "0")
+        xml.SvcCommitments(options[:svc_commitments] || "Varies")
+        xml.Country(options[:country] || "CANADA")
+        xml.ID(options[:id] || "3")
+        xml.MaxWeight(options[:max_weight] || "64")
+        xml.SvcDescription(options[:name] || "First-Class Mail International")
+        xml.MailType(options[:mail_type] || "Package")
+        xml.Postage(options[:postage] || "3.76")
+        xml.Ounces(options[:ounces] || "9")
+        xml.MaxDimensions(options[:max_dimensions].dup || "Max. length 24\", Max. length, height, depth combined 36\"")
+      end
+    end
+    builder.doc.root
   end
 
   def build_service_hash(options = {})
