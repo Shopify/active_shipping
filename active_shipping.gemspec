@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = ">= 1.3.6"
   s.rubyforge_project         = "active_shipping"
 
+  s.add_dependency('quantified',    '~> 1.0')
   s.add_dependency('activesupport', '>= 3.2', '< 5.0.0')
   s.add_dependency('active_utils',  '~> 3.0.0')
   s.add_dependency('builder',       '>= 2.1.2', '< 4.0.0')
