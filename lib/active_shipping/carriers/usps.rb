@@ -540,7 +540,12 @@ module ActiveShipping
         tracking_details = xml.root.xpath('TrackInfo/TrackDetail')
 
         tracking_summary = xml.root.at('TrackInfo/TrackSummary')
-        tracking_details << tracking_summary
+        if tracking_details.length > 0
+          tracking_details << tracking_summary
+        else
+          success = false
+          message = tracking_summary.text
+        end
 
         tracking_number = xml.root.at('TrackInfo').attributes['ID'].value
 
@@ -589,23 +594,12 @@ module ActiveShipping
       !document.at('Error').nil?
     end
 
-    def no_record?(document)
-      summary_node = track_summary_node(document)
-      if summary_node
-        summary = summary_node.text
-        RESPONSE_ERROR_MESSAGES.detect { |re| summary =~ re }
-        summary =~ /There is no record of that mail item/ || summary =~ /This Information has not been included in this Test Server\./
-      else
-        false
-      end
-    end
-
     def tracking_info_error?(document)
       !document.root.at('TrackInfo/Error').nil?
     end
 
     def response_success?(document)
-      !(has_error?(document) || no_record?(document) || tracking_info_error?(document))
+      !(has_error?(document) || tracking_info_error?(document))
     end
 
     def response_message(document)
