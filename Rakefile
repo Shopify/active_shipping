@@ -10,7 +10,7 @@ end
 
 namespace :test do
   desc "Run unit tests"
-  Rake::TestTask.new(:units) do |t|
+  Rake::TestTask.new(:unit) do |t|
     t.libs << "test"
     t.pattern = 'test/unit/**/*_test.rb'
     t.verbose = true
@@ -24,4 +24,4 @@ namespace :test do
   end
 end
 
-task :default => 'test:units'
+task :default => 'test'

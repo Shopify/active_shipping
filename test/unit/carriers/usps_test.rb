@@ -2,7 +2,6 @@ require 'test_helper'
 
 class USPSTest < Minitest::Test
   include ActiveShipping::Test::Fixtures
-  include ActiveShipping::Test::Credentials
 
   def setup
     @carrier = USPS.new(:login => 'login')
@@ -365,12 +364,13 @@ class USPSTest < Minitest::Test
   end
 
   def test_domestic_commercial_base_rates
-    @carrier = USPS.new(credentials(:usps).merge(:commercial_base => true))
+    commercial_base_credentials = { key: "123", login: "user", password: "pass", commercial_base: true }
+    carrier = USPS.new(commercial_base_credentials)
 
     mock_response = xml_fixture('usps/beverly_hills_to_new_york_book_commercial_base_rate_response')
-    @carrier.expects(:commit).returns(mock_response)
+    carrier.expects(:commit).returns(mock_response)
 
-    response = @carrier.find_rates(
+    response = carrier.find_rates(
       location_fixtures[:beverly_hills],
       location_fixtures[:new_york],
       package_fixtures.values_at(:book),
@@ -385,12 +385,13 @@ class USPSTest < Minitest::Test
   end
 
   def test_intl_commercial_base_rates
-    @carrier = USPS.new(credentials(:usps).merge(:commercial_base => true))
+    commercial_base_credentials = { key: "123", login: "user", password: "pass", commercial_base: true }
+    carrier = USPS.new(commercial_base_credentials)
 
     mock_response = xml_fixture('usps/beverly_hills_to_ottawa_american_wii_commercial_base_rate_response')
-    @carrier.expects(:commit).returns(mock_response)
+    carrier.expects(:commit).returns(mock_response)
 
-    response = @carrier.find_rates(
+    response = carrier.find_rates(
       location_fixtures[:beverly_hills],
       location_fixtures[:ottawa],
       package_fixtures.values_at(:american_wii),
@@ -401,12 +402,13 @@ class USPSTest < Minitest::Test
   end
 
   def test_domestic_commercial_plus_rates
-    @carrier = USPS.new(credentials(:usps).merge(:commercial_plus => true))
+    commercial_plus_credentials = { key: "123", login: "user", password: "pass", commercial_plus: true }
+    carrier = USPS.new(commercial_plus_credentials)
 
     mock_response = xml_fixture('usps/beverly_hills_to_new_york_book_commercial_plus_rate_response')
-    @carrier.expects(:commit).returns(mock_response)
+    carrier.expects(:commit).returns(mock_response)
 
-    response = @carrier.find_rates(
+    response = carrier.find_rates(
       location_fixtures[:beverly_hills],
       location_fixtures[:new_york],
       package_fixtures.values_at(:book),
@@ -421,12 +423,13 @@ class USPSTest < Minitest::Test
   end
 
   def test_intl_commercial_plus_rates
-    @carrier = USPS.new(credentials(:usps).merge(:commercial_plus => true))
+    commercial_plus_credentials = { key: "123", login: "user", password: "pass", commercial_plus: true }
+    carrier = USPS.new(commercial_plus_credentials)
 
     mock_response = xml_fixture('usps/beverly_hills_to_ottawa_american_wii_commercial_plus_rate_response')
-    @carrier.expects(:commit).returns(mock_response)
+    carrier.expects(:commit).returns(mock_response)
 
-    response = @carrier.find_rates(
+    response = carrier.find_rates(
       location_fixtures[:beverly_hills],
       location_fixtures[:ottawa],
       package_fixtures.values_at(:american_wii),

@@ -1,11 +1,14 @@
 require 'test_helper'
 
-class USPSTest < Minitest::Test
+class RemoteUSPSTest < Minitest::Test
   include ActiveShipping::Test::Credentials
   include ActiveShipping::Test::Fixtures
 
   def setup
-    @carrier = USPS.new(credentials(:usps))
+    @usps_credentials = credentials(:usps)
+    @carrier = USPS.new(@usps_credentials)
+  rescue NoCredentialsFound => e
+    skip(e.message)
   end
 
   def test_tracking
@@ -199,7 +202,7 @@ class USPSTest < Minitest::Test
   end
 
   def test_valid_credentials
-    assert USPS.new(credentials(:usps).merge(:test => true)).valid_credentials?
+    assert USPS.new(@usps_credentials.merge(:test => true)).valid_credentials?
   end
 
   def test_must_provide_login_creds_when_instantiating
