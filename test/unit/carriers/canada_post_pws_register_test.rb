@@ -1,11 +1,10 @@
 require 'test_helper'
 
 class CanadaPostPwsRegisterTest < Minitest::Test
-  include ActiveShipping::Test::Credentials
   include ActiveShipping::Test::Fixtures
 
   def setup
-    @cp = CanadaPostPWS.new(credentials(:canada_post_pws))
+    @cp = CanadaPostPWS.new(platform_id: 123, api_key: '456', secret: '789')
   end
 
   def test_register_merchant

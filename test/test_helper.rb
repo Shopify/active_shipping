@@ -5,9 +5,8 @@ require 'mocha/mini_test'
 require 'timecop'
 
 require 'active_shipping'
-require 'nokogiri'
 require 'logger'
-
+require 'erb'
 
 # This makes sure that Minitest::Test exists when an older version of Minitest
 # (i.e. 4.x) is required by ActiveSupport.
@@ -22,11 +21,20 @@ end
 
 module ActiveShipping::Test
   module Credentials
+    class NoCredentialsFound < StandardError
+      def initialize(key)
+        super("No credentials were found for '#{key}'")
+      end
+    end
+
     LOCAL_CREDENTIALS = ENV['HOME'] + '/.active_shipping/credentials.yml'
     DEFAULT_CREDENTIALS = File.dirname(__FILE__) + '/credentials.yml'
 
     def credentials(key)
-      data = all_credentials[key] || raise(StandardError, "No credentials were found for '#{key}'")
+      data = all_credentials[key]
+      if data.nil? || data.all? { |k,v| v.nil? || v.empty? }
+        raise NoCredentialsFound.new(key)
+      end
       data.symbolize_keys
     end
 
@@ -36,7 +44,7 @@ module ActiveShipping::Test
       @@all_credentials ||= begin
         [DEFAULT_CREDENTIALS, LOCAL_CREDENTIALS].inject({}) do |credentials, file_name|
           if File.exist?(file_name)
-            yaml_data = YAML.load(File.read(file_name)).symbolize_keys
+            yaml_data = YAML.load(ERB.new(File.read(file_name)).result(binding)).symbolize_keys
             credentials.merge!(yaml_data)
           end
           credentials

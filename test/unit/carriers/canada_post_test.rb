@@ -1,14 +1,13 @@
 require 'test_helper'
 
 class CanadaPostTest < Minitest::Test
-  include ActiveShipping::Test::Credentials
   include ActiveShipping::Test::Fixtures
 
   def setup
-    login = credentials(:canada_post)
+    login = { login: 'CPC_DEMO_XML' }
 
     @carrier  = CanadaPost.new(login)
-    @french_carrier  = CanadaPost.new(login.merge(:french => true))
+    @french_carrier  = CanadaPost.new(login.merge(french: true))
 
     @request  = xml_fixture('canadapost/example_request')
     @response = xml_fixture('canadapost/example_response')

@@ -3,7 +3,7 @@
 require 'test_helper'
 
 # All remote tests require Canada Post development environment credentials
-class CanadaPostPWSPlatformTest < Minitest::Test
+class RemoteCanadaPostPWSPlatformTest < Minitest::Test
   include ActiveShipping::Test::Credentials
   include ActiveShipping::Test::Fixtures
 
@@ -95,6 +95,8 @@ class CanadaPostPWSPlatformTest < Minitest::Test
     @customer_number  = @login[:customer_number]
     @customer_api_key = @login[:customer_api_key]
     @customer_secret  = @login[:customer_secret]
+  rescue NoCredentialsFound => e
+    skip(e.message)
   end
 
   def build_options

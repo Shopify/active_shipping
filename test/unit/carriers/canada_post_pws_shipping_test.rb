@@ -1,6 +1,5 @@
 require 'test_helper'
 class CanadaPostPwsShippingTest < Minitest::Test
-  include ActiveShipping::Test::Credentials
   include ActiveShipping::Test::Fixtures
 
   def setup
@@ -71,7 +70,7 @@ class CanadaPostPwsShippingTest < Minitest::Test
       :label_url => "https://ct.soa-gw.canadapost.ca/ers/artifact/c70da5ed5a0d2c32/20238/0"
     }
 
-    @cp = CanadaPostPWS.new(credentials(:canada_post_pws))
+    @cp = CanadaPostPWS.new(platform_id: 123, api_key: '456', secret: '789')
   end
 
   def test_build_shipment_customs_node

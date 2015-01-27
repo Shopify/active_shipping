@@ -1,11 +1,13 @@
 require 'test_helper'
 
-class FedExTest < Minitest::Test
+class RemoteFedExTest < Minitest::Test
   include ActiveShipping::Test::Credentials
   include ActiveShipping::Test::Fixtures
 
   def setup
     @carrier = FedEx.new(credentials(:fedex).merge(:test => true))
+  rescue NoCredentialsFound => e
+    skip(e.message)
   end
 
   def test_valid_credentials
