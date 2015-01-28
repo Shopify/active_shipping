@@ -1,5 +1,5 @@
 language: ruby
-script: bundle exec rake
+script: bundle exec rake test
 sudo: false
 
 rvm:
@@ -12,3 +12,8 @@ gemfile:
 - Gemfile.activesupport40
 - Gemfile.activesupport41
 - Gemfile.activesupport42
+
+env:
+  global:
+  - ACTIVESHIPPING_NEW_ZEALAND_POST_KEY=4d9dc0f0-dda0-012e-066f-000c29b44ac0
+  - ACTIVESHIPPING_CANADA_POST_LOGIN=CPC_DEMO_XML

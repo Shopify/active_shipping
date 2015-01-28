@@ -1,12 +1,14 @@
 require 'test_helper'
 
-class UPSTest < Minitest::Test
+class RemoteUPSTest < Minitest::Test
   include ActiveShipping::Test::Credentials
   include ActiveShipping::Test::Fixtures
 
   def setup
     @options = credentials(:ups).merge(:test => true)
     @carrier = UPS.new(@options)
+  rescue NoCredentialsFound => e
+    skip(e.message)
   end
 
   def test_tracking

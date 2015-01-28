@@ -1,7 +1,6 @@
 require 'test_helper'
 
 class CanadaPostPwsRatingTest < Minitest::Test
-  include ActiveShipping::Test::Credentials
   include ActiveShipping::Test::Fixtures
 
   def setup
@@ -38,10 +37,11 @@ class CanadaPostPwsRatingTest < Minitest::Test
 
     @customer_number = '654321'
 
-    @cp = CanadaPostPWS.new(credentials(:canada_post_pws))
+    credentials = { platform_id: 123, api_key: '456', secret: '789' }
+    @cp = CanadaPostPWS.new(credentials)
     @cp.logger = Logger.new(StringIO.new)
-    @french_cp = CanadaPostPWS.new(credentials(:canada_post_pws).merge(:language => 'fr'))
-    @cp_customer_number = CanadaPostPWS.new(credentials(:canada_post_pws).merge(:customer_number => @customer_number))
+    @french_cp = CanadaPostPWS.new(credentials.merge(language: 'fr'))
+    @cp_customer_number = CanadaPostPWS.new(credentials.merge(customer_number: @customer_number))
 
     @default_options = {:customer_number => '123456'}
   end

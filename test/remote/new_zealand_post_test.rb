@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class NewZealandPostTest < Minitest::Test
+class RemoteNewZealandPostTest < Minitest::Test
   include ActiveShipping::Test::Credentials
   include ActiveShipping::Test::Fixtures
 
@@ -9,6 +9,8 @@ class NewZealandPostTest < Minitest::Test
     @wellington = location_fixtures[:wellington]
     @auckland = location_fixtures[:auckland]
     @ottawa = location_fixtures[:ottawa]
+  rescue NoCredentialsFound => e
+    skip(e.message)
   end
 
   def test_valid_credentials

@@ -1,6 +1,6 @@
 require 'test_helper'
+
 class CanadaPostPwsTrackingTest < Minitest::Test
-  include ActiveShipping::Test::Credentials
   include ActiveShipping::Test::Fixtures
 
   def setup
@@ -29,7 +29,7 @@ class CanadaPostPwsTrackingTest < Minitest::Test
       :zip      => '90210'
     )
 
-    @cp = CanadaPostPWS.new(credentials(:canada_post_pws))
+    @cp = CanadaPostPWS.new(platform_id: 123, api_key: '456', secret: '789')
   end
 
   def test_find_tracking_info_with_valid_pin

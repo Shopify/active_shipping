@@ -9,6 +9,8 @@ class RemoteShipwireTest < Minitest::Test
     @item1 = { :sku => 'AF0001', :quantity => 2 }
     @item2 = { :sku => 'AF0002', :quantity => 1 }
     @items = [@item1, @item2]
+  rescue NoCredentialsFound => e
+    skip(e.message)
   end
 
   def test_successful_domestic_rates_request_for_single_line_item

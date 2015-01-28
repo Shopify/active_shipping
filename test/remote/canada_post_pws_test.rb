@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class CanadaPostPWSTest < Minitest::Test
+class RemoteCanadaPostPWSTest < Minitest::Test
   # All remote tests require Canada Post development environment credentials
   include ActiveShipping::Test::Credentials
   include ActiveShipping::Test::Fixtures
@@ -84,6 +84,8 @@ class CanadaPostPWSTest < Minitest::Test
       :tracking_number => "11111118901234",
       :label_url => "https://ct.soa-gw.canadapost.ca/ers/artifact/#{@login[:api_key]}/20238/0"
     }
+  rescue NoCredentialsFound => e
+    skip(e.message)
   end
 
   def test_rates

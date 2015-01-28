@@ -1,11 +1,12 @@
 require 'test_helper'
 
-class StampsTest < Minitest::Test
+class RemoteStampsTest < Minitest::Test
   include ActiveShipping::Test::Credentials
-  include ActiveShipping::Test::Fixtures
 
   def setup
     @carrier = Stamps.new(credentials(:stamps).merge(test: true))
+  rescue NoCredentialsFound => e
+    skip(e.message)
   end
 
   def test_valid_credentials
