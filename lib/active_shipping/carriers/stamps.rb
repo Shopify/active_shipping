@@ -544,12 +544,12 @@ module ActiveShipping
       parse_authenticator(postage)
 
       response_options[:purchase_status]   = postage.at('PurchaseStatus').text
-      response_options[:rejection_reason]  = postage.at('RejectionReason').text if postage.at('RejectionReason')
-      response_options[:transaction_id]    = postage.at('TransactionID').text if postage.at('TransactionID')
+      response_options[:rejection_reason]  = parse_content(postage, 'RejectionReason')
+      response_options[:transaction_id]    = parse_content(postage, 'TransactionID')
 
       balance = postage.at('PostageBalance')
       response_options[:available_postage] = balance.at('AvailablePostage').text
-      response_options[:control_total]     = balance.at('ControlTotal').text if balance.at('ControlTotal')
+      response_options[:control_total]     = parse_content(balance, 'ControlTotal')
 
       StampsPurchasePostageResponse.new(true, '', {}, response_options)
     end
@@ -562,8 +562,8 @@ module ActiveShipping
       response_options[:city_state_zip_ok] = cleanse_address.at('CityStateZipOK').text == 'true'
 
       address = cleanse_address.at('Address')
-      response_options[:cleanse_hash]  = address.at('CleanseHash').text if address.at('CleanseHash')
-      response_options[:override_hash] = address.at('OverrideHash').text if address.at('OverrideHash')
+      response_options[:cleanse_hash]  = parse_content(address, 'CleanseHash')
+      response_options[:override_hash] = parse_content(address, 'OverrideHash')
 
       indicator_node = cleanse_address.at('ResidentialDeliveryIndicatorType')
       po_box_node    = cleanse_address.at('IsPOBox')
@@ -580,23 +580,23 @@ module ActiveShipping
     def parse_address(address_node, residential_indicator_node = nil, po_box_node = nil)
       address = {}
 
-      address[:name]     = address_node.at('FullName').text if address_node.at('FullName')
-      address[:company]  = address_node.at('Company').text if address_node.at('Company')
-      address[:address1] = address_node.at('Address1').text if address_node.at('Address1')
-      address[:address2] = address_node.at('Address2').text if address_node.at('Address2')
-      address[:address3] = address_node.at('Address3').text if address_node.at('Address3')
-      address[:city]     = address_node.at('City').text if address_node.at('City')
-      address[:country]  = address_node.at('Country').text if address_node.at('Country')
-      address[:phone]    = address_node.at('PhoneNumber').text if address_node.at('PhoneNumber')
+      address[:name]     = parse_content(address_node, 'FullName')
+      address[:company]  = parse_content(address_node, 'Company')
+      address[:address1] = parse_content(address_node, 'Address1')
+      address[:address2] = parse_content(address_node, 'Address2')
+      address[:address3] = parse_content(address_node, 'Address3')
+      address[:city]     = parse_content(address_node, 'City')
+      address[:country]  = parse_content(address_node, 'Country')
+      address[:phone]    = parse_content(address_node, 'PhoneNumber')
 
       if address[:country] == 'US' || address[:country].nil?
-        address[:state]  = address_node.at('State').text if address_node.at('State')
+        address[:state]  = parse_content(address_node, 'State')
 
-        address[:postal_code] = address_node.at('ZIPCode').text if address_node.at('ZIPCode')
-        address[:postal_code] += '-' + address_node.at('ZIPCodeAddOn').text if address_node.at('ZIPCodeAddOn')
+        address[:postal_code] = parse_content(address_node, 'ZIPCode')
+        address[:postal_code] += '-' + parse_content(address_node, 'ZIPCodeAddOn')
       else
-        address[:province]    = address_node.at('Province').text if address_node.at('Province')
-        address[:postal_code] = address_node.at('PostalCode').text if address_node.at('PostalCode')
+        address[:province]    = parse_content(address_node, 'Province')
+        address[:postal_code] = parse_content(address_node, 'PostalCode')
       end
 
       address[:address_type] = if residential_indicator_node == 'Yes'
@@ -628,8 +628,8 @@ module ActiveShipping
       origin = Location.new(zip: rate.at('FromZIPCode').text)
 
       location_values = {}
-      location_values[:zip]     = rate.at('ToZIPCode').text if rate.at('ToZIPCode')
-      location_values[:country] = rate.at('ToCountry').text if rate.at('ToCountry')
+      location_values[:zip]     = parse_content(rate, 'ToZIPCode')
+      location_values[:country] = parse_content(rate, 'ToCountry')
       destination = Location.new(location_values)
 
       service_name = SERVICE_TYPES[rate.at('ServiceType').text]
@@ -649,9 +649,9 @@ module ActiveShipping
       rate_options[:packages]    = parse_package(rate)
 
       add_ons = rate_options[:add_ons]
-      if add_ons['SC-A-INS'] and add_ons['SC-A-INS'][:amount]
+      if add_ons['SC-A-INS'] && add_ons['SC-A-INS'][:amount]
         rate_options[:insurance_price] = add_ons['SC-A-INS'][:amount]
-      elsif add_ons['US-A-INS'] and add_ons['US-A-INS'][:amount]
+      elsif add_ons['US-A-INS'] && add_ons['US-A-INS'][:amount]
         rate_options[:insurance_price] = add_ons['US-A-INS'][:amount]
       end
 
@@ -664,8 +664,8 @@ module ActiveShipping
         add_on_type = add_on.at('AddOnType').text
 
         add_on_details = {}
-        add_on_details[:missing_data] = add_on.at('MissingData').text if add_on.at('MissingData')
-        add_on_details[:amount]       = add_on.at('Amount').text if add_on.at('Amount')
+        add_on_details[:missing_data] = parse_content(add_on, 'MissingData') if add_on.at('MissingData')
+        add_on_details[:amount]       = parse_content(add_on, 'Amount') if add_on.at('Amount')
 
         prohibited_with = add_on.xpath('ProhibitedWithAnyOf/AddOnTypeV5').map(&:text)
         add_on_details[:prohibited_with] = prohibited_with unless prohibited_with.empty?
@@ -698,9 +698,9 @@ module ActiveShipping
       parse_authenticator(indicium)
 
       response_options[:shipping_id]       = indicium.at('IntegratorTxID').text
-      response_options[:tracking_number]   = indicium.at('TrackingNumber').text if indicium.at('TrackingNumber')
+      response_options[:tracking_number]   = parse_content(indicium, 'TrackingNumber')
       response_options[:stamps_tx_id]      = indicium.at('StampsTxID').text
-      response_options[:label_url]         = indicium.at('URL').text if indicium.at('URL')
+      response_options[:label_url]         = parse_content(indicium, 'URL')
       response_options[:available_postage] = indicium.at('PostageBalance/AvailablePostage').text
       response_options[:control_total]     = indicium.at('PostageBalance/ControlTotal').text
       response_options[:image_data]        = Base64.decode64(indicium.at('ImageData/base64Binary').text) if indicium.at('ImageData/base64Binary')
@@ -720,7 +720,7 @@ module ActiveShipping
           response_options[:status] = response_options[:status_code].underscore.to_sym
         end
 
-        response_options[:delivery_signature] = event.at('SignedBy').text if event.at('SignedBy')
+        response_options[:delivery_signature] = parse_content(event, 'SignedBy')
 
         description = event.at('Event').text
 
@@ -744,6 +744,11 @@ module ActiveShipping
       response_options[:delivered] = response_options[:status] == :delivered
 
       TrackingResponse.new(true, '', {}, response_options)
+    end
+
+    def parse_content(node, child)
+      return unless node.at(child) && node.at(child).text != ''
+      node.at(child).text
     end
   end
 
