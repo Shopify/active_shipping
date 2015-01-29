@@ -1,12 +1,8 @@
-require 'builder'
-
 module ActiveShipping
   # Stamps.com integration for rating, tracking, address validation, and label generation
   # Integration ID can be requested from Stamps.com
 
   class Stamps < Carrier
-    self.ssl_version = :SSLv3
-
     cattr_reader :name
     @@name = 'Stamps'
 
@@ -225,27 +221,27 @@ module ActiveShipping
     end
 
     def build_header
-      xml = Builder::XmlMarkup.new
-      xml.instruct!
-      xml.soap(:Envelope,
-               'xmlns:soap' => 'http://schemas.xmlsoap.org/soap/envelope/',
-               'xmlns:xsi'  => 'http://www.w3.org/2001/XMLSchema-instance',
-               'xmlns:xsd'  => 'http://www.w3.org/2001/XMLSchema',
-               'xmlns:tns'  => 'http://stamps.com/xml/namespace/2014/01/swsim/swsimv34'
-               ) do
-        xml.soap :Body do
-          yield(xml)
+      Nokogiri::XML::Builder.new do |xml|
+        xml['soap'].Envelope(
+                 'xmlns:soap' => 'http://schemas.xmlsoap.org/soap/envelope/',
+                 'xmlns:xsi'  => 'http://www.w3.org/2001/XMLSchema-instance',
+                 'xmlns:xsd'  => 'http://www.w3.org/2001/XMLSchema',
+                 'xmlns:tns'  => 'http://stamps.com/xml/namespace/2014/01/swsim/swsimv34'
+                ) do
+          xml['soap'].Body do
+            yield(xml)
+          end
         end
-      end
+      end.to_xml
     end
 
     def build_authenticate_user_request
       build_header do |xml|
-        xml.tns :AuthenticateUser do
-          xml.tns :Credentials do
-            xml.tns(:IntegrationID, @options[:integration_id])
-            xml.tns(:Username, @options[:username])
-            xml.tns(:Password, @options[:password])
+        xml['tns'].AuthenticateUser do
+          xml['tns'].Credentials do
+            xml['tns'].IntegrationID(@options[:integration_id])
+            xml['tns'].Username(@options[:username])
+            xml['tns'].Password(@options[:password])
           end
         end
       end
@@ -253,67 +249,67 @@ module ActiveShipping
 
     def build_get_account_info_request
       build_header do |xml|
-        xml.tns :GetAccountInfo do
-          xml.tns(:Authenticator, authenticator)
+        xml['tns'].GetAccountInfo do
+          xml['tns'].Authenticator(authenticator)
         end
       end
     end
 
     def build_purchase_postage_request(purchase_amount, control_total)
       build_header do |xml|
-        xml.tns :PurchasePostage do
-          xml.tns(:Authenticator, authenticator)
-          xml.tns(:PurchaseAmount, purchase_amount)
-          xml.tns(:ControlTotal, control_total)
+        xml['tns'].PurchasePostage do
+          xml['tns'].Authenticator(authenticator)
+          xml['tns'].PurchaseAmount(purchase_amount)
+          xml['tns'].ControlTotal(control_total)
         end
       end
     end
 
     def build_get_purchase_status(transaction_id)
       build_header do |xml|
-        xml.tns :GetPurchaseStatus do
-          xml.tns(:Authenticator, authenticator)
-          xml.tns(:TransactionID, transaction_id)
+        xml['tns'].GetPurchaseStatus do
+          xml['tns'].Authenticator(authenticator)
+          xml['tns'].TransactionID(transaction_id)
         end
       end
     end
 
     def build_cleanse_address_request(address)
       build_header do |xml|
-        xml.tns :CleanseAddress do
-          xml.tns(:Authenticator, authenticator)
+        xml['tns'].CleanseAddress do
+          xml['tns'].Authenticator(authenticator)
           add_address(xml, address)
         end
       end
     end
 
     def add_address(xml, address, object_type = :Address)
-      xml.tns object_type do
-        xml.tns(:FullName,       address.name) unless address.name.blank?
-        xml.tns(:Company,        address.company) unless address.company.blank?
-        xml.tns(:Address1,       address.address1)
-        xml.tns(:Address2,       address.address2) unless address.address2.blank?
-        xml.tns(:Address3,       address.address3) unless address.address3.blank?
-        xml.tns(:City,           address.city) unless address.city.blank?
+      xml['tns'].public_send(object_type) do
+        xml['tns'].FullName(      address.name) unless address.name.blank?
+        xml['tns'].Company(       address.company) unless address.company.blank?
+        xml['tns'].Address1(      address.address1)
+        xml['tns'].Address2(      address.address2) unless address.address2.blank?
+        xml['tns'].Address3(      address.address3) unless address.address3.blank?
+        xml['tns'].City(          address.city) unless address.city.blank?
         if domestic?(address)
-          xml.tns(:State,        address.state) unless address.state.blank?
+          xml['tns'].State(       address.state) unless address.state.blank?
 
           zip = (address.postal_code || '').match(/^(\d{5})?-?(\d{4})?$/)
-          xml.tns(:ZIPCode,      zip[1]) unless zip[1].nil?
-          xml.tns(:ZIPCodeAddOn, zip[2]) unless zip[2].nil?
+          xml['tns'].ZIPCode(     zip[1]) unless zip[1].nil?
+          xml['tns'].ZIPCodeAddOn(zip[2]) unless zip[2].nil?
         else
-          xml.tns(:Province,     address.province) unless address.province.blank?
-          xml.tns(:PostalCode,   address.postal_code) unless address.postal_code.blank?
+          xml['tns'].Province(    address.province) unless address.province.blank?
+          xml['tns'].PostalCode(  address.postal_code) unless address.postal_code.blank?
         end
-        xml.tns(:Country,        address.country_code) unless address.country_code.blank?
-        xml.tns(:PhoneNumber,    address.phone) unless address.phone.blank?
+        xml['tns'].Country(       address.country_code) unless address.country_code.blank?
+        xml['tns'].PhoneNumber(   address.phone) unless address.phone.blank?
       end
     end
 
     def build_rate_request(origin, destination, package, options)
       build_header do |xml|
-        xml.tns :GetRates do
-          xml.tns(:Authenticator, authenticator)
+        xml['tns'].GetRates do
+          xml['tns'].Authenticator(authenticator)
           add_rate(xml, origin, destination, package, options)
         end
       end
@@ -324,21 +320,21 @@ module ActiveShipping
       options[:insured_value] ||= value
       options[:declared_value] ||= value if international?(destination)
 
-      xml.tns :Rate do
-        xml.tns(:FromZIPCode,       origin.postal_code) unless origin.postal_code.blank?
-        xml.tns(:ToZIPCode,         destination.postal_code) unless destination.postal_code.blank?
-        xml.tns(:ToCountry,         destination.country_code) unless destination.country_code.blank?
-        xml.tns(:ServiceType,       options[:service]) unless options[:service].blank?
-        xml.tns(:PrintLayout,       options[:print_layout]) unless options[:print_layout].blank?
-        xml.tns(:WeightOz,          [package.ounces, 1].max)
-        xml.tns(:PackageType,       options[:package_type] || 'Package')
-        xml.tns(:Length,            package.inches(:length)) if package.inches(:length)
-        xml.tns(:Width,             package.inches(:width)) if package.inches(:width)
-        xml.tns(:Height,            package.inches(:height)) if package.inches(:height)
-        xml.tns(:ShipDate,          options[:ship_date] || Date.today)
-        xml.tns(:InsuredValue,      options[:insured_value]) unless options[:insured_value].blank?
-        xml.tns(:CODValue,          options[:cod_value]) unless options[:cod_value].blank?
-        xml.tns(:DeclaredValue,     options[:declared_value]) unless options[:declared_value].blank?
+      xml['tns'].Rate do
+        xml['tns'].FromZIPCode(      origin.postal_code) unless origin.postal_code.blank?
+        xml['tns'].ToZIPCode(        destination.postal_code) unless destination.postal_code.blank?
+        xml['tns'].ToCountry(        destination.country_code) unless destination.country_code.blank?
+        xml['tns'].ServiceType(      options[:service]) unless options[:service].blank?
+        xml['tns'].PrintLayout(      options[:print_layout]) unless options[:print_layout].blank?
+        xml['tns'].WeightOz(         [package.ounces, 1].max)
+        xml['tns'].PackageType(      options[:package_type] || 'Package')
+        xml['tns'].Length(           package.inches(:length)) if package.inches(:length)
+        xml['tns'].Width(            package.inches(:width)) if package.inches(:width)
+        xml['tns'].Height(           package.inches(:height)) if package.inches(:height)
+        xml['tns'].ShipDate(         options[:ship_date] || Date.today)
+        xml['tns'].InsuredValue(     options[:insured_value]) unless options[:insured_value].blank?
+        xml['tns'].CODValue(         options[:cod_value]) unless options[:cod_value].blank?
+        xml['tns'].DeclaredValue(    options[:declared_value]) unless options[:declared_value].blank?
 
         machinable = if package.options.has_key?(:machinable)
           package.options[:machinable] ? true : false
@@ -346,54 +342,54 @@ module ActiveShipping
           USPS.package_machinable?(package)
         end
 
-        xml.tns(:NonMachinable,     true) unless machinable
+        xml['tns'].NonMachinable(    true) unless machinable
 
-        xml.tns(:RectangularShaped, !package.cylinder?)
-        xml.tns(:GEMNotes,          options[:gem_notes]) unless options[:gem_notes].blank?
+        xml['tns'].RectangularShaped(!package.cylinder?)
+        xml['tns'].GEMNotes(         options[:gem_notes]) unless options[:gem_notes].blank?
 
         add_ons = Array(options[:add_ons])
         unless add_ons.empty?
-          xml.tns(:AddOns) do
+          xml['tns'].AddOns do
             add_ons.each do |add_on|
-              xml.tns(:AddOnV5) do
-                xml.tns(:AddOnType, add_on)
+              xml['tns'].AddOnV5 do
+                xml['tns'].AddOnType(add_on)
               end
             end
           end
         end
 
-        xml.tns(:ToState,           destination.province) unless destination.province.blank?
+        xml['tns'].ToState(destination.province) unless destination.province.blank?
       end
     end
 
     def build_create_indicium_request(origin, destination, package, line_items, options)
       build_header do |xml|
-        xml.tns :CreateIndicium do
-          xml.tns(:Authenticator,             authenticator)
-          xml.tns(:IntegratorTxID,            options[:integrator_tx_id] || SecureRandom::uuid)
+        xml['tns'].CreateIndicium do
+          xml['tns'].Authenticator(            authenticator)
+          xml['tns'].IntegratorTxID(           options[:integrator_tx_id] || SecureRandom::uuid)
 
           add_rate(xml, origin, destination, package, options)
           add_address(xml, origin, :From)
           add_address(xml, destination, :To)
           add_customs(xml, line_items, options) unless options[:content_type].blank?
 
-          xml.tns(:SampleOnly,                options[:sample_only]) unless options[:sample_only].blank?
-          xml.tns(:ImageType,                 options[:image_type]) unless options[:image_type].blank?
-          xml.tns(:EltronPrinterDPIType,      options[:label_resolution]) unless options[:label_resolution].blank?
-          xml.tns(:memo,                      options[:memo]) unless options[:memo].blank?
-          xml.tns(:deliveryNotification,      options[:delivery_notification]) unless options[:delivery_notification].blank?
+          xml['tns'].SampleOnly(               options[:sample_only]) unless options[:sample_only].blank?
+          xml['tns'].ImageType(                options[:image_type]) unless options[:image_type].blank?
+          xml['tns'].EltronPrinterDPIType(     options[:label_resolution]) unless options[:label_resolution].blank?
+          xml['tns'].memo(                     options[:memo]) unless options[:memo].blank?
+          xml['tns'].deliveryNotification(     options[:delivery_notification]) unless options[:delivery_notification].blank?
 
           add_shipment_notification(xml, options) unless options[:email].blank?
 
-          xml.tns(:horizontalOffset,          options[:horizontal_offset]) unless options[:horizontal_offest].blank?
-          xml.tns(:verticalOffset,            options[:vertical_offset]) unless options[:vertical_offest].blank?
-          xml.tns(:printDensity,              options[:print_density]) unless options[:print_density].blank?
-          xml.tns(:rotationDegrees,           options[:rotation]) unless options[:rotation].blank?
-          xml.tns(:printMemo,                 options[:print_memo]) unless options[:print_memo].blank?
-          xml.tns(:printInstructions,         options[:print_instructions]) unless options[:print_instructions].blank?
-          xml.tns(:ReturnImageData,           options[:return_image_data]) unless options[:return_image_data].blank?
-          xml.tns(:InternalTransactionNumber, options[:internal_transaction_number]) unless options[:internal_transaction_number].blank?
-          xml.tns(:PaperSize,                 options[:paper_size]) unless options[:paper_size].blank?
+          xml['tns'].horizontalOffset(         options[:horizontal_offset]) unless options[:horizontal_offest].blank?
+          xml['tns'].verticalOffset(           options[:vertical_offset]) unless options[:vertical_offest].blank?
+          xml['tns'].printDensity(             options[:print_density]) unless options[:print_density].blank?
+          xml['tns'].rotationDegrees(          options[:rotation]) unless options[:rotation].blank?
+          xml['tns'].printMemo(                options[:print_memo]) unless options[:print_memo].blank?
+          xml['tns'].printInstructions(        options[:print_instructions]) unless options[:print_instructions].blank?
+          xml['tns'].ReturnImageData(          options[:return_image_data]) unless options[:return_image_data].blank?
+          xml['tns'].InternalTransactionNumber(options[:internal_transaction_number]) unless options[:internal_transaction_number].blank?
+          xml['tns'].PaperSize(                options[:paper_size]) unless options[:paper_size].blank?
 
           add_label_recipient_info(xml, options) unless options[:label_email_address].blank?
         end
@@ -401,32 +397,32 @@ module ActiveShipping
     end
 
     def add_shipment_notification(xml, options)
-      xml.tns :ShipmentNotification do
-        xml.tns(:Email,                    options[:email])
-        xml.tns(:CCToAccountHolder,        options[:cc_to_account_holder]) unless options[:cc_to_account_holder].blank?
-        xml.tns(:UseCompanyNameInFromLine, options[:use_company_name_in_from_name]) unless options[:use_company_name_in_from_line].blank?
-        xml.tns(:UseCompanyNameInSubject,  options[:use_company_name_in_subject]) unless options[:use_company_name_in_subject].blank?
+      xml['tns'].ShipmentNotification do
+        xml['tns'].Email(                   options[:email])
+        xml['tns'].CCToAccountHolder(       options[:cc_to_account_holder]) unless options[:cc_to_account_holder].blank?
+        xml['tns'].UseCompanyNameInFromLine(options[:use_company_name_in_from_name]) unless options[:use_company_name_in_from_line].blank?
+        xml['tns'].UseCompanyNameInSubject( options[:use_company_name_in_subject]) unless options[:use_company_name_in_subject].blank?
       end
     end
 
     def add_customs(xml, line_items, options)
-      xml.tns :Customs do
-        xml.tns(:ContentType,       options[:content_type])
-        xml.tns(:Comments,          options[:comments]) unless options[:comments].blank?
-        xml.tns(:LicenseNumber,     options[:license_number]) unless options[:license_number].blank?
-        xml.tns(:CertificateNumber, options[:certificate_number]) unless options[:certificate_number].blank?
-        xml.tns(:InvoiceNumber,     options[:invoice_number]) unless options[:invoice_number].blank?
-        xml.tns(:OtherDescribe,     options[:other_describe]) unless options[:other_describe].blank?
+      xml['tns'].Customs do
+        xml['tns'].ContentType(      options[:content_type])
+        xml['tns'].Comments(         options[:comments]) unless options[:comments].blank?
+        xml['tns'].LicenseNumber(    options[:license_number]) unless options[:license_number].blank?
+        xml['tns'].CertificateNumber(options[:certificate_number]) unless options[:certificate_number].blank?
+        xml['tns'].InvoiceNumber(    options[:invoice_number]) unless options[:invoice_number].blank?
+        xml['tns'].OtherDescribe(    options[:other_describe]) unless options[:other_describe].blank?
 
-        xml.tns :CustomsLines do
+        xml['tns'].CustomsLines do
           line_items.each do |customs_line|
-            xml.tns :CustomsLine do
-              xml.tns(:Description,     customs_line.name)
-              xml.tns(:Quantity,        customs_line.quantity)
-              xml.tns(:Value,           '%.2f' % (customs_line.value.to_f / 100))
-              xml.tns(:WeightOz,        customs_line.ounces) unless customs_line.ounces.blank?
-              xml.tns(:HSTariffNumber,  customs_line.hs_code.tr('.', '')[0..5]) unless customs_line.hs_code.blank?
-              xml.tns(:CountryOfOrigin, customs_line.options[:country]) unless customs_line.options[:country].blank?
+            xml['tns'].CustomsLine do
+              xml['tns'].Description(    customs_line.name)
+              xml['tns'].Quantity(       customs_line.quantity)
+              xml['tns'].Value(          '%.2f' % (customs_line.value.to_f / 100))
+              xml['tns'].WeightOz(       customs_line.ounces) unless customs_line.ounces.blank?
+              xml['tns'].HSTariffNumber( customs_line.hs_code.tr('.', '')[0..5]) unless customs_line.hs_code.blank?
+              xml['tns'].CountryOfOrigin(customs_line.options[:country]) unless customs_line.options[:country].blank?
             end
           end
         end
@@ -434,19 +430,19 @@ module ActiveShipping
     end
 
     def add_label_recipient_info(xml, options)
-      xml.tns :LabelRecipientInfo do
-        xml.tns(:EmailAddress,     options[:label_email_address])
-        xml.tns(:Name,             options[:name]) unless options[:name].blank?
-        xml.tns(:Note,             options[:note]) unless options[:note].blank?
-        xml.tns(:CopyToOriginator, options[:copy_to_originator]) unless options[:copy_to_originator].blank?
+      xml['tns'].LabelRecipientInfo do
+        xml['tns'].EmailAddress(    options[:label_email_address])
+        xml['tns'].Name(            options[:name]) unless options[:name].blank?
+        xml['tns'].Note(            options[:note]) unless options[:note].blank?
+        xml['tns'].CopyToOriginator(options[:copy_to_originator]) unless options[:copy_to_originator].blank?
       end
     end
 
     def build_track_shipment_request(shipment_id, options)
       build_header do |xml|
-        xml.tns :TrackShipment do
-          xml.tns(:Authenticator, authenticator)
-          xml.tns(options[:stamps_tx_id] ? :StampsTxID : :TrackingNumber, shipment_id)
+        xml['tns'].TrackShipment do
+          xml['tns'].Authenticator(authenticator)
+          xml['tns'].public_send(options[:stamps_tx_id] ? :StampsTxID : :TrackingNumber, shipment_id)
         end
       end
     end
@@ -473,10 +469,11 @@ module ActiveShipping
       response_options[:request] = last_request
       response_options[:test] = test_mode?
 
-      document = REXML::Document.new(xml)
-      child_element = document.get_elements('//soap:Body/*').first
+      document = Nokogiri.XML(xml)
+      child_element = document.at_xpath('/soap:Envelope/soap:Body/*')
       parse_method = 'parse_' + child_element.name.underscore
       if respond_to?(parse_method, true)
+        child_element.document.remove_namespaces!
         send(parse_method, child_element, response_options)
       else
         Response.new(false, "Unknown response object #{child_element.name}", response_options)
@@ -484,22 +481,22 @@ module ActiveShipping
     end
 
     def parse_fault(fault, response_options)
-      @authenticator = fault.get_text('detail/authenticator').value if fault.get_text('detail/authenticator')
+      @authenticator = fault.at('detail/authenticator').text if fault.at('detail/authenticator')
 
-      error_code = if fault.elements['detail/stamps_exception']
-        fault.elements['detail/stamps_exception'].attributes['code']
-      elsif fault.elements['detail/sdcerror']
-        fault.elements['detail/sdcerror'].attributes['code']
+      error_code = if fault.at('detail/stamps_exception')
+        fault.at('detail/stamps_exception')['code']
+      elsif fault.at('detail/sdcerror')
+        fault.at('detail/sdcerror')['code']
       else
         nil
       end
 
       # Renew the Authenticator if it has expired and retry the request
-      if error_code and error_code.downcase == '002b0202'
+      if error_code && error_code.downcase == '002b0202'
         request = renew_authenticator(last_request)
         commit(last_swsim_method, request)
       else
-        raise ResponseError.new(fault.get_text('faultstring').to_s)
+        raise ResponseError.new(fault.at('faultstring').text)
       end
     end
 
@@ -508,37 +505,37 @@ module ActiveShipping
     end
 
     def parse_authenticator(response)
-      @authenticator = response.get_text('Authenticator').value
+      @authenticator = response.at_xpath('Authenticator').text
     end
 
     def parse_get_account_info_response(account_info_response, response_options)
       parse_authenticator(account_info_response)
 
-      account_info = account_info_response.elements['AccountInfo']
-      response_options[:customer_id]         = account_info.get_text('CustomerID').to_s
-      response_options[:meter_number]        = account_info.get_text('MeterNumber').to_s
-      response_options[:user_id]             = account_info.get_text('UserID').to_s
-      response_options[:max_postage_balance] = account_info.get_text('MaxPostageBalance').to_s
-      response_options[:lpo_city]            = account_info.get_text('LPOCity').to_s
-      response_options[:lpo_state]           = account_info.get_text('LPOState').to_s
-      response_options[:lpo_zip]             = account_info.get_text('LPOZip').to_s
+      account_info = account_info_response.at('AccountInfo')
+      response_options[:customer_id]         = account_info.at('CustomerID').text
+      response_options[:meter_number]        = account_info.at('MeterNumber').text
+      response_options[:user_id]             = account_info.at('UserID').text
+      response_options[:max_postage_balance] = account_info.at('MaxPostageBalance').text
+      response_options[:lpo_city]            = account_info.at('LPOCity').text
+      response_options[:lpo_state]           = account_info.at('LPOState').text
+      response_options[:lpo_zip]             = account_info.at('LPOZip').text
 
-      postage_balance_node = account_info.elements['PostageBalance']
-      response_options[:available_postage] = postage_balance_node.get_text('AvailablePostage').to_s
-      response_options[:control_total]     = postage_balance_node.get_text('ControlTotal').to_s
+      postage_balance_node = account_info.at('PostageBalance')
+      response_options[:available_postage] = postage_balance_node.at('AvailablePostage').text
+      response_options[:control_total]     = postage_balance_node.at('ControlTotal').text
 
-      capabilities_node = account_info.elements['Capabilities']
-      response_options[:can_print_shipping]         = capabilities_node.get_text('CanPrintShipping').to_s == 'true'
-      response_options[:can_use_cost_codes]         = capabilities_node.get_text('CanUseCostCodes').to_s == 'true'
-      response_options[:can_use_hidden_postage]     = capabilities_node.get_text('CanUseHiddenPostage').to_s == 'true'
-      response_options[:can_purchase_sdc_insurance] = capabilities_node.get_text('CanPurchaseSDCInsurance').to_s == 'true'
-      response_options[:can_print_memo]             = capabilities_node.get_text('CanPrintMemoOnShippingLabel').to_s == 'true'
-      response_options[:can_print_international]    = capabilities_node.get_text('CanPrintInternational').to_s == 'true'
-      response_options[:can_purchase_postage]       = capabilities_node.get_text('CanPurchasePostage').to_s == 'true'
-      response_options[:can_edit_cost_codes]        = capabilities_node.get_text('CanEditCostCodes').to_s == 'true'
-      response_options[:must_use_cost_codes]        = capabilities_node.get_text('MustUseCostCodes').to_s == 'true'
-      response_options[:can_view_online_reports]    = capabilities_node.get_text('CanViewOnlineReports').to_s == 'true'
-      response_options[:per_print_limit]            = capabilities_node.get_text('PerPrintLimit').to_s
+      capabilities_node = account_info.at('Capabilities')
+      response_options[:can_print_shipping]         = capabilities_node.at('CanPrintShipping').text == 'true'
+      response_options[:can_use_cost_codes]         = capabilities_node.at('CanUseCostCodes').text == 'true'
+      response_options[:can_use_hidden_postage]     = capabilities_node.at('CanUseHiddenPostage').text == 'true'
+      response_options[:can_purchase_sdc_insurance] = capabilities_node.at('CanPurchaseSDCInsurance').text == 'true'
+      response_options[:can_print_memo]             = capabilities_node.at('CanPrintMemoOnShippingLabel').text == 'true'
+      response_options[:can_print_international]    = capabilities_node.at('CanPrintInternational').text == 'true'
+      response_options[:can_purchase_postage]       = capabilities_node.at('CanPurchasePostage').text == 'true'
+      response_options[:can_edit_cost_codes]        = capabilities_node.at('CanEditCostCodes').text == 'true'
+      response_options[:must_use_cost_codes]        = capabilities_node.at('MustUseCostCodes').text == 'true'
+      response_options[:can_view_online_reports]    = capabilities_node.at('CanViewOnlineReports').text == 'true'
+      response_options[:per_print_limit]            = capabilities_node.at('PerPrintLimit').text
 
       StampsAccountInfoResponse.new(true, '', {}, response_options)
     end
@@ -546,13 +543,13 @@ module ActiveShipping
     def parse_purchase_postage_response(postage, response_options)
       parse_authenticator(postage)
 
-      response_options[:purchase_status]   = postage.get_text('PurchaseStatus').to_s
-      response_options[:rejection_reason]  = postage.get_text('RejectionReason').to_s if postage.get_text('RejectionReason')
-      response_options[:transaction_id]    = postage.get_text('TransactionID').to_s if postage.get_text('TransactionID')
+      response_options[:purchase_status]   = postage.at('PurchaseStatus').text
+      response_options[:rejection_reason]  = parse_content(postage, 'RejectionReason')
+      response_options[:transaction_id]    = parse_content(postage, 'TransactionID')
 
-      balance = postage.elements['PostageBalance']
-      response_options[:available_postage] = balance.get_text('AvailablePostage').to_s
-      response_options[:control_total]     = balance.get_text('ControlTotal').to_s if balance.get_text('ControlTotal')
+      balance = postage.at('PostageBalance')
+      response_options[:available_postage] = balance.at('AvailablePostage').text
+      response_options[:control_total]     = parse_content(balance, 'ControlTotal')
 
       StampsPurchasePostageResponse.new(true, '', {}, response_options)
     end
@@ -561,19 +558,18 @@ module ActiveShipping
     def parse_cleanse_address_response(cleanse_address, response_options)
       parse_authenticator(cleanse_address)
 
-      response_options[:address_match]     = cleanse_address.get_text('AddressMatch').to_s == 'true'
-      response_options[:city_state_zip_ok] = cleanse_address.get_text('CityStateZipOK').to_s == 'true'
+      response_options[:address_match]     = cleanse_address.at('AddressMatch').text == 'true'
+      response_options[:city_state_zip_ok] = cleanse_address.at('CityStateZipOK').text == 'true'
 
-      address = cleanse_address.elements['Address']
-      response_options[:cleanse_hash]  = address.get_text('CleanseHash').to_s if address.get_text('CleanseHash')
-      response_options[:override_hash] = address.get_text('OverrideHash').to_s if address.get_text('OverrideHash')
+      address = cleanse_address.at('Address')
+      response_options[:cleanse_hash]  = parse_content(address, 'CleanseHash')
+      response_options[:override_hash] = parse_content(address, 'OverrideHash')
 
-      address_node = cleanse_address.elements['Address']
-      indicator_node = cleanse_address.get_text('ResidentialDeliveryIndicatorType').to_s
-      po_box_node    = cleanse_address.get_text('IsPOBox').to_s
-      response_options[:address] = parse_address(address_node, indicator_node, po_box_node)
+      indicator_node = cleanse_address.at('ResidentialDeliveryIndicatorType')
+      po_box_node    = cleanse_address.at('IsPOBox')
+      response_options[:address] = parse_address(address, indicator_node, po_box_node)
 
-      candidate_addresses = cleanse_address.get_elements('CandidateAddresses/Address')
+      candidate_addresses = cleanse_address.xpath('CandidateAddresses/Address')
       response_options[:candidate_addresses] = candidate_addresses.map do |candidate_address|
         parse_address(candidate_address)
       end
@@ -584,23 +580,23 @@ module ActiveShipping
     def parse_address(address_node, residential_indicator_node = nil, po_box_node = nil)
       address = {}
 
-      address[:name]     = address_node.get_text('FullName').to_s if address_node.get_text('FullName')
-      address[:company]  = address_node.get_text('Company').to_s if address_node.get_text('Company')
-      address[:address1] = address_node.get_text('Address1').to_s if address_node.get_text('Address1')
-      address[:address2] = address_node.get_text('Address2').to_s if address_node.get_text('Address2')
-      address[:address3] = address_node.get_text('Address3').to_s if address_node.get_text('Address3')
-      address[:city]     = address_node.get_text('City').to_s if address_node.get_text('City')
-      address[:country]  = address_node.get_text('Country').to_s if address_node.get_text('Country')
-      address[:phone]    = address_node.get_text('PhoneNumber').to_s if address_node.get_text('PhoneNumber')
+      address[:name]     = parse_content(address_node, 'FullName')
+      address[:company]  = parse_content(address_node, 'Company')
+      address[:address1] = parse_content(address_node, 'Address1')
+      address[:address2] = parse_content(address_node, 'Address2')
+      address[:address3] = parse_content(address_node, 'Address3')
+      address[:city]     = parse_content(address_node, 'City')
+      address[:country]  = parse_content(address_node, 'Country')
+      address[:phone]    = parse_content(address_node, 'PhoneNumber')
 
       if address[:country] == 'US' || address[:country].nil?
-        address[:state]  = address_node.get_text('State').to_s if address_node.get_text('State')
+        address[:state]  = parse_content(address_node, 'State')
 
-        address[:postal_code] = address_node.get_text('ZIPCode').to_s if address_node.get_text('ZIPCode')
-        address[:postal_code] += '-' + address_node.get_text('ZIPCodeAddOn').to_s if address_node.get_text('ZIPCodeAddOn')
+        address[:postal_code] = parse_content(address_node, 'ZIPCode')
+        address[:postal_code] += '-' + parse_content(address_node, 'ZIPCodeAddOn')
       else
-        address[:province]    = address_node.get_text('Province').to_s if address_node.get_text('Province')
-        address[:postal_code] = address_node.get_text('PostalCode').to_s if address_node.get_text('PostalCode')
+        address[:province]    = parse_content(address_node, 'Province')
+        address[:postal_code] = parse_content(address_node, 'PostalCode')
       end
 
       address[:address_type] = if residential_indicator_node == 'Yes'
@@ -619,7 +615,7 @@ module ActiveShipping
     def parse_get_rates_response(get_rates, response_options)
       parse_authenticator(get_rates)
 
-      response_options[:estimates] = get_rates.get_elements('Rates/Rate').map do |rate|
+      response_options[:estimates] = get_rates.xpath('Rates/Rate').map do |rate|
         parse_rate(rate)
       end
 
@@ -629,33 +625,33 @@ module ActiveShipping
     def parse_rate(rate)
       rate_options = {}
 
-      origin = Location.new(zip: rate.get_text('FromZIPCode').to_s)
+      origin = Location.new(zip: rate.at('FromZIPCode').text)
 
       location_values = {}
-      location_values[:zip]     = rate.get_text('ToZIPCode').to_s if rate.get_text('ToZIPCode')
-      location_values[:country] = rate.get_text('ToCountry').to_s if rate.get_text('ToCountry')
+      location_values[:zip]     = parse_content(rate, 'ToZIPCode')
+      location_values[:country] = parse_content(rate, 'ToCountry')
       destination = Location.new(location_values)
 
-      service_name = SERVICE_TYPES[rate.get_text('ServiceType').to_s]
+      service_name = SERVICE_TYPES[rate.at('ServiceType').text]
 
-      rate_options[:service_code]  = rate.get_text('ServiceType').to_s
+      rate_options[:service_code]  = rate.at('ServiceType').text
       rate_options[:currency]      = 'USD'
-      rate_options[:shipping_date] = Date.parse(rate.get_text('ShipDate').to_s)
+      rate_options[:shipping_date] = Date.parse(rate.at('ShipDate').text)
 
-      if delivery_days = rate.get_text('DeliverDays')
-        delivery_days = delivery_days.to_s.split('-')
+      if delivery_days = rate.at('DeliverDays')
+        delivery_days = delivery_days.text.split('-')
         rate_options[:delivery_range] = delivery_days.map { |day| rate_options[:shipping_date] + day.to_i.days }
       end
 
-      rate_options[:total_price] = rate.get_text('Amount').to_s
+      rate_options[:total_price] = rate.at('Amount').text
 
       rate_options[:add_ons]     = parse_add_ons(rate)
       rate_options[:packages]    = parse_package(rate)
 
       add_ons = rate_options[:add_ons]
-      if add_ons['SC-A-INS'] and add_ons['SC-A-INS'][:amount]
+      if add_ons['SC-A-INS'] && add_ons['SC-A-INS'][:amount]
         rate_options[:insurance_price] = add_ons['SC-A-INS'][:amount]
-      elsif add_ons['US-A-INS'] and add_ons['US-A-INS'][:amount]
+      elsif add_ons['US-A-INS'] && add_ons['US-A-INS'][:amount]
         rate_options[:insurance_price] = add_ons['US-A-INS'][:amount]
       end
 
@@ -664,14 +660,14 @@ module ActiveShipping
 
     def parse_add_ons(rate)
       add_ons = {}
-      rate.get_elements('AddOns/AddOnV5').each do |add_on|
-        add_on_type = add_on.get_text('AddOnType').to_s
+      rate.xpath('AddOns/AddOnV5').each do |add_on|
+        add_on_type = add_on.at('AddOnType').text
 
         add_on_details = {}
-        add_on_details[:missing_data] = add_on.get_text('MissingData').to_s if add_on.get_text('MissingData')
-        add_on_details[:amount]       = add_on.get_text('Amount').to_s if add_on.get_text('Amount')
+        add_on_details[:missing_data] = parse_content(add_on, 'MissingData') if add_on.at('MissingData')
+        add_on_details[:amount]       = parse_content(add_on, 'Amount') if add_on.at('Amount')
 
-        prohibited_with = add_on.get_elements('ProhibitedWithAnyOf/AddOnTypeV5').map(&:text)
+        prohibited_with = add_on.xpath('ProhibitedWithAnyOf/AddOnTypeV5').map(&:text)
         add_on_details[:prohibited_with] = prohibited_with unless prohibited_with.empty?
 
         add_ons[add_on_type] = add_on_details
@@ -681,17 +677,17 @@ module ActiveShipping
     end
 
     def parse_package(rate)
-      weight = rate.get_text('WeightOz').to_s.to_f
+      weight = rate.at('WeightOz').text.to_f
 
       dimensions = %w(Length Width Height).map do |dim|
-        rate.get_text(dim) ? rate.get_text(dim).to_s.to_f : nil
+        rate.at(dim) ? rate.at(dim).text.to_f : nil
       end
       dimensions.compact!
 
       package_options = { units: :imperial }
 
-      if value = rate.get_text('InsuredValue') || rate.get_text('DeclaredValue')
-        package_options[:value] = value.to_s.to_f
+      if value = rate.at('InsuredValue') || rate.at('DeclaredValue')
+        package_options[:value] = value.text.to_f
         package_options[:currency] = 'USD'
       end
 
@@ -701,14 +697,14 @@ module ActiveShipping
     def parse_create_indicium_response(indicium, response_options)
       parse_authenticator(indicium)
 
-      response_options[:shipping_id]       = indicium.get_text('IntegratorTxID').to_s
-      response_options[:tracking_number]   = indicium.get_text('TrackingNumber').to_s if indicium.get_text('TrackingNumber')
-      response_options[:stamps_tx_id]      = indicium.get_text('StampsTxID').to_s
-      response_options[:label_url]         = indicium.get_text('URL').to_s if indicium.get_text('URL')
-      response_options[:available_postage] = indicium.get_text('PostageBalance/AvailablePostage').to_s
-      response_options[:control_total]     = indicium.get_text('PostageBalance/ControlTotal').to_s
-      response_options[:image_data]        = Base64.decode64(indicium.get_text('ImageData/base64Binary').to_s) if indicium.get_text('ImageData/base64Binary')
-      response_options[:rate]              = parse_rate(indicium.elements['Rate'])
+      response_options[:shipping_id]       = indicium.at('IntegratorTxID').text
+      response_options[:tracking_number]   = parse_content(indicium, 'TrackingNumber')
+      response_options[:stamps_tx_id]      = indicium.at('StampsTxID').text
+      response_options[:label_url]         = parse_content(indicium, 'URL')
+      response_options[:available_postage] = indicium.at('PostageBalance/AvailablePostage').text
+      response_options[:control_total]     = indicium.at('PostageBalance/ControlTotal').text
+      response_options[:image_data]        = Base64.decode64(indicium.at('ImageData/base64Binary').text) if indicium.at('ImageData/base64Binary')
+      response_options[:rate]              = parse_rate(indicium.at('Rate'))
 
       StampsShippingResponse.new(true, '', {}, response_options)
     end
@@ -718,27 +714,27 @@ module ActiveShipping
 
       response_options[:carrier] = @@name
 
-      shipment_events = track_shipment.get_elements('TrackingEvents/TrackingEvent').map do |event|
+      shipment_events = track_shipment.xpath('TrackingEvents/TrackingEvent').map do |event|
         unless response_options[:status]
-          response_options[:status_code] = event.get_text('TrackingEventType').to_s
+          response_options[:status_code] = event.at('TrackingEventType').text
           response_options[:status] = response_options[:status_code].underscore.to_sym
         end
 
-        response_options[:delivery_signature] = event.get_text('SignedBy').to_s if event.get_text('SignedBy')
+        response_options[:delivery_signature] = parse_content(event, 'SignedBy')
 
-        description = event.get_text('Event').to_s
+        description = event.at('Event').text
 
-        timestamp = event.get_text('Timestamp').to_s
+        timestamp = event.at('Timestamp').text
         date, time = timestamp.split('T')
         year, month, day = date.split('-')
         hour, minute, second = time.split(':')
         zoneless_time = Time.utc(year, month, day, hour, minute, second)
 
         location = Location.new(
-          city:    event.get_text('City').to_s,
-          state:   event.get_text('State').to_s,
-          zip:     event.get_text('Zip').to_s,
-          country: event.get_text('Country').to_s
+          city:    event.at('City').text,
+          state:   event.at('State').text,
+          zip:     event.at('Zip').text,
+          country: event.at('Country').text
         )
 
         ShipmentEvent.new(description, zoneless_time, location)
@@ -748,6 +744,11 @@ module ActiveShipping
       response_options[:delivered] = response_options[:status] == :delivered
 
       TrackingResponse.new(true, '', {}, response_options)
+    end
+
+    def parse_content(node, child)
+      return unless node.at(child) && node.at(child).text != ''
+      node.at(child).text
     end
   end
 
@@ -839,8 +840,6 @@ module ActiveShipping
 
   class StampsShippingResponse < ShippingResponse
     include ActiveUtils::PostsData
-
-    self.ssl_version = :SSLv3
 
     attr_reader :rate, :stamps_tx_id, :label_url, :available_postage, :control_total
 
