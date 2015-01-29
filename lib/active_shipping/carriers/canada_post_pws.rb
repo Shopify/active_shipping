@@ -158,13 +158,14 @@ module ActiveShipping
     # service discovery
 
     def parse_services_response(response)
-      doc = REXML::Document.new(response)
-      service_nodes = doc.elements['services'].elements.collect('service') { |node| node }
+      doc = Nokogiri.XML(response)
+      doc.remove_namespaces!
+      service_nodes = doc.xpath('services/service')
       service_nodes.inject({}) do |result, node|
-        service_code = node.get_text("service-code").to_s
-        service_name = node.get_text("service-name").to_s
-        service_link = node.elements["link"].attributes['href']
-        service_link_media_type = node.elements["link"].attributes['media-type']
+        service_code = node.at("service-code").text
+        service_name = node.at("service-name").text
+        service_link = node.at("link").attributes['href'].value
+        service_link_media_type = node.at("link").attributes['media-type'].value
         result[service_code] = {
           :name => service_name,
           :link => service_link,
@@ -175,36 +176,35 @@ module ActiveShipping
     end
 
     def parse_service_options_response(response)
-      doc = REXML::Document.new(response)
-      service_node = doc.elements['service']
-      service_code = service_node.get_text("service-code").to_s
-      service_name = service_node.get_text("service-name").to_s
-      options_node = service_node.elements['options']
-      unless options_node.blank?
-        option_nodes = options_node.elements.collect('option') { |node| node }
-        options = option_nodes.inject([]) do |result, node|
-          option = {
-            :code => node.get_text("option-code").to_s,
-            :name => node.get_text("option-name").to_s,
-            :required => node.get_text("mandatory").to_s == "false" ? false : true,
-            :qualifier_required => node.get_text("qualifier-required").to_s == "false" ? false : true
-          }
-          option[:qualifier_max] = node.get_text("qualifier-max").to_s.to_i if node.get_text("qualifier-max")
-          result << option
-          result
-        end
+      doc = Nokogiri.XML(response)
+      doc.remove_namespaces!
+
+      service_code = doc.root.at("service-code").text
+      service_name = doc.root.at("service-name").text
+
+      option_nodes = doc.root.xpath('options/option')
+      options = option_nodes.map do |node|
+        option = {
+          :code => node.at("option-code").text,
+          :name => node.at("option-name").text,
+          :required => node.at("mandatory").text == "false" ? false : true,
+          :qualifier_required => node.at("qualifier-required").text == "false" ? false : true
+        }
+        option[:qualifier_max] = node.at("qualifier-max").text.to_i if node.at("qualifier-max")
+        option
       end
-      restrictions_node = service_node.elements['restrictions']
-      dimensions_node = restrictions_node.elements['dimensional-restrictions']
+
+      restrictions_node = doc.root.at('restrictions')
+      dimensions_node = restrictions_node.at('dimensional-restrictions')
       restrictions = {
-        :min_weight => restrictions_node.elements["weight-restriction"].attributes['min'].to_i,
-        :max_weight => restrictions_node.elements["weight-restriction"].attributes['max'].to_i,
-        :min_length => dimensions_node.elements["length"].attributes['min'].to_f,
-        :max_length => dimensions_node.elements["length"].attributes['max'].to_f,
-        :min_height => dimensions_node.elements["height"].attributes['min'].to_f,
-        :max_height => dimensions_node.elements["height"].attributes['max'].to_f,
-        :min_width => dimensions_node.elements["width"].attributes['min'].to_f,
-        :max_width => dimensions_node.elements["width"].attributes['max'].to_f
+        :min_weight => restrictions_node.at("weight-restriction").attributes['min'].value.to_i,
+        :max_weight => restrictions_node.at("weight-restriction").attributes['max'].value.to_i,
+        :min_length => dimensions_node.at("length").attributes['min'].value.to_f,
+        :max_length => dimensions_node.at("length").attributes['max'].value.to_f,
+        :min_height => dimensions_node.at("height").attributes['min'].value.to_f,
+        :max_height => dimensions_node.at("height").attributes['max'].value.to_f,
+        :min_width => dimensions_node.at("width").attributes['min'].value.to_f,
+        :max_width => dimensions_node.at("width").attributes['max'].value.to_f
       }
 
       {
@@ -216,21 +216,22 @@ module ActiveShipping
     end
 
     def parse_option_response(response)
-      doc = REXML::Document.new(response)
-      option_node = doc.elements['option']
-      conflicts = option_node.elements['conflicting-options'].elements.collect('option-code') { |node| node.get_text.to_s } unless option_node.elements['conflicting-options'].blank?
-      prereqs = option_node.elements['prerequisite-options'].elements.collect('option-code') { |node| node.get_text.to_s } unless option_node.elements['prerequisite-options'].blank?
+      doc = Nokogiri.XML(response)
+      doc.remove_namespaces!
+
+      conflicts = doc.root.xpath('conflicting-options/option-code').map(&:text)
+      prereqs = doc.root.xpath('prerequisite-options/option-code').map(&:text)
       option = {
-        :code => option_node.get_text('option-code').to_s,
-        :name => REXML::Text.unnormalize(option_node.get_text('option-name').to_s),
-        :class => option_node.get_text('option-class').to_s,
-        :prints_on_label => option_node.get_text('prints-on-label').to_s == "false" ? false : true,
-        :qualifier_required => option_node.get_text('qualifier-required').to_s == "false" ? false : true
+        :code => doc.root.at('option-code').text,
+        :name => doc.root.at('option-name').text,
+        :class => doc.root.at('option-class').text,
+        :prints_on_label => doc.root.at('prints-on-label').text == "false" ? false : true,
+        :qualifier_required => doc.root.at('qualifier-required').text == "false" ? false : true
       }
       option[:conflicting_options] = conflicts if conflicts
       option[:prerequisite_options] = prereqs if prereqs
 
-      option[:qualifier_max] = option_node.get_text("qualifier-max").to_s.to_i if option_node.get_text("qualifier-max")
+      option[:qualifier_max] = doc.root.at("qualifier-max").text.to_i if doc.root.at("qualifier-max")
       option
     end
 
@@ -254,14 +255,14 @@ module ActiveShipping
     end
 
     def parse_rates_response(response, origin, destination)
-      doc = REXML::Document.new(response)
-      raise ActiveShipping::ResponseError, "No Quotes" unless doc.elements['price-quotes']
+      doc = Nokogiri.XML(response)
+      doc.remove_namespaces!
+      raise ActiveShipping::ResponseError, "No Quotes" unless doc.at('price-quotes')
 
-      quotes = doc.elements['price-quotes'].elements.collect('price-quote') { |node| node }
-      rates = quotes.map do |node|
-        service_name  = node.get_text("service-name").to_s
-        service_code  = node.get_text("service-code").to_s
-        total_price   = node.elements['price-details'].get_text("due").to_s
+      rates = doc.root.xpath('price-quote').map do |node|
+        service_name  = node.at("service-name").text
+        service_code  = node.at("service-code").text
+        total_price   = node.at('price-details/due').text
         expected_date = expected_date_from_node(node)
         options = {
           :service_code   => service_code,
@@ -277,29 +278,30 @@ module ActiveShipping
     # tracking
 
     def parse_tracking_response(response)
-      doc = REXML::Document.new(response)
-      raise ActiveShipping::ResponseError, "No Tracking" unless root_node = doc.elements['tracking-detail']
+      doc = Nokogiri.XML(response)
+      doc.remove_namespaces!
+      raise ActiveShipping::ResponseError, "No Tracking" unless doc.at('tracking-detail')
 
-      events = root_node.elements['significant-events'].elements.collect('occurrence') { |node| node }
+      events = doc.root.xpath('significant-events/occurrence')
 
       shipment_events  = build_tracking_events(events)
-      change_date      = root_node.get_text('changed-expected-date').to_s
-      expected_date    = root_node.get_text('expected-delivery-date').to_s
-      dest_postal_code = root_node.get_text('destination-postal-id').to_s
+      change_date      = doc.root.at('changed-expected-date').text
+      expected_date    = doc.root.at('expected-delivery-date').text
+      dest_postal_code = doc.root.at('destination-postal-id').text
       destination      = Location.new(:postal_code => dest_postal_code)
-      origin           = Location.new(origin_hash_for(root_node))
+      origin           = Location.new(origin_hash_for(doc.root))
       options = {
         :carrier                 => @@name,
-        :service_name            => root_node.get_text('service-name').to_s,
+        :service_name            => doc.root.at('service-name').text,
         :expected_date           => expected_date.blank? ? nil : Date.parse(expected_date),
         :changed_date            => change_date.blank? ? nil : Date.parse(change_date),
-        :change_reason           => root_node.get_text('changed-expected-delivery-reason').to_s.strip,
-        :destination_postal_code => root_node.get_text('destination-postal-id').to_s,
+        :change_reason           => doc.root.at('changed-expected-delivery-reason').text.strip,
+        :destination_postal_code => doc.root.at('destination-postal-id').text,
         :shipment_events         => shipment_events,
-        :tracking_number         => root_node.get_text('pin').to_s,
+        :tracking_number         => doc.root.at('pin').text,
         :origin                  => origin,
         :destination             => destination,
-        :customer_number         => root_node.get_text('mailed-by-customer-number').to_s
+        :customer_number         => doc.root.at('mailed-by-customer-number').text
       }
 
       CPPWSTrackingResponse.new(true, "", {}, options)
@@ -307,14 +309,15 @@ module ActiveShipping
 
     def build_tracking_events(events)
       events.map do |event|
-        date      = event.get_text('event-date').to_s
-        time      = event.get_text('event-time').to_s
-        zone      = event.get_text('event-time-zone').to_s
+        date      = event.at('event-date').text
+        time      = event.at('event-time').text
+        zone      = event.at('event-time-zone').text
         timestamp = DateTime.parse("#{date} #{time} #{zone}")
         time      = Time.utc(timestamp.utc.year, timestamp.utc.month, timestamp.utc.day, timestamp.utc.hour, timestamp.utc.min, timestamp.utc.sec)
-        message   = event.get_text('event-description').to_s
-        location  = [event.get_text('event-retail-name'), event.get_text('event-site'), event.get_text('event-province')].compact.join(", ")
-        name      = event.get_text('event-identifier').to_s
+        message   = event.at('event-description').text
+        location  = [event.at('event-retail-name'), event.at('event-site'), event.at('event-province')].
+                      reject { |e| e.nil? || e.text.empty? }.join(", ")
+        name      = event.at('event-identifier').text
         ShipmentEvent.new(name, time, location, message)
       end
     end
@@ -464,80 +467,85 @@ module ActiveShipping
     end
 
     def parse_shipment_response(response)
-      doc = REXML::Document.new(response)
-      raise ActiveShipping::ResponseError, "No Shipping" unless root_node = doc.elements['non-contract-shipment-info']
+      doc = Nokogiri.XML(response)
+      doc.remove_namespaces!
+      raise ActiveShipping::ResponseError, "No Shipping" unless doc.at('non-contract-shipment-info')
       options = {
-        :shipping_id      => root_node.get_text('shipment-id').to_s,
-        :tracking_number  => root_node.get_text('tracking-pin').to_s,
-        :details_url      => root_node.elements["links/link[@rel='details']"].attributes['href'],
-        :label_url        => root_node.elements["links/link[@rel='label']"].attributes['href'],
-        :receipt_url      => root_node.elements["links/link[@rel='receipt']"].attributes['href']
+        :shipping_id      => doc.root.at('shipment-id').text,
+        :tracking_number  => doc.root.at('tracking-pin').text,
+        :details_url      => doc.root.at_xpath("links/link[@rel='details']")['href'],
+        :label_url        => doc.root.at_xpath("links/link[@rel='label']")['href'],
+        :receipt_url      => doc.root.at_xpath("links/link[@rel='receipt']")['href'],
       }
       CPPWSShippingResponse.new(true, "", {}, options)
     end
 
     def parse_register_token_response(response)
-      doc = REXML::Document.new(response)
-      raise ActiveShipping::ResponseError, "No Registration Token" unless root_node = doc.elements['token']
+      doc = Nokogiri.XML(response)
+      doc.remove_namespaces!
+      raise ActiveShipping::ResponseError, "No Registration Token" unless doc.at('token')
       options = {
-        :token_id => root_node.get_text('token-id').to_s
+        :token_id => doc.root.at('token-id').text
       }
       CPPWSRegisterResponse.new(true, "", {}, options)
     end
 
     def parse_merchant_details_response(response)
-      doc = REXML::Document.new(response)
-      raise "No Merchant Info" unless root_node = doc.elements['merchant-info']
-      raise "No Merchant Info" if root_node.get_text('customer-number').blank?
+      doc = Nokogiri.XML(response)
+      doc.remove_namespaces!
+      raise "No Merchant Info" unless doc.at('merchant-info')
+      raise "No Merchant Info" if doc.root.at('customer-number').blank?
       options = {
-        :customer_number => root_node.get_text('customer-number').to_s,
-        :contract_number => root_node.get_text('contract-number').to_s,
-        :username => root_node.get_text('merchant-username').to_s,
-        :password => root_node.get_text('merchant-password').to_s,
-        :has_default_credit_card => root_node.get_text('has-default-credit-card') == 'true'
+        :customer_number => doc.root.at('customer-number').text,
+        :contract_number => doc.root.at('contract-number').text,
+        :username => doc.root.at('merchant-username').text,
+        :password => doc.root.at('merchant-password').text,
+        :has_default_credit_card => doc.root.at('has-default-credit-card').text == 'true'
       }
       CPPWSMerchantDetailsResponse.new(true, "", {}, options)
     end
 
     def parse_shipment_receipt_response(response)
-      doc = REXML::Document.new(response)
-      root = doc.elements['non-contract-shipment-receipt']
-      cc_details_node = root.elements['cc-receipt-details']
-      service_standard_node = root.elements['service-standard']
+      doc = Nokogiri.XML(response)
+      doc.remove_namespaces!
+      root = doc.at('non-contract-shipment-receipt')
+      cc_details_node = root.at('cc-receipt-details')
+      service_standard_node = root.at('service-standard')
       receipt = {
-        :final_shipping_point => root.get_text("final-shipping-point").to_s,
-        :shipping_point_name => root.get_text("shipping-point-name").to_s,
-        :service_code => root.get_text("service-code").to_s,
-        :rated_weight => root.get_text("rated-weight").to_s.to_f,
-        :base_amount => root.get_text("base-amount").to_s.to_f,
-        :pre_tax_amount => root.get_text("pre-tax-amount").to_s.to_f,
-        :gst_amount => root.get_text("gst-amount").to_s.to_f,
-        :pst_amount => root.get_text("pst-amount").to_s.to_f,
-        :hst_amount => root.get_text("hst-amount").to_s.to_f,
-        :charge_amount => cc_details_node.get_text("charge-amount").to_s.to_f,
-        :currency => cc_details_node.get_text("currency").to_s,
-        :expected_transit_days => service_standard_node.get_text("expected-transit-time").to_s.to_i,
-        :expected_delivery_date => service_standard_node.get_text("expected-delivery-date").to_s
+        :final_shipping_point => root.at("final-shipping-point").text,
+        :shipping_point_name => root.at("shipping-point-name").text,
+        :service_code => root.at("service-code").text,
+        :rated_weight => root.at("rated-weight").text.to_f,
+        :base_amount => root.at("base-amount").text.to_f,
+        :pre_tax_amount => root.at("pre-tax-amount").text.to_f,
+        :gst_amount => root.at("gst-amount").text.to_f,
+        :pst_amount => root.at("pst-amount").text.to_f,
+        :hst_amount => root.at("hst-amount").text.to_f,
+        :charge_amount => cc_details_node.at("charge-amount").text.to_f,
+        :currency => cc_details_node.at("currency").text,
+        :expected_transit_days => service_standard_node.at("expected-transit-time").text.to_i,
+        :expected_delivery_date => service_standard_node.at("expected-delivery-date").text
       }
-      option_nodes = root.elements['priced-options'].elements.collect('priced-option') { |node| node } unless root.elements['priced-options'].blank?
+      option_nodes = root.xpath('priced-options/priced-option')
 
-      receipt[:priced_options] = if option_nodes
-          option_nodes.inject({}) do |result, node|
-          result[node.get_text("option-code").to_s] = node.get_text("option-price").to_s.to_f
+      receipt[:priced_options] = if option_nodes.length > 0
+        option_nodes.inject({}) do |result, node|
+          result[node.at("option-code").text] = node.at("option-price").text.to_f
           result
           end
       else
-        []
+        {}
       end
 
       receipt
     end
 
     def error_response(response, response_klass)
-      doc = REXML::Document.new(response)
-      messages = doc.elements['messages'].elements.collect('message') { |node| node }
-      message = messages.map { |m| m.get_text('description').to_s }.join(", ")
-      code = messages.map { |m| m.get_text('code').to_s }.join(", ")
+      doc = Nokogiri.XML(response)
+      doc.remove_namespaces!
+      messages = doc.xpath('messages/message')
+      message = messages.map { |m| m.at('description').text }.join(", ")
+      code = messages.map { |m| m.at('code').text }.join(", ")
       response_klass.new(false, message, {}, :carrier => @@name, :code => code)
     end
 
@@ -726,8 +734,8 @@ module ActiveShipping
     end
 
     def expected_date_from_node(node)
-      if service = node.elements['service-standard']
-        expected_date = service.get_text("expected-delivery-date").to_s
+      if service = node.at('service-standard/expected-delivery-date')
+        expected_date = service.text
       else
         expected_date = nil
       end
@@ -759,22 +767,22 @@ module ActiveShipping
       value == 0 ? 0.01 : value.round / 100.0
     end
 
-    def origin_hash_for(root_node)
-      occurrences = root_node.get_elements('significant-events').first.get_elements('occurrence')
+    def origin_hash_for(root)
+      occurrences = root.xpath('significant-events/occurrence')
       earliest = occurrences.sort_by { |occurrence| time_of_occurrence(occurrence) }.first
 
       {
-        city: earliest.get_text('event-site').to_s,
-        province: earliest.get_text('event-province').to_s,
-        address_1: earliest.get_text('event-retail-location-id').to_s,
+        city: earliest.at('event-site').text,
+        province: earliest.at('event-province').text,
+        address_1: earliest.at('event-retail-location-id').text,
         country: 'Canada'
       }
     end
 
     def time_of_occurrence(occurrence)
-      time = occurrence.get_text('event-time')
-      date = occurrence.get_text('event-date')
-      time_zone = occurrence.get_text('event-date')
+      time = occurrence.at('event-time').text
+      date = occurrence.at('event-date').text
+      time_zone = occurrence.at('event-time-zone').text
       DateTime.parse "#{date} #{time} #{time_zone}"
     end
   end
