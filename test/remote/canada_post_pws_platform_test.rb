@@ -8,7 +8,7 @@ class RemoteCanadaPostPWSPlatformTest < Minitest::Test
   include ActiveShipping::Test::Fixtures
 
   def setup
-    @login = credentials(:canada_post_pws)
+    @login = credentials(:canada_post_pws_platform)
 
     # 100 grams, 93 cm long, 10 cm diameter, cylinders have different volume calculations
     # @pkg1 = Package.new(1000, [93,10], :value => 10.00)
@@ -244,5 +244,22 @@ class RemoteCanadaPostPWSPlatformTest < Minitest::Test
     assert response = cp.find_option_details("LAD", build_options)
     assert_equal "LAD", response[:code]
     assert_equal "Laisser à la porte (pas d'avis)", response[:name]
+  end
+
+  def test_register_merchant
+    response = @cp.register_merchant
+    assert response.is_a?(CPPWSRegisterResponse)
+    assert_equal "1111111111111111111111", response.token_id
+  end
+
+  def test_merchant_details
+    token_id = "1111111111111111111111"
+    response = @cp.retrieve_merchant_details(:token_id => token_id)
+    assert response.is_a?(CPPWSMerchantDetailsResponse)
+    assert_equal "0000000000", response.customer_number
+    assert_equal "1234567890", response.contract_number
+    assert_equal "0000000000000000", response.username
+    assert_equal "1a2b3c4d5e6f7a8b9c0d12", response.password
+    assert_equal true, response.has_default_credit_card
   end
 end
