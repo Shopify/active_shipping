@@ -90,16 +90,6 @@ class LocationTest < Minitest::Test
     assert_equal location_fixtures[:ottawa].to_hash, JSON.parse(location_json).symbolize_keys
   end
 
-  def test_default_to_xml
-    location_xml = location_fixtures[:ottawa].to_xml
-    assert_equal location_fixtures[:ottawa].to_hash, Hash.from_xml(location_xml)["location"].symbolize_keys
-  end
-
-  def test_custom_root_to_xml
-    location_xml = location_fixtures[:ottawa].to_xml(:root => "destination")
-    assert_equal location_fixtures[:ottawa].to_hash, Hash.from_xml(location_xml)["destination"].symbolize_keys
-  end
-
   def test_zip_plus_4_with_no_dash
     zip = "33333"
     plus_4 = "1234"
