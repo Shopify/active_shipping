@@ -134,6 +134,12 @@ class UPSTest < Minitest::Test
     assert_equal Time.parse('2008-06-25 11:19:00 UTC'), response.actual_delivery_date
   end
 
+  def test_find_tracking_info_should_return_correct_rescheduled_delivery_date
+    @carrier.expects(:commit).returns(xml_fixture('ups/rescheduled_shipment'))
+    response = @carrier.find_tracking_info('1Z5FX0076803466397')
+    assert_equal Time.parse('2015-01-29 00:00:00 UTC'), response.scheduled_delivery_date
+  end
+
   def test_response_parsing
     mock_response = xml_fixture('ups/test_real_home_as_residential_destination_response')
     @carrier.expects(:commit).returns(mock_response)
