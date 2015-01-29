@@ -7,15 +7,14 @@ class RemoteCanadaPostPWSTest < Minitest::Test
 
   def setup
     @login = credentials(:canada_post_pws)
+    refute @login.key?(:platform_id), "The 'canada_post_pws' credentials should NOT include a platform ID"
 
-    # 100 grams, 93 cm long, 10 cm diameter, cylinders have different volume calculations
-    # @pkg1 = Package.new(1000, [93,10], :value => 10.00)
-    @pkg1 = Package.new(1000, nil, :value => 10.00)
+    # 1000 grams, 93 cm long, 10 cm diameter, cylinders have different volume calculations
+    @pkg1 = Package.new(1000, [93, 10, 10], :value => 10.00)
 
     @line_item1 = line_item_fixture
 
-    @shipping_opts1 = {:dc => true, :cod => true, :cod_amount => 500.00, :cov => true, :cov_amount => 100.00,
-                       :so => true, :pa18 => true}
+    @shipping_opts1 = { :dc => true, :cov => true, :cov_amount => 100.00, :aban => true }
 
     @home_params = {
       :name        => "John Smith",
@@ -81,7 +80,7 @@ class RemoteCanadaPostPWSTest < Minitest::Test
 
     @DEFAULT_RESPONSE = {
       :shipping_id => "406951321983787352",
-      :tracking_number => "11111118901234",
+      :tracking_number => "123456789012",
       :label_url => "https://ct.soa-gw.canadapost.ca/ers/artifact/#{@login[:api_key]}/20238/0"
     }
   rescue NoCredentialsFound => e
@@ -90,9 +89,9 @@ class RemoteCanadaPostPWSTest < Minitest::Test
 
   def test_rates
     opts = {:customer_number => @customer_number}
-    rates = @cp.find_rates(@home_params, @dom_params, [@pkg1], opts)
-    assert_equal RateResponse, rates.class
-    assert_equal RateEstimate, rates.rates.first.class
+    rate_response = @cp.find_rates(@home_params, @dom_params, [@pkg1], opts)
+    assert_kind_of ActiveShipping::RateResponse, rate_response
+    assert_kind_of ActiveShipping::RateEstimate, rate_response.rates.first
   end
 
   def test_rates_with_invalid_customer_raises_exception
@@ -108,7 +107,7 @@ class RemoteCanadaPostPWSTest < Minitest::Test
     assert_equal 'Xpresspost', response.service_name
     assert response.expected_date.is_a?(Date)
     assert response.customer_number
-    assert_equal 10, response.shipment_events.count
+    assert_equal 13, response.shipment_events.count
   end
 
   def test_tracking_when_no_tracking_info_raises_exception
@@ -124,26 +123,36 @@ class RemoteCanadaPostPWSTest < Minitest::Test
   def test_create_shipment
     opts = {:customer_number => @customer_number, :service => "DOM.XP"}
     response = @cp.create_shipment(@home_params, @dom_params, @pkg1, @line_item1, opts)
-    assert response.is_a?(CPPWSShippingResponse)
-    assert_equal @DEFAULT_RESPONSE[:shipping_id], response.shipping_id
-    assert_equal @DEFAULT_RESPONSE[:tracking_number], response.tracking_number
-    assert_equal @DEFAULT_RESPONSE[:label_url], response.label_url
+    assert_kind_of CPPWSShippingResponse, response
+    assert_match /\A\d{17}\z/, response.shipping_id
+    assert_equal "123456789012", response.tracking_number
+    assert_match "https://ct.soa-gw.canadapost.ca/ers/artifact/", response.label_url
+    assert_match @login[:api_key], response.label_url
   end
 
   def test_create_shipment_with_options
-    opts = {:customer_number => @customer_number, :service => "USA.EP"}
-    opts.merge! @shipping_opts1
+    opts = {:customer_number => @customer_number, :service => "USA.EP"}.merge(@shipping_opts1)
     response = @cp.create_shipment(@home_params, @dest_params, @pkg1, @line_item1, opts)
-    assert response.is_a?(CPPWSShippingResponse)
-    assert_equal @DEFAULT_RESPONSE[:shipping_id], response.shipping_id
-    assert_equal @DEFAULT_RESPONSE[:tracking_number], response.tracking_number
-    assert_equal @DEFAULT_RESPONSE[:label_url], response.label_url
+
+    assert_kind_of CPPWSShippingResponse, response
+    assert_match /\A\d{17}\z/, response.shipping_id
+    assert_equal "123456789012", response.tracking_number
+    assert_match "https://ct.soa-gw.canadapost.ca/ers/artifact/", response.label_url
+    assert_match @login[:api_key], response.label_url
   end
 
   def test_retrieve_shipping_label
-    shipping_response = CPPWSShippingResponse.new(true, '', {}, @DEFAULT_RESPONSE)
-    response = @cp.retrieve_shipping_label(shipping_response)
-    assert_not_nil response
+    opts = {:customer_number => @customer_number, :service => "DOM.XP"}
+    shipping_response = @cp.create_shipment(@home_params, @dom_params, @pkg1, @line_item1, opts)
+
+    # Looks like it takes Canada Post some time to actually generate the PDF.
+    response = nil
+    10.times do
+      response = @cp.retrieve_shipping_label(shipping_response)
+      break unless response == ""
+      sleep(0.5)
+    end
+
     assert_equal "%PDF", response[0...4]
   end
 
@@ -152,22 +161,5 @@ class RemoteCanadaPostPWSTest < Minitest::Test
     assert_raises(ResponseError) do
       @cp.create_shipment(@home_params, @dom_params, @pkg1, @line_item1, opts)
     end
-  end
-
-  def test_register_merchant
-    response = @cp.register_merchant
-    assert response.is_a?(CPPWSRegisterResponse)
-    assert_equal "1111111111111111111111", response.token_id
-  end
-
-  def test_merchant_details
-    token_id = "1111111111111111111111"
-    response = @cp.retrieve_merchant_details(:token_id => token_id)
-    assert response.is_a?(CPPWSMerchantDetailsResponse)
-    assert_equal "0000000000", response.customer_number
-    assert_equal "1234567890", response.contract_number
-    assert_equal "0000000000000000", response.username
-    assert_equal "1a2b3c4d5e6f7a8b9c0d12", response.password
-    assert_equal true, response.has_default_credit_card
   end
 end
