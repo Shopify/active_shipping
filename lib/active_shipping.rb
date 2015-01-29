@@ -27,11 +27,8 @@ require 'active_support/core_ext/enumerable'
 require 'active_support/core_ext/class/attribute_accessors'
 require 'active_utils'
 
-require 'rexml/document'
 require 'nokogiri'
 require 'quantified'
-
-require 'vendor/xml_node/lib/xml_node'
 
 require 'active_shipping/response'
 require 'active_shipping/rate_response'
