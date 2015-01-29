@@ -87,7 +87,8 @@ module ActiveShipping::Test
         :declared_value => Package.new(80, [2, 6, 12], :units => :imperial, :currency => 'USD', :value => 999.99),
         :tshirts => Package.new(10 * 16, nil, :units => :imperial),
         :shipping_container => Package.new(2200000, [2440, 2600, 6058], :description => '20 ft Standard Container', :units => :metric),
-        :largest_gold_bar => Package.new(250000, [45.5, 22.5, 17], :value => 15300000)
+        :largest_gold_bar => Package.new(250000, [45.5, 22.5, 17], :value => 15300000),
+        :books => Package.new(64, [4, 8, 6], :units => :imperial, :value => 15300000, :description => 'Books')
       }
     end
 
@@ -102,6 +103,14 @@ module ActiveShipping::Test
                                  :postal_code => 'K1P 1J1',
                                  :phone => '1-613-580-2400',
                                  :fax => '1-613-580-2495'),
+        :ottawa_with_name => Location.new( :country => 'CA',
+                                           :province => 'ON',
+                                           :city => 'Ottawa',
+                                           :name => 'Paul Ottawa',
+                                           :address1 => '110 Laurier Avenue West',
+                                           :postal_code => 'K1P 1J1',
+                                           :phone => '1-613-580-2400',
+                                           :fax => '1-613-580-2495'),
         :beverly_hills => Location.new(
                                       :country => 'US',
                                       :state => 'CA',
