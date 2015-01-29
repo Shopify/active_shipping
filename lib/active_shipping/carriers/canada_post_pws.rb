@@ -1,3 +1,6 @@
+require 'rexml/document'
+require 'vendor/xml_node/lib/xml_node'
+
 module ActiveShipping
   class CanadaPostPWS < Carrier
     @@name = "Canada Post PWS"
