@@ -453,8 +453,11 @@ module ActiveShipping
             dim << XmlNode.new('width', '%.1f' % ((pkg_dim[1] * 10).round / 10.0)) if pkg_dim.size >= 2
             dim << XmlNode.new('height', '%.1f' % ((pkg_dim[0] * 10).round / 10.0)) if pkg_dim.size >= 1
           end
+          el << XmlNode.new('document', false)
+        else
+          el << XmlNode.new('document', true)
         end
-        el << XmlNode.new('document', false)
+
         el << XmlNode.new('mailing-tube', package.tube?)
         el << XmlNode.new('unpackaged', package.unpackaged?)
       end
