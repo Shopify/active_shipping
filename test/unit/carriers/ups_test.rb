@@ -287,6 +287,19 @@ class UPSTest < Minitest::Test
     refute_empty saturday
   end
 
+  def test_label_request_prepay
+    response = Nokogiri::XML @carrier.send(:build_shipment_request,
+                                           location_fixtures[:beverly_hills],
+                                           location_fixtures[:annapolis],
+                                           package_fixtures.values_at(:chocolate_stuff),
+                                           :test => true,
+                                           :prepay => true
+                             )
+
+    prepay = response.search '/ShipmentConfirmRequest/Shipment/PaymentInformation/Prepaid'
+    refute_empty prepay
+  end
+
   def test_label_request_negotiated_rates_presence
     response = Nokogiri::XML @carrier.send(:build_shipment_request,
                                            location_fixtures[:beverly_hills],
@@ -314,4 +327,61 @@ class UPSTest < Minitest::Test
     assert_equal address.text, shipper.address1
     refute_equal address.text, pickup.address1
   end
+
+  def test_label_request_domestic_reference_numbers
+    # Domestic Shipments use package level reference numbers
+    response = Nokogiri::XML @carrier.send(:build_shipment_request,
+                                           location_fixtures[:beverly_hills],
+                                           location_fixtures[:annapolis],
+                                           package_fixtures.values_at(:chocolate_stuff),
+                                           :test => true,
+                                           :reference_numbers => [{value: 'REF_NUM'}]
+                             )
+    ref_vals = response.search '/ShipmentConfirmRequest/Shipment/Package/ReferenceNumber/Value'
+    assert_equal ref_vals.first.text, 'REF_NUM'
+  end
+
+  def test_label_request_domestic_reference_numbers
+    # International Shipments use shipment level reference numbers
+    response = Nokogiri::XML @carrier.send(:build_shipment_request,
+                                           location_fixtures[:beverly_hills],
+                                           location_fixtures[:ottawa_with_name],
+                                           package_fixtures.values_at(:books),
+                                           :test => true,
+                                           :reference_numbers => [{value: 'REF_NUM'}]
+                             )
+    ref_vals = response.search '/ShipmentConfirmRequest/Shipment/ReferenceNumber/Value'
+    assert_equal ref_vals.first.text, 'REF_NUM'
+  end
+
+  def test_label_request_international_with_paperless_invoice
+    response = Nokogiri::XML @carrier.send(:build_shipment_request,
+                                           location_fixtures[:beverly_hills],
+                                           location_fixtures[:ottawa_with_name],
+                                           package_fixtures.values_at(:books),
+                                           :test => true,
+                                           :paperless_invoice => true
+                             )
+    international_form = response.search '/ShipmentConfirmRequest/Shipment/ShipmentServiceOptions/InternationalForms'
+    refute_empty international_form
+  end
+
+  def test_label_request_international_with_delivery_duty_paid
+    # setting terms_of_shipment to DDP, Delivery Duty Paid, means the shipper will pay duties and taxes
+    response = Nokogiri::XML @carrier.send(:build_shipment_request,
+                                           location_fixtures[:beverly_hills],
+                                           location_fixtures[:ottawa_with_name],
+                                           package_fixtures.values_at(:books),
+                                           :test => true,
+                                           :paperless_invoice => true,
+                                           :terms_of_shipment => 'DDP'
+                             )
+    terms_of_shipment = response.search '/ShipmentConfirmRequest/Shipment/ShipmentServiceOptions/InternationalForms/TermsOfShipment'
+    duties_and_taxes_payment_info = response.css('ShipmentCharge Type:contains("02")').first.parent
+
+    refute_empty terms_of_shipment
+    refute_empty duties_and_taxes_payment_info.search('BillShipper')
+  end
+
+
 end

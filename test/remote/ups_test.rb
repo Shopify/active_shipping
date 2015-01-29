@@ -217,14 +217,13 @@ class RemoteUPSTest < Minitest::Test
     # I want to provide some helpful information if this test fails.
     # Perhaps it is better to skip and warn than to make an *assertion*
     # about configuration?
-    assert @options[:origin_name].present?, "test/fixtures.yml must have a valid ups/origin_name for this test to run"
     assert @options[:origin_account].present?, "test/fixtures.yml must have a valid ups/origin_account for this test to run"
 
 
     response = @carrier.create_shipment(
       location_fixtures[:beverly_hills],
       location_fixtures[:new_york_with_name],
-      package_fixtures.values_at(:chocolate_stuff, :book, :american_wii),
+      package_fixtures.values_at(:chocolate_stuff, :small_half_pound, :american_wii),
       :test => true,
       :reference_number => { :value => "FOO-123", :code => "PO" }
     )
@@ -246,6 +245,30 @@ class RemoteUPSTest < Minitest::Test
       location_fixtures[:new_york_with_name],
       package_fixtures.values_at(:tshirts),
       :test => true
+    )
+
+    assert response.success?
+
+    # All behavior specific to how a LabelResponse behaves in the
+    # context of UPS label data is a matter for unit tests.  If
+    # the data changes substantially, the create_shipment
+    # ought to raise an exception and this test will fail.
+    assert_instance_of ActiveShipping::LabelResponse, response
+  end
+
+  def test_obtain_international_shipping_label
+    skip '<#<RuntimeError: Could not obtain shipping label. Invalid Access License number.>>.'
+
+    assert @options[:origin_account].present?, "test/fixtures.yml must have a valid ups/origin_account for this test to run"
+
+    response = @carrier.create_shipment(
+      location_fixtures[:new_york_with_name],
+      location_fixtures[:ottawa_with_name],
+      package_fixtures.values_at(:books),
+      {
+       :service_code => '07',
+       :test => true,
+      }
     )
 
     assert response.success?
