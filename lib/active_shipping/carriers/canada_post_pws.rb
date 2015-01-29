@@ -222,7 +222,7 @@ module ActiveShipping
       prereqs = option_node.elements['prerequisite-options'].elements.collect('option-code') { |node| node.get_text.to_s } unless option_node.elements['prerequisite-options'].blank?
       option = {
         :code => option_node.get_text('option-code').to_s,
-        :name => option_node.get_text('option-name').to_s,
+        :name => REXML::Text.unnormalize(option_node.get_text('option-name').to_s),
         :class => option_node.get_text('option-class').to_s,
         :prints_on_label => option_node.get_text('prints-on-label').to_s == "false" ? false : true,
         :qualifier_required => option_node.get_text('qualifier-required').to_s == "false" ? false : true

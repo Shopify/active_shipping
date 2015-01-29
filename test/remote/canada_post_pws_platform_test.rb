@@ -8,7 +8,7 @@ class RemoteCanadaPostPWSPlatformTest < Minitest::Test
   include ActiveShipping::Test::Fixtures
 
   def setup
-    @login = credentials(:canada_post_pws_platform)
+    @login = credentials(:canada_post_pws_platform).merge(endpoint: "https://ct.soa-gw.canadapost.ca/")
 
     # 100 grams, 93 cm long, 10 cm diameter, cylinders have different volume calculations
     # @pkg1 = Package.new(1000, [93,10], :value => 10.00)
@@ -92,31 +92,24 @@ class RemoteCanadaPostPWSPlatformTest < Minitest::Test
     @cp = CanadaPostPWS.new(@login)
     @cp.logger = Logger.new(StringIO.new)
 
-    @customer_number  = @login[:customer_number]
-    @customer_api_key = @login[:customer_api_key]
-    @customer_secret  = @login[:customer_secret]
   rescue NoCredentialsFound => e
     skip(e.message)
   end
 
   def build_options
-    {
-      :customer_number => @customer_number,
-      :customer_api_key => @customer_api_key,
-      :customer_secret => @customer_secret
-    }
+    { :customer_number => @login[:customer_number] }
   end
 
   def test_rates
-    rates = @cp.find_rates(@home_params, @dom_params, [@pkg1], build_options)
-    assert_equal RateResponse, rates.class
-    assert_equal RateEstimate, rates.rates.first.class
+    rate_response = @cp.find_rates(@home_params, @dom_params, [@pkg1], build_options)
+    assert_kind_of ActiveShipping::RateResponse, rate_response
+    assert_kind_of ActiveShipping::RateEstimate, rate_response.rates.first
   end
 
   def test_rates_with_insurance_changes_price
     rates = @cp.find_rates(@home_params, @dom_params, [@pkg1], build_options)
     insured_rates = @cp.find_rates(@home_params, @dom_params, [@pkg1], build_options.merge(@shipping_opts1))
-    assert_not_equal rates.rates.first.price, insured_rates.rates.first.price
+    refute_equal rates.rates.first.price, insured_rates.rates.first.price
   end
 
   def test_rates_with_invalid_customer_raises_exception
@@ -139,7 +132,7 @@ class RemoteCanadaPostPWSPlatformTest < Minitest::Test
     assert_equal 'Xpresspost', response.service_name
     assert response.expected_date.is_a?(Date)
     assert response.customer_number
-    assert_equal 10, response.shipment_events.count
+    assert_equal 13, response.shipment_events.count
   end
 
   def test_tracking_invalid_pin_raises_exception
@@ -147,7 +140,7 @@ class RemoteCanadaPostPWSPlatformTest < Minitest::Test
     exception = assert_raises(ResponseError) do
       @cp.find_tracking_info(pin, build_options)
     end
-    assert_equal "No Pin History", exception.message
+    assert_equal "No Tracking", exception.message
   end
 
   def test_create_shipment_with_invalid_customer_raises_exception
@@ -164,11 +157,14 @@ class RemoteCanadaPostPWSPlatformTest < Minitest::Test
   end
 
   def test_merchant_details_empty_details
-    response = @cp.register_merchant
-    exception = assert_raises(ResponseError) do
-      response = @cp.retrieve_merchant_details(:token_id => response.token_id)
-    end
-    assert_equal "No Merchant Info", exception.message
+    register_response = @cp.register_merchant
+    details_response = @cp.retrieve_merchant_details(:token_id => register_response.token_id)
+    assert_kind_of ActiveShipping::CPPWSMerchantDetailsResponse, details_response
+
+    assert_equal '0000000000', details_response.customer_number
+    assert_equal '1234567890', details_response.contract_number
+    assert_equal '0000000000000000', details_response.username
+    assert_equal '1a2b3c4d5e6f7a8b9c0d12', details_response.password
   end
 
   def test_find_services_no_country
@@ -192,7 +188,7 @@ class RemoteCanadaPostPWSPlatformTest < Minitest::Test
     assert response = @cp.find_service_options("INT.XP", nil, build_options)
     assert_equal "INT.XP", response[:service_code]
     assert_equal "Xpresspost International", response[:service_name]
-    assert_equal 4, response[:options].size
+    assert_equal 5, response[:options].size
     assert_equal "COV", response[:options][0][:code]
     assert_equal false, response[:options][0][:required]
     assert_equal true, response[:options][0][:qualifier_required]
@@ -211,7 +207,7 @@ class RemoteCanadaPostPWSPlatformTest < Minitest::Test
     assert response = @cp.find_service_options("INT.XP", "JP", build_options)
     assert_equal "INT.XP", response[:service_code]
     assert_equal "Xpresspost International", response[:service_name]
-    assert_equal 3, response[:options].size
+    assert_equal 4, response[:options].size
     assert_equal "COV", response[:options][0][:code]
     assert_equal false, response[:options][0][:required]
     assert_equal true, response[:options][0][:qualifier_required]
