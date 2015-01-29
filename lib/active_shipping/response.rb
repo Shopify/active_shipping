@@ -1,19 +1,4 @@
 module ActiveShipping #:nodoc:
-  class Error < ActiveUtils::ActiveUtilsError
-  end
-
-  class ResponseError < Error
-    attr_reader :response
-
-    def initialize(response = nil)
-      if response.is_a? Response
-        super(response.message)
-        @response = response
-      else
-        super(response)
-      end
-    end
-  end
 
   # Basic Response class for requests against a carrier's API.
   class Response

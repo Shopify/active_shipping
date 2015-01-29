@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrackReply xmlns="http://fedex.com/ws/track/v7" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <HighestSeverity>SUCCESS</HighestSeverity>
+  <Notifications>
+    <Severity>SUCCESS</Severity>
+    <Source>trck</Source>
+    <Code>0</Code>
+    <Message>Request was successfully processed.</Message>
+    <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+  </Notifications>
+  <TransactionDetail>
+    <CustomerTransactionId>ActiveShipping</CustomerTransactionId>
+  </TransactionDetail>
+  <Version>
+    <ServiceId>trck</ServiceId>
+    <Major>7</Major>
+    <Intermediate>0</Intermediate>
+    <Minor>0</Minor>
+  </Version>
+  <CompletedTrackDetails>
+    <HighestSeverity>SUCCESS</HighestSeverity>
+    <Notifications>
+      <Severity>SUCCESS</Severity>
+      <Source>trck</Source>
+      <Code>0</Code>
+      <Message>Request was successfully processed.</Message>
+      <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+    </Notifications>
+    <DuplicateWaybill>false</DuplicateWaybill>
+    <MoreData>false</MoreData>
+    <TrackDetails>
+      <Notification>
+        <Severity>SUCCESS</Severity>
+        <Source>trck</Source>
+        <Code>0</Code>
+        <Message>Request was successfully processed.</Message>
+        <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+      </Notification>
+      <TrackingNumber>123456789012</TrackingNumber>
+      <TrackingNumberUniqueIdentifier>2456979001~123456789012~FX</TrackingNumberUniqueIdentifier>
+      <StatusDetail>
+        <CreationTime>2014-11-18T00:00:00</CreationTime>
+        <Code>IT</Code>
+        <Description>In transit</Description>
+        <Location>
+          <City>ALEXANDRIA</City>
+          <CountryCode>AU</CountryCode>
+          <CountryName>Australia</CountryName>
+          <Residential>false</Residential>
+        </Location>
+        <AncillaryDetails>
+          <Reason>72</Reason>
+          <ReasonDescription>Package available for clearance</ReasonDescription>
+        </AncillaryDetails>
+      </StatusDetail>
+      <ServiceCommitMessage>No estimated delivery date available at this time.</ServiceCommitMessage>
+      <DestinationServiceArea>EDDUNAVAILABLE</DestinationServiceArea>
+      <CarrierCode>FDXE</CarrierCode>
+      <OperatingCompanyOrCarrierDescription>FedEx Express</OperatingCompanyOrCarrierDescription>
+      <OtherIdentifiers>
+        <PackageIdentifier>
+          <Type>SHIPPER_REFERENCE</Type>
+          <Value>0010-4016328-C</Value>
+        </PackageIdentifier>
+      </OtherIdentifiers>
+      <Service>
+        <Type>PRIORITY_OVERNIGHT</Type>
+        <Description>FedEx Priority Overnight</Description>
+        <ShortDescription>PO</ShortDescription>
+      </Service>
+      <ShipmentWeight>
+        <Units>LB</Units>
+        <Value>0.5</Value>
+      </ShipmentWeight>
+      <Packaging>Your Packaging</Packaging>
+      <PackagingType>YOUR_PACKAGING</PackagingType>
+      <PackageSequenceNumber>0</PackageSequenceNumber>
+      <PackageCount>6</PackageCount>
+      <Commodities>
+        <NumberOfPieces>0</NumberOfPieces>
+        <Quantity>0.0</Quantity>
+      </Commodities>
+      <SpecialHandlings>
+        <Type>DELIVER_WEEKDAY</Type>
+        <Description>Deliver Weekday</Description>
+        <PaymentType>OTHER</PaymentType>
+      </SpecialHandlings>
+      <ShipTimestamp>2014-11-17T22:39:00+11:00</ShipTimestamp>
+      <DestinationAddress>
+        <City>GRAFTON</City>
+        <StateOrProvinceCode>ON</StateOrProvinceCode>
+        <CountryCode>AU</CountryCode>
+        <CountryName>Australia</CountryName>
+        <Residential>false</Residential>
+      </DestinationAddress>
+      <DeliveryAttempts>0</DeliveryAttempts>
+      <TotalUniqueAddressCountInConsolidation>0</TotalUniqueAddressCountInConsolidation>
+      <Signature>
+        <Notifications>
+          <Severity>ERROR</Severity>
+          <Source>trck</Source>
+          <Code>4550</Code>
+          <Message>Signature images are not available for display for shipments to this country.</Message>
+          <LocalizedMessage>Signature images are not available for display for shipments to this country.</LocalizedMessage>
+        </Notifications>
+      </Signature>
+      <NotificationEventsAvailable>ON_DELIVERY</NotificationEventsAvailable>
+      <NotificationEventsAvailable>ON_EXCEPTION</NotificationEventsAvailable>
+      <RedirectToHoldEligibility>INELIGIBLE</RedirectToHoldEligibility>
+      <Events>
+        <Timestamp>2014-11-18T18:13:00+11:00</Timestamp>
+        <EventType>IT</EventType>
+        <EventDescription>In transit</EventDescription>
+        <StatusExceptionCode>72</StatusExceptionCode>
+        <StatusExceptionDescription>Package available for clearance</StatusExceptionDescription>
+        <Address>
+          <City>ALEXANDRIA</City>
+          <PostalCode>2015</PostalCode>
+          <CountryCode>AU</CountryCode>
+          <CountryName>Australia</CountryName>
+          <Residential>false</Residential>
+        </Address>
+        <ArrivalLocation>FEDEX_FACILITY</ArrivalLocation>
+      </Events>
+    </TrackDetails>
+  </CompletedTrackDetails>
+</TrackReply>
