@@ -32,7 +32,7 @@ module ActiveShipping::Test
 
     def credentials(key)
       data = all_credentials[key]
-      if data.nil? || data.all? { |k,v| v.nil? || v.empty? }
+      if data.nil? || data.all? { |k,v| v.nil? || v.to_s.empty? }
         raise NoCredentialsFound.new(key)
       end
       data.symbolize_keys
