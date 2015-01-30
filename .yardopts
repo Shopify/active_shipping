@@ -6,7 +6,6 @@
 --no-private
 --markup markdown
 --markup-provider redcarpet
---exclude /lib/vendor/xml_node/
 -
 README.md
 CHANGELOG.md

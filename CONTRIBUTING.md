@@ -9,7 +9,7 @@ Please use clean, concise code that follows Ruby community standards. For exampl
 - Be consistent
 - Don't use too much white space
   - Use 2 space indent, no tabs.
-  - No spaces after (, [ and before ],)
+  - No spaces after `(`, `[` and before `]`, `)`
 - Nor too little
   - Use spaces around operators and after commas, colons and semicolons
   - Indent when as deep as case
@@ -19,7 +19,7 @@ Please use clean, concise code that follows Ruby community standards. For exampl
 
 - Add unit tests, and remote tests to make sure we won't introduce regressions to your code later on.
 - Make sure CI passes for all Ruby versions and dependency versions we support.
-- XML handling: use `REXML` for parsing XML, and `builder` to generate it.
+- XML handling: use `Nokogiri.XML` for parsing XML, and `Nokogiri::XML::Builder` to generate it.
 - JSON: use the JSON module that is included in Rubys standard ibrary
 - HTTP: use `ActiveUtils`'s `PostsData`.
 - Do not add new gem dependencies.
