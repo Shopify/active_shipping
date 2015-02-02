@@ -76,13 +76,15 @@ class CanadaPostPwsShippingTest < Minitest::Test
   def test_build_shipment_customs_node
     options = @default_options.dup
     destination = Location.new(@us_params)
-    assert_instance_of XmlNode, response = @cp.shipment_customs_node(destination, @line_item1, options)
-    doc = REXML::Document.new(response.to_s)
-    assert root_node = doc.elements['customs']
-    assert_equal "CAD", root_node.get_text('currency').to_s
-    assert items_node = root_node.elements['sku-list']
-    assert_equal 2, items_node.size
-    assert_equal 199.0, items_node.first.elements['customs-value-per-unit'].text.to_f
+    builder = Nokogiri::XML::Builder.new do |xml|
+      response = @cp.shipment_customs_node(xml, destination, @line_item1, options)
+    end
+    doc = builder.doc
+    assert root_node = doc.at('customs')
+    assert_equal "CAD", root_node.at('currency').text
+    assert items_node = root_node.at('sku-list')
+    assert_equal 2, items_node.xpath('item').size
+    assert_equal 199.0, items_node.at('item/customs-value-per-unit').text.to_f
   end
 
   def test_build_shipment_request_for_domestic
@@ -95,12 +97,15 @@ class CanadaPostPwsShippingTest < Minitest::Test
     options = @default_options.dup
     request = @cp.build_shipment_request(@home_params, @us_params, @pkg1, @line_item1, options)
     refute request.blank?
-    doc = REXML::Document.new(request)
-    assert root_node = doc.elements['non-contract-shipment']
-    assert delivery_spec = root_node.elements['delivery-spec']
-    assert destination = delivery_spec.elements['destination']
-    assert address_details = destination.elements['address-details']
-    assert_equal 'US', address_details.get_text('country-code').to_s
+
+    doc = Nokogiri.XML(request)
+    doc.remove_namespaces!
+
+    assert root_node = doc.at('non-contract-shipment')
+    assert delivery_spec = root_node.at('delivery-spec')
+    assert destination = delivery_spec.at('destination')
+    assert address_details = destination.at('address-details')
+    assert_equal 'US', address_details.at('country-code').text
   end
 
   def test_build_shipment_request_for_international
@@ -119,11 +124,14 @@ class CanadaPostPwsShippingTest < Minitest::Test
     options = @default_options.merge(@shipping_opts1)
     request = @cp.build_shipment_request(@home_params, @paris_params, @pkg1, @line_item1, options)
     refute request.blank?
-    doc = REXML::Document.new(request)
-    assert root_node = doc.elements['non-contract-shipment']
-    assert delivery_spec = root_node.elements['delivery-spec']
-    assert options = delivery_spec.elements['options']
-    assert_equal 5, options.elements.size
+
+    doc = Nokogiri.XML(request)
+    doc.remove_namespaces!
+
+    assert root_node = doc.at('non-contract-shipment')
+    assert delivery_spec = root_node.at('delivery-spec')
+    assert options = delivery_spec.at('options')
+    assert_equal 5, options.xpath('*').size
   end
 
   def test_build_shipping_request_with_zero_weight
@@ -131,11 +139,14 @@ class CanadaPostPwsShippingTest < Minitest::Test
     package = Package.new(0, [93, 10])
     request = @cp.build_shipment_request(@home_params, @dom_params, package, @line_item1, options)
     refute request.blank?
-    doc = REXML::Document.new(request)
-    assert root_node = doc.elements['non-contract-shipment']
-    assert delivery_spec = root_node.elements['delivery-spec']
-    assert parcel_node = delivery_spec.elements['parcel-characteristics']
-    assert_equal '0.001', parcel_node.get_text('weight').to_s
+
+    doc = Nokogiri.XML(request)
+    doc.remove_namespaces!
+
+    assert root_node = doc.at('non-contract-shipment')
+    assert delivery_spec = root_node.at('delivery-spec')
+    assert parcel_node = delivery_spec.at('parcel-characteristics')
+    assert_equal '0.001', parcel_node.at('weight').text
   end
 
   def test_create_shipment_domestic

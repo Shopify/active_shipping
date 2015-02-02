@@ -112,46 +112,50 @@ class CanadaPostPwsRatingTest < Minitest::Test
 
   def test_build_rates_request
     xml = @cp.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2], @default_options)
-    doc = Nokogiri::HTML(xml)
+    doc = Nokogiri.XML(xml)
+    doc.remove_namespaces!
 
-    assert_equal @default_options[:customer_number], doc.xpath('//customer-number').first.content
-    assert_equal 'K1P1J1', doc.xpath('//origin-postal-code').first.content
-    assert_equal 'united-states', doc.xpath('//destination').children.first.name
+    assert_equal @default_options[:customer_number], doc.at('//customer-number').text
+    assert_equal 'K1P1J1', doc.at('//origin-postal-code').text
+    assert_equal 'united-states', doc.at('//destination/*').name
     assert !doc.xpath('//parcel-characteristics').empty?
-    assert_equal "3.427", doc.xpath('//parcel-characteristics//weight').first.content
+    assert_equal "3.427", doc.at('//parcel-characteristics//weight').text
   end
 
   def test_build_rates_request_use_carrier_customer_number
     xml = @cp_customer_number.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2])
-    doc = Nokogiri::HTML(xml)
+    doc = Nokogiri.XML(xml)
+    doc.remove_namespaces!
 
-    assert_equal @customer_number, doc.xpath('//customer-number').first.content
-    assert_equal 'K1P1J1', doc.xpath('//origin-postal-code').first.content
-    assert_equal 'united-states', doc.xpath('//destination').children.first.name
+    assert_equal @customer_number, doc.at('//customer-number').text
+    assert_equal 'K1P1J1', doc.at('//origin-postal-code').text
+    assert_equal 'united-states', doc.at('//destination/*').name
     assert !doc.xpath('//parcel-characteristics').empty?
-    assert_equal "3.427", doc.xpath('//parcel-characteristics//weight').first.content
+    assert_equal "3.427", doc.at('//parcel-characteristics//weight').text
   end
 
   def test_build_rates_request_override_carrier_customer_number
     xml = @cp_customer_number.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2], @default_options)
-    doc = Nokogiri::HTML(xml)
+    doc = Nokogiri.XML(xml)
+    doc.remove_namespaces!
 
-    assert_equal @default_options[:customer_number], doc.xpath('//customer-number').first.content
-    assert_equal 'K1P1J1', doc.xpath('//origin-postal-code').first.content
-    assert_equal 'united-states', doc.xpath('//destination').children.first.name
-    assert !doc.xpath('//parcel-characteristics').empty?
-    assert_equal "3.427", doc.xpath('//parcel-characteristics//weight').first.content
+    assert_equal @default_options[:customer_number], doc.at('//customer-number').text
+    assert_equal 'K1P1J1', doc.at('//origin-postal-code').text
+    assert_equal 'united-states', doc.at('//destination/*').name
+    assert doc.at('//parcel-characteristics')
+    assert_equal "3.427", doc.at('//parcel-characteristics//weight').text
   end
 
   def test_build_rates_request_location_object
     xml = @cp.build_rates_request(Location.new(@home_params), Location.new(@dest_params), [@pkg1, @pkg2], @default_options)
-    doc = Nokogiri::HTML(xml)
+    doc = Nokogiri.XML(xml)
+    doc.remove_namespaces!
 
-    assert_equal @default_options[:customer_number], doc.xpath('//customer-number').first.content
-    assert_equal 'K1P1J1', doc.xpath('//origin-postal-code').first.content
-    assert_equal 'united-states', doc.xpath('//destination').children.first.name
+    assert_equal @default_options[:customer_number], doc.at('//customer-number').text
+    assert_equal 'K1P1J1', doc.at('//origin-postal-code').text
+    assert_equal 'united-states', doc.at('//destination/*').name
     assert !doc.xpath('//parcel-characteristics').empty?
-    assert_equal "3.427", doc.xpath('//parcel-characteristics//weight').first.content
+    assert_equal "3.427", doc.at('//parcel-characteristics//weight').text
   end
 
   def test_build_rates_request_domestic
@@ -166,11 +170,12 @@ class CanadaPostPwsRatingTest < Minitest::Test
       :postal_code => 'V5J 1J1'
     }
     xml = @cp.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2], @default_options)
-    doc = Nokogiri::HTML(xml)
+    doc = Nokogiri.XML(xml)
+    doc.remove_namespaces!
 
-    assert_equal 'K1P1J1', doc.xpath('//origin-postal-code').first.content
-    assert_equal 'domestic', doc.xpath('//destination').children.first.name
-    assert_equal 'V5J1J1', doc.xpath('//destination//postal-code').first.content
+    assert_equal 'K1P1J1', doc.at('//origin-postal-code').text
+    assert_equal 'domestic', doc.at('//destination/*').name
+    assert_equal 'V5J1J1', doc.at('//destination//postal-code').text
   end
 
   def test_build_rates_request_international
@@ -183,89 +188,91 @@ class CanadaPostPwsRatingTest < Minitest::Test
       :country     => 'JP'
     }
     xml = @cp.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2], @default_options)
-    doc = Nokogiri::HTML(xml)
+    doc = Nokogiri.XML(xml)
+    doc.remove_namespaces!
 
-    assert_equal 'K1P1J1', doc.xpath('//origin-postal-code').first.content
-    assert_equal 'international', doc.xpath('//destination').children.first.name
-    assert_equal 'JP', doc.xpath('//destination//country-code').first.content
+    assert_equal 'K1P1J1', doc.xpath('//origin-postal-code').text
+    assert_equal 'international', doc.at('//destination/*').name
+    assert_equal 'JP', doc.at('//destination//country-code').text
   end
 
   def test_build_rates_request_with_cod_option
     opts = @default_options.merge(:cod => true, :cod_amount => 12.05)
     xml = @cp.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2], opts)
-    doc = Nokogiri::HTML(xml)
-
-    assert_equal 'COD', doc.xpath('//options/option').children.first.content
-    assert_equal '12.05', doc.xpath('//options/option').children.last.content
+    doc = Nokogiri.XML(xml)
+    doc.remove_namespaces!
+    assert_equal 'COD', doc.xpath('//options/option/option-code').text
+    assert_equal '12.05', doc.xpath('//options/option/option-amount').text
   end
 
   def test_build_rates_request_with_signature_option
     opts = @default_options.merge(:so => true)
     xml = @cp.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2], opts)
-    doc = Nokogiri::HTML(xml)
-
-    assert_equal 'SO', doc.xpath('//options/option').children.first.content
+    doc = Nokogiri.XML(xml)
+    doc.remove_namespaces!
+    assert_equal 'SO', doc.at('//options/option/option-code').text
   end
 
   def test_build_rates_request_with_insurance_option
     opts = @default_options.merge(:cov => true, :cov_amount => 122.05)
     xml = @cp.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2], opts)
-    doc = Nokogiri::HTML(xml)
-
-    assert_equal 'COV', doc.xpath('//options/option').children.first.content
-    assert_equal '122.05', doc.xpath('//options/option').children.last.content
+    doc = Nokogiri.XML(xml)
+    doc.remove_namespaces!
+    assert_equal 'COV', doc.at('//options/option/option-code').text
+    assert_equal '122.05', doc.at('//options/option/option-amount').text
   end
 
   def test_build_rates_request_with_other_options
     opts = @default_options.merge(:pa18 => true, :pa19 => true, :hfp => true, :dns => true, :lad => true)
     xml = @cp.build_rates_request(@home_params, @dest_params, [@pkg1, @pkg2], opts)
-    doc = Nokogiri::HTML(xml)
-
-    options = doc.xpath('//options/option').map(&:content).sort
+    doc = Nokogiri.XML(xml)
+    doc.remove_namespaces!
+    options = doc.xpath('//options/option/option-code').map(&:text).sort
     assert_equal %w(PA18 PA19 HFP DNS LAD).sort, options
   end
 
   def test_build_rates_request_with_single_item
     opts = @default_options
     xml = @cp.build_rates_request(@home_params, @dest_params, [@pkg1], opts)
-    doc = Nokogiri::HTML(xml)
-
-    assert_equal '0.025', doc.xpath('//parcel-characteristics/weight').first.content
+    doc = Nokogiri.XML(xml)
+    doc.remove_namespaces!
+    assert_equal '0.025', doc.at('//parcel-characteristics/weight').text
   end
 
   def test_build_rates_request_with_mailing_tube
     pkg = Package.new(25, [93, 10], :cylinder => true)
     opts = @default_options
     xml = @cp.build_rates_request(@home_params, @dest_params, [pkg], opts)
-    doc = Nokogiri::HTML(xml)
-
-    assert_equal 'true', doc.xpath('//parcel-characteristics/mailing-tube').first.content
+    doc = Nokogiri.XML(xml)
+    doc.remove_namespaces!
+    assert_equal 'true', doc.at('//parcel-characteristics/mailing-tube').text
   end
 
   def test_build_rates_request_with_oversize
     pkg = Package.new(25, [93, 10], :oversized => true)
     opts = @default_options
     xml = @cp.build_rates_request(@home_params, @dest_params, [pkg], opts)
-    doc = Nokogiri::HTML(xml)
-
-    assert_equal 'true', doc.xpath('//parcel-characteristics/oversized').first.content
+    doc = Nokogiri.XML(xml)
+    doc.remove_namespaces!
+    assert_equal 'true', doc.at('//parcel-characteristics/oversized').text
   end
 
   def test_build_rates_request_with_unpackaged
     pkg = Package.new(25, [93, 10], :unpackaged => true)
     opts = @default_options
     xml = @cp.build_rates_request(@home_params, @dest_params, [pkg], opts)
-    doc = Nokogiri::HTML(xml)
-
-    assert_equal 'true', doc.xpath('//parcel-characteristics/unpackaged').first.content
+    doc = Nokogiri.XML(xml)
+    doc.remove_namespaces!
+    assert_equal 'true', doc.at('//parcel-characteristics/unpackaged').text
   end
 
   def test_build_rates_request_with_zero_weight
     options = @default_options.merge(@shipping_opts1)
     line_items = [Package.new(0, [93, 10]), Package.new(0, [10, 10])]
-    request = @cp.build_rates_request(@home_params, @dest_params, line_items, options)
-    doc = Nokogiri::HTML(request)
-    assert_equal '0.001', doc.xpath('//parcel-characteristics/weight').first.content
+    xml = @cp.build_rates_request(@home_params, @dest_params, line_items, options)
+    doc = Nokogiri.XML(xml)
+    doc.remove_namespaces!
+    assert_equal '0.001', doc.at('//parcel-characteristics/weight').text
   end
 
   # parse response
