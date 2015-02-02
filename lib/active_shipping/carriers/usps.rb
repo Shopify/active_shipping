@@ -286,7 +286,7 @@ module ActiveShipping
       </CarrierPickupAvailabilityRequest>
       EOF
       xml = Nokogiri.XML(commit(:test, request, true)) { |config| config.strict }
-      xml.at('/CarrierPickupAvailabilityResponse/City').text == 'SAN FRANCISCO' && xml.at('/CarrierPickupAvailabilityResponse/Address2').text == '18 FAIR AVE'
+      xml.at('/CarrierPickupAvailabilityResponse/City').try(:text) == 'SAN FRANCISCO' && xml.at('/CarrierPickupAvailabilityResponse/Address2').try(:text) == '18 FAIR AVE'
     end
 
     # options[:service] --    One of [:first_class, :priority, :express, :bpm, :parcel,

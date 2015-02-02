@@ -201,8 +201,20 @@ class RemoteUSPSTest < Minitest::Test
     end
   end
 
-  def test_valid_credentials
+  def test_correct_login_passes_valid_credentials?
     assert USPS.new(@usps_credentials.merge(:test => true)).valid_credentials?
+  end
+
+  def test_wrong_login_fails_in_valid_credentials?
+    refute USPS.new(:login => 'ABCDEFGHIJKL', :test => true).valid_credentials?
+  end
+
+  def test_blank_login_fails_in_valid_credentials?
+    refute USPS.new(:login => '', :test => true).valid_credentials?
+  end
+
+  def test_nil_login_fails_in_valid_credentials?
+    refute USPS.new(:login => nil, :test => true).valid_credentials?
   end
 
   def test_must_provide_login_creds_when_instantiating
