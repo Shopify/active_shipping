@@ -117,6 +117,12 @@ class USPSTest < Minitest::Test
     assert_equal true, response.delivered?
   end
 
+  def test_find_tracking_info_with_extended_response_format_should_have_correct_delivered
+    @carrier.expects(:commit).returns(xml_fixture('usps/delivered_extended_tracking_response'))
+    response = @carrier.find_tracking_info('9102901000462189604217')
+    assert_equal true, response.delivered?
+  end
+
   def test_size_codes
     assert_equal 'REGULAR', USPS.size_code_for(Package.new(2, [1, 12, 1], :units => :imperial))
     assert_equal 'LARGE', USPS.size_code_for(Package.new(2, [12.1, 1, 1], :units => :imperial))
