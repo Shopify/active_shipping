@@ -13,7 +13,7 @@ module ActiveShipping
     EventDetails = Struct.new(:description, :time, :zoneless_time, :location)
     EVENT_MESSAGE_PATTERNS = [
       /^(.*), (\w+ \d{1,2}, \d{4}, \d{1,2}:\d\d [ap]m), (.*), (\w\w) (\d{5})$/i,
-      /^Your item \w{2,3} (out for delivery|delivered) at (\d{1,2}:\d\d [ap]m on \w+ \d{1,2}, \d{4}) in (.*), (\w\w) (\d{5})\.$/i
+      /^Your item \w{2,3} (out for delivery|delivered).* at (\d{1,2}:\d\d [ap]m on \w+ \d{1,2}, \d{4}) in (.*), (\w\w) (\d{5})\.$/i
     ]
     self.retry_safe = true
 
