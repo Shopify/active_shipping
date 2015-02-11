@@ -140,6 +140,32 @@ class UPSTest < Minitest::Test
     assert_equal Time.parse('2015-01-29 00:00:00 UTC'), response.scheduled_delivery_date
   end
 
+  def test_response_parsing_an_oversize_package
+    mock_response = xml_fixture('ups/package_exceeds_maximum_length')
+    @carrier.expects(:commit).returns(mock_response)
+
+    e = assert_raises(ActiveShipping::ResponseError) do
+      @carrier.find_rates(location_fixtures[:beverly_hills],
+                          location_fixtures[:real_home_as_residential],
+                          package_fixtures.values_at(:chocolate_stuff))
+    end
+
+    assert_equal "Failure: Package exceeds the maximum length constraint of 108 inches. Length is the longest side of a package.", e.message
+  end
+
+  def test_response_parsing_an_unknown_error
+    mock_response = '<RatingServiceSelectionResponse><Response><ResponseStatusCode>0</ResponseStatusCode></Response></RatingServiceSelectionResponse>'
+    @carrier.expects(:commit).returns(mock_response)
+
+    e = assert_raises(ActiveShipping::ResponseError) do
+      @carrier.find_rates(location_fixtures[:beverly_hills],
+                          location_fixtures[:real_home_as_residential],
+                          package_fixtures.values_at(:chocolate_stuff))
+    end
+
+    assert_equal "UPS could not process the request.", e.message
+  end
+
   def test_response_parsing
     mock_response = xml_fixture('ups/test_real_home_as_residential_destination_response')
     @carrier.expects(:commit).returns(mock_response)
