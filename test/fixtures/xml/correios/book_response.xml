@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Servicos>
+  <cServico>
+    <Codigo>41106</Codigo>
+    <Valor>105,20</Valor>
+    <ValorSemAdicionais>97,70</ValorSemAdicionais>
+    <ValorMaoPropria>4,30</ValorMaoPropria>
+    <ValorAvisoRecebimento>3,20</ValorAvisoRecebimento>
+    <ValorValorDeclarado>0,00</ValorValorDeclarado>
+    <Erro/>
+    <MsgErro/>
+  </cServico>
+</cServicos>
