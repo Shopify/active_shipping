@@ -35,7 +35,7 @@ module ActiveShipping
       '81027' => 'e-SEDEX Prioritário, com contrato', 
       '81035' => 'e-SEDEX Express, com contrato', 
       '81868' => '(Grupo 1) e-SEDEX, com contrato',
-      '81833' => '(Grupo 2) e-SEDEX, com contrato' 
+      '81833' => '(Grupo 2) e-SEDEX, com contrato', 
       '81850' => '(Grupo 3) e-SEDEX, com contrato' 
     }.freeze
 
@@ -79,8 +79,8 @@ module ActiveShipping
         @urls = packages.map { |package| create_url(package) }
       end
 
-      def create_response(xmls_raw)
-        correios_response = CorreiosResponse.new(self, xmls_raw)
+      def create_response(raw_xmls)
+        correios_response = CorreiosResponse.new(self, raw_xmls)
         correios_response.rate_response
       end
 
@@ -117,9 +117,9 @@ module ActiveShipping
 
     class CorreiosResponse
 
-      def initialize(request, xmls)
+      def initialize(request, raw_xmls)
         @request = request
-        @document = Nokogiri::XML(xml)
+        @documents = raw_xmls.map { |xml| Nokogiri::XML(xml) }
       end
 
       def rate_response
@@ -137,34 +137,30 @@ module ActiveShipping
       end
 
       def responses
-        Hash.from_xml(@document.to_s) 
+        @documents.map { |document| Hash.from_xml(document.to_s) }
       end
 
+      def rates_array
+        services = @documents.map { |document| document.css('cServico') }
+        services = services.map do |services_xml| 
+          services_xml.map { |service_xml| { :service_id => service_code(service_xml), :price => price(service_xml) } }
+        end
+
+        services = services.flatten.group_by { |service_hash| service_hash[:service_id] }
+        services = services.map do |service_id, value|
+          total_price = value.sum { |hash| hash[:price] }
+          { :service_id => service_id, :total_price => total_price, :currency => "BRL" }
+        end
+        services
+      end
+      
       def rates
-        list = @document.css('cServico')  
-        
-        rates = list.map { |xml_item| create_rate_estimate(xml_item) }
-        rates
+        rates_array.map { |rate_hash| create_rate_estimate(rate_hash) }
       end
 
-      def create_rate_estimate(xml_item)
-        service_params = create_service(xml_item)
-        rate_estimate_params = create_rate_estimate_params(xml)
-
-        RateEstimate.new(@request.origin, @request.destination, @@name, service_name, rate_estimate_params) 
-      end
-
-      def service_name(xml_item)
-        AVAILABLE_SERVICES[service_code(xml_item)]  
-      end
-
-      def rate_estimate_params(xml_item)
-        {
-          :total_price => total_price(xml_item),
-          :currency => "R$",
-          :service_code => service_code(xml_item) 
-        }  
-      end
+      def create_rate_estimate(rate_hash)
+        RateEstimate.new(@request.origin, @request.destination, Correios.name, AVAILABLE_SERVICES[rate_hash[:service_id]], rate_hash) 
+      end 
 
       def service_code(xml_item)
          xml_item.css('Codigo').text
@@ -175,7 +171,8 @@ module ActiveShipping
       end
 
       def success?
-        @document.css('Erro').text.nil?  
+        true
+        # @document.css('Erro').text.nil?  
       end
 
       def message

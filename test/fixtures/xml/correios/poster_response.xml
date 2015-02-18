@@ -10,4 +10,14 @@
     <Erro/>
     <MsgErro/>
   </cServico>
-</cServicos>
+  <cServico>
+    <Codigo>40215</Codigo>
+    <Valor>20,00</Valor>
+    <ValorSemAdicionais>97,70</ValorSemAdicionais>
+    <ValorMaoPropria>4,30</ValorMaoPropria>
+    <ValorAvisoRecebimento>3,20</ValorAvisoRecebimento>
+    <ValorValorDeclarado>0,00</ValorValorDeclarado>
+    <Erro/>
+    <MsgErro/>
+  </cServico>
+</Servicos>
