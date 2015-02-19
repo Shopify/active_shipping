@@ -43,6 +43,13 @@ class CorreiosTest < Minitest::Test
     @carrier.find_rates(@saopaulo, @patosdeminas, [@poster, @book])
   end
 
+  def test_book_request_with_specific_services
+    url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=&sDsSenha=&nCdServico=41106,40010,40215&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.25&nCdFormato=1&nVlComprimento=19&nVlAltura=2&nVlLargura=14&nVlDiametro=0&sCdMaoPropria=N&nVlValorDeclarado=0&sCdAvisoRecebimento=N&nIndicaCalculo=1&StrRetorno=xml"
+    
+    @carrier.expects(:perform).with([url]).returns([@response_book_success])
+    @carrier.find_rates(@saopaulo, @patosdeminas, [@book], :services => [41106, 40010, 40215])
+  end
+
   def test_book_response
     @carrier.stubs(:perform).returns([@response_book_success])
     response = @carrier.find_rates(@saopaulo, @patosdeminas, [@book])
