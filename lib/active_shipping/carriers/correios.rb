@@ -39,6 +39,8 @@ module ActiveShipping
       '81850' => '(Grupo 3) e-SEDEX, com contrato' 
     }.freeze
 
+    protected
+
     def perform(urls)
       urls.map { |url| ssl_get(url) }
     end
@@ -115,7 +117,7 @@ module ActiveShipping
       end
 
       def service_type
-        @options[:services].nil? ? '41106' : @options[:services].join(',')
+        @options[:services].nil? ? '41106,40010' : @options[:services].join(',')
       end
 
     end
