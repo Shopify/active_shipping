@@ -158,7 +158,7 @@ module ActiveShipping
         services = services_array.group_by { |service_hash| service_hash[:service_id] }
         services = services.map do |service_id, value|
           total_price = value.sum { |hash| hash[:price] }
-          { :service_id => service_id, :total_price => total_price, :currency => "BRL" }
+          { :service_code => service_id, :total_price => total_price, :currency => "BRL" }
         end
       end
       
@@ -167,7 +167,7 @@ module ActiveShipping
       end
 
       def create_rate_estimate(rate_hash)
-        RateEstimate.new(@request.origin, @request.destination, Correios.name, AVAILABLE_SERVICES[rate_hash[:service_id]], rate_hash) 
+        RateEstimate.new(@request.origin, @request.destination, Correios.name, AVAILABLE_SERVICES[rate_hash[:service_code]], rate_hash) 
       end 
 
       def error?(xml_item)

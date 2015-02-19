@@ -73,10 +73,20 @@ class CorreiosTest < Minitest::Test
     assert_equal [2000, 4000], response.rates.map(&:price)
   end
 
+  def test_book_response_service_name_and_code
+    @carrier.stubs(:perform).returns([@response_book_success])
+    response = @carrier.find_rates(@saopaulo, @patosdeminas, [@book])
+    
+    assert_equal ['41106'], response.rates.map(&:service_code)
+    assert_equal ['PAC sem contrato'], response.rates.map(&:service_name)
+    
+  end
+
   def test_book_invalid_response
     @carrier.stubs(:perform).returns([@response_book_invalid])
+
     begin
-      response = @carrier.find_rates(@saopaulo, @patosdeminas, [@book])
+      @carrier.find_rates(@saopaulo, @patosdeminas, [@book])
     rescue => error
       assert_equal "CEP de origem invalido", error.message
     end
