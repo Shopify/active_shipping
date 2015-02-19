@@ -14,6 +14,7 @@ class CorreiosTest < Minitest::Test
     
     @response_book_success = xml_fixture('correios/book_response')
     @response_poster_success = xml_fixture('correios/poster_response')
+    @response_book_invalid = xml_fixture('correios/book_response_invalid')
   end
 
   def test_book_request
@@ -72,11 +73,13 @@ class CorreiosTest < Minitest::Test
     assert_equal [2000, 4000], response.rates.map(&:price)
   end
 
-  def test_invalid_response
+  def test_book_invalid_response
     @carrier.stubs(:perform).returns([@response_book_invalid])
-    response = @carrier.find_rates(@saopaulo, @patosdeminas, [@book])
-
-
+    begin
+      response = @carrier.find_rates(@saopaulo, @patosdeminas, [@book])
+    rescue => error
+      assert_equal "CEP de origem invalido", error.message
+    end
   end
 
 end
