@@ -341,7 +341,7 @@ class UPSTest < Minitest::Test
     assert_equal ref_vals.first.text, 'REF_NUM'
   end
 
-  def test_label_request_domestic_reference_numbers
+  def test_label_request_international_reference_numbers
     # International Shipments use shipment level reference numbers
     response = Nokogiri::XML @carrier.send(:build_shipment_request,
                                            location_fixtures[:beverly_hills],
