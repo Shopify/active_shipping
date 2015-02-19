@@ -232,7 +232,7 @@ module ActiveShipping
             end
 
             # not implemented:  * Shipment/ShipmentServiceOptions element
-            if options[:origin_account]
+            if options[:negotiated_rates]
               xml.RateInformation do
                 xml.NegotiatedRatesIndicator
               end
@@ -258,6 +258,7 @@ module ActiveShipping
     # * terms_of_shipment: used with paperless invoice to specify who pays duties and taxes
     # * reference_numbers: Array of hashes with :value => a reference number value and optionally :code => reference number type
     # * prepay: if truthy the shipper will be bill immediatly. Otherwise the shipper is billed when the label is used.
+    # * negotiated_rates: if truthy negotiated rates will be requested from ups. Only valid if shipper account has negotiated rates.
     def build_shipment_request(origin, destination, packages, options={})
       packages = Array(packages)
       options[:international] = origin.country.name != destination.country.name
