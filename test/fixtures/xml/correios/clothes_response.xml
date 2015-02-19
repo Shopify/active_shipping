@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Servicos>
+  <cServico>
+    <Codigo>41106</Codigo>
+    <Valor>120,00</Valor>
+    <ValorSemAdicionais>12,10</ValorSemAdicionais>
+    <ValorMaoPropria>12,20</ValorMaoPropria>
+    <ValorAvisoRecebimento>12,30</ValorAvisoRecebimento>
+    <ValorValorDeclarado>0,00</ValorValorDeclarado>
+    <Erro/>
+    <MsgErro/>
+  </cServico>
+  <cServico>
+    <Codigo>41300</Codigo>
+    <Valor>130,00</Valor>
+    <ValorSemAdicionais>13,10</ValorSemAdicionais>
+    <ValorMaoPropria>13,20</ValorMaoPropria>
+    <ValorAvisoRecebimento>13,30</ValorAvisoRecebimento>
+    <ValorValorDeclarado>0,00</ValorValorDeclarado>
+    <Erro/>
+    <MsgErro/>
+  </cServico>
+  <cServico>
+    <Codigo>40215</Codigo>
+    <Valor>140,00</Valor>
+    <ValorSemAdicionais>14,10</ValorSemAdicionais>
+    <ValorMaoPropria>14,20</ValorMaoPropria>
+    <ValorAvisoRecebimento>14,30</ValorAvisoRecebimento>
+    <ValorValorDeclarado>10,00</ValorValorDeclarado>
+    <Erro/>
+    <MsgErro/>
+  </cServico>
+  <cServico>
+    <Codigo>81019</Codigo>
+    <Valor>150,00</Valor>
+    <ValorSemAdicionais>15,10</ValorSemAdicionais>
+    <ValorMaoPropria>15,20</ValorMaoPropria>
+    <ValorAvisoRecebimento>15,30</ValorAvisoRecebimento>
+    <ValorValorDeclarado>0,00</ValorValorDeclarado>
+    <Erro/>
+    <MsgErro/>
+  </cServico>
+</Servicos>
