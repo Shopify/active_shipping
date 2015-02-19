@@ -12,6 +12,8 @@ class CorreiosTest < Minitest::Test
     @book = package_fixtures[:book] 
     @poster = package_fixtures[:poster]
     
+    @response_clothes = xml_fixture('correios/clothes_response')
+    @response_shoes = xml_fixture('correios/shoes_response')
     @response_book_success = xml_fixture('correios/book_response')
     @response_poster_success = xml_fixture('correios/poster_response')
     @response_book_invalid = xml_fixture('correios/book_response_invalid')
@@ -73,13 +75,19 @@ class CorreiosTest < Minitest::Test
     assert_equal [2000, 4000], response.rates.map(&:price)
   end
 
-  def test_book_response_service_name_and_code
-    @carrier.stubs(:perform).returns([@response_book_success])
-    response = @carrier.find_rates(@saopaulo, @patosdeminas, [@book])
-    
-    assert_equal ['41106'], response.rates.map(&:service_code)
-    assert_equal ['PAC sem contrato'], response.rates.map(&:service_name)
-    
+  def test_response_parsing
+    @carrier.stubs(:perform).returns([@response_clothes, @response_shoes])
+    response = @carrier.find_rates(@saopaulo, @patosdeminas, [@book, @book])
+    service_codes = %w(41106 41300 40215 81019) 
+    service_names = [
+      'PAC sem contrato',
+      'PAC para grandes formatos',
+      'SEDEX 10, sem contrato',
+      'e-SEDEX, com contrato'
+    ]
+
+    assert_equal service_codes, response.rates.map(&:service_code)
+    assert_equal service_names, response.rates.map(&:service_name)
   end
 
   def test_book_invalid_response
