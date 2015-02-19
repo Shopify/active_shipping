@@ -9,7 +9,7 @@ module ActiveShipping
     def find_rates(origin, destination, packages, options = {})
       options = @options.merge(options)
 
-      request = CorreiosRequest.new(origin, destination, packages)
+      request = CorreiosRequest.new(origin, destination, packages, options)
       response = request.create_response(perform(request.urls))
       
       response
@@ -56,7 +56,8 @@ module ActiveShipping
 
       attr_reader :origin, :destination, :urls
 
-      def initialize(origin, destination, packages)
+      def initialize(origin, destination, packages, options)
+        @options = options
         @origin = origin
         @destination = destination
 
@@ -67,7 +68,7 @@ module ActiveShipping
         @params = {
           company_id: '',
           password: '',
-          service_type: '41106',
+          service_type: service_type, 
           origin_zip: origin.zip,
           destination_zip: destination.zip,
           special_service: 'N',
@@ -113,6 +114,10 @@ module ActiveShipping
         "#{URL}?#{query_string(params(package))}"
       end
 
+      def service_type
+        @options[:services].nil? ? '41106' : @options[:services].join(',')
+      end
+
     end
 
     class CorreiosResponse
@@ -140,7 +145,7 @@ module ActiveShipping
       end
 
       def services_array
-        services = @documents.map { |document| document.css('cServico') }
+        services = @documents.map { |document| document.root.elements }
         services = services.map { |services_xml| parse_services(services_xml) }.flatten 
       end
 
