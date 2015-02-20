@@ -122,6 +122,16 @@ module ActiveShipping
 
     end
 
+
+    class CorreiosRateResponse < ActiveShipping::RateResponse
+      attr_reader :raw_responses
+
+      def initialize(success, message, params = {}, options = {})
+        @raw_responses = options[:raw_responses]
+        super  
+      end
+    end 
+
     class CorreiosResponse
 
       def initialize(request, raw_xmls)
@@ -131,40 +141,36 @@ module ActiveShipping
       end
 
       def rate_response
-        RateResponse.new(true, 'success', params_options, response_options) 
+        @rates = rates
+        CorreiosRateResponse.new(true, 'success', params_options, response_options) 
       rescue => error
-        RateResponse.new(false, error.message, params_options, response_options) 
+        CorreiosRateResponse.new(false, error.message, {}, response_options)
       end
 
       private
 
       def response_options
-        { :rates => rates }  
+        { 
+          :rates => @rates,
+          :raw_responses => @raw_xmls
+        }  
       end
 
       def params_options
-        { :responses => @documents }  
+        { :responses => @documents }
       end
 
-      def services_array
-        services = @documents.map { |document| document.root.elements }
-        services = services.map { |services_xml| parse_services(services_xml) }.flatten 
-      end
-
-      def parse_services(services_xml)
-        services_xml.map do |service_xml| 
+      def normalized_services
+        services = @documents.map { |document| document.root.elements }.flatten
+        services = services.group_by do |service_xml| 
           raise(error_message(service_xml)) if error?(service_xml)
-          {
-            :service_id => service_code(service_xml), 
-            :price => price(service_xml) 
-          }
+          service_code(service_xml)
         end
       end
 
       def rates_array
-        services = services_array.group_by { |service_hash| service_hash[:service_id] }
-        services = services.map do |service_id, value|
-          total_price = value.sum { |hash| hash[:price] }
+        services = normalized_services.map do |service_id, elements|
+          total_price = elements.sum { |element| price(element) }
           { :service_code => service_id, :total_price => total_price, :currency => "BRL" }
         end
       end

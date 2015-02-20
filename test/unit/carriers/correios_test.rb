@@ -97,13 +97,26 @@ class CorreiosTest < Minitest::Test
     assert_equal service_names, response.rates.map(&:service_name)
   end
 
+  def test_response_params_options
+    @carrier.stubs(:perform).returns([@response_book_success])
+    response = @carrier.find_rates(@saopaulo, @patosdeminas, [@book])
+
+    assert_equal [Nokogiri::XML::Document], response.params['responses'].map(&:class) 
+    assert_equal [Nokogiri::XML(@response_book_success).to_xml], response.params['responses'].map(&:to_xml)
+  end
+
   def test_book_invalid_response
     @carrier.stubs(:perform).returns([@response_book_invalid])
 
     begin
-      @carrier.find_rates(@saopaulo, @patosdeminas, [@book])
+      assert_throws(ActiveShipping::ResponseError) do
+        @carrier.find_rates(@saopaulo, @patosdeminas, [@book])
+      end
     rescue => error
+      assert_equal ActiveShipping::ResponseError, error.class
       assert_equal "CEP de origem invalido", error.message
+      assert_equal error.response.raw_responses, [@response_book_invalid]
+      assert_equal Hash.new, error.response.params
     end
   end
 
