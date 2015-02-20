@@ -144,8 +144,8 @@ module ActiveShipping
         xml = parse_ship_confirm(confirm_response)
         success = response_success?(xml)
         message = response_message(xml)
-        digest  = response_digest(xml)
         raise message unless success
+        digest  = response_digest(xml)
 
         # STEP 2: Accept. Use shipment digest in first response to get the actual label.
         accept_request = build_accept_request(digest, options)
@@ -182,7 +182,7 @@ module ActiveShipping
       xml_builder = Nokogiri::XML::Builder.new do |xml|
         xml.AccessRequest do
           xml.AccessLicenseNumber(@options[:key])
-          xml.UserId(@options[:password])
+          xml.UserId(@options[:login])
           xml.Password(@options[:password])
         end
       end
@@ -232,7 +232,7 @@ module ActiveShipping
             end
 
             # not implemented:  * Shipment/ShipmentServiceOptions element
-            if options[:origin_account]
+            if options[:negotiated_rates]
               xml.RateInformation do
                 xml.NegotiatedRatesIndicator
               end
@@ -251,18 +251,30 @@ module ActiveShipping
     # * shipper: who is sending the package and where it should be returned
     #     if it is undeliverable.
     # * ship_from: where the package is picked up.
-    # * service_code: default to '14'
-    # * service_descriptor: default to 'Next Day Air Early AM'
+    # * service_code: default to '03'
     # * saturday_delivery: any truthy value causes this element to exist
     # * optional_processing: 'validate' (blank) or 'nonvalidate' or blank
-    #
-    def build_shipment_request(origin, destination, packages, options = {})
-      # There are a lot of unimplemented elements, documenting all of them
-      # wouldprobably be unhelpful.
+    # * paperless_invoice: set to truthy if using paperless invoice to ship internationally
+    # * terms_of_shipment: used with paperless invoice to specify who pays duties and taxes
+    # * reference_numbers: Array of hashes with :value => a reference number value and optionally :code => reference number type
+    # * prepay: if truthy the shipper will be bill immediatly. Otherwise the shipper is billed when the label is used.
+    # * negotiated_rates: if truthy negotiated rates will be requested from ups. Only valid if shipper account has negotiated rates.
+    def build_shipment_request(origin, destination, packages, options={})
+      packages = Array(packages)
+      options[:international] = origin.country.name != destination.country.name
+      options[:imperial] ||= IMPERIAL_COUNTRIES.include?(origin.country_code(:alpha2))
+      if allow_package_level_reference_numbers(origin, destination)
+        if options[:reference_numbers]
+          packages.each do |package|
+            package.options[:reference_numbers] = options[:reference_numbers]
+          end
+        end
+        options[:reference_numbers] = []
+      end
+
       xml_builder = Nokogiri::XML::Builder.new do |xml|
         xml.ShipmentConfirmRequest do
           xml.Request do
-            # Required element and the text must be "ShipConfirm"
             xml.RequestAction('ShipConfirm')
             # Required element cotnrols level of address validation.
             xml.RequestOption(options[:optional_processing] || 'validate')
@@ -275,54 +287,71 @@ module ActiveShipping
           end
 
           xml.Shipment do
-            # Required element.
             xml.Service do
-              xml.Code(options[:service_code] || '14')
-              xml.Description(options[:service_description] || 'Next Day Air Early AM')
+              xml.Code(options[:service_code] || '03')
             end
 
-            # Required element. The delivery destination.
-            build_location_node(xml, 'ShipTo', destination, {})
+            build_location_node(xml, 'ShipTo', destination, options)
+            build_location_node(xml, 'ShipFrom', origin, options)
             # Required element. The company whose account is responsible for the label(s).
-            build_location_node(xml, 'Shipper', options[:shipper] || origin, {})
-            # Required if pickup is different different from shipper's address.
-            build_location_node(xml, 'ShipFrom', options[:ship_from], {}) if options[:ship_from]
+            build_location_node(xml, 'Shipper', options[:shipper] || origin, options)
 
-            # Optional.
             if options[:saturday_delivery]
               xml.ShipmentServiceOptions do
                 xml.SaturdayDelivery
               end
             end
 
-            # Optional.
             if options[:origin_account]
               xml.RateInformation do
                 xml.NegotiatedRatesIndicator
               end
             end
 
-            # Optional.
-            if options[:shipment] && options[:shipment][:reference_number]
+            Array(options[:reference_numbers]).each do |reference_num_info|
               xml.ReferenceNumber do
-                xml.Code(options[:shipment][:reference_number][:code] || "")
-                xml.Value(options[:shipment][:reference_number][:value])
+                xml.Code(reference_num_info[:code] || "")
+                xml.Value(reference_num_info[:value])
               end
             end
 
-            # Conditionally required.  Either this element or an ItemizedPaymentInformation
-            # is needed.  However, only PaymentInformation is not implemented.
-            xml.PaymentInformation do
-              xml.Prepaid do
-                xml.BillShipper do
-                  xml.AccountNumber(options[:origin_account])
+            if options[:prepay]
+              xml.PaymentInformation do
+                xml.Prepaid do
+                  xml.BillShipper do
+                    xml.AccountNumber(options[:origin_account])
+                  end
+                end
+              end
+            else
+              xml.ItemizedPaymentInformation do
+                xml.ShipmentCharge do
+                  # Type '01' means 'Transportation'
+                  # This node specifies who will be billed for transportation.
+                  xml.Type('01')
+                  xml.BillShipper do
+                    xml.AccountNumber(options[:origin_account])
+                  end
+                end
+                if options[:terms_of_shipment] == 'DDP'
+                  # DDP stands for delivery duty paid and means the shipper will cover duties and taxes
+                  # Otherwise UPS will charge the receiver
+                  xml.ShipmentCharge do
+                    xml.Type('02') # Type '02' means 'Duties and Taxes'
+                    xml.BillShipper do
+                      xml.AccountNumber(options[:origin_account])
+                    end
+                  end
                 end
               end
             end
 
+            if options[:international]
+              build_international_shipment_request_options(xml, origin, destination, packages, options)
+            end
+
             # A request may specify multiple packages.
-            options[:imperial] ||= IMPERIAL_COUNTRIES.include?(origin.country_code(:alpha2))
-            Array(packages).each do |package|
+            packages.each do |package|
               build_package_node(xml, package, options)
             end
           end
@@ -341,6 +370,53 @@ module ActiveShipping
         end
       end
       xml_builder.to_xml
+    end
+
+    def build_international_shipment_request_options(xml, origin, destination, packages, options)
+      build_location_node(xml, 'SoldTo', options[:sold_to] || destination, options)
+      if options[:paperless_invoice]
+        xml.ShipmentServiceOptions do
+          xml.InternationalForms do
+            xml.FormType('01') # 01 is "Invoice"
+            xml.InvoiceDate(options[:invoice_date] || Date.today.strftime('%Y%m%d'))
+            xml.ReasonForExport(options[:reason_for_export] || 'SALE')
+            xml.CurrencyCode(options[:currency_code] || 'USD')
+
+            if options[:terms_of_shipment]
+              xml.TermsOfShipment(options[:terms_of_shipment])
+            end
+
+            packages.each do |package|
+              xml.Product do |xml|
+                xml.Description(package.options[:description])
+                xml.CommodityCode(package.options[:commodity_code])
+                xml.OriginCountryCode(origin.country_code(:alpha2))
+                xml.Unit do |xml|
+                  xml.Value(package.value / (package.options[:item_count] || 1))
+                  xml.Number((package.options[:item_count] || 1))
+                  xml.UnitOfMeasurement do |xml|
+                    # NMB = number. You can specify units in barrels, boxes, etc. Codes are in the api docs.
+                    xml.Code(package.options[:unit_of_item_count] || 'NMB')
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+
+      if origin.country_code(:alpha2) == 'US' && ['CA', 'PR'].include?(destination.country_code(:alpha2))
+        # Required for shipments from the US to Puerto Rico or Canada
+        xml.InvoiceLineTotal do
+          total_value = packages.inject(0) {|sum, package| sum + (package.value || 0)}
+          xml.MonetaryValue(total_value)
+        end
+      end
+
+      contents_description = packages.map {|p| p.options[:description]}.compact.join(',')
+      unless contents_description.empty?
+        xml.Description(contents_description)
+      end
     end
 
     def build_accept_request(digest, options = {})
@@ -374,8 +450,7 @@ module ActiveShipping
       #                   * Shipment/(Shipper|ShipTo|ShipFrom)/AttentionName element
       #                   * Shipment/(Shipper|ShipTo|ShipFrom)/TaxIdentificationNumber element
       xml.public_send(name) do
-        # You must specify the shipper name when creating labels.
-        if shipper_name = (options[:origin_name] || @options[:origin_name])
+        if shipper_name = (location.name || location.company_name || options[:origin_name])
           xml.Name(shipper_name)
         end
         xml.PhoneNumber(location.phone.gsub(/[^\d]/, '')) unless location.phone.blank?
@@ -387,7 +462,7 @@ module ActiveShipping
           xml.ShipperAssignedIdentificationNumber(destination_account)
         end
 
-        if name = location.company_name || location.name
+        if name = (location.company_name || location.name || options[:origin_name])
           xml.CompanyName(name)
         end
 
@@ -443,15 +518,28 @@ module ActiveShipping
           xml.Weight([value, 0.1].max)
         end
 
-        if options[:package] && options[:package][:reference_number]
+
+        Array(package.options[:reference_numbers]).each do |reference_number_info|
           xml.ReferenceNumber do
-            xml.Code(options[:package][:reference_number][:code] || "")
-            xml.Value(options[:package][:reference_number][:value])
+            xml.Code(reference_number_info[:code] || "")
+            xml.Value(reference_number_info[:value])
+          end
+        end
+
+        unless options[:international]
+          xml.PackageServiceOptions do
+            if package.options[:signature_required]
+              # Package level delivery confirmation is only available when shipping US -> US or PR -> PR
+              xml.DeliveryConfirmation do
+                xml.DCISType(2) # 2 = signature required.
+              end
+            elsif
+              xml.ShipperReleaseIndicator
+            end
           end
         end
 
         # not implemented:  * Shipment/Package/LargePackageIndicator element
-        #                   * Shipment/Package/PackageServiceOptions element
         #                   * Shipment/Package/AdditionalHandling element
       end
     end
@@ -667,6 +755,12 @@ module ActiveShipping
 
       name ||= OTHER_NON_US_ORIGIN_SERVICES[code] unless name == 'US'
       name || DEFAULT_SERVICES[code]
+    end
+
+    def allow_package_level_reference_numbers(origin, destination)
+      # if the package is US -> US or PR -> PR the only type of reference numbers that are allowed are package-level
+      # Otherwise the only type of reference numbers that are allowed are shipment-level
+      [['US','US'],['PR', 'PR']].include?([origin,destination].map(&:country_code))
     end
   end
 end
