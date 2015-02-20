@@ -237,4 +237,46 @@ class RemoteUPSTest < Minitest::Test
     # ought to raise an exception and this test will fail.
     assert_instance_of ActiveShipping::LabelResponse, response
   end
+
+  def test_delivery_date_estimates_within_zip
+    monday = Date.parse('0201', '%m%d') # Feb to avoid holidays http://www.ups.com/content/us/en/resources/ship/imp_exp/operation.html
+    monday += 1.day while monday.wday != 1
+
+    response = @carrier.get_delivery_date_estimates(
+      location_fixtures[:new_york_with_name],
+      location_fixtures[:new_york_with_name],
+      package_fixtures.values_at(:books),
+      pickup_date=monday,
+      {
+        :test => true
+      }
+    )
+
+    assert response.success?
+    refute_empty response.delivery_estimates
+    ground_delivery_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Ground"}.first
+    assert_equal monday + 1.day, ground_delivery_estimate.date
+  end
+
+  def test_delivery_date_estimates_across_zips
+    monday = Date.parse('0201', '%m%d') # Feb to avoid holidays http://www.ups.com/content/us/en/resources/ship/imp_exp/operation.html
+    monday += 1.day while monday.wday != 1
+
+    response = @carrier.get_delivery_date_estimates(
+      location_fixtures[:new_york_with_name],
+      location_fixtures[:real_home_as_residential],
+      package_fixtures.values_at(:books),
+      pickup_date=monday,
+      {
+        :test => true
+      }
+    )
+
+    assert response.success?
+    refute_empty response.delivery_estimates
+    ground_delivery_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Ground"}.first
+    assert_equal monday + 3.day, ground_delivery_estimate.date
+    next_day_delivery_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Next Day Air"}.first
+    assert_equal monday + 1.day, next_day_delivery_estimate.date
+  end
 end

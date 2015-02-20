@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TimeInTransitResponse>
+  <Response>
+    <TransactionReference />
+    <ResponseStatusCode>1</ResponseStatusCode>
+    <ResponseStatusDescription>Success</ResponseStatusDescription>
+  </Response>
+  <TransitResponse>
+    <PickupDate>2015-02-02</PickupDate>
+    <TransitFrom>
+      <AddressArtifactFormat>
+        <PoliticalDivision2>NEW YORK</PoliticalDivision2>
+        <PoliticalDivision1>NY</PoliticalDivision1>
+        <Country>UNITED STATES</Country>
+        <CountryCode>US</CountryCode>
+        <PostcodePrimaryLow>10017</PostcodePrimaryLow>
+      </AddressArtifactFormat>
+    </TransitFrom>
+    <TransitTo>
+      <AddressArtifactFormat>
+        <PoliticalDivision2>TAMPA</PoliticalDivision2>
+        <PoliticalDivision1>FL</PoliticalDivision1>
+        <Country>UNITED STATES</Country>
+        <CountryCode>US</CountryCode>
+        <PostcodePrimaryLow>33615</PostcodePrimaryLow>
+        <ResidentialAddressIndicator />
+      </AddressArtifactFormat>
+    </TransitTo>
+    <InvoiceLineTotal>
+      <CurrencyCode>USD</CurrencyCode>
+      <MonetaryValue>15300000.00</MonetaryValue>
+    </InvoiceLineTotal>
+    <Disclaimer>Services listed as guaranteed are backed by a money-back guarantee for transportation charges only. UPS guarantees the day of delivery for every ground package you ship to any address within all 50 states and Puerto Rico. See Terms and Conditions in the Service Guide for details.</Disclaimer>
+    <ServiceSummary>
+      <Service>
+        <Code>1DM</Code>
+        <Description>UPS Next Day Air Early A.M.</Description>
+      </Service>
+      <Guaranteed>
+        <Code>Y</Code>
+      </Guaranteed>
+      <EstimatedArrival>
+        <BusinessTransitDays>1</BusinessTransitDays>
+        <Time>08:00:00</Time>
+        <PickupDate>2015-02-02</PickupDate>
+        <PickupTime>19:30:00</PickupTime>
+        <Date>2015-02-03</Date>
+        <DayOfWeek>TUE</DayOfWeek>
+        <CustomerCenterCutoff>18:30:00</CustomerCenterCutoff>
+      </EstimatedArrival>
+    </ServiceSummary>
+    <ServiceSummary>
+      <Service>
+        <Code>1DA</Code>
+        <Description>UPS Next Day Air</Description>
+      </Service>
+      <Guaranteed>
+        <Code>Y</Code>
+      </Guaranteed>
+      <EstimatedArrival>
+        <BusinessTransitDays>1</BusinessTransitDays>
+        <Time>10:30:00</Time>
+        <PickupDate>2015-02-02</PickupDate>
+        <PickupTime>19:30:00</PickupTime>
+        <Date>2015-02-03</Date>
+        <DayOfWeek>TUE</DayOfWeek>
+        <CustomerCenterCutoff>18:30:00</CustomerCenterCutoff>
+      </EstimatedArrival>
+    </ServiceSummary>
+    <ServiceSummary>
+      <Service>
+        <Code>1DP</Code>
+        <Description>UPS Next Day Air Saver</Description>
+      </Service>
+      <Guaranteed>
+        <Code>Y</Code>
+      </Guaranteed>
+      <EstimatedArrival>
+        <BusinessTransitDays>1</BusinessTransitDays>
+        <Time>23:00:00</Time>
+        <PickupDate>2015-02-02</PickupDate>
+        <PickupTime>19:30:00</PickupTime>
+        <Date>2015-02-03</Date>
+        <DayOfWeek>TUE</DayOfWeek>
+        <CustomerCenterCutoff>18:30:00</CustomerCenterCutoff>
+      </EstimatedArrival>
+    </ServiceSummary>
+    <ServiceSummary>
+      <Service>
+        <Code>2DA</Code>
+        <Description>UPS 2nd Day Air</Description>
+      </Service>
+      <Guaranteed>
+        <Code>Y</Code>
+      </Guaranteed>
+      <EstimatedArrival>
+        <BusinessTransitDays>2</BusinessTransitDays>
+        <Time>23:00:00</Time>
+        <PickupDate>2015-02-02</PickupDate>
+        <PickupTime>19:30:00</PickupTime>
+        <Date>2015-02-04</Date>
+        <DayOfWeek>WED</DayOfWeek>
+        <CustomerCenterCutoff>18:30:00</CustomerCenterCutoff>
+      </EstimatedArrival>
+    </ServiceSummary>
+    <ServiceSummary>
+      <Service>
+        <Code>3DS</Code>
+        <Description>UPS 3 Day Select</Description>
+      </Service>
+      <Guaranteed>
+        <Code>Y</Code>
+      </Guaranteed>
+      <EstimatedArrival>
+        <BusinessTransitDays>3</BusinessTransitDays>
+        <Time>23:00:00</Time>
+        <PickupDate>2015-02-02</PickupDate>
+        <Date>2015-02-05</Date>
+        <DayOfWeek>THU</DayOfWeek>
+      </EstimatedArrival>
+    </ServiceSummary>
+    <ServiceSummary>
+      <Service>
+        <Code>GND</Code>
+        <Description>UPS Ground</Description>
+      </Service>
+      <Guaranteed>
+        <Code>Y</Code>
+      </Guaranteed>
+      <EstimatedArrival>
+        <BusinessTransitDays>3</BusinessTransitDays>
+        <Time>23:00:00</Time>
+        <PickupDate>2015-02-02</PickupDate>
+        <Date>2015-02-05</Date>
+        <DayOfWeek>THU</DayOfWeek>
+      </EstimatedArrival>
+    </ServiceSummary>
+    <MaximumListSize>35</MaximumListSize>
+  </TransitResponse>
+</TimeInTransitResponse>
