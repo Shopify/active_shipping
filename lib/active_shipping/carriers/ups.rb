@@ -107,6 +107,18 @@ module ActiveShipping
     DEFAULT_SERVICE_NAME_TO_CODE['UPS 2nd Day Air'] = "02"
     DEFAULT_SERVICE_NAME_TO_CODE['UPS 3 Day Select'] = "12"
 
+    SHIPMENT_DELIVERY_CONFIRMATION_CODES = {
+      delivery_confirmation_signature_required: 1,
+      delivery_confirmation_adult_signature_required: 2
+    }
+
+    PACKAGE_DELIVERY_CONFIRMATION_CODES = {
+      delivery_confirmation: 1,
+      delivery_confirmation_signature_required: 2,
+      delivery_confirmation_adult_signature_required: 3,
+      usps_delivery_confirmation: 4
+    }
+
     def requirements
       [:key, :login, :password]
     end
@@ -361,6 +373,14 @@ module ActiveShipping
               end
             end
 
+            shipment_service_options = XmlNode.new('ShipmentServiceOptions') do |opts|
+              if delivery_confirmation = options[:delivery_confirmation]
+                opts << XmlNode.new('DeliveryConfirmation') do |dc|
+                  dc << XmlNode.new('DCISType', SHIPMENT_DELIVERY_CONFIRMATION_CODES[delivery_confirmation])
+                end
+              end
+            end
+
             if options[:international]
               build_international_shipment_request_options(xml, origin, destination, packages, options)
             end
@@ -579,14 +599,12 @@ module ActiveShipping
 
         unless options[:international]
           xml.PackageServiceOptions do
-            if package.options[:signature_required]
-              # Package level delivery confirmation is only available when shipping US -> US or PR -> PR
-              xml.DeliveryConfirmation do
-                xml.DCISType(2) # 2 = signature required.
+            if delivery_confirmation = options[:delivery_confirmation]
+              package_service_options << XmlNode.new('DeliveryConfirmation') do |dc|
+                dc << XmlNode.new('DCISType', PACKAGE_DELIVERY_CONFIRMATION_CODES[delivery_confirmation])
               end
-            elsif
-              xml.ShipperReleaseIndicator
             end
+            package_node << package_service_options if package_service_options.children.count > 0
           end
         end
 
