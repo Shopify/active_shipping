@@ -20,14 +20,14 @@ class CorreiosTest < Minitest::Test
   end
 
   def test_book_request
-    url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=&sDsSenha=&nCdServico=41106,40010&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.25&nCdFormato=1&nVlComprimento=19&nVlAltura=2&nVlLargura=14&nVlDiametro=0&sCdMaoPropria=N&nVlValorDeclarado=0&sCdAvisoRecebimento=N&nIndicaCalculo=1&StrRetorno=xml"
+    url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=&sDsSenha=&nCdServico=41106%2C40010&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.25&nCdFormato=1&nVlComprimento=19&nVlAltura=2&nVlLargura=14&nVlDiametro=0&sCdMaoPropria=N&nVlValorDeclarado=0&sCdAvisoRecebimento=N&nIndicaCalculo=1&StrRetorno=xml"
 
     @carrier.expects(:perform).with([url]).returns([@response_book_success])
     @carrier.find_rates(@saopaulo, @patosdeminas, [@book])
   end
 
   def test_poster_request
-    url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=&sDsSenha=&nCdServico=41106,40010&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.1&nCdFormato=1&nVlComprimento=93&nVlAltura=10&nVlLargura=10&nVlDiametro=10&sCdMaoPropria=N&nVlValorDeclarado=0&sCdAvisoRecebimento=N&nIndicaCalculo=1&StrRetorno=xml"
+    url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=&sDsSenha=&nCdServico=41106%2C40010&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.1&nCdFormato=1&nVlComprimento=93&nVlAltura=10&nVlLargura=10&nVlDiametro=10&sCdMaoPropria=N&nVlValorDeclarado=0&sCdAvisoRecebimento=N&nIndicaCalculo=1&StrRetorno=xml"
 
     @carrier.expects(:perform).with([url]).returns([@response_poster_success])
     @carrier.find_rates(@saopaulo, @patosdeminas, [@poster])
@@ -35,8 +35,8 @@ class CorreiosTest < Minitest::Test
 
   def test_poster_and_book_request
     urls = [
-      "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=&sDsSenha=&nCdServico=41106,40010&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.1&nCdFormato=1&nVlComprimento=93&nVlAltura=10&nVlLargura=10&nVlDiametro=10&sCdMaoPropria=N&nVlValorDeclarado=0&sCdAvisoRecebimento=N&nIndicaCalculo=1&StrRetorno=xml",
-      "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=&sDsSenha=&nCdServico=41106,40010&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.25&nCdFormato=1&nVlComprimento=19&nVlAltura=2&nVlLargura=14&nVlDiametro=0&sCdMaoPropria=N&nVlValorDeclarado=0&sCdAvisoRecebimento=N&nIndicaCalculo=1&StrRetorno=xml"
+      "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=&sDsSenha=&nCdServico=41106%2C40010&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.1&nCdFormato=1&nVlComprimento=93&nVlAltura=10&nVlLargura=10&nVlDiametro=10&sCdMaoPropria=N&nVlValorDeclarado=0&sCdAvisoRecebimento=N&nIndicaCalculo=1&StrRetorno=xml",
+      "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=&sDsSenha=&nCdServico=41106%2C40010&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.25&nCdFormato=1&nVlComprimento=19&nVlAltura=2&nVlLargura=14&nVlDiametro=0&sCdMaoPropria=N&nVlValorDeclarado=0&sCdAvisoRecebimento=N&nIndicaCalculo=1&StrRetorno=xml"
     ]
 
     @carrier.expects(:perform).with(urls).returns([@response_poster_success, @response_book_success])
@@ -44,14 +44,14 @@ class CorreiosTest < Minitest::Test
   end
 
   def test_book_request_with_specific_services
-    url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=&sDsSenha=&nCdServico=41106,40010,40215&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.25&nCdFormato=1&nVlComprimento=19&nVlAltura=2&nVlLargura=14&nVlDiametro=0&sCdMaoPropria=N&nVlValorDeclarado=0&sCdAvisoRecebimento=N&nIndicaCalculo=1&StrRetorno=xml"
+    url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=&sDsSenha=&nCdServico=41106%2C40010%2C40215&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.25&nCdFormato=1&nVlComprimento=19&nVlAltura=2&nVlLargura=14&nVlDiametro=0&sCdMaoPropria=N&nVlValorDeclarado=0&sCdAvisoRecebimento=N&nIndicaCalculo=1&StrRetorno=xml"
 
     @carrier.expects(:perform).with([url]).returns([@response_book_success])
     @carrier.find_rates(@saopaulo, @patosdeminas, [@book], :services => [41106, 40010, 40215])
   end
 
   def test_book_request_with_option_params
-    url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=1010&sDsSenha=123123&nCdServico=41106,40010&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.25&nCdFormato=1&nVlComprimento=19&nVlAltura=2&nVlLargura=14&nVlDiametro=0&sCdMaoPropria=S&nVlValorDeclarado=10,5&sCdAvisoRecebimento=S&nIndicaCalculo=1&StrRetorno=xml"
+    url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=1010&sDsSenha=123123&nCdServico=41106%2C40010&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.25&nCdFormato=1&nVlComprimento=19&nVlAltura=2&nVlLargura=14&nVlDiametro=0&sCdMaoPropria=S&nVlValorDeclarado=10%2C5&sCdAvisoRecebimento=S&nIndicaCalculo=1&StrRetorno=xml"
     options = { 
       :company_id => 1010,
       :password => 123123,
@@ -121,15 +121,14 @@ class CorreiosTest < Minitest::Test
 
   def test_book_invalid_response
     @carrier.stubs(:perform).returns([@response_book_invalid])
+    @carrier.find_rates(@saopaulo, @patosdeminas, [@book])
 
-    assert_throws(ActiveShipping::ResponseError) do
-      @carrier.find_rates(@saopaulo, @patosdeminas, [@book])
-    end
-    rescue => error
-      assert_equal ActiveShipping::ResponseError, error.class
-      assert_equal "CEP de origem invalido", error.message
-      assert_equal error.response.raw_responses, [@response_book_invalid]
-      assert_equal Hash.new, error.response.params
+    refute true, 'Must raise ActiveShipping::ResponseError'
+  rescue => error
+    assert_kind_of ActiveShipping::ResponseError, error
+    assert_equal "CEP de origem invalido", error.message
+    assert_equal error.response.raw_responses, [@response_book_invalid]
+    assert_equal Hash.new, error.response.params
   end
 
   def test_show_available_services

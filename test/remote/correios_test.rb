@@ -13,12 +13,6 @@ class RemoteCorreiosTest < Minitest::Test
 
     @book = Package.new(250, [14, 19, 2])
     @poster = Package.new(100, [93, 15], :cylinder => true)
-
-    @response_clothes = xml_fixture('correios/clothes_response')
-    @response_shoes = xml_fixture('correios/shoes_response')
-    @response_book_success = xml_fixture('correios/book_response')
-    @response_poster_success = xml_fixture('correios/poster_response')
-    @response_book_invalid = xml_fixture('correios/book_response_invalid')
   end
 
   def test_book_request
@@ -63,17 +57,17 @@ class RemoteCorreiosTest < Minitest::Test
     poster_price = response_poster.rates.sum(&:price)
     total_price = response.rates.sum(&:price)
 
-    assert total_price == (book_price + poster_price)
+    assert total_price == book_price + poster_price
   end
 
   def test_invalid_zip
-    assert_raises(ActiveShipping::ResponseError) do
-      @carrier.find_rates(@saopaulo, @invalid_city, [@book])
-    end
+    @carrier.find_rates(@saopaulo, @invalid_city, [@book])
+
+    refute true, 'Must raise ActiveShipping::ResponseError'
   rescue => error
-    assert_equal ActiveShipping::ResponseError, error.class
-    assert_equal RateResponse, error.response
-    assert_not error.message.empty?
+    assert_kind_of ActiveShipping::ResponseError, error
+    assert_kind_of RateResponse, error.response
+    refute error.message.empty?
     assert error.response.raw_responses.any?
     assert_equal Hash.new, error.response.params
   end
