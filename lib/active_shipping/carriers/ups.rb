@@ -15,7 +15,8 @@ module ActiveShipping
       :rates => 'ups.app/xml/Rate',
       :track => 'ups.app/xml/Track',
       :ship_confirm => 'ups.app/xml/ShipConfirm',
-      :ship_accept => 'ups.app/xml/ShipAccept'
+      :ship_accept => 'ups.app/xml/ShipAccept',
+      :delivery_dates =>  'ups.app/xml/TimeInTransit'
     }
 
     PICKUP_CODES = HashWithIndifferentAccess.new(
@@ -102,6 +103,10 @@ module ActiveShipping
 
     IMPERIAL_COUNTRIES = %w(US LR MM)
 
+    DEFAULT_SERVICE_NAME_TO_CODE = Hash[UPS::DEFAULT_SERVICES.to_a.map(&:reverse)]
+    DEFAULT_SERVICE_NAME_TO_CODE['UPS 2nd Day Air'] = "02"
+    DEFAULT_SERVICE_NAME_TO_CODE['UPS 3 Day Select'] = "12"
+
     def requirements
       [:key, :login, :password]
     end
@@ -162,6 +167,16 @@ module ActiveShipping
         raise "Could not obtain shipping label. #{e.message}."
 
       end
+    end
+
+    def get_delivery_date_estimates(origin, destination, packages, pickup_date=Date.current, options = {})
+      origin, destination = upsified_location(origin), upsified_location(destination)
+      options = @options.merge(options)
+      packages = Array(packages)
+      access_request = build_access_request
+      dates_request = build_delivery_dates_request(origin, destination, packages, pickup_date, options)
+      response = commit(:delivery_dates, save_request(access_request + dates_request), (options[:test] || false))
+      parse_delivery_dates_response(origin, destination, packages, response, options)
     end
 
     protected
@@ -372,6 +387,30 @@ module ActiveShipping
       xml_builder.to_xml
     end
 
+    def build_delivery_dates_request(origin, destination, packages, pickup_date, options={})
+      xml_builder = Nokogiri::XML::Builder.new do |xml|
+
+        xml.TimeInTransitRequest do
+          xml.Request do
+            xml.RequestAction('TimeInTransit')
+          end
+
+          build_address_artifact_format_location(xml, 'TransitFrom', origin)
+          build_address_artifact_format_location(xml, 'TransitTo', destination)
+
+          xml.InvoiceLineTotal do
+            xml.CurrencyCode('USD')
+            total_value = packages.inject(0) {|sum, package| sum + package.value}
+            xml.MonetaryValue(total_value)
+          end
+
+          xml.PickupDate(pickup_date.strftime('%Y%m%d'))
+        end
+      end
+
+      xml_builder.to_xml
+    end
+
     def build_international_shipment_request_options(xml, origin, destination, packages, options)
       build_location_node(xml, 'SoldTo', options[:sold_to] || destination, options)
       if options[:paperless_invoice]
@@ -485,6 +524,18 @@ module ActiveShipping
           xml.CountryCode(location.country_code(:alpha2)) unless location.country_code(:alpha2).blank?
           xml.ResidentialAddressIndicator(true) unless location.commercial? # the default should be that UPS returns residential rates for destinations that it doesn't know about
           # not implemented: Shipment/(Shipper|ShipTo|ShipFrom)/Address/ResidentialAddressIndicator element
+        end
+      end
+    end
+
+    def build_address_artifact_format_location(xml, name, location)
+      xml.public_send(name) do
+        xml.AddressArtifactFormat do
+          xml.PoliticalDivision2(location.city)
+          xml.PoliticalDivision1(location.province)
+          xml.CountryCode(location.country_code(:alpha2))
+          xml.PostcodePrimaryLow(location.postal_code)
+          xml.ResidentialAddressIndicator(true) unless location.commercial?
         end
       end
     end
@@ -682,6 +733,28 @@ module ActiveShipping
                            :origin => origin,
                            :destination => destination,
                            :tracking_number => tracking_number)
+    end
+
+    def parse_delivery_dates_response(origin, destination, packages, response, options={})
+      xml     = build_document(response, 'TimeInTransitResponse')
+      success = response_success?(xml)
+      message = response_message(xml)
+      delivery_estimates = []
+
+      if success
+        xml.css('ServiceSummary').each do |service_summary|
+          # Translate the Time in Transit Codes to the service codes used elsewhere
+          service_name = service_summary.at('Service/Description').text
+          service_code = UPS::DEFAULT_SERVICE_NAME_TO_CODE[service_name]
+          date = Date.strptime(service_summary.at('EstimatedArrival/Date').text, '%Y-%m-%d')
+          delivery_estimates << DeliveryDateEstimate.new(origin, destination, self.class.class_variable_get(:@@name),
+                                    service_name,
+                                    :service_code => service_code,
+                                    :guaranteed => service_summary.at('Guaranteed/Code').text == 'Y',
+                                    :date =>  date)
+        end
+      end
+      response = DeliveryDateEstimatesResponse.new(success, message, Hash.from_xml(response).values.first, :delivery_estimates => delivery_estimates, :xml => response, :request => last_request)
     end
 
     def location_from_address_node(address)

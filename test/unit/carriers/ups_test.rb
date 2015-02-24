@@ -10,6 +10,7 @@ class UPSTest < Minitest::Test
                    :password => 'password'
                  )
     @tracking_response = xml_fixture('ups/shipment_from_tiger_direct')
+    @delivery_dates_response = xml_fixture('ups/delivery_dates_response')
   end
 
   def test_initialize_options_requirements
@@ -383,5 +384,45 @@ class UPSTest < Minitest::Test
     refute_empty duties_and_taxes_payment_info.search('BillShipper')
   end
 
+  def test_get_delivery_date_estimates_can_parse_delivery_estimates
+    @carrier.expects(:commit).returns(@delivery_dates_response)
+    monday = Date.parse('0201', '%m%d') # Feb to avoid holidays http://www.ups.com/content/us/en/resources/ship/imp_exp/operation.html
+    monday += 1.day while monday.wday != 1
 
+    response = @carrier.get_delivery_date_estimates(
+      location_fixtures[:new_york_with_name],
+      location_fixtures[:real_home_as_residential],
+      package_fixtures.values_at(:books),
+      pickup_date=monday,
+      {
+        :test => true
+      }
+    )
+    assert response.is_a?(ActiveShipping::DeliveryDateEstimatesResponse)
+    assert_equal 6, response.delivery_estimates.size
+    ground_estimate = response.delivery_estimates.select{ |de| de.service_name == "UPS Ground"}.first
+    assert_equal Date.parse('2015-02-5'), ground_estimate.date
+  end
+
+  def test_get_delivery_date_estimates_can_translate_service_codes
+    # The TimeInTransit API returns service codes that are different from those used by
+    # other API's. So we need to translate the codes into the ones used elsewhere.
+    @carrier.expects(:commit).returns(@delivery_dates_response)
+    monday = Date.parse('0201', '%m%d') # Feb to avoid holidays http://www.ups.com/content/us/en/resources/ship/imp_exp/operation.html
+    monday += 1.day while monday.wday != 1
+
+    response = @carrier.get_delivery_date_estimates(
+      location_fixtures[:new_york_with_name],
+      location_fixtures[:real_home_as_residential],
+      package_fixtures.values_at(:books),
+      pickup_date=monday,
+      {
+        :test => true
+      }
+    )
+
+    response.delivery_estimates.each do |delivery_estimate|
+      assert delivery_estimate.service_name, UPS::DEFAULT_SERVICES[delivery_estimate.service_code]
+    end
+  end
 end
