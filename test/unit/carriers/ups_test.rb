@@ -275,7 +275,6 @@ class UPSTest < Minitest::Test
   end
 
   def test_saturday_delivery
-    # It's ok to use Nokogiri for development, right?
     response = Nokogiri::XML @carrier.send(:build_shipment_request,
                                            location_fixtures[:beverly_hills],
                                            location_fixtures[:annapolis],
@@ -384,6 +383,39 @@ class UPSTest < Minitest::Test
     refute_empty duties_and_taxes_payment_info.search('BillShipper')
   end
 
+  def test_label_request_shipment_level_delivery_confirmation
+    result = Nokogiri::XML(@carrier.send(:build_shipment_request,
+                                         location_fixtures[:beverly_hills],
+                                         location_fixtures[:ottawa_with_name],
+                                         package_fixtures.values_at(:chocolate_stuff),
+                                         :test => true,
+                                         :delivery_confirmation => :delivery_confirmation_adult_signature_required))
+    assert_equal '2', result.search('/ShipmentConfirmRequest/Shipment/ShipmentServiceOptions/DeliveryConfirmation/DCISType').text
+  end
+
+  def test_label_request_package_level_delivery_confirmation
+    packages = package_fixtures.values_at(:chocolate_stuff)
+    packages.each {|p| p.options[:delivery_confirmation] = :delivery_confirmation }
+    result = Nokogiri::XML(@carrier.send(:build_shipment_request,
+                                         location_fixtures[:beverly_hills],
+                                         location_fixtures[:annapolis],
+                                         packages,
+                                         :test => true))
+    assert_equal '1', result.search('/ShipmentConfirmRequest/Shipment/Package/PackageServiceOptions/DeliveryConfirmation/DCISType').text
+  end
+
+  def test_label_request_shipment_level_delivery_confirmation_moved_to_package_level
+    # Domestic shipments should have their delivery confirmation specified at package level and not shipment-level
+    result = Nokogiri::XML(@carrier.send(:build_shipment_request,
+                                         location_fixtures[:beverly_hills],
+                                         location_fixtures[:annapolis],
+                                         package_fixtures.values_at(:chocolate_stuff),
+                                         :test => true,
+                                         :delivery_confirmation => :delivery_confirmation))
+    assert_equal '1', result.search('/ShipmentConfirmRequest/Shipment/Package/PackageServiceOptions/DeliveryConfirmation/DCISType').text
+    assert_empty result.search('/ShipmentConfirmRequest/Shipment/ShipmentServiceOptions/DeliveryConfirmation/DCISType').text
+  end
+
   def test_get_delivery_date_estimates_can_parse_delivery_estimates
     @carrier.expects(:commit).returns(@delivery_dates_response)
     monday = Date.parse('0201', '%m%d') # Feb to avoid holidays http://www.ups.com/content/us/en/resources/ship/imp_exp/operation.html
@@ -424,27 +456,5 @@ class UPSTest < Minitest::Test
     response.delivery_estimates.each do |delivery_estimate|
       assert delivery_estimate.service_name, UPS::DEFAULT_SERVICES[delivery_estimate.service_code]
     end
-  end
-
-  def test_delivery_confirmation
-    result = Nokogiri::XML(@carrier.send(:build_shipment_request,
-                                         @locations[:beverly_hills],
-                                         @locations[:annapolis],
-                                         @packages.values_at(
-                                            :chocolate_stuff),
-                                         :test => true,
-                                         :delivery_confirmation => :delivery_confirmation_adult_signature_required))
-    assert_equal '2', result.search('/ShipmentConfirmRequest/Shipment/ShipmentServiceOptions/DeliveryConfirmation/DCISType').text
-  end
-
-  def test_delivery_confirmation
-    result = Nokogiri::XML(@carrier.send(:build_shipment_request,
-                                         @locations[:beverly_hills],
-                                         @locations[:annapolis],
-                                         @packages.values_at(
-                                            :chocolate_stuff),
-                                         :test => true,
-                                         :delivery_confirmation => :delivery_confirmation_adult_signature_required))
-    assert_equal '3', result.search('/ShipmentConfirmRequest/Shipment/Package/PackageServiceOptions/DeliveryConfirmation/DCISType').text
   end
 end
