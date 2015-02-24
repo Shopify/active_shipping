@@ -52,7 +52,7 @@ class CorreiosTest < Minitest::Test
 
   def test_book_request_with_option_params
     url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=1010&sDsSenha=123123&nCdServico=41106%2C40010&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.25&nCdFormato=1&nVlComprimento=19&nVlAltura=2&nVlLargura=14&nVlDiametro=0&sCdMaoPropria=S&nVlValorDeclarado=10%2C5&sCdAvisoRecebimento=S&nIndicaCalculo=1&StrRetorno=xml"
-    options = { 
+    options = {
       :company_id => 1010,
       :password => 123123,
       :declared_value_extra => 10.50,
@@ -120,19 +120,29 @@ class CorreiosTest < Minitest::Test
   end
 
   def test_book_invalid_response
-    @carrier.stubs(:perform).returns([@response_book_invalid])
-    @carrier.find_rates(@saopaulo, @patosdeminas, [@book])
+    error = assert_raises(ActiveShipping::ResponseError) do
+      @carrier.stubs(:perform).returns([@response_book_invalid])
+      @carrier.find_rates(@saopaulo, @patosdeminas, [@book])
+    end
 
-    refute true, 'Must raise ActiveShipping::ResponseError'
-  rescue => error
-    assert_kind_of ActiveShipping::ResponseError, error
     assert_equal "CEP de origem invalido", error.message
     assert_equal error.response.raw_responses, [@response_book_invalid]
     assert_equal Hash.new, error.response.params
   end
 
+  def test_valid_book_and_invalid_book_response
+    error = assert_raises(ActiveShipping::ResponseError) do
+      @carrier.stubs(:perform).returns([@response_book_success, @response_book_invalid])
+      @carrier.find_rates(@saopaulo, @patosdeminas, [@book, @book])
+    end
+
+    assert_equal "CEP de origem invalido", error.message
+    assert_equal error.response.raw_responses, [@response_book_success, @response_book_invalid]
+    assert_equal Hash.new, error.response.params
+  end
+
   def test_show_available_services
-    services = Correios.available_services 
+    services = Correios.available_services
 
     assert_kind_of Hash, services
     assert_equal 19, services.size

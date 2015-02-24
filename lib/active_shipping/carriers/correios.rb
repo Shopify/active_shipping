@@ -201,11 +201,11 @@ module ActiveShipping
       end
 
       def error?(xml_item)
-        text = error(xml_item)
-        !text.empty? && text != "0"
+        error_id = error_id(xml_item)
+        !error_id.empty? && error_id != "0"
       end
 
-      def error(xml_item)
+      def error_id(xml_item)
         xml_item.css('Erro').text
       end
 
