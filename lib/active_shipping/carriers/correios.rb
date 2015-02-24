@@ -21,6 +21,7 @@ module ActiveShipping
 
     protected
 
+    DEFAULT_SERVICES = [41106, 40010]
     AVAILABLE_SERVICES = {
       41106 => 'PAC sem contrato',
       41068 => 'PAC com contrato',
@@ -42,8 +43,6 @@ module ActiveShipping
       81833 => '(Grupo 2) e-SEDEX, com contrato',
       81850 => '(Grupo 3) e-SEDEX, com contrato'
     }.freeze
-
-    protected
 
     def perform(urls)
       urls.map { |url| ssl_get(url) }
@@ -101,39 +100,45 @@ module ActiveShipping
         param.nil? ? '0' : param.to_s.gsub('.', ',')
       end
 
-      def params(package)
+      def build_params(package)
         @params.merge(package.params)
       end
 
-      def query_string(params)
-        "nCdEmpresa=#{params[:company_id]}&" +
-        "sDsSenha=#{params[:password]}&" +
-        "nCdServico=#{params[:service_type]}&" +
-        "sCepOrigem=#{params[:origin_zip]}&" +
-        "sCepDestino=#{params[:destination_zip]}&" +
-        "nVlPeso=#{params[:weight]}&" +
-        "nCdFormato=#{params[:format]}&" +
-        "nVlComprimento=#{params[:length]}&" +
-        "nVlAltura=#{params[:height]}&" +
-        "nVlLargura=#{params[:width]}&" +
-        "nVlDiametro=#{params[:diameter]}&" +
-        "sCdMaoPropria=#{params[:mao_propria_extra]}&" +
-        "nVlValorDeclarado=#{params[:declared_value_extra]}&" +
-        "sCdAvisoRecebimento=#{params[:delivery_notice_extra]}&" +
-        "nIndicaCalculo=#{params[:return_information]}&" +
-        "StrRetorno=#{params[:return_type]}"
+      def hash_query_string(params)
+        {
+          'nCdEmpresa' => params[:company_id],
+          'sDsSenha' => params[:password],
+          'nCdServico' => params[:service_type],
+          'sCepOrigem' => params[:origin_zip],
+          'sCepDestino' => params[:destination_zip],
+          'nVlPeso' => params[:weight],
+          'nCdFormato' => params[:format],
+          'nVlComprimento' => params[:length],
+          'nVlAltura' => params[:height],
+          'nVlLargura' => params[:width],
+          'nVlDiametro' => params[:diameter],
+          'sCdMaoPropria' => params[:mao_propria_extra],
+          'nVlValorDeclarado' => params[:declared_value_extra],
+          'sCdAvisoRecebimento' => params[:delivery_notice_extra],
+          'nIndicaCalculo' => params[:return_information],
+          'StrRetorno' => params[:return_type]
+        }
+      end
+
+      def query_string(package)
+        params = build_params(package)
+        hash_query_string(params).map { |key, value| "#{CGI.escape(key)}=#{CGI.escape(value.to_s)}" }.join('&')
       end
 
       def create_url(package)
-        "#{URL}?#{query_string(params(package))}"
+        "#{URL}?#{query_string(package)}"
       end
 
       def service_type
-        @options[:services].nil? ? '41106,40010' : @options[:services].join(',')
+        @options[:services].nil? ? DEFAULT_SERVICES.join(',') : @options[:services].join(',')
       end
 
     end
-
 
     class CorreiosRateResponse < ActiveShipping::RateResponse
       attr_reader :raw_responses
@@ -154,7 +159,7 @@ module ActiveShipping
 
       def rate_response
         @rates = rates
-        CorreiosRateResponse.new(true, 'success', params_options, response_options)
+        CorreiosRateResponse.new(true, nil, params_options, response_options)
       rescue => error
         CorreiosRateResponse.new(false, error.message, {}, response_options)
       end
