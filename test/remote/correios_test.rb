@@ -1,8 +1,6 @@
 require 'test_helper'
 
 class RemoteCorreiosTest < Minitest::Test
-  include ActiveShipping::Test::Fixtures
-  include ActiveShipping::Test::Credentials
 
   def setup
     @carrier = Correios.new
@@ -12,6 +10,7 @@ class RemoteCorreiosTest < Minitest::Test
     @invalid_city = Location.new(:zip => "invalid")
 
     @book = Package.new(250, [14, 19, 2])
+    @invalid_book = Package.new(9999999999999, [14, 19, 2])
     @poster = Package.new(100, [93, 15], :cylinder => true)
   end
 
@@ -61,15 +60,24 @@ class RemoteCorreiosTest < Minitest::Test
   end
 
   def test_invalid_zip
-    @carrier.find_rates(@saopaulo, @invalid_city, [@book])
+    error = assert_raises(ActiveShipping::ResponseError) do
+      @carrier.find_rates(@saopaulo, @invalid_city, [@book])
+    end
 
-    refute true, 'Must raise ActiveShipping::ResponseError'
-  rescue => error
-    assert_kind_of ActiveShipping::ResponseError, error
     assert_kind_of RateResponse, error.response
     refute error.message.empty?
     assert error.response.raw_responses.any?
     assert_equal Hash.new, error.response.params
   end
 
+  def test_valid_book_and_invalid_book
+    error = assert_raises(ActiveShipping::ResponseError) do
+      @carrier.find_rates(@saopaulo, @riodejaneiro, [@book, @invalid_book])
+    end
+
+    assert_kind_of RateResponse, error.response
+    refute error.message.empty?
+    assert error.response.raw_responses.any?
+    assert_equal Hash.new, error.response.params
+  end
 end
