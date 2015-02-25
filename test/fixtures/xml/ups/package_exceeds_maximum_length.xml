@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<RatingServiceSelectionResponse>
+  <Response>
+    <ResponseStatusCode>0</ResponseStatusCode>
+    <ResponseStatusDescription>Failure</ResponseStatusDescription>
+    <Error>
+      <ErrorSeverity>Hard</ErrorSeverity>
+      <ErrorCode>111055</ErrorCode>
+      <ErrorDescription>Package exceeds the maximum length constraint of 108 inches. Length is the longest side of a package.</ErrorDescription>
+    </Error>
+  </Response>
+</RatingServiceSelectionResponse>

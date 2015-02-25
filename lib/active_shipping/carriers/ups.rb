@@ -787,7 +787,9 @@ module ActiveShipping
     end
 
     def response_message(document)
-      document.root.at_xpath('Response/Error/ErrorDescription | Response/ResponseStatusDescription').text
+      status = document.root.at_xpath('Response/ResponseStatusDescription').try(:text)
+      desc = document.root.at_xpath('Response/Error/ErrorDescription').try(:text)
+      [status, desc].select(&:present?).join(": ").presence || "UPS could not process the request."
     end
 
     def response_digest(xml)
