@@ -293,4 +293,22 @@ class RemoteUPSTest < Minitest::Test
     refute response.rates.empty?
     assert_equal ["UPS Ground"], response.rates.map(&:service_name)
   end
+
+  def test_delivery_date_estimates_intl
+    today = Date.current
+    response = @carrier.get_delivery_date_estimates(
+      location_fixtures[:new_york_with_name],
+      location_fixtures[:ottawa_with_name],
+      package_fixtures.values_at(:books),
+      pickup_date=today,
+      {
+        :test => true
+      }
+    )
+
+    assert response.success?
+    refute_empty response.delivery_estimates
+    ww_express_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Worldwide Express"}.first
+    assert_equal Date.parse(1.business_day.from_now.to_s), ww_express_estimate.date
+  end
 end
