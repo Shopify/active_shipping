@@ -1,5 +1,22 @@
 # ActiveShipping CHANGELOG
 
+### v1.0.0
+
+- **BREAKING CHANGE:** Change namespace from `ActiveMerchant::Shipping` to `ActiveShipping`
+- Drop support for Ruby 1.8 and Ruby 1.9.
+- Drop support for ActiveSupport < 3.2, support up to ActiveSupport 4.2.
+- Updated Fedex to use latest API version for tracking
+- Various improvements to UPS carrier implementation.
+- Small bugfixes in USPS carrier implementation.
+- Various small bugfixes in XML handling for several carriers.
+- Rewite all carriers to use nokogiri for XML parsing and generating.
+- Bump `active_utils` dependency to require 3.x to avoid conflicts with `ActiveMerchant`.
+- Extracted `quantified` into separate gem.
+- Removed vendored `XmlNode` library.
+- Removed `builder` dependency.
+- Improved test setup that allows running functional tests on CI.
+- Improved documentation of the abstraction API.
+
 ### v0.10.1
 
  - Canada Post PWS: Makes wrapper act more consistently with the rest of the API [jnormore]
