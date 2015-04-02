@@ -107,6 +107,18 @@ module ActiveShipping
     DEFAULT_SERVICE_NAME_TO_CODE['UPS 2nd Day Air'] = "02"
     DEFAULT_SERVICE_NAME_TO_CODE['UPS 3 Day Select'] = "12"
 
+    SHIPMENT_DELIVERY_CONFIRMATION_CODES = {
+      delivery_confirmation_signature_required: 1,
+      delivery_confirmation_adult_signature_required: 2
+    }
+
+    PACKAGE_DELIVERY_CONFIRMATION_CODES = {
+      delivery_confirmation: 1,
+      delivery_confirmation_signature_required: 2,
+      delivery_confirmation_adult_signature_required: 3,
+      usps_delivery_confirmation: 4
+    }
+
     def requirements
       [:key, :login, :password]
     end
@@ -274,10 +286,12 @@ module ActiveShipping
     # * reference_numbers: Array of hashes with :value => a reference number value and optionally :code => reference number type
     # * prepay: if truthy the shipper will be bill immediatly. Otherwise the shipper is billed when the label is used.
     # * negotiated_rates: if truthy negotiated rates will be requested from ups. Only valid if shipper account has negotiated rates.
+    # * delivery_confirmation: Can be set to any key from SHIPMENT_DELIVERY_CONFIRMATION_CODES. Can also be set on package level via package.options
     def build_shipment_request(origin, destination, packages, options={})
       packages = Array(packages)
       options[:international] = origin.country.name != destination.country.name
       options[:imperial] ||= IMPERIAL_COUNTRIES.include?(origin.country_code(:alpha2))
+
       if allow_package_level_reference_numbers(origin, destination)
         if options[:reference_numbers]
           packages.each do |package|
@@ -286,6 +300,8 @@ module ActiveShipping
         end
         options[:reference_numbers] = []
       end
+
+      handle_delivery_confirmation_options(origin, destination, packages, options)
 
       xml_builder = Nokogiri::XML::Builder.new do |xml|
         xml.ShipmentConfirmRequest do
@@ -362,7 +378,32 @@ module ActiveShipping
             end
 
             if options[:international]
-              build_international_shipment_request_options(xml, origin, destination, packages, options)
+              build_location_node(xml, 'SoldTo', options[:sold_to] || destination, options)
+
+              if origin.country_code(:alpha2) == 'US' && ['CA', 'PR'].include?(destination.country_code(:alpha2))
+                # Required for shipments from the US to Puerto Rico or Canada
+                xml.InvoiceLineTotal do
+                  total_value = packages.inject(0) {|sum, package| sum + (package.value || 0)}
+                  xml.MonetaryValue(total_value)
+                end
+              end
+
+              contents_description = packages.map {|p| p.options[:description]}.compact.join(',')
+              unless contents_description.empty?
+                xml.Description(contents_description)
+              end
+            end
+
+            xml.ShipmentServiceOptions do
+              if delivery_confirmation = options[:delivery_confirmation]
+                xml.DeliveryConfirmation do
+                  xml.DCISType(SHIPMENT_DELIVERY_CONFIRMATION_CODES[delivery_confirmation])
+                end
+              end
+
+              if options[:international]
+                build_international_forms(xml, origin, destination, packages, options)
+              end
             end
 
             # A request may specify multiple packages.
@@ -411,50 +452,34 @@ module ActiveShipping
       xml_builder.to_xml
     end
 
-    def build_international_shipment_request_options(xml, origin, destination, packages, options)
-      build_location_node(xml, 'SoldTo', options[:sold_to] || destination, options)
+    def build_international_forms(xml, origin, destination, packages, options)
       if options[:paperless_invoice]
-        xml.ShipmentServiceOptions do
-          xml.InternationalForms do
-            xml.FormType('01') # 01 is "Invoice"
-            xml.InvoiceDate(options[:invoice_date] || Date.today.strftime('%Y%m%d'))
-            xml.ReasonForExport(options[:reason_for_export] || 'SALE')
-            xml.CurrencyCode(options[:currency_code] || 'USD')
+        xml.InternationalForms do
+          xml.FormType('01') # 01 is "Invoice"
+          xml.InvoiceDate(options[:invoice_date] || Date.today.strftime('%Y%m%d'))
+          xml.ReasonForExport(options[:reason_for_export] || 'SALE')
+          xml.CurrencyCode(options[:currency_code] || 'USD')
 
-            if options[:terms_of_shipment]
-              xml.TermsOfShipment(options[:terms_of_shipment])
-            end
+          if options[:terms_of_shipment]
+            xml.TermsOfShipment(options[:terms_of_shipment])
+          end
 
-            packages.each do |package|
-              xml.Product do |xml|
-                xml.Description(package.options[:description])
-                xml.CommodityCode(package.options[:commodity_code])
-                xml.OriginCountryCode(origin.country_code(:alpha2))
-                xml.Unit do |xml|
-                  xml.Value(package.value / (package.options[:item_count] || 1))
-                  xml.Number((package.options[:item_count] || 1))
-                  xml.UnitOfMeasurement do |xml|
-                    # NMB = number. You can specify units in barrels, boxes, etc. Codes are in the api docs.
-                    xml.Code(package.options[:unit_of_item_count] || 'NMB')
-                  end
+          packages.each do |package|
+            xml.Product do |xml|
+              xml.Description(package.options[:description])
+              xml.CommodityCode(package.options[:commodity_code])
+              xml.OriginCountryCode(origin.country_code(:alpha2))
+              xml.Unit do |xml|
+                xml.Value(package.value / (package.options[:item_count] || 1))
+                xml.Number((package.options[:item_count] || 1))
+                xml.UnitOfMeasurement do |xml|
+                  # NMB = number. You can specify units in barrels, boxes, etc. Codes are in the api docs.
+                  xml.Code(package.options[:unit_of_item_count] || 'NMB')
                 end
               end
             end
           end
         end
-      end
-
-      if origin.country_code(:alpha2) == 'US' && ['CA', 'PR'].include?(destination.country_code(:alpha2))
-        # Required for shipments from the US to Puerto Rico or Canada
-        xml.InvoiceLineTotal do
-          total_value = packages.inject(0) {|sum, package| sum + (package.value || 0)}
-          xml.MonetaryValue(total_value)
-        end
-      end
-
-      contents_description = packages.map {|p| p.options[:description]}.compact.join(',')
-      unless contents_description.empty?
-        xml.Description(contents_description)
       end
     end
 
@@ -577,15 +602,10 @@ module ActiveShipping
           end
         end
 
-        unless options[:international]
-          xml.PackageServiceOptions do
-            if package.options[:signature_required]
-              # Package level delivery confirmation is only available when shipping US -> US or PR -> PR
-              xml.DeliveryConfirmation do
-                xml.DCISType(2) # 2 = signature required.
-              end
-            elsif
-              xml.ShipperReleaseIndicator
+        xml.PackageServiceOptions do
+          if delivery_confirmation = package.options[:delivery_confirmation]
+            xml.DeliveryConfirmation do
+              xml.DCISType(PACKAGE_DELIVERY_CONFIRMATION_CODES[delivery_confirmation])
             end
           end
         end
@@ -836,6 +856,45 @@ module ActiveShipping
       # if the package is US -> US or PR -> PR the only type of reference numbers that are allowed are package-level
       # Otherwise the only type of reference numbers that are allowed are shipment-level
       [['US','US'],['PR', 'PR']].include?([origin,destination].map(&:country_code))
+    end
+
+    def handle_delivery_confirmation_options(origin, destination, packages, options)
+      if package_level_delivery_confirmation?(origin, destination)
+        handle_package_level_delivery_confirmation(origin, destination, packages, options)
+      else
+        handle_shipment_level_delivery_confirmation(origin, destination, packages, options)
+      end
+    end
+
+    def handle_package_level_delivery_confirmation(origin, destination, packages, options)
+      packages.each do |package|
+        # Transfer shipment-level option to package with no specified delivery_confirmation
+        package.options[:delivery_confirmation] = options[:delivery_confirmation] unless package.options[:delivery_confirmation]
+
+        # Assert that option is valid
+        if package.options[:delivery_confirmation] && !PACKAGE_DELIVERY_CONFIRMATION_CODES[package.options[:delivery_confirmation]]
+          raise "Invalid delivery_confirmation option on package: '#{package.options[:delivery_confirmation]}'. Use a key from PACKAGE_DELIVERY_CONFIRMATION_CODES"
+        end
+      end
+      options.delete(:delivery_confirmation)
+    end
+
+    def handle_shipment_level_delivery_confirmation(origin, destination, packages, options)
+      if packages.any? { |p| p.options[:delivery_confirmation] }
+        raise "origin/destination pair does not support package level delivery_confirmation options"
+      end
+
+      if options[:delivery_confirmation] && !SHIPMENT_DELIVERY_CONFIRMATION_CODES[options[:delivery_confirmation]]
+        raise "Invalid delivery_confirmation option: '#{options[:delivery_confirmation]}'. Use a key from SHIPMENT_DELIVERY_CONFIRMATION_CODES"
+      end
+    end
+
+    # For certain origin/destination pairs, UPS allows each package in a shipment to have a specified delivery_confirmation option
+    # otherwise the delivery_confirmation option must be specified on the entire shipment.
+    # See Appendix P of UPS Shipping Package XML Developers Guide for the rules on which the logic below is based.
+    def package_level_delivery_confirmation?(origin, destination)
+      origin.country_code == destination.country_code ||
+      [['US','PR'], ['PR','US']].include?([origin,destination].map(&:country_code))
     end
   end
 end
