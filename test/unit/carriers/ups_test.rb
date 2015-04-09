@@ -483,4 +483,20 @@ class UPSTest < Minitest::Test
       assert delivery_estimate.service_name, UPS::DEFAULT_SERVICES[delivery_estimate.service_code]
     end
   end
+
+  def test_get_rates_for_single_serivce
+    mock_response = xml_fixture("ups/rate_single_service")
+    @carrier.expects(:commit).returns(mock_response)
+
+    response = @carrier.find_rates(
+      location_fixtures[:new_york_with_name],
+      location_fixtures[:real_home_as_residential],
+      package_fixtures.values_at(:books),
+      {
+        :service => UPS::DEFAULT_SERVICE_NAME_TO_CODE["UPS Ground"],
+        :test => true
+      }
+    )
+    assert_equal ["UPS Ground"], response.rates.map(&:service_name)
+  end
 end

@@ -221,9 +221,7 @@ module ActiveShipping
         xml.RatingServiceSelectionRequest do
           xml.Request do
             xml.RequestAction('Rate')
-            xml.RequestOption('Shop')
-            # not implemented: 'Rate' RequestOption to specify a single service query
-            # xml.RequestOption((options[:service].nil? or options[:service] == :all) ? 'Shop' : 'Rate')
+            xml.RequestOption((options[:service].nil?) ? 'Shop' : 'Rate')
           end
 
           pickup_type = options[:pickup_type] || :daily_pickup
@@ -252,6 +250,12 @@ module ActiveShipping
             #                   * Shipment/ScheduledDeliveryTime element
             #                   * Shipment/AlternateDeliveryTime element
             #                   * Shipment/DocumentsOnly element
+
+            unless options[:service].nil?
+              xml.Service do
+                xml.Code(options[:service])
+              end
+            end
 
             Array(packages).each do |package|
               options[:imperial] ||= IMPERIAL_COUNTRIES.include?(origin.country_code(:alpha2))

@@ -279,4 +279,20 @@ class RemoteUPSTest < Minitest::Test
     next_day_delivery_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Next Day Air"}.first
     assert_equal monday + 1.day, next_day_delivery_estimate.date
   end
+
+  def test_rate_with_single_service
+    response = @carrier.find_rates(
+      location_fixtures[:new_york_with_name],
+      location_fixtures[:real_home_as_residential],
+      package_fixtures.values_at(:books),
+      {
+        :service => UPS::DEFAULT_SERVICE_NAME_TO_CODE["UPS Ground"],
+        :test => true
+      }
+    )
+
+    assert response.success?
+    refute response.rates.empty?
+    assert_equal ["UPS Ground"], response.rates.map(&:service_name)
+  end
 end
