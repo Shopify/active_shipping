@@ -3,6 +3,7 @@ require 'bundler/setup'
 require 'minitest/autorun'
 require 'mocha/mini_test'
 require 'timecop'
+require 'business_time'
 
 require 'active_shipping'
 require 'logger'

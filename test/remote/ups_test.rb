@@ -239,14 +239,13 @@ class RemoteUPSTest < Minitest::Test
   end
 
   def test_delivery_date_estimates_within_zip
-    monday = Date.parse('0201', '%m%d') # Feb to avoid holidays http://www.ups.com/content/us/en/resources/ship/imp_exp/operation.html
-    monday += 1.day while monday.wday != 1
+    today = Date.current
 
     response = @carrier.get_delivery_date_estimates(
       location_fixtures[:new_york_with_name],
       location_fixtures[:new_york_with_name],
       package_fixtures.values_at(:books),
-      pickup_date=monday,
+      today,
       {
         :test => true
       }
@@ -255,18 +254,17 @@ class RemoteUPSTest < Minitest::Test
     assert response.success?
     refute_empty response.delivery_estimates
     ground_delivery_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Ground"}.first
-    assert_equal monday + 1.day, ground_delivery_estimate.date
+    assert_equal Date.parse(1.business_days.from_now.to_s), ground_delivery_estimate.date
   end
 
   def test_delivery_date_estimates_across_zips
-    monday = Date.parse('0201', '%m%d') # Feb to avoid holidays http://www.ups.com/content/us/en/resources/ship/imp_exp/operation.html
-    monday += 1.day while monday.wday != 1
+    today = Date.current
 
     response = @carrier.get_delivery_date_estimates(
       location_fixtures[:new_york_with_name],
       location_fixtures[:real_home_as_residential],
       package_fixtures.values_at(:books),
-      pickup_date=monday,
+      today,
       {
         :test => true
       }
@@ -275,9 +273,9 @@ class RemoteUPSTest < Minitest::Test
     assert response.success?
     refute_empty response.delivery_estimates
     ground_delivery_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Ground"}.first
-    assert_equal monday + 3.day, ground_delivery_estimate.date
+    assert_equal Date.parse(3.business_days.from_now.to_s), ground_delivery_estimate.date
     next_day_delivery_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Next Day Air"}.first
-    assert_equal monday + 1.day, next_day_delivery_estimate.date
+    assert_equal Date.parse(1.business_days.from_now.to_s), next_day_delivery_estimate.date
   end
 
   def test_rate_with_single_service
