@@ -20,38 +20,92 @@ class CorreiosTest < Minitest::Test
   end
 
   def test_book_request
-    url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=&sDsSenha=&nCdServico=41106%2C40010&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.25&nCdFormato=1&nVlComprimento=19&nVlAltura=2&nVlLargura=14&nVlDiametro=0&sCdMaoPropria=N&nVlValorDeclarado=0&sCdAvisoRecebimento=N&nIndicaCalculo=1&StrRetorno=xml"
-
-    @carrier.expects(:perform).with([url]).returns([@response_book_success])
-    @carrier.find_rates(@saopaulo, @patosdeminas, [@book])
+    @carrier.expects(:perform).returns([@response_book_success])
+    response = @carrier.find_rates(@saopaulo, @patosdeminas, [@book])
+    
+    [
+      "sCepOrigem=01415000",
+      "sCepDestino=38700000",
+      "nVlPeso=0.25",
+      "nCdFormato=1",
+      "nVlComprimento=19",
+      "nVlAltura=2",
+      "nVlLargura=14",
+      "nVlDiametro=0"
+    ].each do |query_param|
+      assert_match query_param, response.urls.first
+    end
   end
 
   def test_poster_request
-    url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=&sDsSenha=&nCdServico=41106%2C40010&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.1&nCdFormato=1&nVlComprimento=93&nVlAltura=10&nVlLargura=10&nVlDiametro=10&sCdMaoPropria=N&nVlValorDeclarado=0&sCdAvisoRecebimento=N&nIndicaCalculo=1&StrRetorno=xml"
-
-    @carrier.expects(:perform).with([url]).returns([@response_poster_success])
-    @carrier.find_rates(@saopaulo, @patosdeminas, [@poster])
+    @carrier.expects(:perform).returns([@response_poster_success])
+    response = @carrier.find_rates(@saopaulo, @patosdeminas, [@poster])
+    
+    [
+      "sCepOrigem=01415000",
+      "sCepDestino=38700000",
+      "nVlPeso=0.1",
+      "nCdFormato=1",
+      "nVlComprimento=93",
+      "nVlAltura=10",
+      "nVlLargura=10",
+      "nVlDiametro=10"
+    ].each do |query_param|
+      assert_match query_param, response.urls.first
+    end
   end
 
   def test_poster_and_book_request
-    urls = [
-      "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=&sDsSenha=&nCdServico=41106%2C40010&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.1&nCdFormato=1&nVlComprimento=93&nVlAltura=10&nVlLargura=10&nVlDiametro=10&sCdMaoPropria=N&nVlValorDeclarado=0&sCdAvisoRecebimento=N&nIndicaCalculo=1&StrRetorno=xml",
-      "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=&sDsSenha=&nCdServico=41106%2C40010&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.25&nCdFormato=1&nVlComprimento=19&nVlAltura=2&nVlLargura=14&nVlDiametro=0&sCdMaoPropria=N&nVlValorDeclarado=0&sCdAvisoRecebimento=N&nIndicaCalculo=1&StrRetorno=xml"
-    ]
-
-    @carrier.expects(:perform).with(urls).returns([@response_poster_success, @response_book_success])
-    @carrier.find_rates(@saopaulo, @patosdeminas, [@poster, @book])
+    @carrier.expects(:perform).returns([@response_poster_success, @response_book_success])
+    response = @carrier.find_rates(@saopaulo, @patosdeminas, [@poster, @book])
+    
+    [
+      "sCepOrigem=01415000",
+      "sCepDestino=38700000",
+      "nVlPeso=0.1",
+      "nCdFormato=1",
+      "nVlComprimento=93",
+      "nVlAltura=10",
+      "nVlLargura=10",
+      "nVlDiametro=10"
+    ].each do |query_param|
+      assert_match query_param, response.urls.first
+    end
+    
+    [
+      "sCepOrigem=01415000",
+      "sCepDestino=38700000",
+      "nVlPeso=0.25",
+      "nCdFormato=1",
+      "nVlComprimento=19",
+      "nVlAltura=2",
+      "nVlLargura=14",
+      "nVlDiametro=0"
+    ].each do |query_param|
+      assert_match query_param, response.urls.last
+    end
   end
 
   def test_book_request_with_specific_services
-    url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=&sDsSenha=&nCdServico=41106%2C40010%2C40215&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.25&nCdFormato=1&nVlComprimento=19&nVlAltura=2&nVlLargura=14&nVlDiametro=0&sCdMaoPropria=N&nVlValorDeclarado=0&sCdAvisoRecebimento=N&nIndicaCalculo=1&StrRetorno=xml"
-
-    @carrier.expects(:perform).with([url]).returns([@response_book_success])
-    @carrier.find_rates(@saopaulo, @patosdeminas, [@book], :services => [41106, 40010, 40215])
+    @carrier.expects(:perform).returns([@response_book_success])
+    response = @carrier.find_rates(@saopaulo, @patosdeminas, [@book], :services => [41106, 40010, 40215])
+    
+    [
+      "nCdServico=41106%2C40010%2C40215",
+      "sCepOrigem=01415000",
+      "sCepDestino=38700000",
+      "nVlPeso=0.25",
+      "nCdFormato=1",
+      "nVlComprimento=19",
+      "nVlAltura=2",
+      "nVlLargura=14",
+      "nVlDiametro=0"
+    ].each do |query_param|
+      assert_match query_param, response.urls.first
+    end
   end
 
   def test_book_request_with_option_params
-    url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?nCdEmpresa=1010&sDsSenha=123123&nCdServico=41106%2C40010&sCepOrigem=01415000&sCepDestino=38700000&nVlPeso=0.25&nCdFormato=1&nVlComprimento=19&nVlAltura=2&nVlLargura=14&nVlDiametro=0&sCdMaoPropria=S&nVlValorDeclarado=10%2C5&sCdAvisoRecebimento=S&nIndicaCalculo=1&StrRetorno=xml"
     options = {
       :company_id => 1010,
       :password => 123123,
@@ -60,8 +114,28 @@ class CorreiosTest < Minitest::Test
       :mao_propria_extra => true
     }
 
-    @carrier.expects(:perform).with([url]).returns([@response_book_success])
-    @carrier.find_rates(@saopaulo, @patosdeminas, [@book], options)
+    @carrier.expects(:perform).returns([@response_book_success])
+    response = @carrier.find_rates(@saopaulo, @patosdeminas, [@book], options)
+
+    [
+      "nCdEmpresa=1010",
+      "sDsSenha=123123",
+      "sCdMaoPropria=S",
+      "nVlValorDeclarado=10%2C5",
+      "sCdAvisoRecebimento=S",
+      "nCdServico=41106%2C40010",
+      "sCepOrigem=01415000",
+      "sCepDestino=38700000",
+      "nVlPeso=0.25",
+      "nCdFormato=1",
+      "nVlComprimento=19",
+      "nVlAltura=2",
+      "nVlLargura=14",
+      "nVlDiametro=0"
+    ].each do |query_param|
+      assert_match query_param, response.urls.first
+    end
+
   end
 
   def test_book_response
