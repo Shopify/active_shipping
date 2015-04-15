@@ -82,7 +82,7 @@ module ActiveShipping
           return_type: RETURN_TYPE,
           return_information: RETURN_INFORMATION_TYPE[:prices]
         }
-        @urls = packages.map { |package| create_url(package) }
+        @urls = packages.map { |package| create_url(package).to_s }
       end
 
       def create_response(raw_xmls)
@@ -93,7 +93,7 @@ module ActiveShipping
       private
 
       def parse_boolean(param)
-        param == true ? 'S' : 'N'
+        param ? 'S' : 'N'
       end
 
       def parse_currency(param)
@@ -127,11 +127,18 @@ module ActiveShipping
 
       def query_string(package)
         params = build_params(package)
-        hash_query_string(params).map { |key, value| "#{CGI.escape(key)}=#{CGI.escape(value.to_s)}" }.join('&')
+        hash_query_string(params)
       end
 
       def create_url(package)
-        "#{URL}?#{query_string(package)}"
+        scheme, userinfo, host, port, registry, path, opaque, query, fragment = URI::split(URL)
+
+        query ||= ""
+        query = CGI.parse(query)
+                  .merge(query_string(package))
+                  .to_query
+
+        URI::HTTP.new(scheme, userinfo, host, port, registry, path, opaque, query, fragment)
       end
 
       def service_type
@@ -141,10 +148,11 @@ module ActiveShipping
     end
 
     class CorreiosRateResponse < ActiveShipping::RateResponse
-      attr_reader :raw_responses
+      attr_reader :raw_responses, :urls
 
       def initialize(success, message, params = {}, options = {})
         @raw_responses = options[:raw_responses]
+        @urls = options[:urls]
         super
       end
     end
@@ -169,7 +177,8 @@ module ActiveShipping
       def response_options
         {
           :rates => @rates,
-          :raw_responses => @raw_xmls
+          :raw_responses => @raw_xmls,
+          :urls => @request.urls
         }
       end
 
