@@ -297,4 +297,25 @@ class RemoteFedExTest < Minitest::Test
       @carrier.find_tracking_info('abc')
     end
   end
+
+  def test_obtain_shipping_label
+    response = @carrier.create_shipment(
+      location_fixtures[:beverly_hills_with_name],
+      location_fixtures[:new_york_with_name],
+      package_fixtures[:wii],
+        :test => true,
+        :reference_number => {
+          :value => "FOO-123",
+          :code => "PO"
+        }
+    )
+
+    assert response.success?
+
+    # All behavior specific to how a LabelResponse behaves in the
+    # context of Fedex label data is a matter for unit tests.  If
+    # the data changes substantially, the create_shipment
+    # ought to raise an exception and this test will fail.
+    assert_instance_of ActiveShipping::LabelResponse, response
+  end
 end
