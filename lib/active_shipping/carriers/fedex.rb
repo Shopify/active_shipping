@@ -153,7 +153,140 @@ module ActiveShipping
       parse_tracking_response(xml, options)
     end
 
+
+    # Get Shipping labels
+    # Caveats:
+    #  - Only supports singlular packages
+    #
+    def create_shipment(origin, destination, package, options = {})
+      options = @options.update(options)
+      packages = Array(packages)
+
+      begin
+
+        # Build request
+        request = build_shipment_request(origin, destination, package, options)
+        logger.debug(request) if logger
+
+        logger.debug(confirm_response) if logger
+
+        # Make request
+        response = commit(save_request(request), options[:test])
+
+        # Handle response
+        # FIXME: Do we really need all the params to parse the response?
+        # xml = parse_ship_response(origin, destination, packages, xml, options)
+        xml = parse_ship_response(response)
+        success = response_success?(xml)
+        message = response_message(xml)
+
+        raise message unless success
+
+      rescue RuntimeError => e
+        raise "Could not obtain shipping label. #{e.message}."
+      end
+    end
+
     protected
+
+    def build_shipment_request(origin, destination, package, options = {})
+
+      # TODO:
+      #  Raise exception if both company name and person name are nil
+
+      imperial = %w(US LR MM).include?(origin.country_code(:alpha2))
+
+      xml_builder = Nokogiri::XML::Builder.new do |xml|
+        xml.ProcessShipmentRequest(xmlns: 'http://fedex.com/ws/ship/v13') do
+          build_request_header(xml)
+          build_version_node(xml, 'ship', 13, 0 ,0)
+
+          xml.RequestedShipment do
+            xml.ShipTimestamp(ship_timestamp(options[:turn_around_time]).iso8601(0))
+            xml.DropoffType('REGULAR_PICKUP')
+            xml.ServiceType('GROUND_HOME_DELIVERY')
+            xml.PackagingType('YOUR_PACKAGING')
+
+            xml.Shipper do
+              build_shipment_shipper_nodes(xml, origin)
+            end
+
+            xml.Recipient do
+              build_shipment_recipient_nodes(xml, destination)
+            end
+
+            xml.ShippingChargesPayment do
+              xml.PaymentType('SENDER')
+              xml.Payor do
+                build_shipment_responsible_party_node(xml, origin)
+              end
+            end
+
+            xml.LabelSpecification do
+              xml.LabelFormatType('COMMON2D')
+              xml.ImageType('PNG')
+              xml.LabelStockType('PAPER_LETTER')
+            end
+
+            xml.RateRequestTypes('ACCOUNT')
+            xml.PackageCount('1')
+
+            xml.RequestedPackageLineItems do
+              xml.GroupPackageCount(1)
+              build_package_weight_node(xml, package, imperial)
+              build_package_dimensions_node(xml, package, imperial)
+            end
+
+          end
+        end
+      end
+      xml_builder.to_xml
+    end
+
+    def build_shipment_shipper_nodes(xml, origin)
+      xml.Contact do
+        xml.PersonName(origin.name)
+        xml.CompanyName(origin.company)
+        xml.PhoneNumber(origin.phone)
+      end
+      xml.Address do
+        xml.StreetLines(origin.address1) if origin.address1
+        xml.StreetLines(origin.address2) if origin.address2
+        xml.City(origin.city) if origin.city
+        xml.StateOrProvinceCode(origin.state)
+        xml.PostalCode(origin.postal_code)
+        xml.CountryCode(origin.country_code(:alpha2))
+      end
+    end
+
+    def build_shipment_recipient_nodes(xml, destination)
+      xml.Contact do
+        xml.PersonName(destination.name)
+        xml.CompanyName(destination.company)
+        xml.PhoneNumber(destination.phone)
+      end
+
+      xml.Address do
+        xml.StreetLines(destination.address1) if destination.address1
+        xml.StreetLines(destination.address2) if destination.address2
+        xml.City(destination.city) if destination.city
+        xml.StateOrProvinceCode(destination.state)
+        xml.PostalCode(destination.postal_code)
+        xml.CountryCode(destination.country_code(:alpha2))
+        xml.Residential('true')
+      end
+    end
+
+    def build_shipment_responsible_party_node(xml, origin)
+      xml.ResponsibleParty do
+        xml.AccountNumber(@options[:account])
+        xml.Contact do
+          xml.PersonName(origin.name)
+          xml.CompanyName(origin.company)
+          xml.PhoneNumber(origin.phone)
+        end
+      end
+    end
 
     def build_rate_request(origin, destination, packages, options = {})
       imperial = %w(US LR MM).include?(origin.country_code(:alpha2))
@@ -381,6 +514,17 @@ module ActiveShipping
       end
 
       delivery_range
+    end
+
+    def parse_ship_response(response)
+
+      # FIXME: not a rate reply
+      xml = build_document(response, 'ProcessShipmentReply')
+
+      #
+      # TODO: Handle this the correct way!
+      success = response_success?(xml)
+      message = response_message(xml)
     end
 
     def business_days_from(date, days)

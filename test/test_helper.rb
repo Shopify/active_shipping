@@ -112,6 +112,16 @@ module ActiveShipping::Test
                                            :postal_code => 'K1P 1J1',
                                            :phone => '1-613-580-2400',
                                            :fax => '1-613-580-2495'),
+        :beverly_hills_with_name => Location.new(
+                                      :name => 'JP Silvashy',
+                                      :country => 'US',
+                                      :state => 'CA',
+                                      :city => 'Beverly Hills',
+                                      :address1 => '455 N. Rexford Dr.',
+                                      :address2 => '3rd Floor',
+                                      :zip => '90210',
+                                      :phone => '1-310-285-1013',
+                                      :fax => '1-310-275-8159'),
         :beverly_hills => Location.new(
                                       :country => 'US',
                                       :state => 'CA',
