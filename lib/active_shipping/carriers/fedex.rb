@@ -68,6 +68,14 @@ module ActiveShipping
       'station' => 'STATION'
     }
 
+    SIGNATURE_OPTION_CODES = {
+      adult: 'ADULT', # 21 years plus
+      direct: 'DIRECT', # A person at the delivery address
+      indirect: 'INDIRECT', # A person at the delivery address, or a neighbor, or a signed note for fedex on the door
+      none_required: 'NO_SIGNATURE_REQUIRED',
+      default_for_service: 'SERVICE_DEFAULT'
+    }
+
     PAYMENT_TYPES = {
       'sender' => 'SENDER',
       'recipient' => 'RECIPIENT',
@@ -158,30 +166,18 @@ module ActiveShipping
     # Caveats:
     #  - Only supports singlular packages
     #
-    def create_shipment(origin, destination, package, options = {})
+    def create_shipment(origin, destination, packages, options = {})
       options = @options.update(options)
       packages = Array(packages)
 
       begin
-
-        # Build request
-        request = build_shipment_request(origin, destination, package, options)
+        request = build_shipment_request(origin, destination, packages, options)
         logger.debug(request) if logger
 
         logger.debug(confirm_response) if logger
 
-        # Make request
-        response = commit(save_request(request), options[:test])
-
-        # Handle response
-        # FIXME: Do we really need all the params to parse the response?
-        # xml = parse_ship_response(origin, destination, packages, xml, options)
-        xml = parse_ship_response(response)
-        success = response_success?(xml)
-        message = response_message(xml)
-
-        raise message unless success
-
+        response = commit(save_request(request), (options[:test] || false))
+        parse_ship_response(response)
       rescue RuntimeError => e
         raise "Could not obtain shipping label. #{e.message}."
       end
@@ -189,11 +185,7 @@ module ActiveShipping
 
     protected
 
-    def build_shipment_request(origin, destination, package, options = {})
-
-      # TODO:
-      #  Raise exception if both company name and person name are nil
-
+    def build_shipment_request(origin, destination, packages, options = {})
       imperial = %w(US LR MM).include?(origin.country_code(:alpha2))
 
       xml_builder = Nokogiri::XML::Builder.new do |xml|
@@ -204,76 +196,82 @@ module ActiveShipping
           xml.RequestedShipment do
             xml.ShipTimestamp(ship_timestamp(options[:turn_around_time]).iso8601(0))
             xml.DropoffType('REGULAR_PICKUP')
-            xml.ServiceType('GROUND_HOME_DELIVERY')
+            xml.ServiceType(options[:service_type] || 'FEDEX_GROUND')
             xml.PackagingType('YOUR_PACKAGING')
 
             xml.Shipper do
-              build_shipment_shipper_nodes(xml, origin)
+              build_contact_address_nodes(xml, options[:shipper] || origin)
             end
 
             xml.Recipient do
-              build_shipment_recipient_nodes(xml, destination)
+              build_contact_address_nodes(xml, destination)
+            end
+
+            xml.Origin do
+              build_contact_address_nodes(xml, origin)
             end
 
             xml.ShippingChargesPayment do
               xml.PaymentType('SENDER')
               xml.Payor do
-                build_shipment_responsible_party_node(xml, origin)
+                build_shipment_responsible_party_node(xml, options[:shipper] || origin)
               end
             end
 
             xml.LabelSpecification do
               xml.LabelFormatType('COMMON2D')
               xml.ImageType('PNG')
-              xml.LabelStockType('PAPER_LETTER')
+              xml.LabelStockType('PAPER_7X4.75')
             end
 
             xml.RateRequestTypes('ACCOUNT')
-            xml.PackageCount('1')
 
-            xml.RequestedPackageLineItems do
-              xml.GroupPackageCount(1)
-              build_package_weight_node(xml, package, imperial)
-              build_package_dimensions_node(xml, package, imperial)
+            xml.PackageCount(packages.size)
+            packages.each do |package|
+              xml.RequestedPackageLineItems do
+                xml.GroupPackageCount(1)
+                build_package_weight_node(xml, package, imperial)
+                build_package_dimensions_node(xml, package, imperial)
+
+                # Reference Numbers
+                reference_numbers = Array(package.options[:reference_numbers])
+                if reference_numbers.size > 0
+                  xml.CustomerReferences do
+                    reference_numbers.each do |reference_number_info|
+                      xml.CustomerReferenceType(reference_number_info[:type] || "CUSTOMER_REFERENCE")
+                      xml.Value(reference_number_info[:value])
+                    end
+                  end
+                end
+
+                xml.SpecialServicesRequested do
+                  xml.SpecialServiceTypes("SIGNATURE_OPTION")
+                  xml.SignatureOptionDetail do
+                    xml.OptionType(SIGNATURE_OPTION_CODES[package.options[:signature_option] || :default_for_service])
+                  end
+                end
+              end
             end
-
           end
         end
       end
       xml_builder.to_xml
     end
 
-    def build_shipment_shipper_nodes(xml, origin)
+    def build_contact_address_nodes(xml, location)
       xml.Contact do
-        xml.PersonName(origin.name)
-        xml.CompanyName(origin.company)
-        xml.PhoneNumber(origin.phone)
+        xml.PersonName(location.name)
+        xml.CompanyName(location.company)
+        xml.PhoneNumber(location.phone)
       end
       xml.Address do
-        xml.StreetLines(origin.address1) if origin.address1
-        xml.StreetLines(origin.address2) if origin.address2
-        xml.City(origin.city) if origin.city
-        xml.StateOrProvinceCode(origin.state)
-        xml.PostalCode(origin.postal_code)
-        xml.CountryCode(origin.country_code(:alpha2))
-      end
-    end
-
-    def build_shipment_recipient_nodes(xml, destination)
-      xml.Contact do
-        xml.PersonName(destination.name)
-        xml.CompanyName(destination.company)
-        xml.PhoneNumber(destination.phone)
-      end
-
-      xml.Address do
-        xml.StreetLines(destination.address1) if destination.address1
-        xml.StreetLines(destination.address2) if destination.address2
-        xml.City(destination.city) if destination.city
-        xml.StateOrProvinceCode(destination.state)
-        xml.PostalCode(destination.postal_code)
-        xml.CountryCode(destination.country_code(:alpha2))
-        xml.Residential('true')
+        xml.StreetLines(location.address1) if location.address1
+        xml.StreetLines(location.address2) if location.address2
+        xml.City(location.city) if location.city
+        xml.StateOrProvinceCode(location.state)
+        xml.PostalCode(location.postal_code)
+        xml.CountryCode(location.country_code(:alpha2))
+        xml.Residential('true') if location.residential?
       end
     end
 
@@ -474,31 +472,35 @@ module ActiveShipping
       success = response_success?(xml)
       message = response_message(xml)
 
-      rate_estimates = xml.root.css('> RateReplyDetails').map do |rated_shipment|
-        service_code = rated_shipment.at('ServiceType').text
-        is_saturday_delivery = rated_shipment.at('AppliedOptions').try(:text) == 'SATURDAY_DELIVERY'
-        service_type = is_saturday_delivery ? "#{service_code}_SATURDAY_DELIVERY" : service_code
+      if success
+        rate_estimates = xml.root.css('> RateReplyDetails').map do |rated_shipment|
+          service_code = rated_shipment.at('ServiceType').text
+          is_saturday_delivery = rated_shipment.at('AppliedOptions').try(:text) == 'SATURDAY_DELIVERY'
+          service_type = is_saturday_delivery ? "#{service_code}_SATURDAY_DELIVERY" : service_code
 
-        transit_time = rated_shipment.at('TransitTime').text if service_code == "FEDEX_GROUND"
-        max_transit_time = rated_shipment.at('MaximumTransitTime').try(:text) if service_code == "FEDEX_GROUND"
+          transit_time = rated_shipment.at('TransitTime').text if service_code == "FEDEX_GROUND"
+          max_transit_time = rated_shipment.at('MaximumTransitTime').try(:text) if service_code == "FEDEX_GROUND"
 
-        delivery_timestamp = rated_shipment.at('DeliveryTimestamp').try(:text)
+          delivery_timestamp = rated_shipment.at('DeliveryTimestamp').try(:text)
 
-        delivery_range = delivery_range_from(transit_time, max_transit_time, delivery_timestamp, options)
+          delivery_range = delivery_range_from(transit_time, max_transit_time, delivery_timestamp, options)
 
-        currency = rated_shipment.at('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Currency').text
-        RateEstimate.new(origin, destination, @@name,
-             self.class.service_name_for_code(service_type),
-             :service_code => service_code,
-             :total_price => rated_shipment.at('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Amount').text.to_f,
-             :currency => currency,
-             :packages => packages,
-             :delivery_range => delivery_range)
-      end
+          currency = rated_shipment.at('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Currency').text
+          RateEstimate.new(origin, destination, @@name,
+               self.class.service_name_for_code(service_type),
+               :service_code => service_code,
+               :total_price => rated_shipment.at('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Amount').text.to_f,
+               :currency => currency,
+               :packages => packages,
+               :delivery_range => delivery_range)
+        end
 
-      if rate_estimates.empty?
-        success = false
-        message = "No shipping rates could be found for the destination address" if message.blank?
+        if rate_estimates.empty?
+          success = false
+          message = "No shipping rates could be found for the destination address" if message.blank?
+        end
+      else
+        rate_estimates = []
       end
 
       RateResponse.new(success, message, Hash.from_xml(response), :rates => rate_estimates, :xml => response, :request => last_request, :log_xml => options[:log_xml])
@@ -517,14 +519,16 @@ module ActiveShipping
     end
 
     def parse_ship_response(response)
-
-      # FIXME: not a rate reply
       xml = build_document(response, 'ProcessShipmentReply')
-
-      #
-      # TODO: Handle this the correct way!
       success = response_success?(xml)
       message = response_message(xml)
+
+      response_info = Hash.from_xml(response)
+      tracking_number = xml.css("CompletedPackageDetails TrackingIds TrackingNumber").text
+      base_64_image = xml.css("Label Image").text
+
+      labels = [Label.new(tracking_number, base_64_image)]
+      LabelResponse.new(success, message, response_info, {labels: labels})
     end
 
     def business_days_from(date, days)
