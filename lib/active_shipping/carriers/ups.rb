@@ -843,7 +843,14 @@ module ActiveShipping
       success = response_success?(xml)
       message = response_message(xml)
 
-      LabelResponse.new(success, message, Hash.from_xml(response).values.first)
+      response_info = Hash.from_xml(response).values.first
+      packages = response_info["ShipmentResults"]["PackageResults"]
+      packages = [packages] if Hash === packages
+      labels = packages.map do |package|
+        Label.new(package["TrackingNumber"], package["LabelImage"]["GraphicImage"])
+      end
+
+      LabelResponse.new(success, message, response_info, {labels: labels})
     end
 
     def commit(action, request, test = false)

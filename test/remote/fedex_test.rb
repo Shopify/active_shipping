@@ -311,11 +311,22 @@ class RemoteFedExTest < Minitest::Test
     )
 
     assert response.success?
+    refute_empty response.labels
+    refute_empty response.labels.first.base64_img_data
+  end
 
-    # All behavior specific to how a LabelResponse behaves in the
-    # context of Fedex label data is a matter for unit tests.  If
-    # the data changes substantially, the create_shipment
-    # ought to raise an exception and this test will fail.
-    assert_instance_of ActiveShipping::LabelResponse, response
+  def test_obtain_shipping_label_with_signature_option
+    packages = package_fixtures.values_at(:wii)
+    packages.each {|p| p.options[:signature_option] = :adult }
+
+    response = @carrier.create_shipment(
+      location_fixtures[:beverly_hills_with_name],
+      location_fixtures[:new_york_with_name],
+      packages,
+      {:test => true}
+    )
+
+    signature_option = response.params["ProcessShipmentReply"]["CompletedShipmentDetail"]["CompletedPackageDetails"]["SignatureOption"]
+    assert_equal FedEx::SIGNATURE_OPTION_CODES[:adult], signature_option
   end
 end

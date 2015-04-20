@@ -410,4 +410,45 @@ class FedExTest < Minitest::Test
       @carrier.find_tracking_info('abc')
     end
   end
+
+  def test_create_shipment
+    confirm_response = xml_fixture('fedex/create_shipment_response')
+    @carrier.stubs(:commit).returns(confirm_response)
+
+    response = @carrier.create_shipment(
+      location_fixtures[:beverly_hills],
+      location_fixtures[:new_york],
+      package_fixtures.values_at(:chocolate_stuff),
+      :test => true
+    )
+
+    # These assertions are to check that the xml fixture is extracted properly.
+    assert_equal 1, response.labels.count
+    assert_equal response.labels.first.tracking_number, "794637052920"
+    assert_equal response.labels.first.base64_img_data.size, 11048
+  end
+
+  def test_create_shipment_signature_option
+    packages = package_fixtures.values_at(:chocolate_stuff)
+    packages.each {|p| p.options[:signature_option] = :indirect }
+    result = Nokogiri::XML(@carrier.send(:build_shipment_request,
+                                         location_fixtures[:beverly_hills],
+                                         location_fixtures[:annapolis],
+                                         packages,
+                                         :test => true))
+    assert_equal result.search('SpecialServicesRequested/SpecialServiceTypes').text, "SIGNATURE_OPTION"
+    assert_equal result.search('SpecialServicesRequested/SignatureOptionDetail').text.strip, "INDIRECT"
+  end
+
+  def test_create_shipment_reference
+    packages = package_fixtures.values_at(:wii)
+    packages.each {|p| p.options[:reference_numbers] = [{:value => "FOO-123"}] }
+
+    result = Nokogiri::XML(@carrier.send(:build_shipment_request,
+                                         location_fixtures[:beverly_hills],
+                                         location_fixtures[:annapolis],
+                                         packages,
+                                         :test => true))
+    assert_equal result.search('RequestedPackageLineItems/CustomerReferences/Value').text, "FOO-123"
+  end
 end
