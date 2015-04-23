@@ -1,7 +1,7 @@
 require 'bundler/gem_tasks'
 require 'rake/testtask'
 
-desc "Run the unit and functioknal remote tests"
+desc "Run the unit and functional remote tests"
 Rake::TestTask.new(:test) do |t|
   t.libs << "test"
   t.pattern = 'test/**/*_test.rb'
