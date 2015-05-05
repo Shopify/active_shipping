@@ -460,6 +460,7 @@ class UPSTest < Minitest::Test
     assert_equal 6, response.delivery_estimates.size
     ground_estimate = response.delivery_estimates.select{ |de| de.service_name == "UPS Ground"}.first
     assert_equal Date.parse('2015-02-5'), ground_estimate.date
+    assert_equal 3, ground_estimate.business_transit_days
   end
 
   def test_get_delivery_date_estimates_can_translate_service_codes
@@ -482,5 +483,21 @@ class UPSTest < Minitest::Test
     response.delivery_estimates.each do |delivery_estimate|
       assert delivery_estimate.service_name, UPS::DEFAULT_SERVICES[delivery_estimate.service_code]
     end
+  end
+
+  def test_get_rates_for_single_serivce
+    mock_response = xml_fixture("ups/rate_single_service")
+    @carrier.expects(:commit).returns(mock_response)
+
+    response = @carrier.find_rates(
+      location_fixtures[:new_york_with_name],
+      location_fixtures[:real_home_as_residential],
+      package_fixtures.values_at(:books),
+      {
+        :service => UPS::DEFAULT_SERVICE_NAME_TO_CODE["UPS Ground"],
+        :test => true
+      }
+    )
+    assert_equal ["UPS Ground"], response.rates.map(&:service_name)
   end
 end

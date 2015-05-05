@@ -221,9 +221,7 @@ module ActiveShipping
         xml.RatingServiceSelectionRequest do
           xml.Request do
             xml.RequestAction('Rate')
-            xml.RequestOption('Shop')
-            # not implemented: 'Rate' RequestOption to specify a single service query
-            # xml.RequestOption((options[:service].nil? or options[:service] == :all) ? 'Shop' : 'Rate')
+            xml.RequestOption((options[:service].nil?) ? 'Shop' : 'Rate')
           end
 
           pickup_type = options[:pickup_type] || :daily_pickup
@@ -252,6 +250,12 @@ module ActiveShipping
             #                   * Shipment/ScheduledDeliveryTime element
             #                   * Shipment/AlternateDeliveryTime element
             #                   * Shipment/DocumentsOnly element
+
+            unless options[:service].nil?
+              xml.Service do
+                xml.Code(options[:service])
+              end
+            end
 
             Array(packages).each do |package|
               options[:imperial] ||= IMPERIAL_COUNTRIES.include?(origin.country_code(:alpha2))
@@ -767,11 +771,13 @@ module ActiveShipping
           service_name = service_summary.at('Service/Description').text
           service_code = UPS::DEFAULT_SERVICE_NAME_TO_CODE[service_name]
           date = Date.strptime(service_summary.at('EstimatedArrival/Date').text, '%Y-%m-%d')
+          business_transit_days = service_summary.at('EstimatedArrival/BusinessTransitDays').text.to_i
           delivery_estimates << DeliveryDateEstimate.new(origin, destination, self.class.class_variable_get(:@@name),
                                     service_name,
                                     :service_code => service_code,
                                     :guaranteed => service_summary.at('Guaranteed/Code').text == 'Y',
-                                    :date =>  date)
+                                    :date =>  date,
+                                    :business_transit_days => business_transit_days)
         end
       end
       response = DeliveryDateEstimatesResponse.new(success, message, Hash.from_xml(response).values.first, :delivery_estimates => delivery_estimates, :xml => response, :request => last_request)
