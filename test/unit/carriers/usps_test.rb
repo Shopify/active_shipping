@@ -49,10 +49,13 @@ class USPSTest < Minitest::Test
     assert_equal 'ActiveShipping::TrackingResponse', @carrier.find_tracking_info('EJ958083578US').class.name
   end
 
-  def test_find_tracking_info_should_parse_response_into_correct_number_of_shipment_events
+  def test_find_tracking_info_should_have_correct_fields
     @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
     assert_equal 10, response.shipment_events.size
+    assert_equal Time.parse('April 28, 2015'), response.scheduled_delivery_date
+    assert_equal Time.parse('2015-04-28 09:01:00 UTC'), response.actual_delivery_date
+    assert_equal '9102901000462189604217', response.tracking_number
   end
 
   def test_find_tracking_info_should_return_shipment_events_in_ascending_chronological_order
@@ -107,6 +110,12 @@ class USPSTest < Minitest::Test
       "HANNA CITY, IL, 61536",
       "HANNA CITY, IL, 61536",
       "HANNA CITY, IL, 61536"], response.shipment_events.map(&:location).map { |l| "#{l.city}, #{l.state}, #{l.postal_code}" }
+  end
+
+  def test_find_tracking_info_should_have_correct_event_codes_for_shipment_events
+    @carrier.expects(:commit).returns(@tracking_response)
+    response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
+    assert_equal ["GX", "OA", "10", "EF", "10", "EF", "07", "PC", "OF", "01"], response.shipment_events.map(&:type_code)
   end
 
   def test_find_tracking_info_should_handle_special_cases
