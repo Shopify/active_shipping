@@ -1,5 +1,9 @@
 # ActiveShipping CHANGELOG
 
+### v1.1.0
+
+- USPS: Allows package tracking disambiguation and exposes predicted arrival date and event codes.
+
 ### v1.0.0
 
 - **BREAKING CHANGE:** Change namespace from `ActiveMerchant::Shipping` to `ActiveShipping`
