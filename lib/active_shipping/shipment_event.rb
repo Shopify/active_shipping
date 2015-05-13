@@ -1,9 +1,9 @@
 module ActiveShipping
   class ShipmentEvent
-    attr_reader :name, :time, :location, :message
+    attr_reader :name, :time, :location, :message, :type_code
 
-    def initialize(name, time, location, message = nil)
-      @name, @time, @location, @message = name, time, location, message
+    def initialize(name, time, location, message = nil, type_code = nil)
+      @name, @time, @location, @message, @type_code = name, time, location, message, type_code
     end
 
     def delivered?

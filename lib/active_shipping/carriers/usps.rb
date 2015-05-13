@@ -10,7 +10,7 @@ module ActiveShipping
   # This will send a test request to the USPS test servers, which they ask you
   # to do before they put your API key in production mode.
   class USPS < Carrier
-    EventDetails = Struct.new(:description, :time, :zoneless_time, :location)
+    EventDetails = Struct.new(:description, :time, :zoneless_time, :location, :event_code)
     ONLY_PREFIX_EVENTS = ['DELIVERED','OUT FOR DELIVERY']
     self.retry_safe = true
 
@@ -237,6 +237,7 @@ module ActiveShipping
       end
       
       timestamp = "#{node.at('EventDate').text}, #{node.at('EventTime').text}"
+      event_code = node.at('EventCode').text
       city = node.at('EventCity').text
       state = node.at('EventState').text
       zip_code = node.at('EventZIPCode').text
@@ -248,7 +249,7 @@ module ActiveShipping
       time = Time.parse(timestamp)
       zoneless_time = Time.utc(time.year, time.month, time.mday, time.hour, time.min, time.sec)
       location = Location.new(city: city, state: state, postal_code: zip_code, country: country)
-      EventDetails.new(description, time, zoneless_time, location)
+      EventDetails.new(description, time, zoneless_time, location, event_code)
     end
 
     protected
@@ -554,10 +555,14 @@ module ActiveShipping
         tracking_details << xml.root.at('TrackInfo/TrackSummary')
 
         tracking_number = xml.root.at('TrackInfo').attributes['ID'].value
+        scheduled_delivery = Time.parse(xml.root.at('PredictedDeliveryDate').text)
 
         tracking_details.each do |event|
           details = extract_event_details(event)
-          shipment_events << ShipmentEvent.new(details.description, details.zoneless_time, details.location) if details.location
+          if details.location
+            shipment_events << ShipmentEvent.new(details.description, details.zoneless_time,
+              details.location, details.description, details.event_code)
+          end
         end
 
         shipment_events = shipment_events.sort_by(&:time)
@@ -576,7 +581,8 @@ module ActiveShipping
                            :destination => destination,
                            :tracking_number => tracking_number,
                            :status => status,
-                           :actual_delivery_date => actual_delivery_date
+                           :actual_delivery_date => actual_delivery_date,
+                           :scheduled_delivery_date => scheduled_delivery
       )
     end
 
