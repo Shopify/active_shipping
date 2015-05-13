@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrackResponse>
+  <!-- this is a manually altered response designed to test cases that might occur but have never been actually observed yet. -->
+  <TrackInfo ID="9102901000462189604217">
+    <Class>First-Class Package Service</Class>
+    <ClassOfMailCode>FC</ClassOfMailCode>
+    <DestinationCity>HANNA CITY</DestinationCity>
+    <DestinationState>IL</DestinationState>
+    <DestinationZip>61536</DestinationZip>
+    <EmailEnabled>true</EmailEnabled>
+    <ExpectedDeliveryDate>April 28, 2015</ExpectedDeliveryDate>
+    <KahalaIndicator>false</KahalaIndicator>
+    <MailTypeCode>DM</MailTypeCode>
+    <MPDATE>2015-04-24 02:08:04.000000</MPDATE>
+    <MPSUFFIX>495865558</MPSUFFIX>
+    <OriginCity>ARGYLE</OriginCity>
+    <OriginState>TX</OriginState>
+    <OriginZip>76226</OriginZip>
+    <PodEnabled>false</PodEnabled>
+    <PredictedDeliveryDate>April 28, 2015</PredictedDeliveryDate>
+    <RestoreEnabled>false</RestoreEnabled>
+    <RramEnabled>false</RramEnabled>
+    <RreEnabled>false</RreEnabled>
+    <Service>USPS Tracking&lt;SUP&gt;&amp;#153;&lt;/SUP&gt;</Service>
+    <ServiceTypeCode>001</ServiceTypeCode>
+    <Status>Delivered, In/At Mailbox</Status>
+    <StatusCategory>Delivered</StatusCategory>
+    <StatusSummary>Your item was delivered in or at the mailbox at 9:01 am on April 28, 2015 in HANNA CITY, IL 61536.</StatusSummary>
+    <TABLECODE>T</TABLECODE>
+    <TrackSummary>
+      <EventTime>8:29 am</EventTime>
+      <EventDate>April 28, 2015</EventDate>
+      <Event>Out for Delivery, in truck</Event>
+      <EventCity>OTTAWA</EventCity>
+      <EventState>ON</EventState>
+      <EventZIPCode>61536</EventZIPCode>
+      <EventCountry>Canada</EventCountry>
+      <FirmName/>
+      <Name/>
+      <AuthorizedAgent>false</AuthorizedAgent>
+      <EventCode>OF</EventCode>
+    </TrackSummary>
+  </TrackInfo>
+</TrackResponse>

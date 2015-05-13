@@ -11,10 +11,7 @@ module ActiveShipping
   # to do before they put your API key in production mode.
   class USPS < Carrier
     EventDetails = Struct.new(:description, :time, :zoneless_time, :location)
-    EVENT_MESSAGE_PATTERNS = [
-      /^(.*), (\w+ \d{1,2}, \d{4}, \d{1,2}:\d\d [ap]m), (.*), (\w\w) (\d{5})$/i,
-      /^Your item \w{2,3} (out for delivery|delivered).* at (\d{1,2}:\d\d [ap]m on \w+ \d{1,2}, \d{4}) in (.*), (\w\w) (\d{5})\.$/i
-    ]
+    ONLY_PREFIX_EVENTS = ['DELIVERED','OUT FOR DELIVERY']
     self.retry_safe = true
 
     cattr_reader :name
@@ -232,17 +229,25 @@ module ActiveShipping
       Mass.new(70, :pounds)
     end
 
-    def extract_event_details(message)
-      return EventDetails.new unless EVENT_MESSAGE_PATTERNS.any? { |pattern| message =~ pattern }
-      description = $1.upcase
-      timestamp = $2
-      city = $3
-      state = $4
-      zip_code = $5
+    def extract_event_details(node)
+      description = node.at('Event').text.upcase
+
+      if prefix = ONLY_PREFIX_EVENTS.find { |p| description.starts_with?(p) }
+        description = prefix
+      end
+      
+      timestamp = "#{node.at('EventDate').text}, #{node.at('EventTime').text}"
+      city = node.at('EventCity').text
+      state = node.at('EventState').text
+      zip_code = node.at('EventZIPCode').text
+
+      country_node = node.at('EventCountry')
+      country = country_node ? country_node.text : ''
+      country = 'USA' if country.empty?
 
       time = Time.parse(timestamp)
       zoneless_time = Time.utc(time.year, time.month, time.mday, time.hour, time.min, time.sec)
-      location = Location.new(city: city, state: state, postal_code: zip_code, country: 'USA')
+      location = Location.new(city: city, state: state, postal_code: zip_code, country: country)
       EventDetails.new(description, time, zoneless_time, location)
     end
 
@@ -250,8 +255,17 @@ module ActiveShipping
 
     def build_tracking_request(tracking_number, options = {})
       xml_builder = Nokogiri::XML::Builder.new do |xml|
-        xml.TrackRequest('USERID' => @options[:login]) do
-          xml.TrackID('ID' => tracking_number)
+        xml.TrackFieldRequest('USERID' => @options[:login]) do
+          xml.Revision { xml.text('1') }
+          xml.ClientIp { xml.text(@options[:client_ip] || '127.0.0.1') }
+          xml.SourceId { xml.text(@options[:source_id] || 'active_shipping') }
+          xml.TrackID('ID' => tracking_number) do
+            xml.DestinationZipCode { xml.text(@options[:destination_zip])} if @options[:destination_zip]
+            if @options[:mailing_date]
+              formatted_date = @options[:mailing_date].strftime('%Y-%m-%d')
+              xml.MailingDate { xml.text(formatted_date)} 
+            end
+          end
         end
       end
       xml_builder.to_xml
@@ -529,7 +543,6 @@ module ActiveShipping
     def parse_tracking_response(response, options)
       actual_delivery_date, status = nil
       xml = Nokogiri.XML(response)
-      root_node = xml.root
 
       success = response_success?(xml)
       message = response_message(xml)
@@ -538,19 +551,12 @@ module ActiveShipping
         destination = nil
         shipment_events = []
         tracking_details = xml.root.xpath('TrackInfo/TrackDetail')
-
-        tracking_summary = xml.root.at('TrackInfo/TrackSummary')
-        if tracking_details.length > 0
-          tracking_details << tracking_summary
-        else
-          success = false
-          message = tracking_summary.text
-        end
+        tracking_details << xml.root.at('TrackInfo/TrackSummary')
 
         tracking_number = xml.root.at('TrackInfo').attributes['ID'].value
 
         tracking_details.each do |event|
-          details = extract_event_details(event.text)
+          details = extract_event_details(event)
           shipment_events << ShipmentEvent.new(details.description, details.zoneless_time, details.location) if details.location
         end
 
@@ -575,7 +581,7 @@ module ActiveShipping
     end
 
     def track_summary_node(document)
-      document.root.xpath('TrackInfo/TrackSummary')
+      document.root.xpath('TrackInfo/StatusSummary')
     end
 
     def error_description_node(document)
