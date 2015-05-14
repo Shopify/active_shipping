@@ -1,2 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<TrackResponse><TrackInfo ID="abc123xyz"><TrackSummary>The Postal Service could not locate the tracking information for your request. Please verify your tracking number and try again later.</TrackSummary></TrackInfo></TrackResponse>
+<TrackResponse>
+  <TrackInfo ID="9102901000462189604217">
+    <Error>
+      <Number>-2147219302</Number>
+      <Description>The Postal Service could not locate the tracking information for your request. Please verify your tracking number and try again later.</Description>
+      <HelpFile/>
+      <HelpContext/>
+    </Error>
+  </TrackInfo>
+</TrackResponse>

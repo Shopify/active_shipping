@@ -9,6 +9,11 @@ class USPSTest < Minitest::Test
     @tracking_response_failure = xml_fixture('usps/tracking_response_failure')
   end
 
+  def test_tracking_request_should_create_correct_xml
+    @carrier.expects(:commit).with(:track, xml_fixture('usps/tracking_request'),false).returns(@tracking_response)
+    @carrier.find_tracking_info('9102901000462189604217', :destination_zip => '12345', :mailing_date => Date.new(2010,1,30))
+  end
+
   def test_tracking_failure_should_raise_exception
     @carrier.expects(:commit).returns(@tracking_response_failure)
     assert_raises ResponseError do
@@ -44,10 +49,13 @@ class USPSTest < Minitest::Test
     assert_equal 'ActiveShipping::TrackingResponse', @carrier.find_tracking_info('EJ958083578US').class.name
   end
 
-  def test_find_tracking_info_should_parse_response_into_correct_number_of_shipment_events
+  def test_find_tracking_info_should_have_correct_fields
     @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
-    assert_equal 7, response.shipment_events.size
+    assert_equal 10, response.shipment_events.size
+    assert_equal Time.parse('April 28, 2015'), response.scheduled_delivery_date
+    assert_equal Time.parse('2015-04-28 09:01:00 UTC'), response.actual_delivery_date
+    assert_equal '9102901000462189604217', response.tracking_number
   end
 
   def test_find_tracking_info_should_return_shipment_events_in_ascending_chronological_order
@@ -59,37 +67,62 @@ class USPSTest < Minitest::Test
   def test_find_tracking_info_should_have_correct_timestamps_for_shipment_events
     @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
-    assert_equal ['2012-01-22 16:30:00 UTC',
-                  '2012-01-22 17:00:00 UTC',
-                  '2012-01-23 02:49:00 UTC',
-                  '2012-01-24 07:45:00 UTC',
-                  '2012-01-26 11:21:00 UTC',
-                  '2012-01-27 08:03:00 UTC',
-                  '2012-01-27 08:13:00 UTC'], response.shipment_events.map { |e| e.time.strftime('%Y-%m-%d %H:%M:00 %Z') }
+    assert_equal [
+      "2015-04-23 23:36:00 UTC",
+      "2015-04-25 18:04:00 UTC",
+      "2015-04-25 19:19:00 UTC",
+      "2015-04-26 00:18:00 UTC",
+      "2015-04-27 16:04:00 UTC",
+      "2015-04-28 04:05:00 UTC",
+      "2015-04-28 07:03:00 UTC",
+      "2015-04-28 08:19:00 UTC",
+      "2015-04-28 08:29:00 UTC",
+      "2015-04-28 09:01:00 UTC"], response.shipment_events.map { |e| e.time.strftime('%Y-%m-%d %H:%M:00 %Z') }
   end
 
   def test_find_tracking_info_should_have_correct_names_for_shipment_events
     @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('9102901000462189604217')
-    assert_equal ["PICKED UP BY SHIPPING PARTNER",
-                  "ARRIVED SHIPPING PARTNER FACILITY",
-                  "DEPARTED SHIPPING PARTNER FACILITY",
-                  "DEPARTED SHIPPING PARTNER FACILITY",
-                  "ARRIVAL AT POST OFFICE",
-                  "SORTING COMPLETE",
-                  "OUT FOR DELIVERY"], response.shipment_events.map(&:name)
+    assert_equal [
+      "SHIPPING LABEL CREATED",
+      "ACCEPTED AT USPS ORIGIN SORT FACILITY",
+      "ARRIVED AT USPS ORIGIN FACILITY",
+      "DEPARTED USPS FACILITY",
+      "ARRIVED AT USPS FACILITY",
+      "DEPARTED USPS FACILITY",
+      "ARRIVED AT POST OFFICE",
+      "SORTING COMPLETE",
+      "OUT FOR DELIVERY",
+      "DELIVERED"], response.shipment_events.map(&:name)
   end
 
   def test_find_tracking_info_should_have_correct_locations_for_shipment_events
     @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
-    assert_equal ["PHOENIX, AZ, 85043",
-                  "PHOENIX, AZ, 85043",
-                  "PHOENIX, AZ, 85043",
-                  "GRAND PRAIRIE, TX, 75050",
-                  "DES MOINES, IA, 50311",
-                  "DES MOINES, IA, 50311",
-                  "DES MOINES, IA, 50311"], response.shipment_events.map(&:location).map { |l| "#{l.city}, #{l.state}, #{l.postal_code}" }
+    assert_equal [
+      "ARGYLE, TX, 76226",
+      "ARGYLE, TX, 76226",
+      "COPPELL, TX, 75099",
+      "COPPELL, TX, 75099",
+      "HAZELWOOD, MO, 63042",
+      "HAZELWOOD, MO, 63042",
+      "HANNA CITY, IL, 61536",
+      "HANNA CITY, IL, 61536",
+      "HANNA CITY, IL, 61536",
+      "HANNA CITY, IL, 61536"], response.shipment_events.map(&:location).map { |l| "#{l.city}, #{l.state}, #{l.postal_code}" }
+  end
+
+  def test_find_tracking_info_should_have_correct_event_codes_for_shipment_events
+    @carrier.expects(:commit).returns(@tracking_response)
+    response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
+    assert_equal ["GX", "OA", "10", "EF", "10", "EF", "07", "PC", "OF", "01"], response.shipment_events.map(&:type_code)
+  end
+
+  def test_find_tracking_info_should_handle_special_cases
+    @carrier.expects(:commit).returns(xml_fixture('usps/tracking_response_alt'))
+    response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
+    assert_equal 'Canada', response.shipment_events.last.location.country.name
+    assert_equal :out_for_delivery, response.status
   end
 
   def test_find_tracking_info_destination
@@ -108,17 +141,11 @@ class USPSTest < Minitest::Test
   def test_find_tracking_info_should_have_correct_status
     @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('9102901000462189604217')
-    assert_equal :out_for_delivery, response.status
+    assert_equal :delivered, response.status
   end
 
   def test_find_tracking_info_should_have_correct_delivered
-    @carrier.expects(:commit).returns(xml_fixture('usps/delivered_tracking_response'))
-    response = @carrier.find_tracking_info('9102901000462189604217')
-    assert_equal true, response.delivered?
-  end
-
-  def test_find_tracking_info_with_extended_response_format_should_have_correct_delivered
-    @carrier.expects(:commit).returns(xml_fixture('usps/delivered_extended_tracking_response'))
+    @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('9102901000462189604217')
     assert_equal true, response.delivered?
   end
@@ -451,18 +478,6 @@ class USPSTest < Minitest::Test
     )
 
     assert_equal [3767, 5526, 7231, 7231], response.rates.map(&:price)
-  end
-
-  def test_extract_event_details_handles_single_digit_calendar_dates
-    assert details = @carrier.extract_event_details("Out for Delivery, October 9, 2013, 10:16 am, BROOKLYN, NY 11201")
-    assert_equal "OUT FOR DELIVERY", details.description
-    assert_equal 9, details.zoneless_time.mday
-  end
-
-  def test_extract_event_details_handles_double_digit_calendar_dates
-    assert details = @carrier.extract_event_details("Out for Delivery, October 12, 2013, 10:16 am, BROOKLYN, NY 11201")
-    assert_equal "OUT FOR DELIVERY", details.description
-    assert_equal 12, details.zoneless_time.mday
   end
 
   private
