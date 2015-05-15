@@ -238,9 +238,9 @@ module ActiveShipping
       
       timestamp = "#{node.at('EventDate').text}, #{node.at('EventTime').text}"
       event_code = node.at('EventCode').text
-      city = node.at('EventCity').text
-      state = node.at('EventState').text
-      zip_code = node.at('EventZIPCode').text
+      city = node.at('EventCity').try(:text)
+      state = node.at('EventState').try(:text)
+      zip_code = node.at('EventZIPCode').try(:text)
 
       country_node = node.at('EventCountry')
       country = country_node ? country_node.text : ''
@@ -555,7 +555,8 @@ module ActiveShipping
         tracking_details << xml.root.at('TrackInfo/TrackSummary')
 
         tracking_number = xml.root.at('TrackInfo').attributes['ID'].value
-        scheduled_delivery = Time.parse(xml.root.at('PredictedDeliveryDate').text)
+        prediction_node = xml.root.at('PredictedDeliveryDate') || xml.root.at('ExpectedDeliveryDate')
+        scheduled_delivery = prediction_node ? Time.parse(prediction_node.text) : nil
 
         tracking_details.each do |event|
           details = extract_event_details(event)

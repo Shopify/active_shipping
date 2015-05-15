@@ -8,7 +8,6 @@
     <DestinationState>IL</DestinationState>
     <DestinationZip>61536</DestinationZip>
     <EmailEnabled>true</EmailEnabled>
-    <ExpectedDeliveryDate>April 28, 2015</ExpectedDeliveryDate>
     <KahalaIndicator>false</KahalaIndicator>
     <MailTypeCode>DM</MailTypeCode>
     <MPDATE>2015-04-24 02:08:04.000000</MPDATE>
@@ -17,7 +16,6 @@
     <OriginState>TX</OriginState>
     <OriginZip>76226</OriginZip>
     <PodEnabled>false</PodEnabled>
-    <PredictedDeliveryDate>April 28, 2015</PredictedDeliveryDate>
     <RestoreEnabled>false</RestoreEnabled>
     <RramEnabled>false</RramEnabled>
     <RreEnabled>false</RreEnabled>
@@ -31,7 +29,6 @@
       <EventTime>8:29 am</EventTime>
       <EventDate>April 28, 2015</EventDate>
       <Event>Out for Delivery, in truck</Event>
-      <EventCity>OTTAWA</EventCity>
       <EventState>ON</EventState>
       <EventZIPCode>61536</EventZIPCode>
       <EventCountry>Canada</EventCountry>
