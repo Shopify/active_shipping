@@ -123,6 +123,8 @@ class USPSTest < Minitest::Test
     response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
     assert_equal 'Canada', response.shipment_events.last.location.country.name
     assert_equal :out_for_delivery, response.status
+    assert_nil response.scheduled_delivery_date
+    assert_nil response.shipment_events.last.location.city
   end
 
   def test_find_tracking_info_destination
