@@ -1,5 +1,9 @@
 # ActiveShipping CHANGELOG
 
+### v1.1.1
+
+- Fix bug with USPS tracking not handling optional fields being absent.
+
 ### v1.1.0
 
 - USPS: Allows package tracking disambiguation and exposes predicted arrival date and event codes.
