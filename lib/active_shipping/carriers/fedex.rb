@@ -546,21 +546,12 @@ module ActiveShipping
       end
 
       if node
-        if node.at('CountryCode')
-          args[:country] = node.at('CountryCode').text
-        else
-          args[:country] = ActiveUtils::Country.new(:alpha2 => 'ZZ', :name => 'Unknown or Invalid Territory', :alpha3 => 'ZZZ', :numeric => '999')
-        end
-        if node.at('StateOrProvinceCode')
-          args[:province] = node.at('StateOrProvinceCode').text
-        else
-          args[:province] = 'unknown'
-        end
-        if node.at('City')
-          args[:city] = node.at('City').text
-        else
-          args[:city] = 'unknown'
-        end
+        args[:country] =
+          node.at('CountryCode').try(:text) ||
+          ActiveUtils::Country.new(:alpha2 => 'ZZ', :name => 'Unknown or Invalid Territory', :alpha3 => 'ZZZ', :numeric => '999')
+
+        args[:province] = node.at('StateOrProvinceCode').try(:text) || 'unknown'
+        args[:city] = node.at('City').try(:text) || 'unknown'
       end
 
       Location.new(args)
