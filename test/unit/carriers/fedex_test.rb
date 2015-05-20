@@ -312,6 +312,21 @@ class FedExTest < Minitest::Test
     assert_equal nil, response.delivery_signature
   end
 
+  def test_state_degrades_to_unknown
+    mock_response = xml_fixture('fedex/tracking_response_with_blank_state')
+    @carrier.expects(:commit).returns(mock_response)
+
+    response = @carrier.find_tracking_info('798701052354')
+
+    destination_address = ActiveShipping::Location.new(
+      city: 'SAITAMA',
+      country: 'Japan',
+      state: 'unknown'
+    )
+
+    assert_equal destination_address.to_hash, response.destination.to_hash
+  end
+
   def test_tracking_info_for_in_transit
     mock_response = xml_fixture('fedex/tracking_response_in_transit')
     @carrier.expects(:commit).returns(mock_response)
