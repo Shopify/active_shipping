@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrackReply xmlns="http://fedex.com/ws/track/v7" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+<HighestSeverity>SUCCESS</HighestSeverity>
+<Notifications>
+    <Severity>SUCCESS</Severity>
+    <Source>trck</Source>
+    <Code>0</Code>
+    <Message>Request was successfully processed.</Message>
+    <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+</Notifications>
+<TransactionDetail>
+    <CustomerTransactionId>ActiveShipping</CustomerTransactionId>
+</TransactionDetail>
+<Version>
+    <ServiceId>trck</ServiceId>
+    <Major>7</Major>
+    <Intermediate>0</Intermediate>
+    <Minor>0</Minor>
+</Version>
+<CompletedTrackDetails>
+    <HighestSeverity>SUCCESS</HighestSeverity>
+    <Notifications>
+        <Severity>SUCCESS</Severity>
+        <Source>trck</Source>
+        <Code>0</Code>
+        <Message>Request was successfully processed.</Message>
+        <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+    </Notifications>
+    <DuplicateWaybill>false</DuplicateWaybill>
+    <MoreData>false</MoreData>
+    <TrackDetails>
+        <Notification>
+            <Severity>SUCCESS</Severity>
+            <Source>trck</Source>
+            <Code>0</Code>
+            <Message>Request was successfully processed.</Message>
+            <LocalizedMessage>Request was successfully processed.</LocalizedMessage>
+        </Notification>
+        <TrackingNumber>798701052354</TrackingNumber>
+        <TrackingNumberUniqueIdentifier>2456777000~798701052354~FX</TrackingNumberUniqueIdentifier>
+        <StatusDetail>
+            <Code>DL</Code>
+            <Description>Delivered</Description>
+            <Location>
+                <Residential>false</Residential>
+            </Location>
+        </StatusDetail>
+        <CarrierCode>FDXE</CarrierCode>
+        <OperatingCompanyOrCarrierDescription>FedEx Express</OperatingCompanyOrCarrierDescription>
+        <Service>
+            <Type>PRIORITY_OVERNIGHT</Type>
+            <Description>FedEx International Priority</Description>
+        </Service>
+        <PackageSequenceNumber>0</PackageSequenceNumber>
+        <PackageCount>0</PackageCount>
+        <SpecialHandlings>
+            <Type>DELIVER_WEEKDAY</Type>
+            <Description>Deliver Weekday</Description>
+            <PaymentType>OTHER</PaymentType>
+        </SpecialHandlings>
+        <SpecialHandlings>
+            <Type>RESIDENTIAL_DELIVERY</Type>
+            <Description>Residential Delivery</Description>
+            <PaymentType>OTHER</PaymentType>
+        </SpecialHandlings>
+        <ShipTimestamp>2014-04-30T15:27:00+00:00</ShipTimestamp>
+        <DestinationAddress>
+            <City>SAITAMA</City>
+            <CountryCode>JP</CountryCode>
+            <CountryName>Japan</CountryName>
+            <Residential>false</Residential>
+        </DestinationAddress>
+        <ActualDeliveryTimestamp>2014-05-08T19:02:00+00:00</ActualDeliveryTimestamp>
+        <ActualDeliveryAddress>
+            <City>SAITAMA</City>
+            <CountryCode>JP</CountryCode>
+            <CountryName>Japan</CountryName>
+            <Residential>false</Residential>
+        </ActualDeliveryAddress>
+        <DeliveryAttempts>0</DeliveryAttempts>
+        <DeliverySignatureName>..SAITOU</DeliverySignatureName>
+        <TotalUniqueAddressCountInConsolidation>0</TotalUniqueAddressCountInConsolidation>
+        <Signature>
+            <Notifications>
+                <Severity>ERROR</Severity>
+                <Source>trck</Source>
+                <Code>4550</Code>
+                <Message>Signature images are not available for display for shipments to this country.</Message>
+                <LocalizedMessage>Signature images are not available for display for shipments to this country.</LocalizedMessage>
+            </Notifications>
+        </Signature>
+        <RedirectToHoldEligibility>INELIGIBLE</RedirectToHoldEligibility>
+        <Events>
+            <Timestamp>2014-05-08T19:02:00+00:00</Timestamp>
+            <EventType>DL</EventType>
+            <EventDescription>Delivered</EventDescription>
+            <Address>
+                <City>SAITAMA</City>
+                <PostalCode>34800</PostalCode>
+                <CountryCode>JP</CountryCode>
+                <Residential>false</Residential>
+            </Address>
+            <ArrivalLocation>DELIVERY_LOCATION</ArrivalLocation>
+        </Events>
+    </TrackDetails>
+</CompletedTrackDetails>
+</TrackReply>
