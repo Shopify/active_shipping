@@ -58,11 +58,13 @@ module ActiveShipping
     attr_reader :origin, :destination, :package_rates,
                 :carrier, :service_name, :service_code,
                 :shipping_date, :delivery_date, :delivery_range,
-                :currency, :negotiated_rate, :insurance_price
+                :currency, :negotiated_rate, :insurance_price,
+                :estimate_reference
 
     def initialize(origin, destination, carrier, service_name, options = {})
       @origin, @destination, @carrier, @service_name = origin, destination, carrier, service_name
       @service_code = options[:service_code]
+      @estimate_reference = options[:estimate_reference]
       if options[:package_rates]
         @package_rates = options[:package_rates].map { |p| p.update(:rate => Package.cents_from(p[:rate])) }
       else
