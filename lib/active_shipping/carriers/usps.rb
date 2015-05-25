@@ -154,11 +154,6 @@ module ActiveShipping
       "WS" => "Western Samoa"
     }
 
-    STATUS_NODE_PATTERNS = %w(
-      Error/Description
-      */TrackInfo/Error/Description
-    )
-
     RESPONSE_ERROR_MESSAGES = [
       /There is no record of that mail item/,
       /This Information has not been included in this Test Server\./,
@@ -592,15 +587,13 @@ module ActiveShipping
     end
 
     def error_description_node(document)
-      STATUS_NODE_PATTERNS.each do |pattern|
-        if node = document.elements[pattern]
-          return node
-        end
-      end
+      document.xpath('//Error/Description')
     end
 
     def response_status_node(document)
-       track_summary_node(document) || error_description_node(document)
+       summary = track_summary_node(document)
+       return summary unless summary.empty?
+       error_description_node(document)
     end
 
     def has_error?(document)
