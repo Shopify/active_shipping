@@ -16,16 +16,18 @@ class USPSTest < Minitest::Test
 
   def test_tracking_failure_should_raise_exception
     @carrier.expects(:commit).returns(@tracking_response_failure)
-    assert_raises ResponseError do
+    e = assert_raises ResponseError do
       @carrier.find_tracking_info('abc123xyz', :test => true)
     end
+    assert_equal "The Postal Service could not locate the tracking information for your request. Please verify your tracking number and try again later.", e.message
   end
 
   def test_find_tracking_info_should_handle_not_found_error
     @carrier.expects(:commit).returns(xml_fixture('usps/tracking_response_test_error'))
-    assert_raises ResponseError do
+    e = assert_raises ResponseError do
       @carrier.find_tracking_info('9102901000462189604217', :test => true)
     end
+    assert_equal "This Information has not been included in this Test Server.", e.message
   end
 
   def test_find_tracking_info_should_handle_invalid_xml_error
