@@ -23,6 +23,8 @@ class RemoteCorreiosTest < Minitest::Test
     assert_equal 1, response.params["responses"].size
     assert_equal 2, response.rates.size
     assert_equal 1, response.raw_responses.size
+  rescue ActiveUtils::ConnectionError
+    skip("This API is unreliable and often times out.")
   end
 
   def test_poster_and_book_request
@@ -34,6 +36,8 @@ class RemoteCorreiosTest < Minitest::Test
     assert_equal 2, response.params["responses"].size
     assert_equal 2, response.rates.size
     assert_equal 2, response.raw_responses.size
+  rescue ActiveUtils::ConnectionError
+    skip("This API is unreliable and often times out.")
   end
 
   def test_book_request_with_specific_services
@@ -45,6 +49,8 @@ class RemoteCorreiosTest < Minitest::Test
     assert_equal 1, response.params["responses"].size
     assert_equal 3, response.rates.size
     assert_equal 1, response.raw_responses.size
+  rescue ActiveUtils::ConnectionError
+    skip("This API is unreliable and often times out.")
   end
 
   def test_response_prices
@@ -57,11 +63,17 @@ class RemoteCorreiosTest < Minitest::Test
     total_price = response.rates.sum(&:price)
 
     assert total_price == book_price + poster_price
+  rescue ActiveUtils::ConnectionError
+    skip("This API is unreliable and often times out.")
   end
 
   def test_invalid_zip
     error = assert_raises(ActiveShipping::ResponseError) do
-      @carrier.find_rates(@saopaulo, @invalid_city, [@book])
+      begin
+        @carrier.find_rates(@saopaulo, @invalid_city, [@book])
+      rescue ActiveUtils::ConnectionError
+        skip("This API is unreliable and often times out.")
+      end
     end
 
     assert_kind_of RateResponse, error.response
@@ -72,7 +84,11 @@ class RemoteCorreiosTest < Minitest::Test
 
   def test_valid_book_and_invalid_book
     error = assert_raises(ActiveShipping::ResponseError) do
-      @carrier.find_rates(@saopaulo, @riodejaneiro, [@book, @invalid_book])
+      begin
+        @carrier.find_rates(@saopaulo, @riodejaneiro, [@book, @invalid_book])
+      rescue ActiveUtils::ConnectionError
+        skip("This API is unreliable and often times out.")
+      end
     end
 
     assert_kind_of RateResponse, error.response
