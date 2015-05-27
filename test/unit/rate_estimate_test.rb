@@ -29,4 +29,10 @@ class RateEstimateTest < Minitest::Test
       RateEstimate.new(nil, nil, nil, nil, :currency => 'FAKE')
     end
   end
+
+  def test_estimate_reference_is_set
+    est = RateEstimate.new(@origin, @destination, @carrier, @service_name, @options.merge(estimate_reference: "somefakeref"))
+
+    assert_equal "somefakeref", est.estimate_reference
+  end
 end
