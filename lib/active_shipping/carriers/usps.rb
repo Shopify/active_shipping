@@ -256,7 +256,8 @@ module ActiveShipping
           xml.ClientIp { xml.text(@options[:client_ip] || '127.0.0.1') }
           xml.SourceId { xml.text(@options[:source_id] || 'active_shipping') }
           xml.TrackID('ID' => tracking_number) do
-            xml.DestinationZipCode { xml.text(@options[:destination_zip])} if @options[:destination_zip]
+            # take the first 5 digits if available, API can't handle ZIP+4
+            xml.DestinationZipCode { xml.text(@options[:destination_zip][0..4])} if @options[:destination_zip]
             if @options[:mailing_date]
               formatted_date = @options[:mailing_date].strftime('%Y-%m-%d')
               xml.MailingDate { xml.text(formatted_date)} 
