@@ -14,6 +14,11 @@ class USPSTest < Minitest::Test
     @carrier.find_tracking_info('9102901000462189604217', :destination_zip => '12345', :mailing_date => Date.new(2010,1,30))
   end
 
+  def test_tracking_request_should_handle_9_digit_zip
+    @carrier.expects(:commit).with(:track, xml_fixture('usps/tracking_request'),false).returns(@tracking_response)
+    @carrier.find_tracking_info('9102901000462189604217', :destination_zip => '12345-4444', :mailing_date => Date.new(2010,1,30))
+  end
+
   def test_tracking_failure_should_raise_exception
     @carrier.expects(:commit).returns(@tracking_response_failure)
     e = assert_raises ResponseError do
