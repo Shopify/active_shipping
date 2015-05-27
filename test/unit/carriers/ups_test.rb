@@ -21,6 +21,12 @@ class UPSTest < Minitest::Test
     assert UPS.new(:login => 'blah', :password => 'bloo', :key => 'kee')
   end
 
+  def test_find_tracking_info_should_create_correct_xml
+    xml_request = xml_fixture('ups/access_request') + xml_fixture('ups/tracking_request')
+    @carrier.expects(:commit).with(:track, xml_request, true).returns(@tracking_response)
+    @carrier.find_tracking_info('1Z5FX0076803466397', :tracking_option => '03', :test => true)
+  end
+
   def test_find_tracking_info_should_return_a_tracking_response
     @carrier.expects(:commit).returns(@tracking_response)
     assert_equal 'ActiveShipping::TrackingResponse', @carrier.find_tracking_info('1Z5FX0076803466397').class.name
