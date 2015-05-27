@@ -65,6 +65,7 @@ module ActiveShipping
       "84" => "UPS Today Intercity",
       "85" => "UPS Today Express",
       "86" => "UPS Today Express Saver"
+
     }
 
     CANADA_ORIGIN_SERVICES = {
@@ -133,6 +134,15 @@ module ActiveShipping
       parse_rate_response(origin, destination, packages, response, options)
     end
 
+    # Retrieves tracking information for a previous shipment
+    #
+    # @note Override with whatever you need to get a shipping label
+    #
+    # @param tracking_number [String] The unique identifier of the shipment to track.
+    # @param options [Hash] Carrier-specific parameters.
+    # @option options [Boolean] :mail_innovations Set this to true to track a Mail Innovations Package
+    # @return [ActiveShipping::TrackingResponse] The response from the carrier. This
+    #   response should a list of shipment tracking events if successful.
     def find_tracking_info(tracking_number, options = {})
       options = @options.update(options)
       access_request = build_access_request
@@ -520,6 +530,7 @@ module ActiveShipping
             xml.RequestOption('1')
           end
           xml.TrackingNumber(tracking_number.to_s)
+          xml.TrackingOption('03') if options[:mail_innovations]
         end
       end
       xml_builder.to_xml

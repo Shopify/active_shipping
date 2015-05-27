@@ -539,23 +539,19 @@ module ActiveShipping
 
     def extract_address(document, possible_node_names)
       node = nil
+      args = {}
       possible_node_names.each do |name|
         node = document.at(name)
         break if node
       end
 
-      args = if node && node.at('CountryCode')
-        {
-          :country => node.at('CountryCode').text,
-          :province => node.at('StateOrProvinceCode').text,
-          :city => node.at('City').text
-        }
-      else
-        {
-          :country => ActiveUtils::Country.new(:alpha2 => 'ZZ', :name => 'Unknown or Invalid Territory', :alpha3 => 'ZZZ', :numeric => '999'),
-          :province => 'unknown',
-          :city => 'unknown'
-        }
+      if node
+        args[:country] =
+          node.at('CountryCode').try(:text) ||
+          ActiveUtils::Country.new(:alpha2 => 'ZZ', :name => 'Unknown or Invalid Territory', :alpha3 => 'ZZZ', :numeric => '999')
+
+        args[:province] = node.at('StateOrProvinceCode').try(:text) || 'unknown'
+        args[:city] = node.at('City').try(:text) || 'unknown'
       end
 
       Location.new(args)
