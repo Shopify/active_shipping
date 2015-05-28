@@ -170,23 +170,19 @@ module ActiveShipping
       options = @options.update(options)
       packages = Array(packages)
 
-      begin
-        request = build_shipment_request(origin, destination, packages, options)
-        logger.debug(request) if logger
+      request = build_shipment_request(origin, destination, packages, options)
+      logger.debug(request) if logger
 
-        logger.debug(confirm_response) if logger
+      logger.debug(confirm_response) if logger
 
-        response = commit(save_request(request), (options[:test] || false))
-        parse_ship_response(response)
-      rescue RuntimeError => e
-        raise "Could not obtain shipping label. #{e.message}."
-      end
+      response = commit(save_request(request), (options[:test] || false))
+      parse_ship_response(response)
     end
 
     protected
 
     def build_shipment_request(origin, destination, packages, options = {})
-      imperial = %w(US LR MM).include?(origin.country_code(:alpha2))
+      imperial = location_uses_imperial(origin)
 
       xml_builder = Nokogiri::XML::Builder.new do |xml|
         xml.ProcessShipmentRequest(xmlns: 'http://fedex.com/ws/ship/v13') do
@@ -287,7 +283,7 @@ module ActiveShipping
     end
 
     def build_rate_request(origin, destination, packages, options = {})
-      imperial = %w(US LR MM).include?(origin.country_code(:alpha2))
+      imperial = location_uses_imperial(origin)
 
       xml_builder = Nokogiri::XML::Builder.new do |xml|
         xml.RateRequest(xmlns: 'http://fedex.com/ws/rate/v13') do
@@ -527,7 +523,7 @@ module ActiveShipping
       tracking_number = xml.css("CompletedPackageDetails TrackingIds TrackingNumber").text
       base_64_image = xml.css("Label Image").text
 
-      labels = [Label.new(tracking_number, base_64_image)]
+      labels = [Label.new(tracking_number, Base64.decode64(base_64_image))]
       LabelResponse.new(success, message, response_info, {labels: labels})
     end
 
@@ -724,6 +720,10 @@ module ActiveShipping
       document
     rescue Nokogiri::XML::SyntaxError => e
       raise ActiveShipping::ResponseContentError.new(e, xml)
+    end
+
+    def location_uses_imperial(location)
+      %w(US LR MM).include?(location.country_code(:alpha2))
     end
   end
 end
