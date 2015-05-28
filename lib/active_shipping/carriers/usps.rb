@@ -169,7 +169,14 @@ module ActiveShipping
       options = @options.update(options)
       tracking_request = build_tracking_request(tracking_number, options)
       response = commit(:track, tracking_request, options[:test] || false)
-      parse_tracking_response(response, options)
+      parse_tracking_response(response).first
+    end
+
+    def batch_find_tracking_info(tracking_infos, options = {})
+      options = @options.update(options)
+      tracking_request = build_tracking_batch_request(tracking_infos, options)
+      response = commit(:track, tracking_request, options[:test] || false)
+      parse_tracking_response(response, fault_tolerant: true)
     end
 
     def self.size_code_for(package)
@@ -230,7 +237,7 @@ module ActiveShipping
       if prefix = ONLY_PREFIX_EVENTS.find { |p| description.starts_with?(p) }
         description = prefix
       end
-      
+
       timestamp = "#{node.at('EventDate').text}, #{node.at('EventTime').text}"
       event_code = node.at('EventCode').text
       city = node.at('EventCity').try(:text)
@@ -250,16 +257,26 @@ module ActiveShipping
     protected
 
     def build_tracking_request(tracking_number, options = {})
+      build_tracking_batch_request([{
+        number: tracking_number,
+        destination_zip: options[:destination_zip],
+        mailing_date: options[:mailing_date]
+      }], options)
+    end
+
+    def build_tracking_batch_request(tracking_infos, options)
       xml_builder = Nokogiri::XML::Builder.new do |xml|
-        xml.TrackFieldRequest('USERID' => @options[:login]) do
+        xml.TrackFieldRequest('USERID' => options[:login]) do
           xml.Revision { xml.text('1') }
-          xml.ClientIp { xml.text(@options[:client_ip] || '127.0.0.1') }
-          xml.SourceId { xml.text(@options[:source_id] || 'active_shipping') }
-          xml.TrackID('ID' => tracking_number) do
-            xml.DestinationZipCode { xml.text(strip_zip(@options[:destination_zip]))} if @options[:destination_zip]
-            if @options[:mailing_date]
-              formatted_date = @options[:mailing_date].strftime('%Y-%m-%d')
-              xml.MailingDate { xml.text(formatted_date)} 
+          xml.ClientIp { xml.text(options[:client_ip] || '127.0.0.1') }
+          xml.SourceId { xml.text(options[:source_id] || 'active_shipping') }
+          tracking_infos.each do |info|
+            xml.TrackID('ID' => info[:number]) do
+              xml.DestinationZipCode { xml.text(strip_zip(info[:destination_zip]))} if info[:destination_zip]
+              if info[:mailing_date]
+                formatted_date = info[:mailing_date].strftime('%Y-%m-%d')
+                xml.MailingDate { xml.text(formatted_date)}
+              end
             end
           end
         end
@@ -536,21 +553,44 @@ module ActiveShipping
                   package.inches(:length) + package.inches(:width) + package.inches(:height)))
     end
 
-    def parse_tracking_response(response, options)
-      actual_delivery_date, status = nil
+    def parse_tracking_response(response, options = {})
       xml = Nokogiri.XML(response)
 
-      success = response_success?(xml)
-      message = response_message(xml)
+      if has_error?(xml)
+        message = error_description_node(xml).text
+        # actually raises instead of returning by nature of TrackingResponse#initialize
+        return TrackingResponse.new(false, message, Hash.from_xml(response),
+          carrier: @@name, xml: response, request: last_request)
+      end
+
+      # Responses are always returned in the order originally given.
+      if options[:fault_tolerant]
+        xml.root.xpath('TrackInfo').map do |info|
+          # Don't let one failure wreck the whole batch
+          begin
+            parse_tracking_info(response, info)
+          rescue ResponseError => e
+            e.response
+          end
+        end
+      else
+        xml.root.xpath('TrackInfo').map { |info| parse_tracking_info(response, info) }
+      end
+    end
+
+
+    def parse_tracking_info(response, node)
+      success = !has_error?(node)
+      message = response_message(node)
 
       if success
         destination = nil
         shipment_events = []
-        tracking_details = xml.root.xpath('TrackInfo/TrackDetail')
-        tracking_details << xml.root.at('TrackInfo/TrackSummary')
+        tracking_details = node.xpath('TrackDetail')
+        tracking_details << node.at('TrackSummary')
 
-        tracking_number = xml.root.at('TrackInfo').attributes['ID'].value
-        prediction_node = xml.root.at('PredictedDeliveryDate') || xml.root.at('ExpectedDeliveryDate')
+        tracking_number = node.attributes['ID'].value
+        prediction_node = node.at('PredictedDeliveryDate') || node.at('ExpectedDeliveryDate')
         scheduled_delivery = prediction_node ? Time.parse(prediction_node.text) : nil
 
         tracking_details.each do |event|
@@ -582,30 +622,16 @@ module ActiveShipping
       )
     end
 
-    def track_summary_node(document)
-      document.root.xpath('TrackInfo/StatusSummary')
+    def error_description_node(node)
+      node.xpath('//Error/Description')
     end
 
-    def error_description_node(document)
-      document.xpath('//Error/Description')
+    def response_status_node(node)
+      node.at('StatusSummary') || error_description_node(node)
     end
 
-    def response_status_node(document)
-       summary = track_summary_node(document)
-       return summary unless summary.empty?
-       error_description_node(document)
-    end
-
-    def has_error?(document)
-      !document.at('Error').nil?
-    end
-
-    def tracking_info_error?(document)
-      !document.root.at('TrackInfo/Error').nil?
-    end
-
-    def response_success?(document)
-      !(has_error?(document) || tracking_info_error?(document))
+    def has_error?(node)
+      node.xpath('Error').length > 0
     end
 
     def response_message(document)

@@ -6,7 +6,13 @@ class USPSTest < Minitest::Test
   def setup
     @carrier = USPS.new(:login => 'login')
     @tracking_response = xml_fixture('usps/tracking_response')
+    @batch_tracking_response = xml_fixture('usps/tracking_response_batch')
     @tracking_response_failure = xml_fixture('usps/tracking_response_failure')
+    @tracking_infos_array = [
+      {number: '9102901000462189604217', :destination_zip => '12345', :mailing_date => Date.new(2010,1,30)},
+      {number: '5555555555555555555555'},
+      {number: '9405510ee200828613653750'}
+    ]
   end
 
   def test_tracking_request_should_create_correct_xml
@@ -157,6 +163,45 @@ class USPSTest < Minitest::Test
     @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('9102901000462189604217')
     assert_equal true, response.delivered?
+  end
+
+  def test_tracking_batch_request_should_create_correct_xml
+    @carrier.expects(:commit).with(:track, xml_fixture('usps/tracking_request_batch'),false).returns(@batch_tracking_response)
+    @carrier.batch_find_tracking_info(@tracking_infos_array)
+  end
+
+  def test_batch_find_tracking_info_should_return_a_tracking_response_array
+    @carrier.expects(:commit).returns(@batch_tracking_response)
+    responses = @carrier.batch_find_tracking_info(@tracking_infos_array, :test => true)
+    assert_equal 3, responses.length
+    assert responses.all? { |x| x.instance_of? ActiveShipping::TrackingResponse}
+  end
+
+  def test_batch_find_tracking_info_should_have_correct_data
+    @carrier.expects(:commit).returns(@batch_tracking_response)
+    responses = @carrier.batch_find_tracking_info(@tracking_infos_array, :test => true)
+    response = responses[0]
+    assert_equal ["GX", "OA", "10", "EF", "10", "EF", "07", "PC", "OF", "01"], response.shipment_events.map(&:type_code)
+    assert_equal Time.parse('April 28, 2015'), response.scheduled_delivery_date
+    assert_equal Time.parse('2015-04-28 09:01:00 UTC'), response.actual_delivery_date
+    assert_equal '9102901000462189604217', response.tracking_number
+  end
+
+  def test_batch_find_tracking_info_should_tolerate_failure
+    @carrier.expects(:commit).returns(@batch_tracking_response)
+    responses = @carrier.batch_find_tracking_info(@tracking_infos_array, :test => true)
+    response = responses[2]
+    refute response.success?
+    assert_equal "The Postal Service could not locate the tracking information for your request. Please verify your tracking number and try again later.",
+      response.message
+  end
+
+  def test_batch_find_tracking_info_should_handle_not_found_error
+    @carrier.expects(:commit).returns(xml_fixture('usps/tracking_response_test_error'))
+    e = assert_raises ResponseError do
+      @carrier.find_tracking_info(@batch_tracking_response, :test => true)
+    end
+    assert_equal "This Information has not been included in this Test Server.", e.message
   end
 
   def test_size_codes
