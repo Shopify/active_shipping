@@ -312,7 +312,7 @@ class RemoteFedExTest < Minitest::Test
 
     assert response.success?
     refute_empty response.labels
-    refute_empty response.labels.first.base64_img_data
+    refute_empty response.labels.first.img_data
   end
 
   def test_obtain_shipping_label_with_signature_option

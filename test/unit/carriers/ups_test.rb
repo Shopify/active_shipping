@@ -265,7 +265,7 @@ class UPSTest < Minitest::Test
     assert_includes tracking, "1ZA03R691592132475"
     assert_includes tracking, "1ZA03R691590470881"
 
-    pictures = response.labels.map { |label| label.base64_img_data }
+    pictures = response.labels.map { |label| label.img_data }
     refute_includes pictures, nil
   end
 
@@ -296,7 +296,7 @@ class UPSTest < Minitest::Test
     tracking = response.labels.map { |label| label.tracking_number }
     assert_includes tracking, "1ZA03R691591538440"
 
-    pictures = response.labels.map { |label| label.base64_img_data }
+    pictures = response.labels.map { |label| label.img_data }
     refute_includes pictures, nil
   end
 

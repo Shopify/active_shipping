@@ -425,7 +425,7 @@ class FedExTest < Minitest::Test
     # These assertions are to check that the xml fixture is extracted properly.
     assert_equal 1, response.labels.count
     assert_equal response.labels.first.tracking_number, "794637052920"
-    assert_equal response.labels.first.base64_img_data.size, 11048
+    assert_equal response.labels.first.img_data.size, 8286
   end
 
   def test_create_shipment_signature_option
