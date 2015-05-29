@@ -1,5 +1,20 @@
 # ActiveShipping CHANGELOG
 
+### v1.2.0
+
+- Added support for buying labels with FedEx
+- Added support for batched tracking requests with USPS
+
+### v1.1.3
+
+- Handle ZIP+4 numbers in USPS tracking
+- Add a field for rate estimate references
+- Add support for UPS mail innovations tracking option
+
+### v1.1.2
+
+- Fix finding of error descriptions for USPS tracking
+
 ### v1.1.1
 
 - Fix bug with USPS tracking not handling optional fields being absent.
