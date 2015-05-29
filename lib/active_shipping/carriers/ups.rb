@@ -156,39 +156,32 @@ module ActiveShipping
       packages = Array(packages)
       access_request = build_access_request
 
-      begin
+      # STEP 1: Confirm.  Validation step, important for verifying price.
+      confirm_request = build_shipment_request(origin, destination, packages, options)
+      logger.debug(confirm_request) if logger
 
-        # STEP 1: Confirm.  Validation step, important for verifying price.
-        confirm_request = build_shipment_request(origin, destination, packages, options)
-        logger.debug(confirm_request) if logger
+      confirm_response = commit(:ship_confirm, save_request(access_request + confirm_request), (options[:test] || false))
+      logger.debug(confirm_response) if logger
 
-        confirm_response = commit(:ship_confirm, save_request(access_request + confirm_request), (options[:test] || false))
-        logger.debug(confirm_response) if logger
+      # ... now, get the digest, it's needed to get the label.  In theory,
+      # one could make decisions based on the price or some such to avoid
+      # surprises.  This also has *no* error handling yet.
+      xml = parse_ship_confirm(confirm_response)
+      success = response_success?(xml)
+      message = response_message(xml)
+      raise message unless success
+      digest  = response_digest(xml)
 
-        # ... now, get the digest, it's needed to get the label.  In theory,
-        # one could make decisions based on the price or some such to avoid
-        # surprises.  This also has *no* error handling yet.
-        xml = parse_ship_confirm(confirm_response)
-        success = response_success?(xml)
-        message = response_message(xml)
-        raise message unless success
-        digest  = response_digest(xml)
+      # STEP 2: Accept. Use shipment digest in first response to get the actual label.
+      accept_request = build_accept_request(digest, options)
+      logger.debug(accept_request) if logger
 
-        # STEP 2: Accept. Use shipment digest in first response to get the actual label.
-        accept_request = build_accept_request(digest, options)
-        logger.debug(accept_request) if logger
+      accept_response = commit(:ship_accept, save_request(access_request + accept_request), (options[:test] || false))
+      logger.debug(accept_response) if logger
 
-        accept_response = commit(:ship_accept, save_request(access_request + accept_request), (options[:test] || false))
-        logger.debug(accept_response) if logger
-
-        # ...finally, build a map from the response that contains
-        # the label data and tracking information.
-        parse_ship_accept(accept_response)
-
-      rescue RuntimeError => e
-        raise "Could not obtain shipping label. #{e.message}."
-
-      end
+      # ...finally, build a map from the response that contains
+      # the label data and tracking information.
+      parse_ship_accept(accept_response)
     end
 
     def get_delivery_date_estimates(origin, destination, packages, pickup_date=Date.current, options = {})
@@ -855,7 +848,14 @@ module ActiveShipping
       success = response_success?(xml)
       message = response_message(xml)
 
-      LabelResponse.new(success, message, Hash.from_xml(response).values.first)
+      response_info = Hash.from_xml(response).values.first
+      packages = response_info["ShipmentResults"]["PackageResults"]
+      packages = [packages] if Hash === packages
+      labels = packages.map do |package|
+        Label.new(package["TrackingNumber"], Base64.decode64(package["LabelImage"]["GraphicImage"]))
+      end
+
+      LabelResponse.new(success, message, response_info, {labels: labels})
     end
 
     def commit(action, request, test = false)

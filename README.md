@@ -5,6 +5,7 @@ This library interfaces with the web services of various shipping carriers. The 
 - Finding shipping rates
 - Registering shipments
 - Tracking shipments
+- Purchasing shipping labels
 
 Active Shipping is currently being used and improved in a production environment for [Shopify][]. Development is being done by the Shopify integrations team (<integrations-team@shopify.com>). Discussion is welcome in the [Active Merchant Google Group][discuss].
 

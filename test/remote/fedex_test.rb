@@ -297,4 +297,36 @@ class RemoteFedExTest < Minitest::Test
       @carrier.find_tracking_info('abc')
     end
   end
+
+  def test_obtain_shipping_label
+    response = @carrier.create_shipment(
+      location_fixtures[:beverly_hills_with_name],
+      location_fixtures[:new_york_with_name],
+      package_fixtures[:wii],
+        :test => true,
+        :reference_number => {
+          :value => "FOO-123",
+          :code => "PO"
+        }
+    )
+
+    assert response.success?
+    refute_empty response.labels
+    refute_empty response.labels.first.img_data
+  end
+
+  def test_obtain_shipping_label_with_signature_option
+    packages = package_fixtures.values_at(:wii)
+    packages.each {|p| p.options[:signature_option] = :adult }
+
+    response = @carrier.create_shipment(
+      location_fixtures[:beverly_hills_with_name],
+      location_fixtures[:new_york_with_name],
+      packages,
+      {:test => true}
+    )
+
+    signature_option = response.params["ProcessShipmentReply"]["CompletedShipmentDetail"]["CompletedPackageDetails"]["SignatureOption"]
+    assert_equal FedEx::SIGNATURE_OPTION_CODES[:adult], signature_option
+  end
 end

@@ -266,12 +266,12 @@ class UPSTest < Minitest::Test
 
     # These tracking numbers are part of the fixture data.  What we're trying
     # to verify is that the data in the XML is extracted properly.
-    tracking = response.labels.map { |label| label[:tracking_number] }
+    tracking = response.labels.map { |label| label.tracking_number }
     assert_includes tracking, "1ZA03R691594829862"
     assert_includes tracking, "1ZA03R691592132475"
     assert_includes tracking, "1ZA03R691590470881"
 
-    pictures = response.labels.map { |label| label[:image] }
+    pictures = response.labels.map { |label| label.img_data }
     refute_includes pictures, nil
   end
 
@@ -299,10 +299,10 @@ class UPSTest < Minitest::Test
 
     # These tracking numbers are part of the fixture data.  What we're trying
     # to verify is that the data in the XML is extracted properly.
-    tracking = response.labels.map { |label| label[:tracking_number] }
+    tracking = response.labels.map { |label| label.tracking_number }
     assert_includes tracking, "1ZA03R691591538440"
 
-    pictures = response.labels.map { |label| label[:image] }
+    pictures = response.labels.map { |label| label.img_data }
     refute_includes pictures, nil
   end
 
