@@ -163,12 +163,10 @@ module ActiveShipping
 
 
     # Get Shipping labels
-    # Caveats:
-    #  - Only supports singlular packages
-    #
     def create_shipment(origin, destination, packages, options = {})
       options = @options.update(options)
       packages = Array(packages)
+      raise Error, "Multiple packages are not supported yet." if packages.length > 1
 
       request = build_shipment_request(origin, destination, packages, options)
       logger.debug(request) if logger

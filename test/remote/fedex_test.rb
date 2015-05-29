@@ -298,6 +298,38 @@ class RemoteFedExTest < Minitest::Test
     end
   end
 
+  def test_cant_obtain_multiple_shipping_labels
+    assert_raises(ActiveShipping::Error,"Multiple packages are not supported yet.") do
+      @carrier.create_shipment(
+        location_fixtures[:beverly_hills_with_name],
+        location_fixtures[:new_york_with_name],
+        [package_fixtures[:wii],package_fixtures[:wii]],
+        :test => true,
+        :reference_number => {
+          :value => "FOO-123",
+          :code => "PO"
+        }
+      )
+    end
+  end
+
+  def test_obtain_shipping_label_with_single_element_array
+    response = @carrier.create_shipment(
+      location_fixtures[:beverly_hills_with_name],
+      location_fixtures[:new_york_with_name],
+      [package_fixtures[:wii]],
+        :test => true,
+        :reference_number => {
+          :value => "FOO-123",
+          :code => "PO"
+        }
+    )
+
+    assert response.success?
+    refute_empty response.labels
+    refute_empty response.labels.first.img_data
+  end
+
   def test_obtain_shipping_label
     response = @carrier.create_shipment(
       location_fixtures[:beverly_hills_with_name],
