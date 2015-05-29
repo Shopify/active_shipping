@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<TrackFieldRequest USERID="login">
+  <Revision>1</Revision>
+  <ClientIp>127.0.0.1</ClientIp>
+  <SourceId>active_shipping</SourceId>
+  <TrackID ID="9102901000462189604217">
+    <DestinationZipCode>12345</DestinationZipCode>
+    <MailingDate>2010-01-30</MailingDate>
+  </TrackID>
+  <TrackID ID="5555555555555555555555"/>
+  <TrackID ID="9405510ee200828613653750"/>
+</TrackFieldRequest>
