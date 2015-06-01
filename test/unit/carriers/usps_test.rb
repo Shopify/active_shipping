@@ -233,14 +233,14 @@ class USPSTest < Minitest::Test
     expected_request = xml_fixture('usps/world_rate_request_without_value')
     @carrier.expects(:commit).with(:world_rates, expected_request, false).returns(expected_request)
     @carrier.expects(:parse_rate_response)
-    @carrier.find_rates(location_fixtures[:beverly_hills], location_fixtures[:ottawa], package_fixtures[:book], :test => true)
+    @carrier.find_rates(location_fixtures[:beverly_hills], location_fixtures[:ottawa], package_fixtures[:book], :test => true, :acceptance_time => Time.parse("2015-06-01T20:34:29Z"))
   end
 
   def test_build_world_rate_request_with_package_value
     expected_request = xml_fixture('usps/world_rate_request_with_value')
     @carrier.expects(:commit).with(:world_rates, expected_request, false).returns(expected_request)
     @carrier.expects(:parse_rate_response)
-    @carrier.find_rates(location_fixtures[:beverly_hills], location_fixtures[:ottawa], package_fixtures[:american_wii], :test => true)
+    @carrier.find_rates(location_fixtures[:beverly_hills], location_fixtures[:ottawa], package_fixtures[:american_wii], :test => true, :acceptance_time => Time.parse("2015-06-01T20:34:29Z"))
   end
 
   def test_initialize_options_requirements
