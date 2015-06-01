@@ -21,10 +21,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
 
-require 'active_support'
-require 'active_support/json'
-require 'active_support/core_ext/enumerable'
-require 'active_support/core_ext/class/attribute_accessors'
+require 'active_support/all'
 require 'active_utils'
 
 require 'nokogiri'
