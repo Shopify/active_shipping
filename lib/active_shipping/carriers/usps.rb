@@ -404,7 +404,7 @@ module ActiveShipping
                 xml.public_send(COMMERCIAL_FLAG_NAME.fetch(commercial_type), 'Y')
               end
               xml.OriginZip(origin.zip)
-              xml.AcceptanceDateTime(DateTime.now.iso8601)
+              xml.AcceptanceDateTime(Time.now.utc.iso8601)
               xml.DestinationPostalCode(destination.zip)
             end
           end
