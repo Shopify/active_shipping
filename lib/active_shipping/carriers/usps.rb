@@ -234,7 +234,7 @@ module ActiveShipping
     def extract_event_details(node)
       description = node.at('Event').text.upcase
 
-      if prefix = ONLY_PREFIX_EVENTS.find { |p| description.starts_with?(p) }
+      if prefix = ONLY_PREFIX_EVENTS.find { |p| description.start_with?(p) }
         description = prefix
       end
 
