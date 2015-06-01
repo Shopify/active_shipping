@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <IntlRateV2Request USERID="login">
+  <Revision>2</Revision>
   <Package ID="0">
     <Pounds>0</Pounds>
     <Ounces>120</Ounces>
@@ -16,5 +17,8 @@
     <Length>15.00</Length>
     <Height>4.50</Height>
     <Girth>29.00</Girth>
+    <OriginZip>90210</OriginZip>
+    <AcceptanceDateTime>2015-06-01T20:34:29Z</AcceptanceDateTime>
+    <DestinationPostalCode>K1P 1J1</DestinationPostalCode>
   </Package>
 </IntlRateV2Request>
