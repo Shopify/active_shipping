@@ -1,5 +1,9 @@
 # ActiveShipping CHANGELOG
 
+### v1.2.1
+
+- Fix compatibility with latest USPS WEBTOOLS international rate schema changes.
+
 ### v1.2.0
 
 - Added support for buying labels with FedEx
