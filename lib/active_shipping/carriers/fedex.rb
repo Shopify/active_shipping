@@ -472,7 +472,7 @@ module ActiveShipping
           is_saturday_delivery = rated_shipment.at('AppliedOptions').try(:text) == 'SATURDAY_DELIVERY'
           service_type = is_saturday_delivery ? "#{service_code}_SATURDAY_DELIVERY" : service_code
 
-          transit_time = rated_shipment.at('TransitTime').text if service_code == "FEDEX_GROUND"
+          transit_time = rated_shipment.at('TransitTime').text if ["FEDEX_GROUND", "GROUND_HOME_DELIVERY"].include?(service_code)
           max_transit_time = rated_shipment.at('MaximumTransitTime').try(:text) if service_code == "FEDEX_GROUND"
 
           delivery_timestamp = rated_shipment.at('DeliveryTimestamp').try(:text)

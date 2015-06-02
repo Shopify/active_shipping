@@ -235,6 +235,25 @@ class FedExTest < Minitest::Test
     end
   end
 
+  def test_delivery_date_from_ground_home_transit_time
+    mock_response = xml_fixture('fedex/raterequest_response_with_ground_home_delivery')
+
+    @carrier.expects(:commit).returns(mock_response)
+
+    today = DateTime.civil(2015, 06, 03, 0, 0, 0, "-4")
+
+    Timecop.freeze(today) do
+      rate_estimates = @carrier.find_rates( location_fixtures[:ottawa],
+                                            location_fixtures[:beverly_hills],
+                                            package_fixtures.values_at(:book, :wii), :test => true)
+
+      # the above fixture will specify a transit time of 3 days, with 2 weekend days accounted for
+      delivery_date = Date.today + 5
+      assert_equal delivery_date, rate_estimates.rates.first.delivery_date
+    end
+  end
+
+
   def test_failure_to_parse_invalid_xml_results_in_a_useful_error
     mock_response = xml_fixture('fedex/invalid_fedex_reply')
 
