@@ -137,17 +137,17 @@ class USPSTest < Test::Unit::TestCase
   end
 
   def test_build_world_rate_request
-    expected_request = "<IntlRateV2Request USERID='login'><Package ID='0'><Pounds>0</Pounds><Ounces>9</Ounces><MailType>Package</MailType><GXG><POBoxFlag>N</POBoxFlag><GiftFlag>N</GiftFlag></GXG><ValueOfContents>0.0</ValueOfContents><Country><![CDATA[Canada]]></Country><Container>RECTANGULAR</Container><Size>REGULAR</Size><Width>5.51</Width><Length>7.48</Length><Height>0.79</Height><Girth>12.60</Girth></Package></IntlRateV2Request>"
+    expected_request = "<IntlRateV2Request USERID='login'><Revision>2</Revision><Package ID='0'><Pounds>0</Pounds><Ounces>9</Ounces><MailType>Package</MailType><GXG><POBoxFlag>N</POBoxFlag><GiftFlag>N</GiftFlag></GXG><ValueOfContents>0.0</ValueOfContents><Country><![CDATA[Canada]]></Country><Container>RECTANGULAR</Container><Size>REGULAR</Size><Width>5.51</Width><Length>7.48</Length><Height>0.79</Height><Girth>12.60</Girth><OriginZip>90210</OriginZip><AcceptanceDateTime>2015-06-01T20:34:29Z</AcceptanceDateTime><DestinationPostalCode>K1P 1J1</DestinationPostalCode></Package></IntlRateV2Request>"
     @carrier.expects(:commit).with(:world_rates, URI.encode(expected_request), false).returns(expected_request)
     @carrier.expects(:parse_rate_response)
-    @carrier.find_rates(@locations[:beverly_hills], @locations[:ottawa], @packages[:book], :test => true)
+    @carrier.find_rates(@locations[:beverly_hills], @locations[:ottawa], @packages[:book], :test => true, :acceptance_time => Time.parse("2015-06-01T20:34:29Z"))
   end
 
   def test_build_world_rate_request_with_package_value
-    expected_request = "<IntlRateV2Request USERID='login'><Package ID='0'><Pounds>0</Pounds><Ounces>120</Ounces><MailType>Package</MailType><GXG><POBoxFlag>N</POBoxFlag><GiftFlag>N</GiftFlag></GXG><ValueOfContents>269.99</ValueOfContents><Country><![CDATA[Canada]]></Country><Container>RECTANGULAR</Container><Size>LARGE</Size><Width>10.00</Width><Length>15.00</Length><Height>4.50</Height><Girth>29.00</Girth></Package></IntlRateV2Request>"
+    expected_request = "<IntlRateV2Request USERID='login'><Revision>2</Revision><Package ID='0'><Pounds>0</Pounds><Ounces>120</Ounces><MailType>Package</MailType><GXG><POBoxFlag>N</POBoxFlag><GiftFlag>N</GiftFlag></GXG><ValueOfContents>269.99</ValueOfContents><Country><![CDATA[Canada]]></Country><Container>RECTANGULAR</Container><Size>LARGE</Size><Width>10.00</Width><Length>15.00</Length><Height>4.50</Height><Girth>29.00</Girth><OriginZip>90210</OriginZip><AcceptanceDateTime>2015-06-01T20:34:29Z</AcceptanceDateTime><DestinationPostalCode>K1P 1J1</DestinationPostalCode></Package></IntlRateV2Request>"
     @carrier.expects(:commit).with(:world_rates, URI.encode(expected_request), false).returns(expected_request)
     @carrier.expects(:parse_rate_response)
-    @carrier.find_rates(@locations[:beverly_hills], @locations[:ottawa], @packages[:american_wii], :test => true)
+    @carrier.find_rates(@locations[:beverly_hills], @locations[:ottawa], @packages[:american_wii], :test => true, :acceptance_time => Time.parse("2015-06-01T20:34:29Z"))
   end
 
   def test_initialize_options_requirements

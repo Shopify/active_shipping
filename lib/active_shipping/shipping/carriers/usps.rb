@@ -264,7 +264,7 @@ module ActiveMerchant
       end
 
       def world_rates(origin, destination, packages, options = {})
-        request = build_world_rate_request(packages, destination, options)
+        request = build_world_rate_request(origin, packages, destination, options)
         # never use test mode; rate requests just won't work on test servers
         parse_rate_response origin, destination, packages, commit(:world_rates, request, false), options
       end
@@ -343,9 +343,10 @@ module ActiveMerchant
       #
       # package.options[:mail_type] -- one of [:package, :postcard, :matter_for_the_blind, :envelope].
       #                                 Defaults to :package.
-      def build_world_rate_request(packages, destination, options)
+      def build_world_rate_request(origin, packages, destination, options)
         country = COUNTRY_NAME_CONVERSIONS[destination.country.code(:alpha2).value] || destination.country.name
         request = XmlNode.new('IntlRateV2Request', :USERID => @options[:login]) do |rate_request|
+          rate_request << XmlNode.new('Revision', 2)
           packages.each_index do |id|
             p = packages[id]
             rate_request << XmlNode.new('Package', :ID => id.to_s) do |package|
@@ -374,6 +375,9 @@ module ActiveMerchant
               if commercial_type = commercial_type(options)
                 package << XmlNode.new(COMMERCIAL_FLAG_NAME.fetch(commercial_type), 'Y')
               end
+              package << XmlNode.new('OriginZip', origin.zip)
+              package << XmlNode.new('AcceptanceDateTime', (options[:acceptance_time] || Time.now.utc).iso8601)
+              package << XmlNode.new('DestinationPostalCode', destination.zip)
             end
           end
         end
