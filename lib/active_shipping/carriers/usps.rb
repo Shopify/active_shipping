@@ -420,7 +420,7 @@ module ActiveShipping
 
       xml = Nokogiri.XML(response)
 
-      if error = xml.at('/Error')
+      if error = xml.at_xpath('/Error | //ServiceErrors/ServiceError')
         success = false
         message = error.at('Description').text
       else
