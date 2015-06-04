@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<IntlRateV2Response>
+  <Package ID="0">
+    <!-- Other successful Services, Prohibitions, etc were here -->
+    <Service ID="15">
+      <Pounds>0</Pounds>
+      <Ounces>9</Ounces>
+      <MailType>Package</MailType>
+      <Container>RECTANGULAR</Container>
+      <Size>REGULAR</Size>
+      <Width>5.51</Width>
+      <Length>7.48</Length>
+      <Height>0.79</Height>
+      <Girth>12.60</Girth>
+      <Country>CANADA</Country>
+      <Postage>10.30</Postage>
+      <ExtraServices/>
+      <ValueOfContents>0.00</ValueOfContents>
+      <InsComment>SERVICE</InsComment>
+      <SvcCommitments>Varies by destination</SvcCommitments>
+      <SvcDescription>First-Class Package International Service&amp;lt;sup&amp;gt;&amp;#8482;&amp;lt;/sup&amp;gt;</SvcDescription>
+      <MaxDimensions>Other than rolls: Max. length 24", max length, height and depth (thickness) combined 36"&lt;br&gt;Rolls: Max. length 36". Max length and twice the diameter combined 42"</MaxDimensions>
+      <MaxWeight>4</MaxWeight>
+    </Service>
+    <Service ID="2">
+      <Pounds>0</Pounds>
+      <Ounces>9</Ounces>
+      <MailType>Package</MailType>
+      <Container>RECTANGULAR</Container>
+      <Size>REGULAR</Size>
+      <Width>5.51</Width>
+      <Length>7.48</Length>
+      <Height>0.79</Height>
+      <Girth>12.60</Girth>
+      <Country>CANADA</Country>
+      <Postage>0.00</Postage>
+      <ExtraServices>
+        <ExtraService>
+          <ServiceID/>
+          <ServiceName/>
+          <Available>False</Available>
+          <Price/>
+        </ExtraService>
+      </ExtraServices>
+      <ServiceErrors>
+        <ServiceError>
+          <Id>50050</Id>
+          <Description>This is a test response with the format of a real error.</Description>
+        </ServiceError>
+      </ServiceErrors>
+    </Service>
+  </Package>
+</IntlRateV2Response>

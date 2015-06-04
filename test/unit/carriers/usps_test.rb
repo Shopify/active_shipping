@@ -281,6 +281,21 @@ class USPSTest < Minitest::Test
     assert_equal ordered_service_names, response.rates.map(&:service_name).sort
   end
 
+  def test_parse_international_rate_response_errors
+    fixture_xml = xml_fixture('usps/api_error_rate_response')
+    @carrier.expects(:commit).returns(fixture_xml)
+
+    error = assert_raises(ResponseError) do
+      @carrier.find_rates(
+        location_fixtures[:beverly_hills], # imperial (U.S. origin)
+        location_fixtures[:ottawa],
+        package_fixtures[:american_wii],
+        :test => true
+      )
+    end
+    assert_equal 'This is a test response with the format of a real error.', error.message
+  end
+
   def test_parse_max_dimension_sentences
     limits = {
       "Max. length 46\", width 35\", height 46\" and max. length plus girth 108\"" =>
