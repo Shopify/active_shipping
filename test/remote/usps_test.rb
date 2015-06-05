@@ -12,10 +12,11 @@ class RemoteUSPSTest < Minitest::Test
   end
 
   def test_tracking
-    skip '<#<ActiveShipping::ResponseError: There is no record of that mail item. If it was mailed recently, it may not yet be tracked. Please try again later.>>.'
-
-    @carrier.find_tracking_info('EJ958083578US', :test => true)
+    response = @carrier.find_tracking_info('LN284529912US', :test => true)
     assert response.success?, response.message
+    assert_equal 9,response.shipment_events.size
+    assert_equal 'DELIVERED', response.shipment_events.last.message
+    assert_equal Time.parse('2015-06-01 13:36:00 UTC'), response.actual_delivery_date
   end
 
   def test_tracking_with_bad_number
