@@ -243,6 +243,13 @@ class USPSTest < Minitest::Test
     @carrier.find_rates(location_fixtures[:beverly_hills], location_fixtures[:ottawa], package_fixtures[:american_wii], :test => true, :acceptance_time => Time.parse("2015-06-01T20:34:29Z"))
   end
 
+  def test_build_world_rate_request_only_country
+    expected_request = xml_fixture('usps/world_rate_request_only_country')
+    @carrier.expects(:commit).with(:world_rates, expected_request, false).returns(expected_request)
+    @carrier.expects(:parse_rate_response)
+    @carrier.find_rates(location_fixtures[:beverly_hills], Location.new(:country => 'CZ'), package_fixtures[:american_wii], :test => true)
+  end
+
   def test_initialize_options_requirements
     assert_raises(ArgumentError) { USPS.new }
     assert USPS.new(:login => 'blah')

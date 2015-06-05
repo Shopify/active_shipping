@@ -404,8 +404,10 @@ module ActiveShipping
                 xml.public_send(COMMERCIAL_FLAG_NAME.fetch(commercial_type), 'Y')
               end
               xml.OriginZip(origin.zip)
-              xml.AcceptanceDateTime((options[:acceptance_time] || Time.now.utc).iso8601)
-              xml.DestinationPostalCode(destination.zip)
+              if destination.zip.present?
+                xml.AcceptanceDateTime((options[:acceptance_time] || Time.now.utc).iso8601)
+                xml.DestinationPostalCode(destination.zip)
+              end
             end
           end
         end
