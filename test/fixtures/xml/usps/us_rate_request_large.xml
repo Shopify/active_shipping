@@ -6,13 +6,13 @@
     <ZipOrigination>90210</ZipOrigination>
     <ZipDestination>10017</ZipDestination>
     <Pounds>0</Pounds>
-    <Ounces>8.8</Ounces>
-    <Container/>
-    <Size>REGULAR</Size>
-    <Width>5.51</Width>
-    <Length>7.48</Length>
-    <Height>0.79</Height>
-    <Girth>12.60</Girth>
-    <Machinable>TRUE</Machinable>
+    <Ounces>800.0</Ounces>
+    <Container>RECTANGULAR</Container>
+    <Size>LARGE</Size>
+    <Width>24.00</Width>
+    <Length>36.00</Length>
+    <Height>24.00</Height>
+    <Girth>96.00</Girth>
+    <Machinable>FALSE</Machinable>
   </Package>
 </RateV4Request>

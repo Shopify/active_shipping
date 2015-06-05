@@ -343,8 +343,11 @@ module ActiveShipping
               xml.ZipDestination(strip_zip(destination_zip))
               xml.Pounds(0)
               xml.Ounces("%0.1f" % [package.ounces, 1].max)
-              xml.Container(CONTAINERS[package.options[:container]] || (package.cylinder? ? 'NONRECTANGULAR' : 'RECTANGULAR'))
-              xml.Size(USPS.size_code_for(package))
+              size_code = USPS.size_code_for(package)
+              container = CONTAINERS[package.options[:container]]
+              container ||= (package.cylinder? ? 'NONRECTANGULAR' : 'RECTANGULAR') if size_code == 'LARGE'
+              xml.Container(container)
+              xml.Size(size_code)
               xml.Width("%0.2f" % package.inches(:width))
               xml.Length("%0.2f" % package.inches(:length))
               xml.Height("%0.2f" % package.inches(:height))
