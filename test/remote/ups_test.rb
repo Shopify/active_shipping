@@ -311,4 +311,20 @@ class RemoteUPSTest < Minitest::Test
     ww_express_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Worldwide Express"}.first
     assert_equal Date.parse(1.business_day.from_now.to_s), ww_express_estimate.date
   end
+
+  def test_void_shipment
+    # this is a test tracking number from the ups docs that always returns sucess
+    response = @carrier.void_shipment('1Z12345E0390817264')
+    assert response
+  end
+
+  def test_void_beyond_time_limit
+    # this is a test tracking number from the ups docs that always returns time limit expired
+    begin
+      response = @carrier.void_shipment('1Z12345E8793628675')
+      assert false # voiding this number should raise an error
+    rescue => e
+      assert_equal(e.message, "Void shipment failed with message: Failure: Time for voiding has expired.")
+    end
+  end
 end
