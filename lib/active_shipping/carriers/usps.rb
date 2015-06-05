@@ -246,7 +246,9 @@ module ActiveShipping
 
       country_node = node.at('EventCountry')
       country = country_node ? country_node.text : ''
-      country = 'USA' if country.empty?
+      country = 'UNITED STATES' if country.empty?
+      # USPS returns upcased country names which ActiveUtils doesn't recognize without translation
+      country = find_country_code_case_insensitive(country)
 
       time = Time.parse(timestamp)
       zoneless_time = Time.utc(time.year, time.month, time.mday, time.hour, time.min, time.sec)
@@ -645,6 +647,13 @@ module ActiveShipping
 
     def response_message(document)
       response_status_node(document).text
+    end
+
+    def find_country_code_case_insensitive(name)
+      upcase_name = name.upcase
+      country = ActiveUtils::Country::COUNTRIES.detect { |c| c[:name].upcase == upcase_name }
+      raise ActiveShipping::Error, "No country found for #{name}" unless country
+      country[:alpha2]
     end
 
     def commit(action, request, test = false)

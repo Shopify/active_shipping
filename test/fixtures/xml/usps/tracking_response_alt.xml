@@ -31,7 +31,7 @@
       <Event>Out for Delivery, in truck</Event>
       <EventState>ON</EventState>
       <EventZIPCode>61536</EventZIPCode>
-      <EventCountry>Canada</EventCountry>
+      <EventCountry>CANADA</EventCountry>
       <FirmName/>
       <Name/>
       <AuthorizedAgent>false</AuthorizedAgent>
