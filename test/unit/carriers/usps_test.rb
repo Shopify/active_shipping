@@ -214,6 +214,7 @@ class USPSTest < Minitest::Test
 
   def test_build_us_rate_request_uses_proper_container
     expected_request = xml_fixture('usps/us_rate_request')
+    expected_request.gsub!('<Container/>','<Container>RECTANGULAR</Container>')
     @carrier.expects(:commit).with(:us_rates, expected_request, false).returns(expected_request)
     @carrier.expects(:parse_rate_response)
     package = package_fixtures[:book]
@@ -221,11 +222,19 @@ class USPSTest < Minitest::Test
     @carrier.find_rates(location_fixtures[:beverly_hills], location_fixtures[:new_york], package, :test => true, :container => :rectangular)
   end
 
-  def test_build_us_rate_request_uses_proper_container_when_none_is_specified
+  def test_build_us_rate_request_uses_no_container_on_small_packages
     expected_request = xml_fixture('usps/us_rate_request')
     @carrier.expects(:commit).with(:us_rates, expected_request, false).returns(expected_request)
     @carrier.expects(:parse_rate_response)
     package = package_fixtures[:book]
+    @carrier.find_rates(location_fixtures[:beverly_hills], location_fixtures[:new_york], package, :test => true)
+  end
+
+  def test_build_us_rate_request_uses_proper_container_when_none_is_specified
+    expected_request = xml_fixture('usps/us_rate_request_large')
+    @carrier.expects(:commit).with(:us_rates, expected_request, false).returns(expected_request)
+    @carrier.expects(:parse_rate_response)
+    package = package_fixtures[:big_half_pound]
     @carrier.find_rates(location_fixtures[:beverly_hills], location_fixtures[:new_york], package, :test => true)
   end
 
