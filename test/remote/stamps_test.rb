@@ -143,7 +143,7 @@ class RemoteStampsTest < Minitest::Test
 
     assert_nil response.label_url
 
-    assert_equal "\r\nN\r\n", response.image[0..4]
+    assert_equal ";\r\n; ", response.image[0..4]
   end
 
   def test_international_shipment
