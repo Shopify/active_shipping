@@ -217,7 +217,7 @@ class RemoteFedExTest < Minitest::Test
 
   def test_find_tracking_info_for_delivered_shipment
     # unfortunately, we have to use Fedex unique identifiers, because the test tracking numbers are overloaded.
-    response = @carrier.find_tracking_info('123456789012', unique_identifier: '2456987000~123456789012~FX')
+    response = @carrier.find_tracking_info('123456789012', unique_identifier: '2457178000~123456789012~FX')
     assert response.success?
     assert response.delivered?
     assert_equal '123456789012', response.tracking_number
@@ -225,14 +225,14 @@ class RemoteFedExTest < Minitest::Test
     assert_equal 'DL', response.status_code
     assert_equal "Delivered", response.status_description
 
-    assert_equal Time.parse('2014-11-14T03:49:00Z'), response.ship_time
+    assert_equal Time.parse('2015-06-04 18:19:00 +0000'), response.ship_time
     assert_equal nil, response.scheduled_delivery_date
-    assert_equal Time.parse('2014-12-05T00:28:00Z'), response.actual_delivery_date
+    assert_equal Time.parse('2015-06-04 23:11:00 +0000'), response.actual_delivery_date
 
     assert_equal nil, response.origin
 
     destination_address = ActiveShipping::Location.new(
-      city: 'COLLIERVILLE',
+      city: 'unknown',
       country: 'US',
       state: 'TN'
     )
@@ -242,41 +242,46 @@ class RemoteFedExTest < Minitest::Test
 
   def test_find_tracking_info_for_in_transit_shipment_1
     # unfortunately, we have to use Fedex unique identifiers, because the test tracking numbers are overloaded.
-    response = @carrier.find_tracking_info('123456789012', unique_identifier: '2456979001~123456789012~FX')
+    response = @carrier.find_tracking_info('920241085725456')
     assert response.success?
     refute response.delivered?
-    assert_equal '123456789012', response.tracking_number
-    assert_equal :in_transit, response.status
-    assert_equal 'IT', response.status_code
-    assert_equal "Package available for clearance", response.status_description
-    assert_equal 1, response.shipment_events.length
+    assert_equal '920241085725456', response.tracking_number
+    assert_equal :at_fedex_destination, response.status
+    assert_equal 'FD', response.status_code
+    assert_equal "At FedEx destination facility", response.status_description
+    assert_equal 7, response.shipment_events.length
     assert_nil response.actual_delivery_date
     assert_equal nil, response.scheduled_delivery_date
   end
 
   def test_find_tracking_info_for_in_transit_shipment_2
     # unfortunately, we have to use Fedex unique identifiers, because the test tracking numbers are overloaded.
-    response = @carrier.find_tracking_info('123456789012', unique_identifier: '2456979000~123456789012~FX')
+    response = @carrier.find_tracking_info('403934084723025')
     assert response.success?
     refute response.delivered?
-    assert_equal '123456789012', response.tracking_number
-    assert_equal :in_transit, response.status
-    assert_equal 'IT', response.status_code
-    assert_equal "In transit", response.status_description
+    assert_equal '403934084723025', response.tracking_number
+    assert_equal :at_fedex_facility, response.status
+    assert_equal 'AR', response.status_code
+    assert_equal "Arrived at FedEx location", response.status_description
 
-    assert_equal Time.parse('2014-11-25T20:04:00Z'), response.ship_time
+    assert_equal Time.parse('Fri, 03 Jan 2014'), response.ship_time
     assert_equal nil, response.scheduled_delivery_date
     assert_equal nil, response.actual_delivery_date
 
-    assert_equal nil, response.origin
+    origin_address = ActiveShipping::Location.new(
+      city: 'CAMBRIDGE',
+      country: 'US',
+      state: 'OH'
+    )
+    assert_equal origin_address.to_hash, response.origin.to_hash
 
     destination_address = ActiveShipping::Location.new(
-      city: 'TONNESSEE',
+      city: 'Spokane Valley',
       country: 'US',
-      state: 'TN'
+      state: 'WA'
     )
     assert_equal destination_address.to_hash, response.destination.to_hash
-    assert_equal 9, response.shipment_events.length
+    assert_equal 3, response.shipment_events.length
   end
 
   def test_find_tracking_info_with_multiple_matches
