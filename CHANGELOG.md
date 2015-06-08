@@ -1,5 +1,11 @@
 # ActiveShipping CHANGELOG
 
+### v1.2.2
+
+- Fix "RECTANGULAR" errors with small USPS US->US package rate requests
+- Fix error tracking USPS packages to other countries
+- Fix USPS rate requests to destinations with only a country.
+
 ### v1.2.1
 
 - Fix compatibility with latest USPS WEBTOOLS international rate schema changes.
