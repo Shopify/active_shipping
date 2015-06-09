@@ -828,7 +828,7 @@ module ActiveShipping
       if success
         true
       else
-        raise "Void shipment failed with message: #{message}"
+        raise ResponseError.new("Void shipment failed with message: #{message}")
       end
     end
 

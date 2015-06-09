@@ -323,7 +323,7 @@ class RemoteUPSTest < Minitest::Test
     begin
       response = @carrier.void_shipment('1Z12345E8793628675')
       assert false # voiding this number should raise an error
-    rescue => e
+    rescue ResponseError => e
       assert_equal(e.message, "Void shipment failed with message: Failure: Time for voiding has expired.")
     end
   end
