@@ -802,8 +802,10 @@ module ActiveShipping
 
     def location_from_address_node(address)
       return nil unless address
+      country = address.at('CountryCode').try(:text)
+      country = 'US' if country == 'ZZ' # Sometimes returned by SUREPOST in the US
       Location.new(
-        :country     => address.at('CountryCode').try(:text),
+        :country     => country,
         :postal_code => address.at('PostalCode').try(:text),
         :province    => address.at('StateProvinceCode').try(:text),
         :city        => address.at('City').try(:text),
