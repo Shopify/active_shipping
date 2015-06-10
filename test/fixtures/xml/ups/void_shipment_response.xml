@@ -1,0 +1,11 @@
+<?xml version="1.0"?><VoidShipmentResponse><Response><TransactionReference></TransactionReference><ResponseStatusCode>1</ResponseStatusCode><ResponseStatusDescription>Success</ResponseStatusDescription></Response><Status>
+<StatusType>
+<Code>1</Code>
+<Description>Success</Description>
+</StatusType>
+<StatusCode>
+<Code>1</Code>
+<Description>Success</Description>
+</StatusCode>
+</Status>
+</VoidShipmentResponse>
