@@ -361,6 +361,20 @@ module ActiveShipping
                   end
                 end
               end
+            elsif options[:bill_third_party]
+              xml.PaymentInformation do
+                xml.BillThirdParty do
+                  xml.BillThirdPartyShipper do
+                    xml.AccountNumber(options[:billing_account])
+                    xml.ThirdParty do
+                      xml.Address do
+                        xml.PostalCode(options[:billing_zip])
+                        xml.CountryCode(options[:billing_country])
+                      end
+                    end
+                  end
+                end
+              end
             else
               xml.ItemizedPaymentInformation do
                 xml.ShipmentCharge do

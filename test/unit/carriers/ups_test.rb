@@ -332,6 +332,21 @@ class UPSTest < Minitest::Test
     refute_empty prepay
   end
 
+  def test_label_request_bill_third_party
+    response = Nokogiri::XML @carrier.send(:build_shipment_request,
+                                           location_fixtures[:beverly_hills],
+                                           location_fixtures[:annapolis],
+                                           package_fixtures.values_at(:chocolate_stuff),
+                                           :test => true,
+                                           :bill_third_party => true,
+                                           :billing_account=>"A01B24",
+                                           :billing_zip=>"97013",
+                                           :billing_country => "US")
+
+    bill_third_party = response.search '/ShipmentConfirmRequest/Shipment/PaymentInformation/BillThirdParty'
+    refute_empty bill_third_party
+  end
+
   def test_label_request_negotiated_rates_presence
     response = Nokogiri::XML @carrier.send(:build_shipment_request,
                                            location_fixtures[:beverly_hills],
