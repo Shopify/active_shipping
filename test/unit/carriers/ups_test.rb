@@ -333,18 +333,22 @@ class UPSTest < Minitest::Test
   end
 
   def test_label_request_bill_third_party
+    expected_account_number = "A01B24"
+    expected_postal_code_number = "97013"
+    expected_country_code = "US"
     response = Nokogiri::XML @carrier.send(:build_shipment_request,
                                            location_fixtures[:beverly_hills],
                                            location_fixtures[:annapolis],
                                            package_fixtures.values_at(:chocolate_stuff),
                                            :test => true,
                                            :bill_third_party => true,
-                                           :billing_account=>"A01B24",
-                                           :billing_zip=>"97013",
-                                           :billing_country => "US")
+                                           :billing_account => expected_account_number,
+                                           :billing_zip => expected_postal_code_number,
+                                           :billing_country => expected_country_code)
 
-    bill_third_party = response.search '/ShipmentConfirmRequest/Shipment/PaymentInformation/BillThirdParty'
-    refute_empty bill_third_party
+    assert_equal expected_account_number, response.search('ShipmentConfirmRequest/Shipment/PaymentInformation/BillThirdParty/BillThirdPartyShipper/AccountNumber').text
+    assert_equal expected_postal_code_number, response.search('/ShipmentConfirmRequest/Shipment/PaymentInformation/BillThirdParty/BillThirdPartyShipper/ThirdParty/Address/PostalCode').text
+    assert_equal expected_country_code, response.search('/ShipmentConfirmRequest/Shipment/PaymentInformation/BillThirdParty/BillThirdPartyShipper/ThirdParty/Address/CountryCode').text
   end
 
   def test_label_request_negotiated_rates_presence
