@@ -96,4 +96,8 @@ class RemoteCorreiosTest < Minitest::Test
     assert error.response.raw_responses.any?
     assert_equal Hash.new, error.response.params
   end
+
+  def test_maximum_address_field_length
+    assert_equal 255, @carrier.maximum_address_field_length
+  end
 end
