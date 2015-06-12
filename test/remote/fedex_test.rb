@@ -366,4 +366,8 @@ class RemoteFedExTest < Minitest::Test
     signature_option = response.params["ProcessShipmentReply"]["CompletedShipmentDetail"]["CompletedPackageDetails"]["SignatureOption"]
     assert_equal FedEx::SIGNATURE_OPTION_CODES[:adult], signature_option
   end
+
+  def test_maximum_address_field_length
+    assert_equal 35, @carrier.maximum_address_field_length
+  end
 end

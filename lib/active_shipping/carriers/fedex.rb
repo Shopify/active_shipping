@@ -177,6 +177,11 @@ module ActiveShipping
       parse_ship_response(response)
     end
 
+    def maximum_address_field_length
+      # See Fedex Developper Guide
+      35
+    end
+
     protected
 
     def build_shipment_request(origin, destination, packages, options = {})

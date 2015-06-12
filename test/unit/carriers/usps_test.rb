@@ -565,6 +565,10 @@ class USPSTest < Minitest::Test
     assert_equal [3767, 5526, 7231, 7231], response.rates.map(&:price)
   end
 
+  def test_maximum_address_field_length
+    assert_equal 38, @carrier.maximum_address_field_length
+  end
+
   private
 
   def build_service_node(options = {})

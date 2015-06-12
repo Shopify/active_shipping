@@ -256,6 +256,11 @@ module ActiveShipping
       EventDetails.new(description, time, zoneless_time, location, event_code)
     end
 
+    def maximum_address_field_length
+      # https://www.usps.com/business/web-tools-apis/address-information-api.pdf
+      38
+    end
+
     protected
 
     def build_tracking_request(tracking_number, options = {})

@@ -89,6 +89,11 @@ module ActiveShipping
       Mass.new(30, :kilograms)
     end
 
+    def maximum_address_field_length
+      # https://www.canadapost.ca/cpo/mc/business/productsservices/developers/services/shippingmanifest/createshipment.jsf
+      44
+    end
+
     def self.default_location
       {
         :country     => 'CA',

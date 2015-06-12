@@ -166,4 +166,8 @@ class RemoteCanadaPostPWSTest < Minitest::Test
       @cp.create_shipment(@home_params, @dom_params, @pkg1, @line_item1, opts)
     end
   end
+
+  def test_maximum_address_field_length
+    assert_equal 44, @carrier.maximum_address_field_length
+  end
 end
