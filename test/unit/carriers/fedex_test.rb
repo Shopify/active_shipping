@@ -445,6 +445,18 @@ class FedExTest < Minitest::Test
     end
   end
 
+  def test_tracking_info_with_uncovered_error
+    mock_response = xml_fixture('fedex/tracking_response_invalid_tracking_number')
+    @carrier.expects(:commit).returns(mock_response)
+
+    error = assert_raises(ActiveShipping::ResponseContentError) do
+      @carrier.find_tracking_info('123456789013')
+    end
+
+    msg = 'Invalid tracking numbers. Please check the following numbers and resubmit.'
+    assert_equal msg, error.message
+  end
+
   def test_create_shipment
     confirm_response = xml_fixture('fedex/create_shipment_response')
     @carrier.stubs(:commit).returns(confirm_response)
