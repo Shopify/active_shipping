@@ -49,4 +49,8 @@ class KunakiTest < Minitest::Test
     assert_equal ["UPS 2nd Day Air", "UPS Ground", "UPS Next Day Air Saver", "USPS Priority Mail"], response.rates.collect(&:service_name).sort
     assert_equal [800, 1234, 2186, 3605], response.rates.collect(&:total_price).sort
   end
+
+  def test_maximum_address_field_length
+    assert_equal 255, @carrier.maximum_address_field_length
+  end
 end

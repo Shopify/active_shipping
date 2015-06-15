@@ -485,4 +485,8 @@ class FedExTest < Minitest::Test
                                          :test => true))
     assert_equal result.search('RequestedPackageLineItems/CustomerReferences/Value').text, "FOO-123"
   end
+
+  def test_maximum_address_field_length
+    assert_equal 35, @carrier.maximum_address_field_length
+  end
 end

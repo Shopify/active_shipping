@@ -146,8 +146,4 @@ class RemoteNewZealandPostTest < Minitest::Test
     assert response.success?
     assert response.rates.size > 0
   end
-
-  def test_maximum_address_field_length
-    assert_equal 255, @carrier.maximum_address_field_length
-  end
 end

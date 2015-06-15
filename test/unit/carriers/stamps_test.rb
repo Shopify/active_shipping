@@ -238,4 +238,8 @@ class StampsTest < Minitest::Test
   def response_chain(primary_response)
     @carrier.expects(:ssl_post).twice.returns(@authentication_response, primary_response)
   end
+
+  def test_maximum_address_field_length
+    assert_equal 255, @carrier.maximum_address_field_length
+  end
 end
