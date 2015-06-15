@@ -23,6 +23,7 @@ end
 ActiveShipping::Carriers.register :BenchmarkCarrier, 'active_shipping/carriers/benchmark_carrier'
 ActiveShipping::Carriers.register :BogusCarrier,     'active_shipping/carriers/bogus_carrier'
 ActiveShipping::Carriers.register :USPS,             'active_shipping/carriers/usps'
+ActiveShipping::Carriers.register :USPSReturns,      'active_shipping/carriers/usps_returns'
 ActiveShipping::Carriers.register :FedEx,            'active_shipping/carriers/fedex'
 ActiveShipping::Carriers.register :Shipwire,         'active_shipping/carriers/shipwire'
 ActiveShipping::Carriers.register :Kunaki,           'active_shipping/carriers/kunaki'
