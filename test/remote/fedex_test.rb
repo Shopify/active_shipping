@@ -227,7 +227,7 @@ class RemoteFedExTest < Minitest::Test
 
     assert_equal Time.parse('2015-06-04 18:19:00 +0000'), response.ship_time
     assert_equal nil, response.scheduled_delivery_date
-    assert_equal Time.parse('2015-06-04 23:11:00 +0000'), response.actual_delivery_date
+    assert_equal Time.parse('2015-06-08 23:33:00 +0000'), response.actual_delivery_date
 
     assert_equal nil, response.origin
 
@@ -365,9 +365,5 @@ class RemoteFedExTest < Minitest::Test
 
     signature_option = response.params["ProcessShipmentReply"]["CompletedShipmentDetail"]["CompletedPackageDetails"]["SignatureOption"]
     assert_equal FedEx::SIGNATURE_OPTION_CODES[:adult], signature_option
-  end
-
-  def test_maximum_address_field_length
-    assert_equal 35, @carrier.maximum_address_field_length
   end
 end
