@@ -311,4 +311,8 @@ class RemoteUPSTest < Minitest::Test
     ww_express_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Worldwide Express"}.first
     assert_equal Date.parse(1.business_day.from_now.to_s), ww_express_estimate.date
   end
+
+  def test_maximum_address_field_length
+    assert_equal 35, @carrier.maximum_address_field_length
+  end
 end

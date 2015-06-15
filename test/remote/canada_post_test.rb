@@ -52,4 +52,8 @@ class RemoteCanadaPostTest < Minitest::Test
       refute rates.success?
     end
   end
+
+  def test_maximum_address_field_length
+    assert_equal 44, @carrier.maximum_address_field_length
+  end
 end

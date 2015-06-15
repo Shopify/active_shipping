@@ -102,6 +102,12 @@ module ActiveShipping
       Mass.new(150, :pounds)
     end
 
+    # The address field maximum length accepted by the carrier
+    # @return [Integer]
+    def maximum_address_field_length
+      255
+    end
+
     protected
 
     include ActiveUtils::RequiresParameters

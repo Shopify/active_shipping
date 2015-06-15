@@ -194,6 +194,11 @@ module ActiveShipping
       parse_delivery_dates_response(origin, destination, packages, response, options)
     end
 
+    def maximum_address_field_length
+      # http://www.ups.com/worldshiphelp/WS12/ENU/AppHelp/CONNECT/Shipment_Data_Field_Descriptions.htm
+      35
+    end
+
     protected
 
     def upsified_location(location)

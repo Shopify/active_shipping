@@ -155,6 +155,11 @@ module ActiveShipping
       Mass.new(MAX_WEIGHT, :kilograms)
     end
 
+    def maximum_address_field_length
+      # https://www.canadapost.ca/cpo/mc/business/productsservices/developers/services/shippingmanifest/createshipment.jsf
+      44
+    end
+
     # service discovery
 
     def parse_services_response(response)
