@@ -1,5 +1,12 @@
 # ActiveShipping CHANGELOG
 
+### v1.3.0
+
+- Support voiding labels on UPS
+- Parse FedEx ground delivery dates
+- Add maximum address length field
+- Fix UPS unknown country code when using SUREPOST
+
 ### v1.2.2
 
 - Fix "RECTANGULAR" errors with small USPS US->US package rate requests
