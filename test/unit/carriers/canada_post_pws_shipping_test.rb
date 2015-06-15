@@ -251,4 +251,8 @@ class CanadaPostPwsShippingTest < Minitest::Test
 
     assert_equal 0, response[:priced_options].size
   end
+
+  def test_maximum_address_field_length
+    assert_equal 44, @cp.maximum_address_field_length
+  end
 end

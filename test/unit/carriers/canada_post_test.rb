@@ -141,4 +141,8 @@ class CanadaPostTest < Minitest::Test
 
     assert rate_response.rates.length > 0, "Expecting rateestimates even without a value specified."
   end
+
+  def test_maximum_address_field_length
+    assert_equal 44, @carrier.maximum_address_field_length
+  end
 end

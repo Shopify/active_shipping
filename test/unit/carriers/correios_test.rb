@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require "test_helper"
 
 class CorreiosTest < Minitest::Test
@@ -22,7 +23,7 @@ class CorreiosTest < Minitest::Test
   def test_book_request
     @carrier.expects(:perform).returns([@response_book_success])
     response = @carrier.find_rates(@saopaulo, @patosdeminas, [@book])
-    
+
     [
       "sCepOrigem=01415000",
       "sCepDestino=38700000",
@@ -40,7 +41,7 @@ class CorreiosTest < Minitest::Test
   def test_poster_request
     @carrier.expects(:perform).returns([@response_poster_success])
     response = @carrier.find_rates(@saopaulo, @patosdeminas, [@poster])
-    
+
     [
       "sCepOrigem=01415000",
       "sCepDestino=38700000",
@@ -58,7 +59,7 @@ class CorreiosTest < Minitest::Test
   def test_poster_and_book_request
     @carrier.expects(:perform).returns([@response_poster_success, @response_book_success])
     response = @carrier.find_rates(@saopaulo, @patosdeminas, [@poster, @book])
-    
+
     [
       "sCepOrigem=01415000",
       "sCepDestino=38700000",
@@ -71,7 +72,7 @@ class CorreiosTest < Minitest::Test
     ].each do |query_param|
       assert_match query_param, response.urls.first
     end
-    
+
     [
       "sCepOrigem=01415000",
       "sCepDestino=38700000",
@@ -89,7 +90,7 @@ class CorreiosTest < Minitest::Test
   def test_book_request_with_specific_services
     @carrier.expects(:perform).returns([@response_book_success])
     response = @carrier.find_rates(@saopaulo, @patosdeminas, [@book], :services => [41106, 40010, 40215])
-    
+
     [
       "nCdServico=41106%2C40010%2C40215",
       "sCepOrigem=01415000",
@@ -241,4 +242,7 @@ class CorreiosTest < Minitest::Test
     assert_equal '(Grupo 3) e-SEDEX, com contrato', services[81850]
   end
 
+  def test_maximum_address_field_length
+    assert_equal 255, @carrier.maximum_address_field_length
+  end
 end

@@ -171,4 +171,8 @@ class NewZealandPostTest < Minitest::Test
     response_params = { "responses" => [] }
     assert_equal response_params, error.response.params
   end
+
+  def test_maximum_address_field_length
+    assert_equal 255, @carrier.maximum_address_field_length
+  end
 end

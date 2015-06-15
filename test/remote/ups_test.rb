@@ -319,14 +319,13 @@ class RemoteUPSTest < Minitest::Test
   end
 
   def test_void_beyond_time_limit
-    # this is a test tracking number from the ups docs that always returns time limit expired
-    begin
-      response = @carrier.void_shipment('1Z12345E8793628675')
-      assert false # voiding this number should raise an error
-    rescue ResponseError => e
-      assert_equal(e.message, "Void shipment failed with message: Failure: Time for voiding has expired.")
+    e = assert_raises(ResponseError) do
+      # this is a test tracking number from the ups docs that always returns time limit expired
+      @carrier.void_shipment('1Z12345E8793628675')
     end
+    assert_equal(e.message, "Void shipment failed with message: Failure: Time for voiding has expired.")
   end
+
 
   def test_maximum_address_field_length
     assert_equal 35, @carrier.maximum_address_field_length

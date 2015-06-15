@@ -513,4 +513,8 @@ class UPSTest < Minitest::Test
     response = @carrier.void_shipment('1Z12345E0390817264')
     assert response
   end
+
+  def test_maximum_address_field_length
+    assert_equal 35, @carrier.maximum_address_field_length
+  end
 end
