@@ -575,7 +575,7 @@ module ActiveShipping
           when '9040'
             raise ActiveShipping::ShipmentNotFound, first_notification.at('Message').text
           else
-            raise ActiveShipping::ResponseContentError, first_notification.at('Message').text
+            raise ActiveShipping::ResponseContentError, StandardError.new(first_notification.at('Message').text)
           end
         end
 
