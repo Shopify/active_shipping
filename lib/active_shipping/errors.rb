@@ -16,8 +16,8 @@ module ActiveShipping
   end
 
   class ResponseContentError < ActiveShipping::Error
-    def initialize(exception, content_body)
-      super("#{exception.message} \n\n#{content_body}")
+    def initialize(exception, content_body = nil)
+      super([exception.message, content_body].compact.join(" \n\n"))
     end
   end
 
