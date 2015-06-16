@@ -65,8 +65,11 @@ module ActiveShipping
       "83" => "UPS Today Dedicated Courier",
       "84" => "UPS Today Intercity",
       "85" => "UPS Today Express",
-      "86" => "UPS Today Express Saver"
-
+      "86" => "UPS Today Express Saver",
+      "92" => "UPS SurePost (USPS) < 1lb",
+      "93" => "UPS SurePost (USPS) > 1lb",
+      "94" => "UPS SurePost (USPS) BPM",
+      "95" => "UPS SurePost (USPS) Media",
     }
 
     CANADA_ORIGIN_SERVICES = {
