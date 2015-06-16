@@ -23,4 +23,13 @@ module ActiveShipping
 
   class ShipmentNotFound < ActiveShipping::Error
   end
+
+  class USPSValidationError < StandardError
+  end
+
+  class USPSMissingRequiredTagError < StandardError
+    def initialize(tag, prop)
+      super("Missing required tag #{tag} set by property #{prop}")
+    end
+  end
 end
