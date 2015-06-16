@@ -116,6 +116,10 @@ To log requests and responses, just set the `logger` on your carrier class to so
 
 (This logging functionality is provided by the [`PostsData` module](https://github.com/Shopify/active_utils/blob/master/lib/active_utils/posts_data.rb) in the `active_utils` dependency.)
 
+To debug API requests and your code you can run `rake console` to start a Pry session with `ActiveShipping` included
+and instances of the various carriers set up with your test credentials.
+Look at the file `test/console.rb` to see the other goodies it provides.
+
 After you've pushed your well-tested changes to your github fork, make a pull request and we'll take it from there! For more information, see CONTRIBUTING.md.
 
 ## Legal Mumbo Jumbo
