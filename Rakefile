@@ -24,4 +24,9 @@ namespace :test do
   end
 end
 
+desc "Open a pry session preloaded with this library"
+task :console do
+  sh 'ruby -Ilib -Itest test/console.rb'
+end
+
 task :default => 'test'
