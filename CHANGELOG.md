@@ -1,5 +1,13 @@
 # ActiveShipping CHANGELOG
 
+### v1.4.0
+
+- Added support for USPS merchant returns service
+- Added support for UPS SurePost
+- Added support for UPS third party billing
+- Fix FedEx tracking response errors
+- Add rake console command for development
+
 ### v1.3.0
 
 - Support voiding labels on UPS
