@@ -585,7 +585,11 @@ module ActiveShipping
           raise ActiveShipping::Error, "Tracking response does not contain status information"
         end
 
-        status_code = status_detail.at('Code').text
+        status_code = status_detail.at('Code').try(:text)
+        if status_code.nil?
+          raise ActiveShipping::Error, "Tracking response does not contain status code"
+        end
+
         status_description = (status_detail.at('AncillaryDetails/ReasonDescription') || status_detail.at('Description')).text
         status = TRACKING_STATUS_CODES[status_code]
 
