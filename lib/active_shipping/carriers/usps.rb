@@ -154,6 +154,10 @@ module ActiveShipping
       "WS" => "Western Samoa"
     }
 
+    TRACKING_ODD_COUNTRY_NAMES = {
+      'TAIWAN' => 'TW',
+    }
+
     RESPONSE_ERROR_MESSAGES = [
       /There is no record of that mail item/,
       /This Information has not been included in this Test Server\./,
@@ -656,6 +660,9 @@ module ActiveShipping
 
     def find_country_code_case_insensitive(name)
       upcase_name = name.upcase
+      if special = TRACKING_ODD_COUNTRY_NAMES[upcase_name]
+        return special
+      end
       country = ActiveUtils::Country::COUNTRIES.detect { |c| c[:name].upcase == upcase_name }
       raise ActiveShipping::Error, "No country found for #{name}" unless country
       country[:alpha2]
