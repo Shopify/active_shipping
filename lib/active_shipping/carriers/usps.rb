@@ -639,7 +639,7 @@ module ActiveShipping
     end
 
     def error_description_node(node)
-      node.xpath('//Error/Description')
+      node.xpath('Error/Description')
     end
 
     def response_status_node(node)

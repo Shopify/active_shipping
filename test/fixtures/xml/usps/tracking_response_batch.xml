@@ -220,4 +220,12 @@
       <HelpContext/>
     </Error>
   </TrackInfo>
+  <TrackInfo ID="CJ422417033US">
+    <Error>
+      <Number>-2147219303</Number>
+      <Description>Duplicate</Description>
+      <HelpFile/>
+      <HelpContext/>
+    </Error>
+  </TrackInfo>
 </TrackResponse>
