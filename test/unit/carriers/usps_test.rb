@@ -139,6 +139,9 @@ class USPSTest < Minitest::Test
     assert_nil response.scheduled_delivery_date
     assert_nil response.shipment_events.last.location.city
 
+    assert_equal 'NP', response.shipment_events.first.type_code
+    assert_equal Time.parse('Jan 01, 2000'), response.shipment_events.first.time
+
     special_country  = xml_fixture('usps/tracking_response_alt').gsub('CANADA','TAIWAN')
     @carrier.expects(:commit).returns(special_country)
     response = @carrier.find_tracking_info('9102901000462189604217', :test => true)

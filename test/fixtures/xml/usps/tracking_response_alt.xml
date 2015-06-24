@@ -37,5 +37,17 @@
       <AuthorizedAgent>false</AuthorizedAgent>
       <EventCode>OF</EventCode>
     </TrackSummary>
+    <TrackDetail>
+      <EventTime/><EventDate/>
+      <Event>Origin Post is Preparing Shipment</Event>
+      <EventCity/>
+      <EventState/>
+      <EventZIPCode/>
+      <EventCountry/>
+      <FirmName/>
+      <Name/>
+      <AuthorizedAgent>false</AuthorizedAgent>
+      <EventCode>NP</EventCode>
+    </TrackDetail>
   </TrackInfo>
 </TrackResponse>
