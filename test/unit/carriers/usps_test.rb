@@ -173,7 +173,7 @@ class USPSTest < Minitest::Test
   def test_batch_find_tracking_info_should_return_a_tracking_response_array
     @carrier.expects(:commit).returns(@batch_tracking_response)
     responses = @carrier.batch_find_tracking_info(@tracking_infos_array, :test => true)
-    assert_equal 3, responses.length
+    assert_equal 4, responses.length
     assert responses.all? { |x| x.instance_of? ActiveShipping::TrackingResponse}
   end
 
