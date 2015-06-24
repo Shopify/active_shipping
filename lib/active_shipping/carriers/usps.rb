@@ -243,7 +243,14 @@ module ActiveShipping
         description = prefix
       end
 
-      timestamp = "#{node.at('EventDate').text}, #{node.at('EventTime').text}"
+      if node.at('EventDate').text.present?
+        timestamp = "#{node.at('EventDate').text}, #{node.at('EventTime').text}"
+        time = Time.parse(timestamp)
+      else
+        # Arbitrary time in past, because we need to sort and this is just dumb
+        time = Time.parse("Jan 01, 2000")
+      end
+
       event_code = node.at('EventCode').text
       city = node.at('EventCity').try(:text)
       state = node.at('EventState').try(:text)
@@ -255,7 +262,6 @@ module ActiveShipping
       # USPS returns upcased country names which ActiveUtils doesn't recognize without translation
       country = find_country_code_case_insensitive(country)
 
-      time = Time.parse(timestamp)
       zoneless_time = Time.utc(time.year, time.month, time.mday, time.hour, time.min, time.sec)
       location = Location.new(city: city, state: state, postal_code: zip_code, country: country)
       EventDetails.new(description, time, zoneless_time, location, event_code)
