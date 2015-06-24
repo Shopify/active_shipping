@@ -156,6 +156,7 @@ module ActiveShipping
 
     TRACKING_ODD_COUNTRY_NAMES = {
       'TAIWAN' => 'TW',
+      'KOREA  REPUBLIC OF'=> 'KR'
     }
 
     RESPONSE_ERROR_MESSAGES = [
