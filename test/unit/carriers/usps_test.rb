@@ -146,6 +146,11 @@ class USPSTest < Minitest::Test
     @carrier.expects(:commit).returns(special_country)
     response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
     assert_equal 'Taiwan, Province of China', response.shipment_events.last.location.country.name
+
+    special_country  = xml_fixture('usps/tracking_response_alt').gsub('CANADA','KOREA  REPUBLIC OF')
+    @carrier.expects(:commit).returns(special_country)
+    response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
+    assert_equal 'Korea, Republic of', response.shipment_events.last.location.country.name
   end
 
   def test_find_tracking_info_destination
