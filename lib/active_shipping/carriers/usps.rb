@@ -156,7 +156,9 @@ module ActiveShipping
 
     TRACKING_ODD_COUNTRY_NAMES = {
       'TAIWAN' => 'TW',
-      'KOREA  REPUBLIC OF'=> 'KR'
+      'MACEDONIA THE FORMER YUGOSLAV REPUBLIC OF'=> 'MK',
+      'MICRONESIA FEDERATED STATES OF' => 'FM',
+      'MOLDOVA REPUBLIC OF' => 'MD',
     }
 
     RESPONSE_ERROR_MESSAGES = [
@@ -243,12 +245,12 @@ module ActiveShipping
         description = prefix
       end
 
-      if node.at('EventDate').text.present?
+      time = if node.at('EventDate').text.present?
         timestamp = "#{node.at('EventDate').text}, #{node.at('EventTime').text}"
-        time = Time.parse(timestamp)
+        Time.parse(timestamp)
       else
-        # Arbitrary time in past, because we need to sort and this is just dumb
-        time = Time.parse("Jan 01, 2000")
+        # Arbitrary time in past, because we need to sort properly by time
+        Time.parse("Jan 01, 2000")
       end
 
       event_code = node.at('EventCode').text
@@ -666,7 +668,7 @@ module ActiveShipping
     end
 
     def find_country_code_case_insensitive(name)
-      upcase_name = name.upcase
+      upcase_name = name.upcase.gsub('  ', ', ')
       if special = TRACKING_ODD_COUNTRY_NAMES[upcase_name]
         return special
       end
