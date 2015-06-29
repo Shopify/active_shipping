@@ -154,6 +154,13 @@ module ActiveShipping
       "WS" => "Western Samoa"
     }
 
+    TRACKING_ODD_COUNTRY_NAMES = {
+      'TAIWAN' => 'TW',
+      'MACEDONIA THE FORMER YUGOSLAV REPUBLIC OF'=> 'MK',
+      'MICRONESIA FEDERATED STATES OF' => 'FM',
+      'MOLDOVA REPUBLIC OF' => 'MD',
+    }
+
     RESPONSE_ERROR_MESSAGES = [
       /There is no record of that mail item/,
       /This Information has not been included in this Test Server\./,
@@ -238,7 +245,14 @@ module ActiveShipping
         description = prefix
       end
 
-      timestamp = "#{node.at('EventDate').text}, #{node.at('EventTime').text}"
+      time = if node.at('EventDate').text.present?
+        timestamp = "#{node.at('EventDate').text}, #{node.at('EventTime').text}"
+        Time.parse(timestamp)
+      else
+        # Arbitrary time in past, because we need to sort properly by time
+        Time.parse("Jan 01, 2000")
+      end
+
       event_code = node.at('EventCode').text
       city = node.at('EventCity').try(:text)
       state = node.at('EventState').try(:text)
@@ -250,7 +264,6 @@ module ActiveShipping
       # USPS returns upcased country names which ActiveUtils doesn't recognize without translation
       country = find_country_code_case_insensitive(country)
 
-      time = Time.parse(timestamp)
       zoneless_time = Time.utc(time.year, time.month, time.mday, time.hour, time.min, time.sec)
       location = Location.new(city: city, state: state, postal_code: zip_code, country: country)
       EventDetails.new(description, time, zoneless_time, location, event_code)
@@ -655,7 +668,10 @@ module ActiveShipping
     end
 
     def find_country_code_case_insensitive(name)
-      upcase_name = name.upcase
+      upcase_name = name.upcase.gsub('  ', ', ')
+      if special = TRACKING_ODD_COUNTRY_NAMES[upcase_name]
+        return special
+      end
       country = ActiveUtils::Country::COUNTRIES.detect { |c| c[:name].upcase == upcase_name }
       raise ActiveShipping::Error, "No country found for #{name}" unless country
       country[:alpha2]
