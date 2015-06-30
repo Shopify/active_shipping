@@ -171,8 +171,6 @@ module ActiveShipping
       request = build_shipment_request(origin, destination, packages, options)
       logger.debug(request) if logger
 
-      logger.debug(confirm_response) if logger
-
       response = commit(save_request(request), (options[:test] || false))
       parse_ship_response(response)
     end
