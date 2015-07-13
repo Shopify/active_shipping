@@ -1,5 +1,9 @@
 # ActiveShipping CHANGELOG
 
+### v1.4.2
+
+- Fix USPS rates for commercial shipments
+
 ### v1.4.1
 
 - Raise error on invalid status code with FedEx
