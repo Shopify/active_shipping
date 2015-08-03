@@ -128,6 +128,12 @@ class UPSTest < Minitest::Test
                   "DELIVERED"], response.shipment_events.map(&:name)
   end
 
+  def test_find_tracking_info_should_have_correct_type_codes_for_shipment_events
+    @carrier.expects(:commit).returns(@tracking_response)
+    response = @carrier.find_tracking_info('1Z5FX0076803466397')
+    assert_equal ["M", "I", "I", "I", "I", "I", "I", "D"], response.shipment_events.map(&:type_code)
+  end
+
   def test_add_origin_and_destination_data_to_shipment_events_where_appropriate
     @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('1Z5FX0076803466397')

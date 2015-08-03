@@ -764,9 +764,10 @@ module ActiveShipping
         unless activities.empty?
           shipment_events = activities.map do |activity|
             description = activity.at('Status/StatusType/Description').text
+            type_code = activity.at('Status/StatusType/Code').text
             zoneless_time = parse_ups_datetime(:time => activity.at('Time'), :date => activity.at('Date'))
             location = location_from_address_node(activity.at('ActivityLocation/Address'))
-            ShipmentEvent.new(description, zoneless_time, location)
+            ShipmentEvent.new(description, zoneless_time, location, nil, type_code)
           end
 
           shipment_events = shipment_events.sort_by(&:time)
@@ -776,7 +777,7 @@ module ActiveShipping
           # This adds an origin event to the shipment activity in such cases.
           if origin && !(shipment_events.count == 1 && status == :delivered)
             first_event = shipment_events[0]
-            origin_event = ShipmentEvent.new(first_event.name, first_event.time, origin)
+            origin_event = ShipmentEvent.new(first_event.name, first_event.time, origin, first_event.message, first_event.type_code)
 
             if within_same_area?(origin, first_event.location)
               shipment_events[0] = origin_event
@@ -795,7 +796,7 @@ module ActiveShipping
             unless destination
               destination = shipment_events[-1].location
             end
-            shipment_events[-1] = ShipmentEvent.new(shipment_events.last.name, shipment_events.last.time, destination)
+            shipment_events[-1] = ShipmentEvent.new(shipment_events.last.name, shipment_events.last.time, destination, shipment_events.last.message, shipment_events.last.type_code)
           end
         end
 
