@@ -12,7 +12,7 @@ class RemoteUSPSTest < Minitest::Test
   end
 
   def test_tracking
-    response = @carrier.find_tracking_info('LN284529912US', :test => true)
+    response = @carrier.find_tracking_info('LN284529912US', test: false)
     assert response.success?, response.message
     assert_equal 9,response.shipment_events.size
     assert_equal 'DELIVERED', response.shipment_events.last.message
@@ -21,7 +21,7 @@ class RemoteUSPSTest < Minitest::Test
 
   def test_tracking_with_bad_number
     assert_raises(ResponseError) do
-      @carrier.find_tracking_info('abc123xyz')
+      @carrier.find_tracking_info('abc123xyz', test: false)
     end
   end
 
