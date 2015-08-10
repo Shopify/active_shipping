@@ -650,11 +650,19 @@ module ActiveShipping
         end
 
         xml.PackageWeight do
+          if (options[:service] || options[:service_code]) == DEFAULT_SERVICE_NAME_TO_CODE["UPS SurePost (USPS) < 1lb"]
+            # SurePost < 1lb uses OZS, not LBS
+            code = options[:imperial] ? 'OZS' : 'KGS'
+            weight = options[:imperial] ? package.oz : package.kgs
+          else
+            code = options[:imperial] ? 'LBS' : 'KGS'
+            weight = options[:imperial] ? package.lbs : package.kgs
+          end
           xml.UnitOfMeasurement do
-            xml.Code(options[:imperial] ? 'LBS' : 'KGS')
+            xml.Code(code)
           end
 
-          value = ((options[:imperial] ? package.lbs : package.kgs).to_f * 1000).round / 1000.0 # 3 decimals
+          value = ((weight).to_f * 1000).round / 1000.0 # 3 decimals
           xml.Weight([value, 0.1].max)
         end
 

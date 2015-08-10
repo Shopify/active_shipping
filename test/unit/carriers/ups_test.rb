@@ -542,4 +542,36 @@ class UPSTest < Minitest::Test
   def test_maximum_address_field_length
     assert_equal 35, @carrier.maximum_address_field_length
   end
+
+  def test_package_surepost_less_than_one_lb_service
+    xml_builder = Nokogiri::XML::Builder.new do |xml|
+      @carrier.send(:build_package_node,
+                    xml,
+                    package_fixtures[:small_half_pound],
+                    {
+                      :service => "92",
+                      :imperial => true
+                    }
+      )
+    end
+    request = Nokogiri::XML(xml_builder.to_xml)
+    assert_equal 'OZS', request.search('/Package/PackageWeight/UnitOfMeasurement/Code').text
+    assert_equal '8.0', request.search('/Package/PackageWeight/Weight').text
+  end
+
+  def test_package_surepost_less_than_one_lb_service_code
+    xml_builder = Nokogiri::XML::Builder.new do |xml|
+      @carrier.send(:build_package_node,
+                    xml,
+                    package_fixtures[:small_half_pound],
+                    {
+                      :service_code => "92",
+                      :imperial => true
+                    }
+      )
+    end
+    request = Nokogiri::XML(xml_builder.to_xml)
+    assert_equal 'OZS', request.search('/Package/PackageWeight/UnitOfMeasurement/Code').text
+    assert_equal '8.0', request.search('/Package/PackageWeight/Weight').text
+  end
 end
