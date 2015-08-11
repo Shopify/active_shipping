@@ -1,5 +1,11 @@
 # ActiveShipping CHANGELOG
 
+### v1.4.3
+
+- Fix UPS SurePost for < 1 pound packages
+- Use status type code in UPS tracking
+- Fix USPS and Fedex remote tests
+
 ### v1.4.2
 
 - Fix USPS rates for commercial shipments
