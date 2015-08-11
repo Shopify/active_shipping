@@ -216,28 +216,32 @@ class RemoteFedExTest < Minitest::Test
   ### find_tracking_info
 
   def test_find_tracking_info_for_delivered_shipment
-    # unfortunately, we have to use Fedex unique identifiers, because the test tracking numbers are overloaded.
-    response = @carrier.find_tracking_info('123456789012', unique_identifier: '2457178000~123456789012~FX')
+    response = @carrier.find_tracking_info('122816215025810')
     assert response.success?
     assert response.delivered?
-    assert_equal '123456789012', response.tracking_number
+    assert_equal '122816215025810', response.tracking_number
     assert_equal :delivered, response.status
     assert_equal 'DL', response.status_code
     assert_equal "Delivered", response.status_description
 
-    assert_equal Time.parse('2015-06-04 18:19:00 +0000'), response.ship_time
+    assert_equal Time.parse('Fri, 03 Jan 2014'), response.ship_time
     assert_equal nil, response.scheduled_delivery_date
-    assert_equal Time.parse('2015-06-08 23:33:00 +0000'), response.actual_delivery_date
+    assert_equal Time.parse('2014-01-09 18:31:00 +0000'), response.actual_delivery_date
 
-    assert_equal nil, response.origin
+    origin_address = ActiveShipping::Location.new(
+      city: 'SPOKANE',
+      country: 'US',
+      state: 'WA'
+    )
+    assert_equal origin_address.to_hash, response.origin.to_hash
 
     destination_address = ActiveShipping::Location.new(
-      city: 'unknown',
+      city: 'NORTON',
       country: 'US',
-      state: 'TN'
+      state: 'VA'
     )
     assert_equal destination_address.to_hash, response.destination.to_hash
-    assert_equal 1, response.shipment_events.length
+    assert_equal 11, response.shipment_events.length
   end
 
   def test_find_tracking_info_for_in_transit_shipment_1
@@ -293,7 +297,7 @@ class RemoteFedExTest < Minitest::Test
 
   def test_find_tracking_info_not_found
     assert_raises(ActiveShipping::ShipmentNotFound) do
-      @carrier.find_tracking_info('123456789013')
+      @carrier.find_tracking_info('199997777713')
     end
   end
 
