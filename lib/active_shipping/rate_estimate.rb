@@ -51,6 +51,10 @@ module ActiveShipping
   #   The negotiated rate in cents
   #   @return [Integer]
   #
+  # @!attribute compare_price
+  #   The comparable price in cents
+  #   @return [Integer]
+  #
   # @!attribute insurance_price
   #   The price of insurance in cents.
   #   @return [Integer]
@@ -59,7 +63,8 @@ module ActiveShipping
                 :carrier, :service_name, :service_code,
                 :shipping_date, :delivery_date, :delivery_range,
                 :currency, :negotiated_rate, :insurance_price,
-                :estimate_reference, :expires_at, :pickup_time
+                :estimate_reference, :expires_at, :pickup_time,
+                :compare_price
 
     def initialize(origin, destination, carrier, service_name, options = {})
       @origin, @destination, @carrier, @service_name = origin, destination, carrier, service_name
@@ -74,6 +79,7 @@ module ActiveShipping
       end
       @total_price = Package.cents_from(options[:total_price])
       @negotiated_rate = options[:negotiated_rate] ? Package.cents_from(options[:negotiated_rate]) : nil
+      @compare_price = options[:compare_price] ? Package.cents_from(options[:compare_price]) : nil
       @currency = ActiveUtils::CurrencyCode.standardize(options[:currency])
       @delivery_range = options[:delivery_range] ? options[:delivery_range].map { |date| date_for(date) }.compact : []
       @shipping_date = date_for(options[:shipping_date])

@@ -35,4 +35,9 @@ class RateEstimateTest < Minitest::Test
 
     assert_equal "somefakeref", est.estimate_reference
   end
+
+  def test_compare_price_is_set
+    est = RateEstimate.new(@origin, @destination, @carrier, @service_name, @options.merge(compare_price: 10.0))
+    assert_equal 1000, est.compare_price
+  end
 end
