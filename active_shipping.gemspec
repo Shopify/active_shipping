@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency('quantified',    '~> 1.0.1')
   s.add_dependency('activesupport', '>= 3.2', '< 5.0.0')
-  s.add_dependency('active_utils',  '~> 3.0.0')
+  s.add_dependency('active_utils',  '~> 3.1.0')
   s.add_dependency('nokogiri',      '>= 1.6')
 
   s.add_development_dependency('minitest')
