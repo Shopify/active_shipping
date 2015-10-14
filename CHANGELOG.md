@@ -1,5 +1,8 @@
 # ActiveShipping CHANGELOG
 
+### v1.6.0
+- Update active_utils dependency to v3.2.0
+
 ### v1.5.0
 - Fix Kunaki remote test
 - Fix credentials for Canada Post PWS remote tests
