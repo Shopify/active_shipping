@@ -18,12 +18,13 @@ module ActiveShipping #:nodoc:
     #   of a request executed against the sandbox or test environment of the carrier's API.
     # @option options [String] :xml The raw XML of the response.
     # @option options [String] :request The payload of the request.
+    # @option options [Boolean] :allow_failure Allows a failed response without raising.
     def initialize(success, message, params = {}, options = {})
       @success, @message, @params = success, message, params.stringify_keys
       @test = options[:test] || false
       @xml = options[:xml]
       @request = options[:request]
-      raise ResponseError.new(self) unless success
+      raise ResponseError.new(self) unless success || options[:allow_failure]
     end
 
     # Whether the request was executed successfully or not.
