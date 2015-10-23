@@ -11,4 +11,9 @@ class ResponseTest < Minitest::Test
       RateResponse.new(false, "fail!", {:rate => 'Free!'}, :rates => [stub(:service_name => 'Free!', :total_price => 0)], :xml => "<rate>Free!</rate>")
     end
   end
+
+  def test_initialize_failure_no_raise
+    response = RateResponse.new(false, "fail!", {:rate => 'Free!'}, :rates => [stub(:service_name => 'Free!', :total_price => 0)], :xml => "<rate>Free!</rate>", :allow_failure => true)
+    refute response.success?
+  end
 end
