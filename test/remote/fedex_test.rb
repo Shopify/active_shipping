@@ -242,6 +242,9 @@ class RemoteFedExTest < Minitest::Test
     )
     assert_equal destination_address.to_hash, response.destination.to_hash
     assert_equal 11, response.shipment_events.length
+    assert_equal 'OC', response.shipment_events.first.type_code
+    assert_equal 'PU', response.shipment_events.second.type_code
+    assert_equal 'AR', response.shipment_events.third.type_code
   end
 
   def test_find_tracking_info_for_in_transit_shipment_1
@@ -254,6 +257,9 @@ class RemoteFedExTest < Minitest::Test
     assert_equal 'FD', response.status_code
     assert_equal "At FedEx destination facility", response.status_description
     assert_equal 7, response.shipment_events.length
+    assert_equal 'PU', response.shipment_events.first.type_code
+    assert_equal 'OC', response.shipment_events.second.type_code
+    assert_equal 'AR', response.shipment_events.third.type_code
     assert_nil response.actual_delivery_date
     assert_equal nil, response.scheduled_delivery_date
   end
@@ -286,6 +292,9 @@ class RemoteFedExTest < Minitest::Test
     )
     assert_equal destination_address.to_hash, response.destination.to_hash
     assert_equal 3, response.shipment_events.length
+    assert_equal 'PU', response.shipment_events.first.type_code
+    assert_equal 'OC', response.shipment_events.second.type_code
+    assert_equal 'AR', response.shipment_events.third.type_code
   end
 
   def test_find_tracking_info_with_multiple_matches
