@@ -1,5 +1,9 @@
 # ActiveShipping CHANGELOG
 
+### v1.6.1
+- Fix FedEx ShipmentEvents to include event type
+- Skip broken Canada Post remote tests
+
 ### v1.6.0
 - Update active_utils dependency to v3.2.0
 
