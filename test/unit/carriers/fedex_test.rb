@@ -316,6 +316,9 @@ class FedExTest < Minitest::Test
 
     assert_equal 11, response.shipment_events.length
     assert_equal 'Delivered', response.latest_event.name
+    assert_equal 'PU', response.shipment_events.first.type_code
+    assert_equal 'OC', response.shipment_events.second.type_code
+    assert_equal 'AR', response.shipment_events.third.type_code
   end
 
   def test_tracking_info_for_delivered_at_door
@@ -327,7 +330,11 @@ class FedExTest < Minitest::Test
     assert response.delivered?
     refute response.exception?
     assert_equal 10, response.shipment_events.length
+    assert_equal 'PU', response.shipment_events.first.type_code
+    assert_equal 'OC', response.shipment_events.second.type_code
+    assert_equal 'AR', response.shipment_events.third.type_code
     assert_equal 'Delivered', response.latest_event.name
+    assert_equal 'DL', response.latest_event.type_code
     assert_equal nil, response.delivery_signature
   end
 
@@ -377,6 +384,7 @@ class FedExTest < Minitest::Test
 
     assert_equal 1, response.shipment_events.length
     assert_equal 'In transit', response.latest_event.name
+    assert_equal 'IT', response.latest_event.type_code
   end
 
   def test_tracking_info_for_shipment_exception
@@ -410,6 +418,7 @@ class FedExTest < Minitest::Test
 
     assert_equal 8, response.shipment_events.length
     assert_equal "Shipment exception", response.latest_event.name
+    assert_equal "SE", response.latest_event.type_code
   end
 
   def test_tracking_info_without_status
