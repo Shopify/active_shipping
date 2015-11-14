@@ -10,3 +10,4 @@ test/fixtures/live_credentials.yml
 .rbenv-version
 .yardoc/
 doc/
+.idea
