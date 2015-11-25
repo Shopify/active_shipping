@@ -93,6 +93,25 @@ module ActiveShipping
       "07" => "UPS Express"
     }
 
+    RETURN_SERVICE_CODES = {
+      "2"  => "UPS Print and Mail (PNM)",
+      "3"  => "UPS Return Service 1-Attempt (RS1)",
+      "5"  => "UPS Return Service 3-Attempt (RS3)",
+      "8"  => "UPS Electronic Return Label (ERL)",
+      "9"  => "UPS Print Return Label (PRL)",
+      "10" => "UPS Exchange Print Return Label",
+      "11" => "UPS Pack & Collect Service 1-Attempt Box 1",
+      "12" => "UPS Pack & Collect Service 1-Attempt Box 2",
+      "13" => "UPS Pack & Collect Service 1-Attempt Box 3",
+      "14" => "UPS Pack & Collect Service 1-Attempt Box 4",
+      "15" => "UPS Pack & Collect Service 1-Attempt Box 5",
+      "16" => "UPS Pack & Collect Service 3-Attempt Box 1",
+      "17" => "UPS Pack & Collect Service 3-Attempt Box 2",
+      "18" => "UPS Pack & Collect Service 3-Attempt Box 3",
+      "19" => "UPS Pack & Collect Service 3-Attempt Box 4",
+      "20" => "UPS Pack & Collect Service 3-Attempt Box 5",
+    }
+
     TRACKING_STATUS_CODES = HashWithIndifferentAccess.new(
       'I' => :in_transit,
       'D' => :delivered,
@@ -313,8 +332,11 @@ module ActiveShipping
     # * delivery_confirmation: Can be set to any key from SHIPMENT_DELIVERY_CONFIRMATION_CODES. Can also be set on package level via package.options
     def build_shipment_request(origin, destination, packages, options={})
       packages = Array(packages)
+      shipper = options[:shipper] || origin
       options[:international] = origin.country.name != destination.country.name
-      options[:imperial] ||= IMPERIAL_COUNTRIES.include?(origin.country_code(:alpha2))
+      options[:imperial] ||= IMPERIAL_COUNTRIES.include?(shipper.country_code(:alpha2))
+      options[:return] = options[:return_service_code].present?
+      options[:reason_for_export] ||= ("RETURN" if options[:return])
 
       if allow_package_level_reference_numbers(origin, destination)
         if options[:reference_numbers]
@@ -349,7 +371,7 @@ module ActiveShipping
             build_location_node(xml, 'ShipTo', destination, options)
             build_location_node(xml, 'ShipFrom', origin, options)
             # Required element. The company whose account is responsible for the label(s).
-            build_location_node(xml, 'Shipper', options[:shipper] || origin, options)
+            build_location_node(xml, 'Shipper', shipper, options)
 
             if options[:saturday_delivery]
               xml.ShipmentServiceOptions do
@@ -416,7 +438,9 @@ module ActiveShipping
             end
 
             if options[:international]
-              build_location_node(xml, 'SoldTo', options[:sold_to] || destination, options)
+              unless options[:return]
+                build_location_node(xml, 'SoldTo', options[:sold_to] || destination, options)
+              end
 
               if origin.country_code(:alpha2) == 'US' && ['CA', 'PR'].include?(destination.country_code(:alpha2))
                 # Required for shipments from the US to Puerto Rico or Canada
@@ -429,6 +453,12 @@ module ActiveShipping
               contents_description = packages.map {|p| p.options[:description]}.compact.join(',')
               unless contents_description.empty?
                 xml.Description(contents_description)
+              end
+            end
+
+            if options[:return]
+              xml.ReturnService do
+                xml.Code(options[:return_service_code])
               end
             end
 
@@ -631,9 +661,13 @@ module ActiveShipping
 
     def build_package_node(xml, package, options = {})
       xml.Package do
-
         # not implemented:  * Shipment/Package/PackagingType element
-        #                   * Shipment/Package/Description element
+
+        #return requires description
+        if options[:return]
+          contents_description = package.options[:description]
+          xml.Description(contents_description) if contents_description
+        end
 
         xml.PackagingType do
           xml.Code('02')
