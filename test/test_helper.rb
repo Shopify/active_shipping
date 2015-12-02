@@ -152,6 +152,15 @@ module ActiveShipping::Test
                                       :address1 => '1600 Amphitheatre Parkway',
                                       :zip => '94043',
                                       :address_type => 'commercial'),
+        :real_google_with_name_phone => Location.new(
+                                      :name => 'Sergey Brin',
+                                      :country => 'US',
+                                      :city => 'Mountain View',
+                                      :state => 'CA',
+                                      :address1 => '1600 Amphitheatre Parkway',
+                                      :zip => '94043',
+                                      :phone => '1-650-253-0000',
+                                      :address_type => 'commercial'),
         :real_google_as_residential => Location.new(
                                       :country => 'US',
                                       :city => 'Mountain View',
