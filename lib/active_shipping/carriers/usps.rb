@@ -171,7 +171,7 @@ module ActiveShipping
     SERVICE_NAME_SUBSTITUTIONS = /#{ESCAPING_AND_SYMBOLS}|#{LEADING_USPS}|#{TRAILING_ASTERISKS}/
 
     def find_tracking_info(tracking_number, options = {})
-      options = @options.update(options)
+      options = @options.merge(options)
       tracking_request = build_tracking_request(tracking_number, options)
       response = commit(:track, tracking_request, options[:test] || false)
       parse_tracking_response(response).first
