@@ -12,11 +12,11 @@ class RemoteUSPSTest < Minitest::Test
   end
 
   def test_tracking
-    response = @carrier.find_tracking_info('LN284529912US', test: false)
+    response = @carrier.find_tracking_info('LN757696446US', test: false)
     assert response.success?, response.message
-    assert_equal 9,response.shipment_events.size
+    assert_equal 13,response.shipment_events.size
     assert_equal 'DELIVERED', response.shipment_events.last.message
-    assert_equal Time.parse('2015-06-01 13:36:00 UTC'), response.actual_delivery_date
+    assert_equal Time.parse('2015-11-30 13:02:00 UTC'), response.actual_delivery_date
   end
 
   def test_tracking_with_bad_number
