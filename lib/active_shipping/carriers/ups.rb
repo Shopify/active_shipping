@@ -130,6 +130,7 @@ module ActiveShipping
     DEFAULT_SERVICE_NAME_TO_CODE = Hash[UPS::DEFAULT_SERVICES.to_a.map(&:reverse)]
     DEFAULT_SERVICE_NAME_TO_CODE['UPS 2nd Day Air'] = "02"
     DEFAULT_SERVICE_NAME_TO_CODE['UPS 3 Day Select'] = "12"
+    DEFAULT_SERVICE_NAME_TO_CODE['UPS Next Day Air Early'] = "14"
 
     SHIPMENT_DELIVERY_CONFIRMATION_CODES = {
       delivery_confirmation_signature_required: 1,
