@@ -398,4 +398,32 @@ class RemoteUPSTest < Minitest::Test
 
     assert_instance_of ActiveShipping::LabelResponse, response
   end
+
+  def test_obtain_shipping_label_zpl_format
+    response = @carrier.create_shipment(
+      location_fixtures[:beverly_hills],
+      location_fixtures[:new_york_with_name],
+      package_fixtures.values_at(:american_wii),
+      :label_format => "ZPL",
+      :test => true
+    )
+
+    assert response.success?
+    assert_instance_of ActiveShipping::LabelResponse, response
+    assert_equal "ZPL", response.params['ShipmentResults']['PackageResults']['LabelImage']['LabelImageFormat']['Code']
+  end
+
+  def test_obtain_shipping_label_defaults_to_gif_format
+    response = @carrier.create_shipment(
+      location_fixtures[:beverly_hills],
+      location_fixtures[:new_york_with_name],
+      package_fixtures.values_at(:american_wii),
+      :label_format => nil,
+      :test => true
+    )
+
+    assert response.success?
+    assert_instance_of ActiveShipping::LabelResponse, response
+    assert_equal "GIF", response.params['ShipmentResults']['PackageResults']['LabelImage']['LabelImageFormat']['Code']
+  end
 end

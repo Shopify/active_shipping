@@ -481,15 +481,27 @@ module ActiveShipping
             end
           end
 
-          # I don't know all of the options that UPS supports for labels
-          # so I'm going with something very simple for now.
+          # Supported label formats:
+          # GIF, EPL, ZPL, STARPL and SPL
+          label_format = options[:label_format] ? options[:label_format].upcase : 'GIF'
+          label_size = options[:label_size] ? options[:label_size] : [4, 6]
+
           xml.LabelSpecification do
-            xml.LabelPrintMethod do
-              xml.Code('GIF')
+            xml.LabelStockSize do
+              xml.Height(label_size[0])
+              xml.Width(label_size[1])
             end
-            xml.HTTPUserAgent('Mozilla/4.5') # hmmm
-            xml.LabelImageFormat('GIF') do
-              xml.Code('GIF')
+
+            xml.LabelPrintMethod do
+              xml.Code(label_format)
+            end
+
+            # API requires these only if returning a GIF formated label
+            if label_format == 'GIF'
+              xml.HTTPUserAgent('Mozilla/4.5')
+              xml.LabelImageFormat(label_format) do
+                xml.Code(label_format)
+              end
             end
           end
         end
