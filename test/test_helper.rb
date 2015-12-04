@@ -85,6 +85,7 @@ module ActiveShipping::Test
         :small_half_pound => Package.new(8, [1, 1, 1], :units => :imperial),
         :big_half_pound => Package.new((16 * 50), [24, 24, 36], :units => :imperial),
         :chocolate_stuff => Package.new(80, [2, 6, 12], :units => :imperial),
+        :frozen_stuff => Package.new(80, [2, 6, 12], :units => :imperial, :dry_ice => {weight: 1.4}),
         :declared_value => Package.new(80, [2, 6, 12], :units => :imperial, :currency => 'USD', :value => 999.99),
         :tshirts => Package.new(10 * 16, nil, :units => :imperial),
         :shipping_container => Package.new(2200000, [2440, 2600, 6058], :description => '20 ft Standard Container', :units => :metric),
