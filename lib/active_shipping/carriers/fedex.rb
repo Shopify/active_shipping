@@ -474,31 +474,46 @@ module ActiveShipping
       message = response_message(xml)
 
       if success
+        missing_xml_field = false
         rate_estimates = xml.root.css('> RateReplyDetails').map do |rated_shipment|
-          service_code = rated_shipment.at('ServiceType').text
-          is_saturday_delivery = rated_shipment.at('AppliedOptions').try(:text) == 'SATURDAY_DELIVERY'
-          service_type = is_saturday_delivery ? "#{service_code}_SATURDAY_DELIVERY" : service_code
+          begin
+            service_code = rated_shipment.at('ServiceType').text
+            is_saturday_delivery = rated_shipment.at('AppliedOptions').try(:text) == 'SATURDAY_DELIVERY'
+            service_type = is_saturday_delivery ? "#{service_code}_SATURDAY_DELIVERY" : service_code
 
-          transit_time = rated_shipment.at('TransitTime').text if ["FEDEX_GROUND", "GROUND_HOME_DELIVERY"].include?(service_code)
-          max_transit_time = rated_shipment.at('MaximumTransitTime').try(:text) if service_code == "FEDEX_GROUND"
+            transit_time = rated_shipment.at('TransitTime').text if ["FEDEX_GROUND", "GROUND_HOME_DELIVERY"].include?(service_code)
+            max_transit_time = rated_shipment.at('MaximumTransitTime').try(:text) if service_code == "FEDEX_GROUND"
 
-          delivery_timestamp = rated_shipment.at('DeliveryTimestamp').try(:text)
-          delivery_range = delivery_range_from(transit_time, max_transit_time, delivery_timestamp, (service_code == "GROUND_HOME_DELIVERY"), options)
+            delivery_timestamp = rated_shipment.at('DeliveryTimestamp').try(:text)
+            delivery_range = delivery_range_from(transit_time, max_transit_time, delivery_timestamp, (service_code == "GROUND_HOME_DELIVERY"), options)
 
-          currency = rated_shipment.at('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Currency').text
-          RateEstimate.new(origin, destination, @@name,
-               self.class.service_name_for_code(service_type),
-               :service_code => service_code,
-               :total_price => rated_shipment.at('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Amount').text.to_f,
-               :currency => currency,
-               :packages => packages,
-               :delivery_range => delivery_range)
+            currency = rated_shipment.at('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Currency').text
+
+            RateEstimate.new(origin, destination, @@name,
+                 self.class.service_name_for_code(service_type),
+                 :service_code => service_code,
+                 :total_price => rated_shipment.at('RatedShipmentDetails/ShipmentRateDetail/TotalNetCharge/Amount').text.to_f,
+                 :currency => currency,
+                 :packages => packages,
+                 :delivery_range => delivery_range)
+          rescue NoMethodError
+            missing_xml_field = true
+            nil
+          end
         end
+
+        rate_estimates = rate_estimates.compact
+        logger.warn("[FedexParseRateError] Some fields where missing in the response: #{response}") if logger && missing_xml_field
 
         if rate_estimates.empty?
           success = false
-          message = "No shipping rates could be found for the destination address" if message.blank?
+          if missing_xml_field
+            message = "The response from the carrier contained errors and could not be treated"
+          else
+            message = "No shipping rates could be found for the destination address" if message.blank?
+          end
         end
+
       else
         rate_estimates = []
       end
