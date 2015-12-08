@@ -205,6 +205,32 @@ class FedExTest < Minitest::Test
     assert_equal message, exception.message
   end
 
+  def test_parsing_response_with_no_system_code_for_one_rate_does_not_crash
+    mock_response = xml_fixture('fedex/freight_rate_response').gsub('<v13:ServiceType>FEDEX_FREIGHT_ECONOMY</v13:ServiceType>','')
+
+    @carrier.expects(:commit).returns(mock_response)
+    @carrier.logger = Logger.new(StringIO.new)
+    @carrier.logger.expects(:warn).once.with("[FedexParseRateError] Some fields where missing in the response: #{mock_response}")
+
+    rates = @carrier.find_rates( location_fixtures[:ottawa], location_fixtures[:beverly_hills], package_fixtures.values_at(:book, :wii), :test => true)
+    assert rates.rates.length == 1
+    assert_equal rates.rates[0].service_code, 'FEDEX_FREIGHT_PRIORITY'
+  end
+
+  def test_parsing_response_with_no_system_code_on_any_shipping_rate
+    mock_response = xml_fixture('fedex/freight_rate_response').gsub('<v13:ServiceType>FEDEX_FREIGHT_ECONOMY</v13:ServiceType>','').gsub('<v13:ServiceType>FEDEX_FREIGHT_PRIORITY</v13:ServiceType>','')
+
+    @carrier.expects(:commit).returns(mock_response)
+    @carrier.logger = Logger.new(StringIO.new)
+    @carrier.logger.expects(:warn).once.with("[FedexParseRateError] Some fields where missing in the response: #{mock_response}")
+
+    exception = assert_raises(ActiveShipping::ResponseError) do
+      @carrier.find_rates( location_fixtures[:ottawa], location_fixtures[:beverly_hills], package_fixtures.values_at(:book, :wii), :test => true)
+    end
+    message = "The response from the carrier contained errors and could not be treated"
+    assert_equal exception.message, message
+  end
+
   def test_service_name_for_code
     FedEx::SERVICE_TYPES.each do |capitalized_name, readable_name|
       assert_equal readable_name, FedEx.service_name_for_code(capitalized_name)
