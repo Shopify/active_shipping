@@ -426,4 +426,17 @@ class RemoteUPSTest < Minitest::Test
     assert_instance_of ActiveShipping::LabelResponse, response
     assert_equal "GIF", response.params['ShipmentResults']['PackageResults']['LabelImage']['LabelImageFormat']['Code']
   end
+
+  def test_create_shipment_with_dry_ice_options
+    response = @carrier.create_shipment(
+      location_fixtures[:beverly_hills_with_name],
+      location_fixtures[:new_york_with_name],
+      package_fixtures.values_at(:frozen_stuff),
+      :service_code => '01',
+      :test => true
+    )
+
+    assert response.success?
+    assert_instance_of ActiveShipping::LabelResponse, response
+  end
 end

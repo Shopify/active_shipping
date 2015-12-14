@@ -727,6 +727,24 @@ module ActiveShipping
               xml.DCISType(PACKAGE_DELIVERY_CONFIRMATION_CODES[delivery_confirmation])
             end
           end
+
+          if dry_ice = package.options[:dry_ice]
+            xml.DryIce do
+              xml.RegulationSet(dry_ice[:regulation_set] || 'CFR')
+              xml.DryIceWeight do
+                xml.UnitOfMeasurement do
+                  xml.Code(options[:imperial] ? 'LBS' : 'KGS')
+                end
+                # Cannot be more than package weight.
+                # Should be more than 0.0.
+                # Valid characters are 0-9 and .(Decimal point).
+                # Limit to 1 digit after the decimal. The maximum length
+                # of the field is 5 including . and can hold up
+                # to 1 decimal place.
+                xml.Weight(dry_ice[:weight])
+              end
+            end
+          end
         end
 
         # not implemented:  * Shipment/Package/LargePackageIndicator element
