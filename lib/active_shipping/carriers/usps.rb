@@ -630,6 +630,9 @@ module ActiveShipping
 
         shipment_events = shipment_events.sort_by(&:time)
 
+        # USPS defines a delivery attempt with code 55
+        attempted_delivery_date = shipment_events.detect{ |shipment_event| shipment_event.type_code=="55" }.try(:time)
+
         if last_shipment = shipment_events.last
           status = last_shipment.status
           actual_delivery_date = last_shipment.time if last_shipment.delivered?
@@ -645,6 +648,7 @@ module ActiveShipping
                            :tracking_number => tracking_number,
                            :status => status,
                            :actual_delivery_date => actual_delivery_date,
+                           :attempted_delivery_date => attempted_delivery_date,
                            :scheduled_delivery_date => scheduled_delivery
       )
     end
