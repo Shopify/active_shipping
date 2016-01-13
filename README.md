@@ -25,7 +25,9 @@ Active Shipping is currently being used and improved in a production environment
 
 ## Installation
 
-    gem install active_shipping
+```ruby
+gem install active_shipping
+```
 
 ...or add it to your project's [Gemfile](http://bundler.io/).
 
@@ -33,57 +35,61 @@ Active Shipping is currently being used and improved in a production environment
 
 ### Compare rates from different carriers
 
-    require 'active_shipping'
+```ruby
+require 'active_shipping'
 
-    # Package up a poster and a Wii for your nephew.
-    packages = [
-      ActiveShipping::Package.new( 100,                  # 100 grams
-                                   [93,10],              # 93 cm long, 10 cm diameter
-                                   :cylinder => true),   # cylinders have different volume calculations
+# Package up a poster and a Wii for your nephew.
+packages = [
+  ActiveShipping::Package.new( 100,                  # 100 grams
+                               [93,10],              # 93 cm long, 10 cm diameter
+                               :cylinder => true),   # cylinders have different volume calculations
 
-      ActiveShipping::Package.new( 7.5 * 16,             # 7.5 lbs, times 16 oz/lb.
-                                   [15, 10, 4.5],        # 15x10x4.5 inches
-                                   :units => :imperial)  # not grams, not centimetres
-    ]
+  ActiveShipping::Package.new( 7.5 * 16,             # 7.5 lbs, times 16 oz/lb.
+                               [15, 10, 4.5],        # 15x10x4.5 inches
+                               :units => :imperial)  # not grams, not centimetres
+ ]
 
-    # You live in Beverly Hills, he lives in Ottawa
-    origin = ActiveShipping::Location.new( :country => 'US',
-                                           :state => 'CA',
-                                           :city => 'Beverly Hills',
-                                           :zip => '90210')
+ # You live in Beverly Hills, he lives in Ottawa
+ origin = ActiveShipping::Location.new( :country => 'US',
+                                        :state => 'CA',
+                                        :city => 'Beverly Hills',
+                                        :zip => '90210')
 
-    destination = ActiveShipping::Location.new( :country => 'CA',
-                                                :province => 'ON',
-                                                :city => 'Ottawa',
-                                                :postal_code => 'K1P 1J1')
+ destination = ActiveShipping::Location.new( :country => 'CA',
+                                             :province => 'ON',
+                                             :city => 'Ottawa',
+                                             :postal_code => 'K1P 1J1')
 
-    # Find out how much it'll be.
-    usps = ActiveShipping::USPS.new(:login => 'developer-key')
-    response = usps.find_rates(origin, destination, packages)
+ # Find out how much it'll be.
+ usps = ActiveShipping::USPS.new(:login => 'developer-key')
+ response = usps.find_rates(origin, destination, packages)
 
-    usps_rates = response.rates.sort_by(&:price).collect {|rate| [rate.service_name, rate.price]}
-    # => [["USPS Priority Mail International", 4110],
-    #     ["USPS Express Mail International (EMS)", 5750],
-    #     ["USPS Global Express Guaranteed Non-Document Non-Rectangular", 9400],
-    #     ["USPS GXG Envelopes", 9400],
-    #     ["USPS Global Express Guaranteed Non-Document Rectangular", 9400],
-    #     ["USPS Global Express Guaranteed", 9400]]
+ usps_rates = response.rates.sort_by(&:price).collect {|rate| [rate.service_name, rate.price]}
+ # => [["USPS Priority Mail International", 4110],
+ #     ["USPS Express Mail International (EMS)", 5750],
+ #     ["USPS Global Express Guaranteed Non-Document Non-Rectangular", 9400],
+ #     ["USPS GXG Envelopes", 9400],
+ #     ["USPS Global Express Guaranteed Non-Document Rectangular", 9400],
+ #     ["USPS Global Express Guaranteed", 9400]]
+```
 
 ### Track a FedEx package
 
-    fedex = ActiveShipping::FedEx.new(login: '999999999', password: '7777777', key: '1BXXXXXXXXXxrcB', account: '51XXXXX20')
-    tracking_info = fedex.find_tracking_info('tracking-number', :carrier_code => 'fedex_ground') # Ground package
+```ruby
+fedex = ActiveShipping::FedEx.new(login: '999999999', password: '7777777', key: '1BXXXXXXXXXxrcB', account: '51XXXXX20')
+tracking_info = fedex.find_tracking_info('tracking-number', :carrier_code => 'fedex_ground') # Ground package
 
-    tracking_info.shipment_events.each do |event|
-      puts "#{event.name} at #{event.location.city}, #{event.location.state} on #{event.time}. #{event.message}"
-    end
-    # => Package information transmitted to FedEx at NASHVILLE LOCAL, TN on Thu Oct 23 00:00:00 UTC 2008.
-    # Picked up by FedEx at NASHVILLE LOCAL, TN on Thu Oct 23 17:30:00 UTC 2008.
-    # Scanned at FedEx sort facility at NASHVILLE, TN on Thu Oct 23 18:50:00 UTC 2008.
-    # Departed FedEx sort facility at NASHVILLE, TN on Thu Oct 23 22:33:00 UTC 2008.
-    # Arrived at FedEx sort facility at KNOXVILLE, TN on Fri Oct 24 02:45:00 UTC 2008.
-    # Scanned at FedEx sort facility at KNOXVILLE, TN on Fri Oct 24 05:56:00 UTC 2008.
-    # Delivered at Knoxville, TN on Fri Oct 24 16:45:00 UTC 2008. Signed for by: T.BAKER
+tracking_info.shipment_events.each do |event|
+  puts "#{event.name} at #{event.location.city}, #{event.location.state} on #{event.time}. #{event.message}"
+end
+# => Package information transmitted to FedEx at NASHVILLE LOCAL, TN on Thu Oct 23 00:00:00 UTC 2008.
+# Picked up by FedEx at NASHVILLE LOCAL, TN on Thu Oct 23 17:30:00 UTC 2008.
+# Scanned at FedEx sort facility at NASHVILLE, TN on Thu Oct 23 18:50:00 UTC 2008.
+# Departed FedEx sort facility at NASHVILLE, TN on Thu Oct 23 22:33:00 UTC 2008.
+# Arrived at FedEx sort facility at KNOXVILLE, TN on Fri Oct 24 02:45:00 UTC 2008.
+# Scanned at FedEx sort facility at KNOXVILLE, TN on Fri Oct 24 05:56:00 UTC 2008.
+# Delivered at Knoxville, TN on Fri Oct 24 16:45:00 UTC 2008. Signed for by: T.BAKER
+```
 
 ## Running the tests
 
@@ -101,7 +107,9 @@ https://github.com/Shopify/active_shipping/tree/master/test/fixtures/xml/usps
 
 To log requests and responses, just set the `logger` on your carrier class to some kind of `Logger` object:
 
-    ActiveShipping::USPS.logger = Logger.new($stdout)
+```ruby
+ActiveShipping::USPS.logger = Logger.new($stdout)
+```
 
 (This logging functionality is provided by the [`PostsData` module](https://github.com/Shopify/active_utils/blob/master/lib/active_utils/posts_data.rb) in the `active_utils` dependency.)
 
