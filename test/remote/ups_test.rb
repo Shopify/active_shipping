@@ -286,6 +286,25 @@ class RemoteUPSTest < Minitest::Test
     assert_equal Date.parse(1.business_days.from_now.to_s), ground_delivery_estimate.date
   end
 
+  def test_delivery_date_estimates_within_zip_with_no_value
+    today = Date.current
+
+    response = @carrier.get_delivery_date_estimates(
+      location_fixtures[:new_york_with_name],
+      location_fixtures[:new_york_with_name],
+      package_fixtures.values_at(:book),
+      today,
+      {
+        :test => true
+      }
+    )
+
+    assert response.success?
+    refute_empty response.delivery_estimates
+    ground_delivery_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Ground"}.first
+    assert_equal Date.parse(1.business_days.from_now.to_s), ground_delivery_estimate.date
+  end
+
   def test_delivery_date_estimates_across_zips
     today = Date.current
 

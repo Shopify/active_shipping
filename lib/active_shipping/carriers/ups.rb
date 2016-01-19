@@ -532,10 +532,12 @@ module ActiveShipping
             xml.Weight([value.round(3), 0.1].max)
           end
 
-          xml.InvoiceLineTotal do
-            xml.CurrencyCode('USD')
-            total_value = packages.inject(0) {|sum, package| sum + package.value}
-            xml.MonetaryValue(total_value)
+          if packages.any? {|package| package.value.present?}
+            xml.InvoiceLineTotal do
+              xml.CurrencyCode('USD')
+              total_value = packages.inject(0) {|sum, package| sum + package.value.to_i}
+              xml.MonetaryValue(total_value)
+            end
           end
 
           xml.PickupDate(pickup_date.strftime('%Y%m%d'))
