@@ -103,6 +103,12 @@ end
 # Delivered at Knoxville, TN on Fri Oct 24 16:45:00 UTC 2008. Signed for by: T.BAKER
 ```
 
+#### FedEx connection notes
+
+The :login key passed to ```ActiveShipping::FedEx.new()``` is really the FedEx meter number, not the FedEx login.
+
+When developing with test credentials, be sure to pass ```test: true``` to ```ActiveShipping::FedEx.new()``` .
+
 ## Running the tests
 
 After installing dependencies with `bundle install`, you can run the unit tests with `rake test:unit` and the remote tests with `rake test:remote`. The unit tests mock out requests and responses so that everything runs locally, while the remote tests actually hit the carrier servers. For the remote tests, you'll need valid test credentials for any carriers' tests you want to run. The credentials should go in ~/.active_shipping/credentials.yml, and the format of that file can be seen in the included [credentials.yml](https://github.com/Shopify/active_shipping/blob/master/test/credentials.yml). For some carriers, we have public credentials you can use for testing: see `.travis.yml`.
