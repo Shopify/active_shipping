@@ -605,6 +605,11 @@ module ActiveShipping
           else
             raise ActiveShipping::ResponseContentError, StandardError.new(first_notification.at('Message').text)
           end
+        elsif first_notification.at('Severity').text == 'FAILURE'
+          case first_notification.at('Code').text
+          when '9045'
+            raise ActiveShipping::ResponseContentError, StandardError.new(first_notification.at('Message').text)
+          end
         end
 
         tracking_number = tracking_details.at('TrackingNumber').text
