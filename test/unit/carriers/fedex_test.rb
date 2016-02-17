@@ -327,6 +327,18 @@ class FedExTest < Minitest::Test
     end
   end
 
+  def test_response_failure_code_9045
+    mock_response = xml_fixture('fedex/tracking_response_failure_code_9045')
+    @carrier.expects(:commit).returns(mock_response)
+
+    error = assert_raises(ActiveShipping::ResponseContentError) do
+      @carrier.find_tracking_info('123456789013')
+    end
+
+    msg = 'Sorry, we are unable to process your tracking request.  Please retry later, or contact Customer Service at 1.800.Go.FedEx(R) 800.463.3339.'
+    assert_equal msg, error.message
+  end
+
   def test_parsing_response_without_notifications
     mock_response = xml_fixture('fedex/reply_without_notifications')
 
