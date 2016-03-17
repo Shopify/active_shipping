@@ -11,3 +11,4 @@ test/fixtures/live_credentials.yml
 .yardoc/
 doc/
 .idea
+.bundle
