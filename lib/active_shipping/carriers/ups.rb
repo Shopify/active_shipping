@@ -3,6 +3,7 @@
 module ActiveShipping
   class UPS < Carrier
     self.retry_safe = true
+    self.ssl_version = :TLSv1_2
 
     cattr_accessor :default_options
     cattr_reader :name
