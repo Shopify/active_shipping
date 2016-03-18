@@ -8,6 +8,12 @@ up:
 
 commands:
   test:
-    syntax: ""
-    desc: "run the unit tests"
-    run: bundle exec rake test
+    syntax:
+      optional: file args...
+    desc: 'run all tests or a specific test file'
+    run: |
+      if [[ $# -eq 0 ]]; then
+        bundle exec rake test
+      else
+        bundle exec ruby -Itest "$@"
+      fi
