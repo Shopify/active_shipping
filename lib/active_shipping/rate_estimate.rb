@@ -63,7 +63,7 @@ module ActiveShipping
   #   The price of insurance in cents.
   #   @return [Integer]
   class RateEstimate
-    attr_reader :origin, :destination, :package_rates,
+    attr_accessor :origin, :destination, :package_rates,
                 :carrier, :service_name, :service_code,
                 :shipping_date, :delivery_date, :delivery_range,
                 :currency, :negotiated_rate, :insurance_price,
@@ -71,25 +71,25 @@ module ActiveShipping
                 :compare_price, :phone_required
 
     def initialize(origin, destination, carrier, service_name, options = {})
-      @origin, @destination, @carrier, @service_name = origin, destination, carrier, service_name
-      @service_code = options[:service_code]
-      @estimate_reference = options[:estimate_reference]
-      @pickup_time = options[:pickup_time]
-      @expires_at = options[:expires_at]
+      self.origin, self.destination, self.carrier, self.service_name = origin, destination, carrier, service_name
+      self.service_code = options[:service_code]
+      self.estimate_reference = options[:estimate_reference]
+      self.pickup_time = options[:pickup_time]
+      self.expires_at = options[:expires_at]
       if options[:package_rates]
-        @package_rates = options[:package_rates].map { |p| p.update(:rate => Package.cents_from(p[:rate])) }
+        self.package_rates = options[:package_rates].map { |p| p.update(:rate => Package.cents_from(p[:rate])) }
       else
-        @package_rates = Array(options[:packages]).map { |p| {:package => p} }
+        self.package_rates = Array(options[:packages]).map { |p| {:package => p} }
       end
-      @total_price = Package.cents_from(options[:total_price])
-      @negotiated_rate = options[:negotiated_rate] ? Package.cents_from(options[:negotiated_rate]) : nil
-      @compare_price = options[:compare_price] ? Package.cents_from(options[:compare_price]) : nil
-      @phone_required = !!options[:phone_required]
-      @currency = ActiveUtils::CurrencyCode.standardize(options[:currency])
-      @delivery_range = options[:delivery_range] ? options[:delivery_range].map { |date| date_for(date) }.compact : []
-      @shipping_date = date_for(options[:shipping_date])
-      @delivery_date = @delivery_range.last
-      @insurance_price = Package.cents_from(options[:insurance_price])
+      self.total_price = options[:total_price]
+      self.negotiated_rate = options[:negotiated_rate]
+      self.compare_price = options[:compare_price]
+      self.phone_required = options[:phone_required]
+      self.currency = options[:currency]
+      self.delivery_range = options[:delivery_range]
+      self.shipping_date = options[:shipping_date]
+      self.delivery_date = @delivery_range.last
+      self.insurance_price = options[:insurance_price]
     end
 
     # The total price of the shipments in cents.
@@ -123,6 +123,40 @@ module ActiveShipping
     # @return [Integer]
     def package_count
       package_rates.length
+    end
+
+    protected
+
+    def delivery_range=(delivery_range)
+      @delivery_range = delivery_range ? delivery_range.map { |date| date_for(date) }.compact : []
+    end
+
+    def total_price=(total_price)
+      @total_price = Package.cents_from(total_price)
+    end
+
+    def negotiated_rate=(negotiated_rate)
+      @negotiated_rate = negotiated_rate ? Package.cents_from(negotiated_rate) : nil
+    end
+
+    def compare_price=(compare_price)
+      @compare_price = compare_price ? Package.cents_from(compare_price) : nil
+    end
+
+    def currency=(currency)
+      @currency = ActiveUtils::CurrencyCode.standardize(currency)
+    end
+
+    def phone_required=(phone_required)
+      @phone_required = !!phone_required
+    end
+
+    def shipping_date=(shipping_date)
+      @shipping_date = date_for(shipping_date)
+    end
+
+    def insurance_price=(insurance_price)
+      @insurance_price = Package.cents_from(insurance_price)
     end
 
     private
