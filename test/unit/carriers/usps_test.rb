@@ -139,8 +139,11 @@ class USPSTest < Minitest::Test
     assert_nil response.scheduled_delivery_date
     assert_nil response.shipment_events.last.location.city
 
+    time = Time.at(0)
+    expected_utc_time = Time.utc(time.year, time.month, time.mday, time.hour, time.min, time.sec)
+
     assert_equal 'NP', response.shipment_events.first.type_code
-    assert_equal Time.parse('2000-01-01 00:00:00 UTC'), response.shipment_events.first.time
+    assert_equal expected_utc_time, response.shipment_events.first.time
 
     special_country  = xml_fixture('usps/tracking_response_alt').gsub('CANADA','TAIWAN')
     @carrier.expects(:commit).returns(special_country)
