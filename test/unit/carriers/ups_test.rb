@@ -352,9 +352,9 @@ class UPSTest < Minitest::Test
                                            :billing_zip => expected_postal_code_number,
                                            :billing_country => expected_country_code)
 
-    assert_equal expected_account_number, response.search('ShipmentConfirmRequest/Shipment/PaymentInformation/BillThirdParty/BillThirdPartyShipper/AccountNumber').text
-    assert_equal expected_postal_code_number, response.search('/ShipmentConfirmRequest/Shipment/PaymentInformation/BillThirdParty/BillThirdPartyShipper/ThirdParty/Address/PostalCode').text
-    assert_equal expected_country_code, response.search('/ShipmentConfirmRequest/Shipment/PaymentInformation/BillThirdParty/BillThirdPartyShipper/ThirdParty/Address/CountryCode').text
+    assert_equal expected_account_number, response.search('ShipmentConfirmRequest/Shipment/ItemizedPaymentInformation/ShipmentCharge/BillThirdParty/BillThirdPartyShipper/AccountNumber').text
+    assert_equal expected_postal_code_number, response.search('/ShipmentConfirmRequest/Shipment/ItemizedPaymentInformation/ShipmentCharge/BillThirdParty/BillThirdPartyShipper/ThirdParty/Address/PostalCode').text
+    assert_equal expected_country_code, response.search('/ShipmentConfirmRequest/Shipment/ItemizedPaymentInformation/ShipmentCharge/BillThirdParty/BillThirdPartyShipper/ThirdParty/Address/CountryCode').text
   end
 
   def test_label_request_negotiated_rates_presence
@@ -364,7 +364,8 @@ class UPSTest < Minitest::Test
                                            package_fixtures.values_at(:chocolate_stuff),
                                            :test => true,
                                            :saturday_delivery => true,
-                                           :origin_account => 'A01B23' # without this option, a negotiated rate will not be requested
+                                           :origin_account => 'A01B23', # without this option, a negotiated rate will not be requested
+                                           :negotiated_rates => true,
                              )
 
     negotiated_rates = response.search '/ShipmentConfirmRequest/Shipment/RateInformation/NegotiatedRatesIndicator'
