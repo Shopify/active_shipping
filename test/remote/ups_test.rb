@@ -267,6 +267,35 @@ class RemoteUPSTest < Minitest::Test
     assert_instance_of ActiveShipping::LabelResponse, response
   end
 
+  def test_obtain_international_shipping_label_with_bill_third_party
+    begin
+      bill_third_party_credentials = credentials(:ups_third_party_billing)
+    rescue NoCredentialsFound => e
+      skip(e.message)
+    end
+
+    response = @carrier.create_shipment(
+      location_fixtures[:new_york_with_name],
+      location_fixtures[:ottawa_with_name],
+      package_fixtures.values_at(:books),
+      {
+       :service_code => '07',
+       :bill_third_party => true,
+       :billing_account => bill_third_party_credentials[:account],
+       :billing_zip => bill_third_party_credentials[:zip],
+       :billing_country => bill_third_party_credentials[:country_code],
+       :test => true,
+      }
+    )
+    assert response.success?
+
+    # All behavior specific to how a LabelResponse behaves in the
+    # context of UPS label data is a matter for unit tests.  If
+    # the data changes substantially, the create_shipment
+    # ought to raise an exception and this test will fail.
+    assert_instance_of ActiveShipping::LabelResponse, response
+  end
+
   def test_delivery_date_estimates_within_zip
     today = Date.current
 

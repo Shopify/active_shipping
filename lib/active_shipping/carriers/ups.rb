@@ -409,12 +409,12 @@ module ActiveShipping
                   xml.Type('01')
                   build_billing_info_node(xml, options)
                 end
-                if options[:terms_of_shipment] == 'DDP'
+                if options[:terms_of_shipment] == 'DDP' && options[:international]
                   # DDP stands for delivery duty paid and means the shipper will cover duties and taxes
                   # Otherwise UPS will charge the receiver
                   xml.ShipmentCharge do
                     xml.Type('02') # Type '02' means 'Duties and Taxes'
-                    build_billing_info_node(xml, options)
+                    build_billing_info_node(xml, options.merge(bill_to_consignee: true))
                   end
                 end
               end
@@ -739,7 +739,8 @@ module ActiveShipping
     def build_billing_info_node(xml, options={})
       if options[:bill_third_party]
         xml.BillThirdParty do
-          xml.BillThirdPartyShipper do
+          node_type = options[:bill_to_consignee] ? :BillThirdPartyConsignee : :BillThirdPartyShipper
+          xml.public_send(node_type) do
             xml.AccountNumber(options[:billing_account])
             xml.ThirdParty do
               xml.Address do
