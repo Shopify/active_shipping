@@ -247,8 +247,8 @@ module ActiveShipping
         timestamp = "#{node.at('EventDate').text}, #{node.at('EventTime').text}"
         Time.parse(timestamp)
       else
-        # Arbitrary time in past, because we need to sort properly by time
-        Time.parse("Jan 01, 2000")
+        # Epoch time, because we need to sort properly by time
+        Time.at(0)
       end
 
       event_code = node.at('EventCode').text
