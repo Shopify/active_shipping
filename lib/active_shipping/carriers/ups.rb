@@ -748,6 +748,13 @@ module ActiveShipping
               end
             end
           end
+
+          if package_value = package.options[:insured_value]
+            xml.InsuredValue do
+              xml.CurrencyCode(package.options[:currency] || 'USD')
+              xml.MonetaryValue(package_value.to_f)
+            end
+          end
         end
 
         # not implemented:  * Shipment/Package/LargePackageIndicator element

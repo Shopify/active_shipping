@@ -458,4 +458,16 @@ class RemoteUPSTest < Minitest::Test
     assert response.success?
     assert_instance_of ActiveShipping::LabelResponse, response
   end
+
+  def test_create_shipment_with_insured_value
+    response = @carrier.create_shipment(
+      location_fixtures[:beverly_hills_with_name],
+      location_fixtures[:new_york_with_name],
+      package_fixtures.values_at(:insured_value),
+      :test => true
+    )
+
+    assert response.success?
+    assert_instance_of ActiveShipping::LabelResponse, response
+  end
 end
