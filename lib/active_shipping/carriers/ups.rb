@@ -194,7 +194,7 @@ module ActiveShipping
       xml = parse_ship_confirm(confirm_response)
       success = response_success?(xml)
       message = response_message(xml)
-      raise message unless success
+      raise ActiveShipping::ResponseContentError, StandardError.new(message) unless success
       digest  = response_digest(xml)
 
       # STEP 2: Accept. Use shipment digest in first response to get the actual label.
