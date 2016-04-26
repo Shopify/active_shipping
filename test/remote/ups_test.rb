@@ -283,7 +283,7 @@ class RemoteUPSTest < Minitest::Test
     assert response.success?
     refute_empty response.delivery_estimates
     ground_delivery_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Ground"}.first
-    assert_equal Date.parse(1.business_days.from_now.to_s), ground_delivery_estimate.date
+    assert_equal 1.business_days.after(today), ground_delivery_estimate.date
   end
 
   def test_delivery_date_estimates_within_zip_with_no_value
@@ -302,7 +302,7 @@ class RemoteUPSTest < Minitest::Test
     assert response.success?
     refute_empty response.delivery_estimates
     ground_delivery_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Ground"}.first
-    assert_equal Date.parse(1.business_days.from_now.to_s), ground_delivery_estimate.date
+    assert_equal 1.business_days.after(today), ground_delivery_estimate.date
   end
 
   def test_delivery_date_estimates_across_zips
@@ -321,9 +321,9 @@ class RemoteUPSTest < Minitest::Test
     assert response.success?
     refute_empty response.delivery_estimates
     ground_delivery_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Ground"}.first
-    assert_equal Date.parse(3.business_days.from_now.to_s), ground_delivery_estimate.date
+    assert_equal 3.business_days.after(today), ground_delivery_estimate.date
     next_day_delivery_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Next Day Air"}.first
-    assert_equal Date.parse(1.business_days.from_now.to_s), next_day_delivery_estimate.date
+    assert_equal 1.business_days.after(today), next_day_delivery_estimate.date
   end
 
   def test_rate_with_single_service
