@@ -113,6 +113,8 @@ module ActiveShipping
       :package_service => 'PACKAGESERVICE'
     }
 
+    ATTEMPTED_DELIVERY_CODES = %w(02 53 54 55 56 H0)
+
     # Array of U.S. possessions according to USPS: https://www.usps.com/ship/official-abbreviations.htm
     US_POSSESSIONS = %w(AS FM GU MH MP PW PR VI)
 
@@ -630,8 +632,7 @@ module ActiveShipping
 
         shipment_events = shipment_events.sort_by(&:time)
 
-        # USPS defines a delivery attempt with code 55
-        attempted_delivery_date = shipment_events.detect{ |shipment_event| shipment_event.type_code=="55" }.try(:time)
+        attempted_delivery_date = shipment_events.detect{ |shipment_event| ATTEMPTED_DELIVERY_CODES.include?(shipment_event.type_code) }.try(:time)
 
         if last_shipment = shipment_events.last
           status = last_shipment.status
