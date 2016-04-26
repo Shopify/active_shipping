@@ -481,11 +481,12 @@ module ActiveShipping
       raise ActiveShipping::ResponseError, "No Shipping" unless doc.at('non-contract-shipment-info')
       options = {
         :shipping_id      => doc.root.at('shipment-id').text,
-        :tracking_number  => doc.root.at('tracking-pin').text,
         :details_url      => doc.root.at_xpath("links/link[@rel='details']")['href'],
         :label_url        => doc.root.at_xpath("links/link[@rel='label']")['href'],
         :receipt_url      => doc.root.at_xpath("links/link[@rel='receipt']")['href'],
       }
+      options[:tracking_number] = doc.root.at('tracking-pin').text if doc.root.at('tracking-pin')
+
       CPPWSShippingResponse.new(true, "", {}, options)
     end
 
