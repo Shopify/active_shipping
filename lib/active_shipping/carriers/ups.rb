@@ -850,7 +850,7 @@ module ActiveShipping
             type_code = activity.at('Status/StatusType/Code').text
             zoneless_time = parse_ups_datetime(:time => activity.at('Time'), :date => activity.at('Date'))
             location = location_from_address_node(activity.at('ActivityLocation/Address'))
-            ShipmentEvent.new(description, zoneless_time, location, nil, type_code)
+            ShipmentEvent.new(description, zoneless_time, location, description, type_code)
           end
 
           shipment_events = shipment_events.sort_by(&:time)
