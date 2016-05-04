@@ -1,0 +1,19 @@
+{
+  "postage_result": {
+    "service": "Express Post",
+    "delivery_time": "Guaranteed Next Business Day within the Express Post network (If posted on any business day Monday to Friday in accordance with the conditions set out on the item).",
+    "total_cost": "14.70",
+    "costs": {
+      "cost": [{
+        "item": "Express Post",
+        "cost": "10.20"
+      }, {
+        "item": "Standard Service",
+        "cost": "0.00"
+      }, {
+        "item": "Extra Cover",
+        "cost": "4.50"
+      }]
+    }
+  }
+}

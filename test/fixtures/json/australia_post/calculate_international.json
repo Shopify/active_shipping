@@ -1,0 +1,12 @@
+{
+  "postage_result": {
+    "service": "Courier",
+    "total_cost": "87.36",
+    "costs": {
+      "cost": {
+        "item": "Courier",
+        "cost": "87.36"
+      }
+    }
+  }
+}
