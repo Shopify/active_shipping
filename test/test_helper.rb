@@ -245,7 +245,19 @@ module ActiveShipping::Test
                                       :city => 'Groningen',
                                       :address1 => 'Aquamarijnstraat 349',
                                       :postal_code => '9743 PJ',
-                                      :state => 'Groningen')
+                                      :state => 'Groningen'),
+        :sydney => Location.new(
+                                      :country => 'AUS',
+                                      :city => 'Sydney',
+                                      :state => 'NSW',
+                                      :address1 => '192 George Street',
+                                      :postal_code => '2000'),
+        :melbourne => Location.new(
+                                      :country => 'AUS',
+                                      :city => 'Melbourne',
+                                      :state => 'VIC',
+                                      :address1 => '192 George Street',
+                                      :postal_code => '3108')
       }
     end
 

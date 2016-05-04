@@ -22,6 +22,7 @@ Active Shipping is currently being used and improved in a production environment
 * [Shipwire](http://www.shipwire.com)
 * [Stamps](http://www.stamps.com)
 * [Kunaki](http://www.kunaki.com)
+* [Australia Post](http://auspost.com.au/)
 
 ## Installation
 

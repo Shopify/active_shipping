@@ -1,0 +1,59 @@
+{
+  "services": {
+    "service": [{
+      "code": "INT_PARCEL_EXP_OWN_PACKAGING",
+      "name": "Express",
+      "price": "82.87",
+      "max_extra_cover": 5000,
+      "options": {
+        "option": [{
+          "code": "INT_TRACKING",
+          "name": "Tracking"
+        }, {
+          "code": "INT_SIGNATURE_ON_DELIVERY",
+          "name": "Signature on delivery"
+        }, {
+          "code": "INT_SMS_TRACK_ADVICE",
+          "name": "SMS track advice"
+        }, {
+          "code": "INT_EXTRA_COVER",
+          "name": "Extra Cover"
+        }]
+      }
+    }, {
+      "code": "INT_PARCEL_STD_OWN_PACKAGING",
+      "name": "Standard",
+      "price": "71.20",
+      "max_extra_cover": 5000,
+      "options": {
+        "option": [{
+          "code": "INT_TRACKING",
+          "name": "Tracking"
+        }, {
+          "code": "INT_EXTRA_COVER",
+          "name": "Extra Cover"
+        }, {
+          "code": "INT_SIGNATURE_ON_DELIVERY",
+          "name": "Signature on delivery"
+        }, {
+          "code": "INT_SMS_TRACK_ADVICE",
+          "name": "SMS track advice"
+        }]
+      }
+    }, {
+      "code": "INT_PARCEL_SEA_OWN_PACKAGING",
+      "name": "Economy Sea",
+      "price": "41.54",
+      "max_extra_cover": 5000,
+      "options": {
+        "option": [{
+          "code": "INT_EXTRA_COVER",
+          "name": "Extra Cover"
+        }, {
+          "code": "INT_SIGNATURE_ON_DELIVERY",
+          "name": "Signature on delivery"
+        }]
+      }
+    }]
+  }
+}
