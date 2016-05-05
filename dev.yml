@@ -3,7 +3,6 @@ name: active_shipping
 up:
   - ruby:
       version: 2.2.4
-      build: true
   - bundler
 
 commands:
