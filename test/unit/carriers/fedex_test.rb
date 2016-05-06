@@ -601,6 +601,32 @@ class FedExTest < Minitest::Test
     assert_equal result.search('RequestedPackageLineItems/CustomerReferences/Value').text, "FOO-123"
   end
 
+  def test_create_shipment_default_label_stock_type
+    packages = package_fixtures.values_at(:wii)
+
+    result = Nokogiri::XML(@carrier.send(:build_shipment_request,
+                                         location_fixtures[:beverly_hills],
+                                         location_fixtures[:annapolis],
+                                         packages,
+                                         :test => true))
+
+    assert_equal result.search('RequestedShipment/LabelSpecification/LabelStockType').text, FedEx::DEFAULT_LABEL_STOCK_TYPE
+  end
+
+  def test_create_shipment_label_stock_type
+    label_stock_type = 'PAPER_4X6'
+    packages = package_fixtures.values_at(:wii)
+
+    result = Nokogiri::XML(@carrier.send(:build_shipment_request,
+                                         location_fixtures[:beverly_hills],
+                                         location_fixtures[:annapolis],
+                                         packages,
+                                         :test => true,
+                                         :label_stock_type => label_stock_type))
+
+    assert_equal result.search('RequestedShipment/LabelSpecification/LabelStockType').text, label_stock_type
+  end
+
   def test_maximum_address_field_length
     assert_equal 35, @carrier.maximum_address_field_length
   end
