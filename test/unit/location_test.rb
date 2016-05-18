@@ -125,4 +125,11 @@ class LocationTest < Minitest::Test
     location = Location.from(:address3 => address3)
     assert_equal 'Victory Lane', location.address2_and_3
   end
+
+  def test_equality
+    location_1 = location_fixtures[:ottawa]
+    location_2 = Location.from(location_1.to_hash)
+
+    assert_equal location_1, location_2
+  end
 end

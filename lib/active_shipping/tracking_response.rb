@@ -31,7 +31,7 @@ module ActiveShipping
   #
   # @!attribute attempted_delivery_date
   #   @return [Date, Time]
-  #  
+  #
   # @!attribute delivery_signature
   #   @return [String]
   #
@@ -101,5 +101,20 @@ module ActiveShipping
     alias_method :scheduled_delivery_time, :scheduled_delivery_date
     alias_method :actual_delivery_time, :actual_delivery_date
     alias_method :attempted_delivery_time, :attempted_delivery_date
+
+    def ==(other)
+      attributes = %i(carrier carrier_name status status_code status_description ship_time scheduled_delivery_date
+        actual_delivery_date attempted_delivery_date delivery_signature tracking_number shipper_address
+        origin destination
+      )
+
+      attributes.all? { |attr| self.public_send(attr) == other.public_send(attr) } && compare_shipment_events(other)
+    end
+
+    private
+    # Ensure order doesn't matter when comparing shipment_events
+    def compare_shipment_events(other)
+      shipment_events.sort_by(&:time) == other.shipment_events.sort_by(&:time)
+    end
   end
 end
