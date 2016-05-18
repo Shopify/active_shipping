@@ -13,5 +13,10 @@ module ActiveShipping
     def status
       @status ||= name.downcase.gsub("\s", "_").to_sym
     end
+
+    def ==(other)
+      attributes = %i(name time location message type_code)
+      attributes.all? { |attr| self.public_send(attr) == other.public_send(attr) }
+    end
   end
 end

@@ -140,5 +140,9 @@ module ActiveShipping #:nodoc:
     def address2_and_3
       [address2, address3].reject(&:blank?).join(", ")
     end
+
+    def ==(other)
+      to_hash == other.to_hash
+    end
   end
 end
