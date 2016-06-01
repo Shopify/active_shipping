@@ -5,16 +5,16 @@ module ActiveShipping
     cattr_reader :name
     @@name = 'Australia Post'
 
-    URL = 'https://digitalapi.auspost.com.au/'
+    HOST = 'digitalapi.auspost.com.au'
 
     PARCEL_ENDPOINTS = {
       service: {
-        domestic:      'postage/parcel/domestic/service',
-        international: 'postage/parcel/international/service'
+        domestic:      '/postage/parcel/domestic/service.json',
+        international: '/postage/parcel/international/service.json'
       },
       calculate: {
-        domestic:      'postage/parcel/domestic/calculate',
-        international: 'postage/parcel/international/calculate'
+        domestic:      '/postage/parcel/domestic/calculate.json',
+        international: '/postage/parcel/international/calculate.json'
       }
     }.freeze
 
@@ -58,9 +58,10 @@ module ActiveShipping
       ssl_get(request_url, headers)
 
     rescue ActiveUtils::ResponseError, ActiveShipping::ResponseError => e
-      data = JSON.parse(e.response.body)
+      data          = JSON.parse(e.response.body)
+      error_message = data['error'] && data['error']['errorMessage'] ? data['error']['errorMessage'] : 'unknown'
 
-      RateResponse.new(false, data['error']['errorMessage'], data)
+      RateResponse.new(false, error_message, data)
     end
 
     def headers
@@ -134,7 +135,7 @@ module ActiveShipping
         endpoint = domestic_destination? ? @endpoints[:domestic] : @endpoints[:international]
         params   = domestic_destination? ? domestic_params : international_params
 
-        "#{URL}#{endpoint}.json?#{params.to_query}"
+        URI::HTTPS.build(host: HOST, path: endpoint, query: params.to_query).to_s
       end
 
       def parse(data)
