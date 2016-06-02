@@ -1,9 +1,7 @@
 name: active_shipping
 
 up:
-  - ruby:
-      package: homebrew/version/ruby22
-      version: 2.2.5p319
+  - ruby: 2.3.1
   - bundler
 
 commands:
