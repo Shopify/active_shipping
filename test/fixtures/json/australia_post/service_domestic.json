@@ -1,0 +1,117 @@
+{
+  "services": {
+    "service": [{
+      "code": "AUS_PARCEL_EXPRESS",
+      "name": "Express Post",
+      "price": "28.55",
+      "max_extra_cover": 300,
+      "options": {
+        "option": [{
+          "code": "AUS_SERVICE_OPTION_STANDARD",
+          "name": "Standard Service",
+          "suboptions": {
+            "option": {
+              "code": "AUS_SERVICE_OPTION_EXTRA_COVER",
+              "name": "Extra Cover",
+              "max_extra_cover": 300
+            }
+          }
+        }, {
+          "code": "AUS_SERVICE_OPTION_SIGNATURE_ON_DELIVERY",
+          "name": "Signature on Delivery",
+          "suboptions": {
+            "option": {
+              "code": "AUS_SERVICE_OPTION_EXTRA_COVER",
+              "name": "Extra Cover",
+              "max_extra_cover": 5000
+            }
+          }
+        }]
+      }
+    }, {
+      "code": "AUS_PARCEL_EXPRESS_SATCHEL_3KG",
+      "name": "Express Post Medium (3Kg) Satchel",
+      "price": "14.80",
+      "max_extra_cover": 300,
+      "options": {
+        "option": [{
+          "code": "AUS_SERVICE_OPTION_STANDARD",
+          "name": "Standard Service",
+          "suboptions": {
+            "option": {
+              "code": "AUS_SERVICE_OPTION_EXTRA_COVER",
+              "name": "Extra Cover",
+              "max_extra_cover": 300
+            }
+          }
+        }, {
+          "code": "AUS_SERVICE_OPTION_SIGNATURE_ON_DELIVERY",
+          "name": "Signature on Delivery",
+          "suboptions": {
+            "option": {
+              "code": "AUS_SERVICE_OPTION_EXTRA_COVER",
+              "name": "Extra Cover",
+              "max_extra_cover": 5000
+            }
+          }
+        }]
+      }
+    }, {
+      "code": "AUS_PARCEL_REGULAR",
+      "name": "Parcel Post",
+      "price": "16.15",
+      "max_extra_cover": 300,
+      "options": {
+        "option": [{
+          "code": "AUS_SERVICE_OPTION_STANDARD",
+          "name": "Standard Service",
+          "suboptions": {
+            "option": {
+              "code": "AUS_SERVICE_OPTION_EXTRA_COVER",
+              "name": "Extra Cover",
+              "max_extra_cover": 300
+            }
+          }
+        }, {
+          "code": "AUS_SERVICE_OPTION_SIGNATURE_ON_DELIVERY",
+          "name": "Signature on Delivery",
+          "suboptions": {
+            "option": {
+              "code": "AUS_SERVICE_OPTION_EXTRA_COVER",
+              "name": "Extra Cover",
+              "max_extra_cover": 5000
+            }
+          }
+        }]
+      }
+    }, {
+      "code": "AUS_PARCEL_REGULAR_SATCHEL_3KG",
+      "name": "Parcel Post Medium Satchel",
+      "price": "13.40",
+      "max_extra_cover": 300,
+      "options": {
+        "option": [{
+          "code": "AUS_SERVICE_OPTION_STANDARD",
+          "name": "Standard Service",
+          "suboptions": {
+            "option": {
+              "code": "AUS_SERVICE_OPTION_EXTRA_COVER",
+              "name": "Extra Cover",
+              "max_extra_cover": 300
+            }
+          }
+        }, {
+          "code": "AUS_SERVICE_OPTION_SIGNATURE_ON_DELIVERY",
+          "name": "Signature on Delivery",
+          "suboptions": {
+            "option": {
+              "code": "AUS_SERVICE_OPTION_EXTRA_COVER",
+              "name": "Extra Cover",
+              "max_extra_cover": 5000
+            }
+          }
+        }]
+      }
+    }]
+  }
+}
