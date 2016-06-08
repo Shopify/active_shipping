@@ -62,13 +62,17 @@ module ActiveShipping
   # @!attribute insurance_price
   #   The price of insurance in cents.
   #   @return [Integer]
+  #
+  # @!attribute delivery_category
+  #   The general classification of the delivery method
+  #   @return [String]
   class RateEstimate
     attr_accessor :origin, :destination, :package_rates,
                 :carrier, :service_name, :service_code,
                 :shipping_date, :delivery_date, :delivery_range,
                 :currency, :negotiated_rate, :insurance_price,
                 :estimate_reference, :expires_at, :pickup_time,
-                :compare_price, :phone_required
+                :compare_price, :phone_required, :delivery_category
 
     def initialize(origin, destination, carrier, service_name, options = {})
       self.origin, self.destination, self.carrier, self.service_name = origin, destination, carrier, service_name
@@ -90,6 +94,7 @@ module ActiveShipping
       self.shipping_date = options[:shipping_date]
       self.delivery_date = @delivery_range.last
       self.insurance_price = options[:insurance_price]
+      self.delivery_category = options[:delivery_category]
     end
 
     # The total price of the shipments in cents.
