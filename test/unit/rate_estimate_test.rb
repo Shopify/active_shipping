@@ -51,4 +51,11 @@ class RateEstimateTest < Minitest::Test
     est = RateEstimate.new(@origin, @destination, @carrier, @service_name, @options.merge(compare_price: 10.0))
     assert_equal 1000, est.compare_price
   end
+
+  def test_delivery_category_is_set
+    est = RateEstimate.new(@origin, @destination, @carrier, @service_name, @options.merge(delivery_category: "local_delivery"))
+
+    assert_equal "local_delivery", est.delivery_category
+  end
+
 end
