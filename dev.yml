@@ -1,4 +1,4 @@
-name: active_shipping
+name: active-shipping
 
 up:
   - ruby: 2.3.1
