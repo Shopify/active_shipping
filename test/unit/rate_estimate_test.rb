@@ -2,11 +2,11 @@ require 'test_helper'
 
 class RateEstimateTest < Minitest::Test
   def setup
-    @origin      = {:address1 => "61A York St", :city => "Ottawa", :province => "ON", :country => "Canada", :postal_code => "K1N 5T2"}
-    @destination = {:city => "Beverly Hills", :state => "CA", :country => "United States", :postal_code => "90210"}
-    @line_items  = [Package.new(500, [2, 3, 4], :description => "a box full of stuff", :value => 2500)]
+    @origin      = {address1: "61A York St", city: "Ottawa", province: "ON", country: "Canada", postal_code: "K1N 5T2"}
+    @destination = {city: "Beverly Hills", state: "CA", country: "United States", postal_code: "90210"}
+    @line_items  = [Package.new(500, [2, 3, 4], description: "a box full of stuff", value: 2500)]
     @carrier     = CanadaPost.new(login: 'test')
-    @options     = {:currency => 'USD'}
+    @options     = {currency: 'USD', delivery_range: [DateTime.new(2016, 7, 1), DateTime.new(2016, 7, 3)]}
 
     @rate_estimate = RateEstimate.new(@origin, @destination, @carrier, @service_name, @options)
   end
@@ -31,13 +31,13 @@ class RateEstimateTest < Minitest::Test
   end
 
   def test_rate_estimate_converts_noniso_to_iso
-    rate_estimate = RateEstimate.new(@origin, @destination, @carrier, @service_name, @options.merge(:currency => 'UKL'))
+    rate_estimate = RateEstimate.new(@origin, @destination, @carrier, @service_name, @options.merge(currency: 'UKL'))
     assert_equal 'GBP', rate_estimate.currency
   end
 
   def test_creating_an_estimate_with_an_invalid_currency_raises
     assert_raises(ActiveUtils::InvalidCurrencyCodeError) do
-      RateEstimate.new(nil, nil, nil, nil, :currency => 'FAKE')
+      RateEstimate.new(nil, nil, nil, nil, currency: 'FAKE')
     end
   end
 
@@ -58,4 +58,8 @@ class RateEstimateTest < Minitest::Test
     assert_equal "local_delivery", est.delivery_category
   end
 
+  def test_delivery_date_pulls_from_delivery_range
+    assert_equal [DateTime.new(2016, 7, 1), DateTime.new(2016, 7, 3)], @rate_estimate.delivery_range
+    assert_equal DateTime.new(2016, 7, 3), @rate_estimate.delivery_date
+  end
 end
