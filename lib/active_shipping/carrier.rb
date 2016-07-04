@@ -72,8 +72,8 @@ module ActiveShipping
     #
     # @note Override with whatever you need to cancel a shipping label
     #
-    # @param shipment_id [String] The unique identifier of the shipment to cancel. 
-    #  This can be shipment_id or tracking number depending on carrier. Up to you and 
+    # @param shipment_id [String] The unique identifier of the shipment to cancel.
+    #  This can be shipment_id or tracking number depending on carrier. Up to you and
     #  the carrier
     # @param options [Hash] Carrier-specific parameters.
     # @return [ActiveShipping::ShipmentResponse] The response from the carrier. This
@@ -162,12 +162,15 @@ module ActiveShipping
     def timestamp_from_business_day(days)
       return unless days
       date = DateTime.now.utc
+
       days.times do
-        begin
-          date = date + 1
-        end while [0, 6].include?(date.wday)
+        date += 1.day
+
+        date += 2.days if date.saturday?
+        date += 1.day if date.sunday?
       end
-      date
+
+      date.to_datetime
     end
   end
 end
