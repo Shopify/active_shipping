@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.license     = 'MIT'
 
   s.add_dependency('quantified',    '~> 1.0.1')
-  s.add_dependency('activesupport', '>= 3.2', '< 5.0.0')
+  s.add_dependency('activesupport', '>= 3.2', '< 5.1.0')
   s.add_dependency('active_utils',  '~> 3.2.0')
   s.add_dependency('nokogiri',      '>= 1.6')
 
