@@ -242,17 +242,18 @@ class UPSTest < Minitest::Test
   def test_delivery_range_takes_weekend_into_consideration
     mock_response = xml_fixture('ups/test_real_home_as_residential_destination_response')
     @carrier.expects(:commit).returns(mock_response)
-    Timecop.freeze(DateTime.new(2012, 6, 15))
-    response = @carrier.find_rates( location_fixtures[:beverly_hills],
-                                    location_fixtures[:real_home_as_residential],
-                                    package_fixtures.values_at(:chocolate_stuff))
 
-    date_test = [nil, 3, 2, 1, 1, 1].map do |days|
-      DateTime.now.utc + days + 2 if days
+    Timecop.freeze(DateTime.new(2012, 6, 15)) do
+      response = @carrier.find_rates( location_fixtures[:beverly_hills],
+                                      location_fixtures[:real_home_as_residential],
+                                      package_fixtures.values_at(:chocolate_stuff))
+
+      date_test = [nil, 3, 2, 1, 1, 1].map do |days|
+        DateTime.now.utc + (days + 2).days if days
+      end
+
+      assert_equal date_test, response.rates.map(&:delivery_date)
     end
-    Timecop.return
-
-    assert_equal date_test, response.rates.map(&:delivery_date)
   end
 
   def test_maximum_weight
