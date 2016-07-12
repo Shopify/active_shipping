@@ -53,6 +53,10 @@ class CanadaPostPwsRatingTest < Minitest::Test
     assert_equal 'en-CA', @cp.language
   end
 
+  def test_name_accessor
+    assert_equal 'Canada Post PWS', @cp.name
+  end
+
   def test_find_rates
     response = xml_fixture('canadapost_pws/rates_info')
     expected_headers = {
