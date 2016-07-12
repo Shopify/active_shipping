@@ -1,5 +1,7 @@
 module ActiveShipping
   class CanadaPostPWS < Carrier
+    
+    cattr_reader :name
     @@name = "Canada Post PWS"
 
     SHIPPING_SERVICES = {
