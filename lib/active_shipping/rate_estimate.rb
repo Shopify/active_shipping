@@ -66,13 +66,19 @@ module ActiveShipping
   # @!attribute delivery_category
   #   The general classification of the delivery method
   #   @return [String]
+  #
+  # @!attribute shipment_options
+  #   Additional priced options bundled with the given rate estimate with price in cents
+  #   @return [Array<{ code: String, price: Integer }>]
+  #
   class RateEstimate
     attr_accessor :origin, :destination, :package_rates,
                 :carrier, :service_name, :service_code,
                 :shipping_date, :delivery_date, :delivery_range,
                 :currency, :negotiated_rate, :insurance_price,
                 :estimate_reference, :expires_at, :pickup_time,
-                :compare_price, :phone_required, :delivery_category
+                :compare_price, :phone_required, :delivery_category,
+                :shipment_options
 
     def initialize(origin, destination, carrier, service_name, options = {})
       self.origin, self.destination, self.carrier, self.service_name = origin, destination, carrier, service_name
@@ -95,6 +101,7 @@ module ActiveShipping
       self.delivery_date = @delivery_range.last
       self.insurance_price = options[:insurance_price]
       self.delivery_category = options[:delivery_category]
+      self.shipment_options = options[:shipment_options]
     end
 
     # The total price of the shipments in cents.
