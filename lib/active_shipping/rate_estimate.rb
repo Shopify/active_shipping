@@ -101,7 +101,7 @@ module ActiveShipping
       self.delivery_date = @delivery_range.last
       self.insurance_price = options[:insurance_price]
       self.delivery_category = options[:delivery_category]
-      self.shipment_options = options[:shipment_options]
+      self.shipment_options = options[:shipment_options] || []
     end
 
     # The total price of the shipments in cents.
