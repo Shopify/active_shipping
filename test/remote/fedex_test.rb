@@ -379,4 +379,20 @@ class RemoteFedExTest < Minitest::Test
     signature_option = response.params["ProcessShipmentReply"]["CompletedShipmentDetail"]["CompletedPackageDetails"]["SignatureOption"]
     assert_equal FedEx::SIGNATURE_OPTION_CODES[:adult], signature_option
   end
+
+  def test_obtain_shipping_label_with_label_format_option
+    response = @carrier.create_shipment(
+      location_fixtures[:beverly_hills_with_name],
+      location_fixtures[:new_york_with_name],
+      package_fixtures[:wii],
+        :test => true,
+        :label_format => 'PDF'
+    )
+
+    assert response.success?
+    refute_empty response.labels
+    data = response.labels.first.img_data 
+    refute_empty data
+    assert data[0...4] == '%PDF'
+  end
 end
