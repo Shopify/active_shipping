@@ -601,6 +601,17 @@ class FedExTest < Minitest::Test
     assert_equal result.search('RequestedPackageLineItems/CustomerReferences/Value').text, "FOO-123"
   end
 
+  def test_create_shipment_label_format_option
+    packages = package_fixtures.values_at(:chocolate_stuff)
+    result = Nokogiri::XML(@carrier.send(:build_shipment_request,
+                                         location_fixtures[:beverly_hills],
+                                         location_fixtures[:annapolis],
+                                         packages,
+                                         :label_format => 'ZPLII',
+                                         :test => true))
+    assert_equal result.search('RequestedShipment/LabelSpecification/ImageType').text, "ZPLII"
+  end
+
   def test_create_shipment_default_label_stock_type
     packages = package_fixtures.values_at(:wii)
 
