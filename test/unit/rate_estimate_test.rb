@@ -26,6 +26,11 @@ class RateEstimateTest < Minitest::Test
     assert_equal false, est.phone_required
   end
 
+  def test_accepts_description_field
+    rate_estimate = RateEstimate.new(@origin, @destination, @carrier, @service_name, @options.merge(description: "It's free!"))
+    assert_equal "It's free!", rate_estimate.description
+  end
+
   def test_date_for_invalid_string_in_ruby_19
     assert_nil @rate_estimate.send(:date_for, "Up to 2 weeks") if RUBY_VERSION.include?('1.9')
   end
