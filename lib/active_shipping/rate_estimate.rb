@@ -27,6 +27,10 @@ module ActiveShipping
   #   The code of the shipping service
   #   @return [String]
   #
+  # @!attribute description
+  #   Public description of the shipping service (e.g. "2 days delivery")
+  #   @return [String]
+  #
   # @!attribute shipping_date
   #   The date on which the shipment will be expected. Normally, this means that the
   #   delivery date range can only pe prmoised if the shipment is handed over on or
@@ -73,7 +77,7 @@ module ActiveShipping
   #
   class RateEstimate
     attr_accessor :origin, :destination, :package_rates,
-                :carrier, :service_name, :service_code,
+                :carrier, :service_name, :service_code, :description,
                 :shipping_date, :delivery_date, :delivery_range,
                 :currency, :negotiated_rate, :insurance_price,
                 :estimate_reference, :expires_at, :pickup_time,
@@ -83,6 +87,7 @@ module ActiveShipping
     def initialize(origin, destination, carrier, service_name, options = {})
       self.origin, self.destination, self.carrier, self.service_name = origin, destination, carrier, service_name
       self.service_code = options[:service_code]
+      self.description = options[:description]
       self.estimate_reference = options[:estimate_reference]
       self.pickup_time = options[:pickup_time]
       self.expires_at = options[:expires_at]
