@@ -11,7 +11,7 @@ module ActiveShipping
   #   @return [String]
   #
   # @!attribute tracking_number
-  #   The tracking number of the shipments, witch can be shared with the customer and
+  #   The tracking number of the shipments, which can be shared with the customer and
   #   be used for {ActiveShipping::Carrier#find_tracking_info}.
   #   @return [String]
   class ShippingResponse < Response
