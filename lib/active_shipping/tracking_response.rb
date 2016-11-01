@@ -82,7 +82,7 @@ module ActiveShipping
       @shipment_events.last
     end
 
-    # Returns `true` if something the shipment has arrived at the destination.
+    # Returns `true` if the shipment has arrived at the destination.
     # @return [Boolean]
     def is_delivered?
       @status == :delivered
