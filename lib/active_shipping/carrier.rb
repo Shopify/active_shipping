@@ -155,7 +155,7 @@ module ActiveShipping
       @last_request = r
     end
 
-    # Calculates a timestamp that corresponds a given number if business days in the future
+    # Calculates a timestamp that corresponds a given number of business days in the future
     #
     # @param days [Integer] The number of business days from now.
     # @return [DateTime] A timestamp, the provided number of business days in the future.
