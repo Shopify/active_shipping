@@ -527,7 +527,7 @@ class UPSTest < Minitest::Test
     )
 
     response.delivery_estimates.each do |delivery_estimate|
-      assert delivery_estimate.service_name, UPS::DEFAULT_SERVICES[delivery_estimate.service_code]
+      assert_equal delivery_estimate.service_code, UPS::DEFAULT_SERVICE_NAME_TO_CODE[delivery_estimate.service_name]
     end
   end
 
