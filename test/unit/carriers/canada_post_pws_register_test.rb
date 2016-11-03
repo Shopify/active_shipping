@@ -37,9 +37,11 @@ class CanadaPostPwsRegisterTest < Minitest::Test
     endpoint = @cp.endpoint + "ot/token"
     response = xml_fixture('canadapost_pws/register_token_response')
     @cp.expects(:ssl_post).with(endpoint, anything, anything).returns(response)
+    url = 'http://localhost:3000/cp-register/'
+    customer_id = "12345"
 
     response = @cp.register_merchant
-    assert "http://www.canadapost.ca/cpotools/apps/drc/merchant?return-url=#{CGI.escape('http://localhost:3000/cp-register/')}&token-id=#{response.token_id}&platform-id=111111111", response.redirect_url('http://localhost:3000/cp-register/', '111111111')
+    assert_equal "http://www.canadapost.ca/cpotools/apps/drc/merchant?return-url=#{customer_id}&token-id=#{response.token_id}&platform-id=#{url}", response.redirect_url(url, customer_id)
   end
 
   def test_retrieve_merchant_details
