@@ -39,7 +39,7 @@ class FedExTest < Minitest::Test
   def test_turn_around_time_default
     mock_response = xml_fixture('fedex/ottawa_to_beverly_hills_rate_response').gsub('<v6:DeliveryTimestamp>2011-07-29</v6:DeliveryTimestamp>', '')
 
-    today = DateTime.civil(2013, 3, 11, 0, 0, 0, "-4") #Monday
+    today = Date.parse("Mon 11 Mar 2013")
 
     Timecop.freeze(today) do
       delivery_date = Date.today + 7.days # FIVE_DAYS in fixture response, plus weekend
@@ -278,7 +278,7 @@ class FedExTest < Minitest::Test
 
     @carrier.expects(:commit).returns(mock_response)
 
-    today = DateTime.civil(2015, 06, 04, 0, 0, 0, "-4") #Thursday
+    today = Date.parse("Thursday 04 Jun 2015")
 
     Timecop.freeze(today) do
       rate_estimates = @carrier.find_rates( location_fixtures[:ottawa],
