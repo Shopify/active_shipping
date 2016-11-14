@@ -1,6 +1,6 @@
 # ActiveShipping [![Build status](https://travis-ci.org/Shopify/active_shipping.svg?branch=master)](https://travis-ci.org/Shopify/active_shipping)
 
-This library interfaces with the web services of various shipping carriers. The goal is to abstract the features that are most frequently used into a pleasant and consistent Ruby API.
+This library interfaces with the web services of various shipping carriers. The goal is to abstract the features that are most frequently used into a pleasant and consistent Ruby API:
 
 - Finding shipping rates
 - Registering shipments
@@ -116,15 +116,15 @@ After installing dependencies with `bundle install`, you can run the unit tests 
 
 ## Development
 
-Yes, please! Take a look at the tests and the implementation of the Carrier class to see how the basics work. At some point soon there will be a carrier template generator along the lines of the gateway generator included in Active Merchant, but carrier.rb outlines most of what's necessary. The other main classes that would be good to familiarize yourself with are Location, Package, and Response.
+Yes, please! Take a look at the tests and the implementation of the Carrier class to see how the basics work. At some point soon there will be a carrier template generator along the lines of the gateway generator included in Active Merchant, but the [Carrier class](https://github.com/Shopify/active_shipping/blob/master/lib/active_shipping/carrier.rb) outlines most of what's necessary. The other main classes that would be good to familiarize yourself with are [Location](https://github.com/Shopify/active_shipping/blob/master/lib/active_shipping/location.rb), [Package](https://github.com/Shopify/active_shipping/blob/master/lib/active_shipping/package.rb), and [Response](https://github.com/Shopify/active_shipping/blob/master/lib/active_shipping/response.rb).
 
-For the features you add, you should have both unit tests and remote tests. It's probably best to start with the remote tests, and then log those requests and responses and use them as the mocks for the unit tests. You can see how this works with the USPS tests right now:
+For the features that you add, you should have both unit tests and remote tests. It's probably best to start with the remote tests, and then log those requests and responses and use them as the mocks for the unit tests. You can see how this works with the USPS tests right now:
 
-https://github.com/Shopify/active_shipping/blob/master/test/remote/usps_test.rb
-https://github.com/Shopify/active_shipping/blob/master/test/unit/carriers/usps_test.rb
-https://github.com/Shopify/active_shipping/tree/master/test/fixtures/xml/usps
+[https://github.com/Shopify/active_shipping/blob/master/test/remote/usps_test.rb](https://github.com/Shopify/active_shipping/blob/master/test/remote/usps_test.rb)
+[https://github.com/Shopify/active_shipping/blob/master/test/unit/carriers/usps_test.rb](https://github.com/Shopify/active_shipping/blob/master/test/unit/carriers/usps_test.rb)
+[https://github.com/Shopify/active_shipping/tree/master/test/fixtures/xml/usps](https://github.com/Shopify/active_shipping/tree/master/test/fixtures/xml/usps)
 
-To log requests and responses, just set the `logger` on your carrier class to some kind of `Logger` object:
+To log requests and responses, just set the `logger` on your Carrier class to some kind of `Logger` object:
 
 ```ruby
 ActiveShipping::USPS.logger = Logger.new($stdout)
@@ -132,11 +132,11 @@ ActiveShipping::USPS.logger = Logger.new($stdout)
 
 (This logging functionality is provided by the [`PostsData` module](https://github.com/Shopify/active_utils/blob/master/lib/active_utils/posts_data.rb) in the `active_utils` dependency.)
 
-To debug API requests and your code you can run `rake console` to start a Pry session with `ActiveShipping` included
+To debug API requests and your code, you can run `rake console` to start a Pry session with `ActiveShipping` included
 and instances of the various carriers set up with your test credentials.
-Look at the file `test/console.rb` to see the other goodies it provides.
+Look at the file [`test/console.rb`](https://github.com/Shopify/active_shipping/blob/master/test/console.rb) to see the other goodies it provides.
 
-After you've pushed your well-tested changes to your github fork, make a pull request and we'll take it from there! For more information, see CONTRIBUTING.md.
+After you've pushed your well-tested changes to your github fork, make a pull request, and we'll take it from there! For more information, see [CONTRIBUTING.md](https://github.com/Shopify/active_shipping/blob/master/CONTRIBUTING.md).
 
 ## Legal Mumbo Jumbo
 
