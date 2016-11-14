@@ -1001,7 +1001,8 @@ module ActiveShipping
     end
 
     def commit(action, request, test = false)
-      ssl_post("#{test ? TEST_URL : LIVE_URL}/#{RESOURCES[action]}", request)
+      response = ssl_post("#{test ? TEST_URL : LIVE_URL}/#{RESOURCES[action]}", request)
+      response.encode('utf-8', 'iso-8859-1')
     end
 
     def within_same_area?(origin, location)
