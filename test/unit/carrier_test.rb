@@ -58,8 +58,8 @@ class CarrierTest < Minitest::Test
   end
 
   def test_timestamp_from_business_day_returns_two_days_in_the_future
-    current = DateTime.new(2016, 7, 19) # Tuesday
-    expected = DateTime.new(2016, 7, 21)
+    current = DateTime.parse("Tue 19 Jul 2016")
+    expected = DateTime.parse("Thu 21 Jul 2016")
 
     Timecop.freeze(current) do
       assert_equal expected, @carrier.send(:timestamp_from_business_day, 2)
@@ -67,8 +67,8 @@ class CarrierTest < Minitest::Test
   end
 
   def test_timestamp_from_business_day_returns_two_days_in_the_future_over_a_weekend
-    current = DateTime.new(2016, 7, 22) # Friday
-    expected = DateTime.new(2016, 7, 26)
+    current = DateTime.parse("Fri 22 Jul 2016")
+    expected = DateTime.parse("Tue 26 Jul 2016")
 
     Timecop.freeze(current) do
       assert_equal expected, @carrier.send(:timestamp_from_business_day, 2)
@@ -76,8 +76,8 @@ class CarrierTest < Minitest::Test
   end
 
   def test_timestamp_from_business_day_returns_fifteen_days_in_the_future
-    current = DateTime.new(2016, 7, 6) # Wednesday
-    expected = DateTime.new(2016, 7, 27) # includes 3 weekends
+    current = DateTime.parse("Wed 06 Jul 2016")
+    expected = DateTime.parse("Wed 27 Jul 2016") # includes 3 weekends
 
     Timecop.freeze(current) do
       assert_equal expected, @carrier.send(:timestamp_from_business_day, 15)
@@ -85,8 +85,8 @@ class CarrierTest < Minitest::Test
   end
 
   def test_timestamp_from_business_day_handles_saturday
-    current = DateTime.new(2016, 7, 9) # Saturday
-    expected = DateTime.new(2016, 7, 11)
+    current = DateTime.parse("Sat 09 Jul 2016")
+    expected = DateTime.parse("Mon 11 Jul 2016")
 
     Timecop.freeze(current) do
       assert_equal expected, @carrier.send(:timestamp_from_business_day, 1)
@@ -94,8 +94,8 @@ class CarrierTest < Minitest::Test
   end
 
   def test_timestamp_from_business_day_handles_sunday
-    current = DateTime.new(2016, 7, 10) # Sunday
-    expected = DateTime.new(2016, 7, 11)
+    current = DateTime.parse("Sun 10 Jul 2016")
+    expected = DateTime.parse("Mon 11 Jul 2016")
 
     Timecop.freeze(current) do
       assert_equal expected, @carrier.send(:timestamp_from_business_day, 1)
@@ -103,7 +103,7 @@ class CarrierTest < Minitest::Test
   end
 
   def test_timestamp_from_business_day_returns_datetime
-    Timecop.freeze(DateTime.civil(2016, 7, 19)) do
+    Timecop.freeze(DateTime.parse("Tue 19 Jul 2016")) do
       assert_equal DateTime, @carrier.send(:timestamp_from_business_day, 1).class
     end
   end

@@ -7,19 +7,19 @@ class TrackingResponseTest < Minitest::Test
       status: 'DELIVERED',
       status_code: 'I0',
       status_description: 'DELIVERED',
-      actual_delivery_date: DateTime.new(2016, 5, 14, 13, 20),
+      actual_delivery_date: DateTime.parse("Sat 14 May 2016 13:20:00"),
       tracking_number: 'TRACKINGNUMBER1234ABC',
       shipment_events: [
         ShipmentEvent.new(
           'DELIVERED',
-          DateTime.new(2016, 5, 14, 13, 20),
+          DateTime.parse("Sat 14 May 2016 13:20:00"),
           Location.new(city: 'LOS ANGELES', state: 'CA', postal_code: '90210', country: 'US'),
           'DELIVERED',
           'I0'
         ),
         ShipmentEvent.new(
           'ARRIVED AT UNIT',
-          DateTime.new(2016, 5, 12, 5, 45),
+          DateTime.parse("Thu 12 May 2016 05:45:00"),
           Location.new(city: 'SAN JOSE', state: 'CA', postal_code: '90001', country: 'US'),
           'ARRIVED AT UNIT',
           '07'

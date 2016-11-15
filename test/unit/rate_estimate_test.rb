@@ -6,7 +6,7 @@ class RateEstimateTest < Minitest::Test
     @destination = {city: "Beverly Hills", state: "CA", country: "United States", postal_code: "90210"}
     @line_items  = [Package.new(500, [2, 3, 4], description: "a box full of stuff", value: 2500)]
     @carrier     = CanadaPost.new(login: 'test')
-    @options     = {currency: 'USD', delivery_range: [DateTime.new(2016, 7, 1), DateTime.new(2016, 7, 3)]}
+    @options     = {currency: 'USD', delivery_range: [DateTime.parse("Fri 01 Jul 2016"), DateTime.parse("Sun 03 Jul 2016")]}
 
     @rate_estimate = RateEstimate.new(@origin, @destination, @carrier, @service_name, @options)
   end
@@ -64,7 +64,7 @@ class RateEstimateTest < Minitest::Test
   end
 
   def test_delivery_date_pulls_from_delivery_range
-    assert_equal [DateTime.new(2016, 7, 1), DateTime.new(2016, 7, 3)], @rate_estimate.delivery_range
-    assert_equal DateTime.new(2016, 7, 3), @rate_estimate.delivery_date
+    assert_equal [DateTime.parse("Fri 01 Jul 2016"), DateTime.parse("Sun 03 Jul 2016")], @rate_estimate.delivery_range
+    assert_equal DateTime.parse("Sun 03 Jul 2016"), @rate_estimate.delivery_date
   end
 end
