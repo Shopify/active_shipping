@@ -15,24 +15,24 @@ class FedExTest < Minitest::Test
   end
 
   def test_business_days
-    today = DateTime.civil(2013, 3, 12, 0, 0, 0, "-4") #Tuesday
+    today = DateTime.parse("Tue 12 Mar 2013 00:00:00-0400")
 
     Timecop.freeze(today) do
-      assert_equal DateTime.civil(2013, 3, 13, 0, 0, 0, "-4"), @carrier.send(:business_days_from, today, 1)
-      assert_equal DateTime.civil(2013, 3, 15, 0, 0, 0, "-4"), @carrier.send(:business_days_from, today, 3)
-      assert_equal DateTime.civil(2013, 3, 18, 0, 0, 0, "-4"), @carrier.send(:business_days_from, today, 4)
-      assert_equal DateTime.civil(2013, 3, 19, 0, 0, 0, "-4"), @carrier.send(:business_days_from, today, 5)
+      assert_equal DateTime.parse("Wed 13 Mar 2013 00:00:00-0400"), @carrier.send(:business_days_from, today, 1)
+      assert_equal DateTime.parse("Fri 15 Mar 2013 00:00:00-0400"), @carrier.send(:business_days_from, today, 3)
+      assert_equal DateTime.parse("Mon 18 Mar 2013 00:00:00-0400"), @carrier.send(:business_days_from, today, 4)
+      assert_equal DateTime.parse("Tue 19 Mar 2013 00:00:00-0400"), @carrier.send(:business_days_from, today, 5)
     end
   end
 
   def test_home_delivery_business_days
-    today = DateTime.civil(2013, 3, 12, 0, 0, 0, "-4") #Tuesday
+    today = DateTime.parse("Tue 12 Mar 2013 00:00:00-0400")
 
     Timecop.freeze(today) do
-      assert_equal DateTime.civil(2013, 3, 13, 0, 0, 0, "-4"), @carrier.send(:business_days_from, today, 1, true)
-      assert_equal DateTime.civil(2013, 3, 15, 0, 0, 0, "-4"), @carrier.send(:business_days_from, today, 3, true)
-      assert_equal DateTime.civil(2013, 3, 16, 0, 0, 0, "-4"), @carrier.send(:business_days_from, today, 4, true)
-      assert_equal DateTime.civil(2013, 3, 19, 0, 0, 0, "-4"), @carrier.send(:business_days_from, today, 5, true)
+      assert_equal DateTime.parse("Wed 13 Mar 2013 00:00:00-0400"), @carrier.send(:business_days_from, today, 1, true)
+      assert_equal DateTime.parse("Fri 15 Mar 2013 00:00:00-0400"), @carrier.send(:business_days_from, today, 3, true)
+      assert_equal DateTime.parse("Sat 16 Mar 2013 00:00:00-0400"), @carrier.send(:business_days_from, today, 4, true)
+      assert_equal DateTime.parse("Tue 19 Mar 2013 00:00:00-0400"), @carrier.send(:business_days_from, today, 5, true)
     end
   end
 
@@ -260,7 +260,7 @@ class FedExTest < Minitest::Test
 
     @carrier.expects(:commit).returns(mock_response)
 
-    today = DateTime.civil(2013, 3, 15, 0, 0, 0, "-4")
+    today = Date.parse("Fri 15 Mar 2013")
 
     Timecop.freeze(today) do
       rate_estimates = @carrier.find_rates( location_fixtures[:ottawa],
@@ -268,7 +268,7 @@ class FedExTest < Minitest::Test
                                             package_fixtures.values_at(:book, :wii), :test => true)
 
       # the above fixture will specify a transit time of 5 days, with 2 weekend days accounted for
-      delivery_date = Date.today + 7
+      delivery_date = Date.today + 5 + 2
       assert_equal delivery_date, rate_estimates.rates[0].delivery_date
     end
   end
@@ -298,7 +298,7 @@ class FedExTest < Minitest::Test
 
     @carrier.expects(:commit).returns(mock_response)
 
-    today = DateTime.civil(2015, 06, 03, 0, 0, 0, "-4") #Wednesday
+    today = Date.parse("Wed 03 Jun 2015") #Wednesday
 
     Timecop.freeze(today) do
       rate_estimates = @carrier.find_rates( location_fixtures[:ottawa],

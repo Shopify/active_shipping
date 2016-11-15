@@ -4,7 +4,7 @@ class ShipmentEventTest < Minitest::Test
   def test_equality
     options1 = [
       'ARRIVED AT UNIT',
-      DateTime.new(2016, 5, 12, 5, 45),
+      DateTime.parse('Thu 12 May 2016 05:45:00'),
       Location.new(city: 'SAN JOSE', state: 'CA', postal_code: '90001', country: 'US'),
       'ARRIVED AT UNIT',
       '07'
