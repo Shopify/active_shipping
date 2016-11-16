@@ -23,7 +23,7 @@ class ShipwireTest < Minitest::Test
   end
 
   def test_successfully_get_international_rates
-    date = DateTime.new(2011, 8, 1)
+    date = DateTime.parse("Mon 01 Aug 2011")
     @carrier.expects(:ssl_post).returns(xml_fixture('shipwire/international_rates_response'))
 
     Timecop.freeze(date) do
@@ -49,7 +49,7 @@ class ShipwireTest < Minitest::Test
   end
 
   def test_successfully_get_domestic_rates
-    date = DateTime.new(2011, 8, 1)
+    date = DateTime.parse("Mon 01 Aug 2011")
     @carrier.expects(:ssl_post).returns(xml_fixture('shipwire/rates_response'))
 
     Timecop.freeze(date) do
