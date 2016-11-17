@@ -179,6 +179,13 @@ class UPSTest < Minitest::Test
     assert_equal "Failure: Package exceeds the maximum length constraint of 108 inches. Length is the longest side of a package.", e.message
   end
 
+  def test_response_parsing_an_undecoded_character
+    unencoded_response = @tracking_response.gsub('NAPERVILLE', "N\xc4PERVILLE")
+    @carrier.stubs(:ssl_post).returns(unencoded_response)
+    response = @carrier.find_tracking_info('1Z5FX0076803466397')
+    assert_equal 'NÄPERVILLE', response.shipment_events.first.location.city
+  end
+
   def test_response_parsing_an_unknown_error
     mock_response = '<RatingServiceSelectionResponse><Response><ResponseStatusCode>0</ResponseStatusCode></Response></RatingServiceSelectionResponse>'
     @carrier.expects(:commit).returns(mock_response)
