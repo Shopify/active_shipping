@@ -1,5 +1,9 @@
 # ActiveShipping CHANGELOG
 
+### v1.8.4
+- Add price details to rate estimates
+- Fix encoding for UPS responses
+
 ### v1.8.3
 - Add description field to rate estimates
 
