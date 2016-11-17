@@ -63,6 +63,28 @@ class RateEstimateTest < Minitest::Test
     assert_equal "local_delivery", est.delivery_category
   end
 
+  def test_charge_items_is_set
+    charge_items = [
+      {
+        group: "base_charge",
+        code: 'label',
+        name: "USPS Priority Mail label",
+        description: "USPS Priority Mail label to New York, NY, US",
+        amount: 14.64
+      },
+      {
+        group: "included_option",
+        code: 'tracking',
+        name: "Tracking",
+        description: "Free tracking",
+        amount: 0
+      }
+    ]
+    est = RateEstimate.new(@origin, @destination, @carrier, @service_name, @options.merge(charge_items: charge_items))
+
+    assert_equal charge_items, est.charge_items
+  end
+
   def test_delivery_date_pulls_from_delivery_range
     assert_equal [DateTime.parse("Fri 01 Jul 2016"), DateTime.parse("Sun 03 Jul 2016")], @rate_estimate.delivery_range
     assert_equal DateTime.parse("Sun 03 Jul 2016"), @rate_estimate.delivery_date

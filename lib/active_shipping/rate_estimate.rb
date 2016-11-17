@@ -75,6 +75,10 @@ module ActiveShipping
   #   Additional priced options bundled with the given rate estimate with price in cents
   #   @return [Array<{ code: String, price: Integer }>]
   #
+  # @!attribute charge_items
+  #   Breakdown of a shipping rate's price with amounts in cents.
+  #   @return [Array<{ group: String, code: String, name: String, description: String, amount: Integer }>]
+  #
   class RateEstimate
     attr_accessor :origin, :destination, :package_rates,
                 :carrier, :service_name, :service_code, :description,
@@ -82,7 +86,7 @@ module ActiveShipping
                 :currency, :negotiated_rate, :insurance_price,
                 :estimate_reference, :expires_at, :pickup_time,
                 :compare_price, :phone_required, :delivery_category,
-                :shipment_options
+                :shipment_options, :charge_items
 
     def initialize(origin, destination, carrier, service_name, options = {})
       self.origin, self.destination, self.carrier, self.service_name = origin, destination, carrier, service_name
@@ -107,6 +111,7 @@ module ActiveShipping
       self.insurance_price = options[:insurance_price]
       self.delivery_category = options[:delivery_category]
       self.shipment_options = options[:shipment_options] || []
+      self.charge_items = options[:charge_items] || []
     end
 
     # The total price of the shipments in cents.
