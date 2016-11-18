@@ -848,8 +848,8 @@ module ActiveShipping
         activities = first_package.css('> Activity')
         unless activities.empty?
           shipment_events = activities.map do |activity|
-            description = activity.at('Status/StatusType/Description').text
-            type_code = activity.at('Status/StatusType/Code').text
+            description = activity.at('Status/StatusType/Description').try(:text)
+            type_code = activity.at('Status/StatusType/Code').try(:text)
             zoneless_time = parse_ups_datetime(:time => activity.at('Time'), :date => activity.at('Date'))
             location = location_from_address_node(activity.at('ActivityLocation/Address'))
             ShipmentEvent.new(description, zoneless_time, location, description, type_code)
