@@ -1,5 +1,8 @@
 # ActiveShipping CHANGELOG
 
+### v1.8.5
+- Fix UPS TrackResponse parsing for missing elements
+
 ### v1.8.4
 - Add price details to rate estimates
 - Fix encoding for UPS responses
