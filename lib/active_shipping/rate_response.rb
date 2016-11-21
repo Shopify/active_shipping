@@ -2,9 +2,9 @@ module ActiveShipping
 
   # The `RateResponse` object is returned by the {ActiveShipping::Carrier#find_rates}
   # call. The most important method is {#rates}, which will return a list of possible
-  # shipping options with ane stiated price.
+  # shipping options with an estimated price.
   #
-  # @note Some carriers provide more information that others, so not all attributes
+  # @note Some carriers provide more information than others, so not all attributes
   #   will be set, depending on what carrier you are using.
   #
   # @!attribute rates
