@@ -166,6 +166,13 @@ class UPSTest < Minitest::Test
     assert_equal Time.parse('2015-01-29 00:00:00 UTC'), response.scheduled_delivery_date
   end
 
+  def test_find_tracking_info_should_handle_no_status_node
+    @carrier.expects(:commit).returns(xml_fixture('ups/no_status_node_success'))
+    response = @carrier.find_tracking_info('1Z5FX0076803466397')
+    assert_equal 'Success', response.params.fetch("Response").fetch("ResponseStatusDescription")
+    assert_empty response.shipment_events
+  end
+
   def test_response_parsing_an_oversize_package
     mock_response = xml_fixture('ups/package_exceeds_maximum_length')
     @carrier.expects(:commit).returns(mock_response)

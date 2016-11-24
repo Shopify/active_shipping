@@ -816,16 +816,18 @@ module ActiveShipping
         # Build status hash
         status_nodes = first_package.css('Activity > Status > StatusType')
 
-        # Prefer a delivery node
-        status_node = status_nodes.detect { |x| x.at('Code').text == 'D' }
-        status_node ||= status_nodes.first
+        if status_nodes.present?
+          # Prefer a delivery node
+          status_node = status_nodes.detect { |x| x.at('Code').text == 'D' }
+          status_node ||= status_nodes.first
 
-        status_code = status_node.at('Code').text
-        status_description = status_node.at('Description').text
-        status = TRACKING_STATUS_CODES[status_code]
+          status_code = status_node.at('Code').try(:text)
+          status_description = status_node.at('Description').try(:text)
+          status = TRACKING_STATUS_CODES[status_code]
 
-        if status_description =~ /out.*delivery/i
-          status = :out_for_delivery
+          if status_description =~ /out.*delivery/i
+            status = :out_for_delivery
+          end
         end
 
         origin, destination = %w(Shipper ShipTo).map do |location|

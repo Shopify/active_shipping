@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<TrackResponse>
+  <Response>
+    <ResponseStatusCode>1</ResponseStatusCode>
+    <ResponseStatusDescription>Success</ResponseStatusDescription>
+  </Response>
+  <Shipment>
+    <Shipper/>
+    <ShipmentWeight>
+      <UnitOfMeasurement>
+        <Code>LBS</Code>
+      </UnitOfMeasurement>
+      <Weight>0.00</Weight>
+    </ShipmentWeight>
+    <Service>
+      <Code>YW</Code>
+      <Description>UPS SUREPOST</Description>
+    </Service>
+    <ShipmentIdentificationNumber>1Z5FX0076803466397</ShipmentIdentificationNumber>
+    <DeliveryDateUnavailable>
+      <Type>Scheduled Delivery</Type>
+      <Description>Scheduled Delivery Date is not currently available, please try back later</Description>
+    </DeliveryDateUnavailable>
+    <Package>
+      <TrackingNumber>1Z5FX0076803466397</TrackingNumber>
+      <PackageWeight>
+        <UnitOfMeasurement>
+          <Code>LBS</Code>
+        </UnitOfMeasurement>
+        <Weight>0.00</Weight>
+      </PackageWeight>
+    </Package>
+  </Shipment>
+</TrackResponse>
