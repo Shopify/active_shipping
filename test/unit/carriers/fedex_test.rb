@@ -539,25 +539,27 @@ class FedExTest < Minitest::Test
   def test_tracking_info_with_empty_status_detail
     mock_response = xml_fixture('fedex/tracking_response_empty_status_detail')
     @carrier.expects(:commit).returns(mock_response)
+    response = @carrier.find_tracking_info('123456789012')
 
-    error = assert_raises(ActiveShipping::Error) do
-      @carrier.find_tracking_info('123456789012')
-    end
-
-    msg = 'Tracking response does not contain status information'
-    assert_equal msg, error.message
+    assert_equal '123456789012', response.tracking_number
+    assert_nil response.status_code
+    assert_nil response.status
+    assert_nil response.status_description
+    assert_nil response.delivery_signature
+    assert_empty response.shipment_events
   end
 
-  def test_tracking_info_with_invalid_status_code
-    mock_response = xml_fixture('fedex/tracking_response_invalid_status_code')
+  def test_tracking_info_with_missing_status_code
+    mock_response = xml_fixture('fedex/tracking_response_missing_status_code')
     @carrier.expects(:commit).returns(mock_response)
 
-    error = assert_raises(ActiveShipping::Error) do
-      @carrier.find_tracking_info('123456789012')
-    end
-
-    msg = 'Tracking response does not contain status code'
-    assert_equal msg, error.message
+    response = @carrier.find_tracking_info('123456789012')
+    assert_equal '123456789012', response.tracking_number
+    assert_nil response.status_code
+    assert_nil response.status
+    assert_nil response.status_description
+    assert_nil response.delivery_signature
+    assert_empty response.shipment_events
   end
 
   def test_create_shipment
