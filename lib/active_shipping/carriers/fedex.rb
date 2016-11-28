@@ -137,7 +137,7 @@ module ActiveShipping
     DEFAULT_LABEL_STOCK_TYPE = 'PAPER_7X4.75'
 
     # Available return formats for image data when creating labels
-    LABEL_FORMATS = ['DPL', 'EPL2', 'PDF', 'ZPLII', 'PNG'] 
+    LABEL_FORMATS = ['DPL', 'EPL2', 'PDF', 'ZPLII', 'PNG'].freeze
 
     def self.service_name_for_code(service_code)
       SERVICE_TYPES[service_code] || "FedEx #{service_code.titleize.sub(/Fedex /, '')}"
@@ -619,20 +619,17 @@ module ActiveShipping
 
         tracking_number = tracking_details.at('TrackingNumber').text
         status_detail = tracking_details.at('StatusDetail')
-        if status_detail.nil?
-          raise ActiveShipping::Error, "Tracking response does not contain status information"
-        end
+        if status_detail.blank?
+          status_code, status, status_description, delivery_signature = nil
+        else
+          status_code = status_detail.at('Code').try(:text)
+          status_description = status_detail.at('AncillaryDetails/ReasonDescription').try(:text) || status_detail.at('Description').try(:text)
 
-        status_code = status_detail.at('Code').try(:text)
-        if status_code.nil?
-          raise ActiveShipping::Error, "Tracking response does not contain status code"
-        end
+          status = TRACKING_STATUS_CODES[status_code]
 
-        status_description = (status_detail.at('AncillaryDetails/ReasonDescription') || status_detail.at('Description')).text
-        status = TRACKING_STATUS_CODES[status_code]
-
-        if status_code == 'DL' && tracking_details.at('AvailableImages').try(:text) == 'SIGNATURE_PROOF_OF_DELIVERY'
-          delivery_signature = tracking_details.at('DeliverySignatureName').text
+          if status_code == 'DL' && tracking_details.at('AvailableImages').try(:text) == 'SIGNATURE_PROOF_OF_DELIVERY'
+            delivery_signature = tracking_details.at('DeliverySignatureName').try(:text)
+          end
         end
 
         if origin_node = tracking_details.at('OriginLocationAddress')
