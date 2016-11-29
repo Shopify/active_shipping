@@ -1,5 +1,10 @@
 # ActiveShipping CHANGELOG
 
+### v1.8.6
+- Fix UPS TrackResponse with no status code
+- Stop FedEx from raising for successful responses with no statuses
+- Raise appropriate exception response for FedEx errors
+
 ### v1.8.5
 - Fix UPS TrackResponse parsing for missing elements
 
