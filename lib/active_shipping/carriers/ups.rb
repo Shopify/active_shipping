@@ -257,6 +257,25 @@ module ActiveShipping
       xml_builder.to_xml
     end
 
+    # Builds an XML node to request UPS shipping rates for the given packages
+    #
+    # @param origin [ActiveShipping::Location] Where the shipment will originate from
+    # @param destination [ActiveShipping::Location] Where the package will go
+    # @param packages [Array<ActiveShipping::Package>] The list of packages that will
+    #   be in the shipment
+    # @options options [Hash] rate-specific options
+    # @return [ActiveShipping::RateResponse] The response from the UPS, which
+    #   includes 0 or more rate estimates for different shipping products
+    #
+    # options:
+    # * service: name of the service
+    # * pickup_type: symbol for PICKUP_CODES
+    # * customer_classification: symbol for CUSTOMER_CLASSIFICATIONS
+    # * shipper: who is sending the package and where it should be returned
+    #     if it is undeliverable.
+    # * imperial: if truthy, measurements will use the metric system
+    # * negotiated_rates: if truthy, negotiated rates will be requested from
+    #     UPS. Only valid if shipper account has negotiated rates.
     def build_rate_request(origin, destination, packages, options = {})
       xml_builder = Nokogiri::XML::Builder.new do |xml|
         xml.RatingServiceSelectionRequest do
