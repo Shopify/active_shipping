@@ -14,13 +14,18 @@ gemfile:
 - Gemfile.activesupport41
 - Gemfile.activesupport42
 - Gemfile.activesupport50
+- Gemfile.activesupport_master
 
 matrix:
   exclude:
     - rvm: "2.0"
       gemfile: Gemfile.activesupport50
+    - rvm: "2.0"
+      gemfile: Gemfile.activesupport_master
     - rvm: "2.1"
       gemfile: Gemfile.activesupport50
+    - rvm: "2.1"
+      gemfile: Gemfile.activesupport_master
 
 env:
   global:
