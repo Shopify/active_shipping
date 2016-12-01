@@ -1,4 +1,5 @@
 source "https://rubygems.org"
-gemspec
+
+gemspec path: '..'
 
 gem 'activesupport', github: 'rails/rails'
