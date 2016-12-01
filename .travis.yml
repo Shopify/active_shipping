@@ -9,23 +9,23 @@ rvm:
 - "2.3.1"
 
 gemfile:
-- Gemfile.activesupport32
-- Gemfile.activesupport40
-- Gemfile.activesupport41
-- Gemfile.activesupport42
-- Gemfile.activesupport50
-- Gemfile.activesupport_master
+- gemfiles/activesupport32.gemfile
+- gemfiles/activesupport40.gemfile
+- gemfiles/activesupport41.gemfile
+- gemfiles/activesupport42.gemfile
+- gemfiles/activesupport50.gemfile
+- gemfiles/activesupport_master.gemfile
 
 matrix:
   exclude:
     - rvm: "2.0"
-      gemfile: Gemfile.activesupport50
+      gemfile: gemfiles/activesupport50.gemfile
     - rvm: "2.0"
-      gemfile: Gemfile.activesupport_master
+      gemfile: gemfiles/activesupport_master.gemfile
     - rvm: "2.1"
-      gemfile: Gemfile.activesupport50
+      gemfile: gemfiles/activesupport50.gemfile
     - rvm: "2.1"
-      gemfile: Gemfile.activesupport_master
+      gemfile: gemfiles/activesupport_master.gemfile
 
 env:
   global:
