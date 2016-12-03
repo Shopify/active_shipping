@@ -118,24 +118,24 @@ class ExternalReturnLabelRequestTest < Minitest::Test
   end
 
   def test_sanitize
-    assert_equal @external_request_label_req.send(:sanitize,'   ').length, 0
-    assert_equal @external_request_label_req.send(:sanitize, 'some string   '), 'some string'
-    assert_equal @external_request_label_req.send(:sanitize, {}), nil
-    assert_equal @external_request_label_req.send(:sanitize, nil), nil
-    assert_equal @external_request_label_req.send(:sanitize, nil), nil
-    assert_equal @external_request_label_req.send(:sanitize, []), nil
-    assert_equal @external_request_label_req.send(:sanitize, (1..100).to_a.join("_")).size, ExternalReturnLabelRequest::CAP_STRING_LEN
+    assert_equal "", @external_request_label_req.send(:sanitize,'   ')
+    assert_equal 'some string', @external_request_label_req.send(:sanitize, 'some string   ')
+    assert_nil @external_request_label_req.send(:sanitize, {})
+    assert_nil @external_request_label_req.send(:sanitize, nil)
+    assert_nil @external_request_label_req.send(:sanitize, nil)
+    assert_nil @external_request_label_req.send(:sanitize, [])
+    assert_equal ExternalReturnLabelRequest::CAP_STRING_LEN, @external_request_label_req.send(:sanitize, (1..100).to_a.join("_")).size
   end
 
   def test_to_bool
-    assert_equal @external_request_label_req.send(:to_bool, 'yes'), true
-    assert_equal @external_request_label_req.send(:to_bool, 'true'), true
-    assert_equal @external_request_label_req.send(:to_bool, true), true
-    assert_equal @external_request_label_req.send(:to_bool, '1'), true
-    assert_equal @external_request_label_req.send(:to_bool, '0'), false
-    assert_equal @external_request_label_req.send(:to_bool, 'false'), false
-    assert_equal @external_request_label_req.send(:to_bool, false), false
-    assert_equal @external_request_label_req.send(:to_bool, nil, false), false
+    assert_equal true, @external_request_label_req.send(:to_bool, 'yes')
+    assert_equal true, @external_request_label_req.send(:to_bool, 'true')
+    assert_equal true, @external_request_label_req.send(:to_bool, true)
+    assert_equal true, @external_request_label_req.send(:to_bool, '1')
+    assert_equal false, @external_request_label_req.send(:to_bool, '0')
+    assert_equal false, @external_request_label_req.send(:to_bool, 'false')
+    assert_equal false, @external_request_label_req.send(:to_bool, false)
+    assert_equal false, @external_request_label_req.send(:to_bool, nil, false)
   end
 
   def test_validate_range
@@ -176,8 +176,8 @@ class ExternalReturnLabelRequestTest < Minitest::Test
     assert_raises(USPSValidationError) do
       @external_request_label_req.send(:validate_email, '    ', __method__)
     end
-    assert_equal @external_request_label_req.send(:validate_email, 'no-reply@example.com', __method__), 'no-reply@example.com'
-    assert_equal @external_request_label_req.send(:validate_email, '  no-reply@example.com  ', __method__), 'no-reply@example.com'
+    assert_equal 'no-reply@example.com', @external_request_label_req.send(:validate_email, 'no-reply@example.com', __method__)
+    assert_equal 'no-reply@example.com', @external_request_label_req.send(:validate_email, '  no-reply@example.com  ', __method__)
   end
 
   def test_tag_required

@@ -1,6 +1,6 @@
 module ActiveShipping
   class CanadaPostPWS < Carrier
-    
+
     cattr_reader :name
     @@name = "Canada Post PWS"
 
@@ -569,13 +569,13 @@ module ActiveShipping
 
     def tracking_url(pin)
       case pin.length
-        when 12, 13, 16
-          endpoint + "vis/track/pin/%s/detail" % pin
-        when 15
-          endpoint + "vis/track/dnc/%s/detail" % pin
-        else
-          raise InvalidPinFormatError
-        end
+      when 12, 13, 16
+        "#{endpoint}vis/track/pin/#{pin}/detail"
+      when 15
+        "#{endpoint}vis/track/dnc/#{pin}/detail"
+      else
+        raise InvalidPinFormatError
+      end
     end
 
     def create_shipment_url(options)
