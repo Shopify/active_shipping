@@ -1,5 +1,3 @@
-require 'active_support/core_ext/object/to_query'
-
 module ActiveShipping
   class NewZealandPost < Carrier
     cattr_reader :name
