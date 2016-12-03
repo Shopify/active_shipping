@@ -1,5 +1,3 @@
-# -*- encoding: utf-8 -*-
-
 module ActiveShipping
   # After getting an API login from USPS (looks like '123YOURNAME456'),
   # run the following test:

@@ -1,5 +1,3 @@
-# -*- encoding utf-8 -*-
-
 module ActiveShipping
   class Correios < Carrier
 
