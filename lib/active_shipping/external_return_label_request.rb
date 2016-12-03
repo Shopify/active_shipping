@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
 module ActiveShipping
-
   class ExternalReturnLabelRequest
-
     CAP_STRING_LEN = 100
 
     USPS_EMAIL_REGEX = /^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/
@@ -416,6 +413,5 @@ module ActiveShipping
         raise USPSValidationError, "'#{v}' is not a valid e-mail in #{meth}"
       end
     end
-
   end
 end
