@@ -6,6 +6,7 @@ Rake::TestTask.new(:test) do |t|
   t.libs << "test"
   t.pattern = 'test/**/*_test.rb'
   t.verbose = true
+  t.warning = false
 end
 
 namespace :test do
@@ -14,6 +15,7 @@ namespace :test do
     t.libs << "test"
     t.pattern = 'test/unit/**/*_test.rb'
     t.verbose = true
+    t.warning = false
   end
 
   desc "Run functional remote tests"
@@ -21,6 +23,7 @@ namespace :test do
     t.libs << "test"
     t.pattern = 'test/remote/*_test.rb'
     t.verbose = true
+    t.warning = false
   end
 end
 

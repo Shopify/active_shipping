@@ -160,13 +160,13 @@ class USPSTest < Minitest::Test
     # USPS API doesn't tell where it's going
     @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
-    assert_equal response.destination, nil
+    assert_nil response.destination
   end
 
   def test_find_tracking_info_tracking_number
     @carrier.expects(:commit).returns(@tracking_response)
     response = @carrier.find_tracking_info('9102901000462189604217', :test => true)
-    assert_equal response.tracking_number, '9102901000462189604217'
+    assert_equal '9102901000462189604217', response.tracking_number
   end
 
   def test_find_tracking_info_should_have_correct_status

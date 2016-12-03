@@ -225,7 +225,7 @@ class RemoteFedExTest < Minitest::Test
     assert_equal "Delivered", response.status_description
 
     assert_equal Time.parse('Fri, 03 Jan 2014'), response.ship_time
-    assert_equal nil, response.scheduled_delivery_date
+    assert_nil response.scheduled_delivery_date
     assert_equal Time.parse('2014-01-09 18:31:00 +0000'), response.actual_delivery_date
 
     origin_address = ActiveShipping::Location.new(
@@ -261,7 +261,7 @@ class RemoteFedExTest < Minitest::Test
     assert_equal 'OC', response.shipment_events.second.type_code
     assert_equal 'AR', response.shipment_events.third.type_code
     assert_nil response.actual_delivery_date
-    assert_equal nil, response.scheduled_delivery_date
+    assert_nil response.scheduled_delivery_date
   end
 
   def test_find_tracking_info_for_in_transit_shipment_2
@@ -275,8 +275,8 @@ class RemoteFedExTest < Minitest::Test
     assert_equal "Arrived at FedEx location", response.status_description
 
     assert_equal Time.parse('Fri, 03 Jan 2014'), response.ship_time
-    assert_equal nil, response.scheduled_delivery_date
-    assert_equal nil, response.actual_delivery_date
+    assert_nil response.scheduled_delivery_date
+    assert_nil response.actual_delivery_date
 
     origin_address = ActiveShipping::Location.new(
       city: 'CAMBRIDGE',
@@ -391,7 +391,7 @@ class RemoteFedExTest < Minitest::Test
 
     assert response.success?
     refute_empty response.labels
-    data = response.labels.first.img_data 
+    data = response.labels.first.img_data
     refute_empty data
     assert data[0...4] == '%PDF'
   end

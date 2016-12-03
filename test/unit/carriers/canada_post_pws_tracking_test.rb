@@ -112,7 +112,7 @@ class CanadaPostPwsTrackingTest < Minitest::Test
 
     assert_equal CPPWSTrackingResponse, response.class
     assert_equal "Expedited Parcels", response.service_name
-    assert_equal nil, response.expected_date
+    assert_nil response.expected_date
     assert_equal "8213295707205355", response.tracking_number
     assert_equal 1, response.shipment_events.size
     assert_equal response.origin.city, "MAPLE"
@@ -130,7 +130,7 @@ class CanadaPostPwsTrackingTest < Minitest::Test
     response = @cp.find_tracking_info('1371134583769923', {})
 
     assert_equal false, response.delivered?
-    assert_equal nil, response.actual_delivery_time
+    assert_nil response.actual_delivery_time
   end
 
   def test_parse_tracking_response_shipment_events
