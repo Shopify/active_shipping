@@ -7,10 +7,8 @@ This library interfaces with the web services of various shipping carriers. The 
 - Tracking shipments
 - Purchasing shipping labels
 
-Active Shipping is currently being used and improved in a production environment for [Shopify][]. Development is being done by the Shopify integrations team (<integrations-team@shopify.com>). Discussion is welcome in the [Active Merchant Google Group][discuss].
+Active Shipping is currently being used and improved in a production environment for [Shopify](http://shopify.com).
 
-[Shopify]:http://www.shopify.com
-[discuss]:http://groups.google.com/group/activemerchant
 
 ## Supported Shipping Carriers
 
@@ -26,11 +24,18 @@ Active Shipping is currently being used and improved in a production environment
 
 ## Installation
 
+Using bundler, add to the `Gemfile`:
+
 ```ruby
-gem install active_shipping
+gem 'active_shipping'
 ```
 
-...or add it to your project's [Gemfile](http://bundler.io/).
+Or stand alone:
+
+```
+$ gem install active_shipping
+```
+
 
 ## Sample Usage
 
@@ -74,6 +79,8 @@ packages = [
  #     ["USPS Global Express Guaranteed", 9400]]
 ```
 
+Dimensions for packages are in `Height x Width x Length` order.
+
 ### Track a FedEx package
 
 ```ruby
@@ -92,40 +99,62 @@ end
 # Delivered at Knoxville, TN on Fri Oct 24 16:45:00 UTC 2008. Signed for by: T.BAKER
 ```
 
-#### FedEx connection notes
+## Carrier specific notes
 
-The :login key passed to ```ActiveShipping::FedEx.new()``` is really the FedEx meter number, not the FedEx login.
+### FedEx connection
 
-When developing with test credentials, be sure to pass ```test: true``` to ```ActiveShipping::FedEx.new()``` .
+The `:login` key passed to `ActiveShipping::FedEx.new()` is really the FedEx meter number, not the FedEx login.
 
-## Running the tests
+When developing with test credentials, be sure to pass `test: true` to `ActiveShipping::FedEx.new()`.
 
-After installing dependencies with `bundle install`, you can run the unit tests with `rake test:unit` and the remote tests with `rake test:remote`. The unit tests mock out requests and responses so that everything runs locally, while the remote tests actually hit the carrier servers. For the remote tests, you'll need valid test credentials for any carriers' tests you want to run. The credentials should go in ~/.active_shipping/credentials.yml, and the format of that file can be seen in the included [credentials.yml](https://github.com/Shopify/active_shipping/blob/master/test/credentials.yml). For some carriers, we have public credentials you can use for testing: see `.travis.yml`.
 
-## Development
+## Tests
 
-Yes, please! Take a look at the tests and the implementation of the Carrier class to see how the basics work. At some point soon there will be a carrier template generator along the lines of the gateway generator included in Active Merchant, but the [Carrier class](https://github.com/Shopify/active_shipping/blob/master/lib/active_shipping/carrier.rb) outlines most of what's necessary. The other main classes that would be good to familiarize yourself with are [Location](https://github.com/Shopify/active_shipping/blob/master/lib/active_shipping/location.rb), [Package](https://github.com/Shopify/active_shipping/blob/master/lib/active_shipping/package.rb), and [Response](https://github.com/Shopify/active_shipping/blob/master/lib/active_shipping/response.rb).
+You can run the unit tests with:
 
-For the features that you add, you should have both unit tests and remote tests. It's probably best to start with the remote tests, and then log those requests and responses and use them as the mocks for the unit tests. You can see how this works with the USPS tests right now:
+```
+bundle exec rake test:unit
+```
 
-[https://github.com/Shopify/active_shipping/blob/master/test/remote/usps_test.rb](https://github.com/Shopify/active_shipping/blob/master/test/remote/usps_test.rb)
-[https://github.com/Shopify/active_shipping/blob/master/test/unit/carriers/usps_test.rb](https://github.com/Shopify/active_shipping/blob/master/test/unit/carriers/usps_test.rb)
-[https://github.com/Shopify/active_shipping/tree/master/test/fixtures/xml/usps](https://github.com/Shopify/active_shipping/tree/master/test/fixtures/xml/usps)
+and the remote tests with:
+
+```
+bundle exec rake test:remote
+```
+
+The unit tests mock out requests and responses so that everything runs locally, while the remote tests actually hit the carrier servers. For the remote tests, you'll need valid test credentials for any carriers' tests you want to run. The credentials should go in [`~/.active_shipping/credentials.yml`](https://github.com/Shopify/active_shipping/blob/master/test/credentials.yml). For some carriers, we have public credentials you can use for testing in `.travis.yml`. Remote tests missing credentials will be skipped.
+
+
+## Contributing
+
+See [CONTRIBUTING.md](https://github.com/Shopify/active_shipping/blob/master/CONTRIBUTING.md).
+
+We love getting pull requests! Anything from new features to documentation clean up.
+
+If you're building a new carrier, a good place to start is in the [`Carrier` base class](https://github.com/Shopify/active_shipping/blob/master/lib/active_shipping/carrier.rb).
+
+It would also be good to familiarize yourself with [`Location`](https://github.com/Shopify/active_shipping/blob/master/lib/active_shipping/location.rb), [`Package`](https://github.com/Shopify/active_shipping/blob/master/lib/active_shipping/package.rb), and [`Response`](https://github.com/Shopify/active_shipping/blob/master/lib/active_shipping/response.rb).
+
+You can use the [`test/console.rb`](https://github.com/Shopify/active_shipping/blob/master/test/console.rb) to do some local testing against real endpoints.
 
 To log requests and responses, just set the `logger` on your Carrier class to some kind of `Logger` object:
 
 ```ruby
-ActiveShipping::USPS.logger = Logger.new($stdout)
+ActiveShipping::USPS.logger = Logger.new(STDOUT)
 ```
 
-(This logging functionality is provided by the [`PostsData` module](https://github.com/Shopify/active_utils/blob/master/lib/active_utils/posts_data.rb) in the `active_utils` dependency.)
+### Anatomy of a pull request
 
-To debug API requests and your code, you can run `rake console` to start a Pry session with `ActiveShipping` included
-and instances of the various carriers set up with your test credentials.
-Look at the file [`test/console.rb`](https://github.com/Shopify/active_shipping/blob/master/test/console.rb) to see the other goodies it provides.
+Any new features or carriers should have passing unit _and_ remote tests. Look at some existing carriers as examples.
 
-After you've pushed your well-tested changes to your github fork, make a pull request, and we'll take it from there! For more information, see [CONTRIBUTING.md](https://github.com/Shopify/active_shipping/blob/master/CONTRIBUTING.md).
+When opening a pull request, include description of the feature, why it exists, and any supporting documentation to explain interaction with carriers.
 
-## Legal Mumbo Jumbo
 
-Unless otherwise noted in specific files, all code in the ActiveShipping project is under the copyright and license described in the included MIT-LICENSE file.
+### How to contribute
+
+1. Fork it ( https://github.com/Shopify/active_shipping/fork )
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create a new Pull Request
+
