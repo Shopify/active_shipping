@@ -373,6 +373,7 @@ class RemoteUPSTest < Minitest::Test
 
   def test_delivery_date_estimates_intl
     today = Date.current
+
     response = @carrier.get_delivery_date_estimates(
       location_fixtures[:new_york_with_name],
       location_fixtures[:ottawa_with_name],
@@ -386,7 +387,7 @@ class RemoteUPSTest < Minitest::Test
     assert response.success?
     refute_empty response.delivery_estimates
     ww_express_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Worldwide Express"}.first
-    assert_equal Date.parse(1.day.from_now.to_s), ww_express_estimate.date
+    assert_equal 1.business_days.after(today), ww_express_estimate.date
   end
 
   def test_void_shipment
