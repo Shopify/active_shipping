@@ -43,7 +43,7 @@ class KunakiTest < Minitest::Test
 
     assert rate = response.rates.first
     assert_equal "USPS Priority Mail", rate.service_name
-    assert_equal nil, rate.service_code
+    assert_nil rate.service_code
     assert_equal "USPS", rate.carrier
     assert_equal 800, rate.total_price
     assert_equal ["UPS 2nd Day Air", "UPS Ground", "UPS Next Day Air Saver", "USPS Priority Mail"], response.rates.collect(&:service_name).sort
