@@ -23,6 +23,14 @@ Active Shipping is currently being used and improved in a production environment
 * [Kunaki](http://www.kunaki.com)
 * [Australia Post](http://auspost.com.au/)
 
+
+## Versions
+
+Development on `master` is for a pre-release of the `2.x` version of this gem. It includes a number of backwards incompatible changes and improvements. Progress can be tracked in [the milestone](https://github.com/Shopify/active_shipping/milestone/1).
+
+We are no longer actively developing version `1.x`. We have released `1.9` and will only backport small fixes to this version, on branch `1-9-stable`, and they should be on `master` first.
+
+
 ## Installation
 
 Using bundler, add to the `Gemfile`:
