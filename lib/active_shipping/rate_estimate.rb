@@ -86,7 +86,7 @@ module ActiveShipping
                 :currency, :negotiated_rate, :insurance_price,
                 :estimate_reference, :expires_at, :pickup_time,
                 :compare_price, :phone_required, :delivery_category,
-                :shipment_options, :charge_items
+                :shipment_options, :charge_items, :messages
 
     def initialize(origin, destination, carrier, service_name, options = {})
       self.origin, self.destination, self.carrier, self.service_name = origin, destination, carrier, service_name
@@ -112,6 +112,7 @@ module ActiveShipping
       self.delivery_category = options[:delivery_category]
       self.shipment_options = options[:shipment_options] || []
       self.charge_items = options[:charge_items] || []
+      self.messages = options[:messages] || []
     end
 
     # The total price of the shipments in cents.

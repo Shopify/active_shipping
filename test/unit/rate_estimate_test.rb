@@ -89,4 +89,9 @@ class RateEstimateTest < Minitest::Test
     assert_equal [DateTime.parse("Fri 01 Jul 2016"), DateTime.parse("Sun 03 Jul 2016")], @rate_estimate.delivery_range
     assert_equal DateTime.parse("Sun 03 Jul 2016"), @rate_estimate.delivery_date
   end
+
+  def test_messages_is_set
+    rate = RateEstimate.new(@origin, @destination, @carrier, @service_name, @options.merge(messages: ["warning"]))
+    assert_equal ["warning"], rate.messages
+  end
 end

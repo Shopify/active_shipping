@@ -803,6 +803,7 @@ module ActiveShipping
           service_code = rated_shipment.at('Service/Code').text
           days_to_delivery = rated_shipment.at('GuaranteedDaysToDelivery').text.to_i
           days_to_delivery = nil if days_to_delivery == 0
+          warning_messages = rate_warning_messages(rated_shipment)
           RateEstimate.new(origin, destination, @@name, service_name_for(origin, service_code),
               :total_price => rated_shipment.at('TotalCharges/MonetaryValue').text.to_f,
               :insurance_price => rated_shipment.at('ServiceOptionsCharges/MonetaryValue').text.to_f,
@@ -810,7 +811,8 @@ module ActiveShipping
               :service_code => service_code,
               :packages => packages,
               :delivery_range => [timestamp_from_business_day(days_to_delivery)],
-              :negotiated_rate => rated_shipment.at('NegotiatedRates/NetSummaryCharges/GrandTotal/MonetaryValue').try(:text).to_f
+              :negotiated_rate => rated_shipment.at('NegotiatedRates/NetSummaryCharges/GrandTotal/MonetaryValue').try(:text).to_f,
+              :messages => warning_messages
           )
         end
       end
@@ -996,6 +998,10 @@ module ActiveShipping
       status = document.root.at_xpath('Response/ResponseStatusDescription').try(:text)
       desc = document.root.at_xpath('Response/Error/ErrorDescription').try(:text)
       [status, desc].select(&:present?).join(": ").presence || "UPS could not process the request."
+    end
+
+    def rate_warning_messages(rate_xml)
+      rate_xml.xpath("RatedShipmentWarning").map { |warning| warning.text }
     end
 
     def response_digest(xml)
