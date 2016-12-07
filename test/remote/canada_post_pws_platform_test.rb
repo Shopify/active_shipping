@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 require 'test_helper'
 
 # All remote tests require Canada Post development environment credentials

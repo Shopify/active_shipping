@@ -1,5 +1,3 @@
-# -*- encoding: utf-8 -*-
-
 module ActiveShipping
   class UPS < Carrier
     self.retry_safe = true
