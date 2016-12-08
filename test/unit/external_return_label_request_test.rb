@@ -21,6 +21,8 @@ class ExternalReturnLabelRequestTest < ActiveSupport::TestCase
       )
     @email = "no-reply@example.com"
     @invalid_email = "not_a_valid_email"
+    @anything = "Any string"
+    @blank_values = ["", "    "]
   end
 
   test "#recipient_bcc raises on an invalid email" do
@@ -30,25 +32,24 @@ class ExternalReturnLabelRequestTest < ActiveSupport::TestCase
   end
 
   test "#recipient_bcc assigns the email" do
-    assert_nothing_raised do
-      @external_request_label_req.recipient_bcc = @email
-      assert_equal @email, @external_request_label_req.recipient_bcc
-    end
+    @external_request_label_req.recipient_bcc = @email
+    assert_equal @email, @external_request_label_req.recipient_bcc
   end
 
   test "#recipient_email raises if invalid" do
     assert_raises(USPSValidationError) do
       @external_request_label_req.recipient_email = @invalid_email
     end
-    assert_nothing_raised do
-      @external_request_label_req.recipient_email = @email
-    end
+  end
+
+  test "#recipient_email assigns the email" do
+    @external_request_label_req.recipient_email = @email
+    assert_equal @email, @external_request_label_req.recipient_email
   end
 
   test "#recipient_name accepts anything" do
-    assert_nothing_raised do
-      @external_request_label_req.recipient_name = "any string"
-    end
+    @external_request_label_req.recipient_name = @anything
+    assert_equal @anything, @external_request_label_req.recipient_name
   end
 
   test "#sender_email raises if invalid" do
@@ -58,20 +59,20 @@ class ExternalReturnLabelRequestTest < ActiveSupport::TestCase
   end
 
   test "#sender_email assigns the email" do
-    assert_nothing_raised do
-      @external_request_label_req.sender_email = @email
-    end
+    @external_request_label_req.sender_email = @email
+    assert_equal @email, @external_request_label_req.sender_email
   end
 
   test "#sender_name assigns the value" do
-    assert_nothing_raised do
-      @external_request_label_req.sender_name = "any string"
-    end
+    @external_request_label_req.sender_name = @anything
+    assert_equal @anything, @external_request_label_req.sender_name
   end
 
-  test "#sender_name raises if blank" do
-    assert_raises(USPSValidationError) do
-      @external_request_label_req.sender_name = ""
+  test "#sender_name raises if blank or nil" do
+    @blank_values.each do |blank|
+      assert_raises(USPSValidationError) do
+        @external_request_label_req.sender_name = blank
+      end
     end
   end
 
@@ -82,10 +83,9 @@ class ExternalReturnLabelRequestTest < ActiveSupport::TestCase
   end
 
   test "#image_type accepts a valid image type" do
-    assert_nothing_raised do
-      ExternalReturnLabelRequest::IMAGE_TYPE.each do |img_type|
-        @external_request_label_req.image_type = img_type.downcase
-      end
+    ExternalReturnLabelRequest::IMAGE_TYPE.each do |type|
+      @external_request_label_req.image_type = type.downcase
+      assert_equal type, @external_request_label_req.image_type
     end
   end
 
@@ -96,10 +96,9 @@ class ExternalReturnLabelRequestTest < ActiveSupport::TestCase
   end
 
   test "#call_center_or_self_service accepts the valid values defined" do
-    assert_nothing_raised do
-      ExternalReturnLabelRequest::CALL_CENTER_OR_SELF_SERVICE.each do |cc_or_cs|
-        @external_request_label_req.call_center_or_self_service = cc_or_cs
-      end
+    ExternalReturnLabelRequest::CALL_CENTER_OR_SELF_SERVICE.each do |cc_or_cs|
+      @external_request_label_req.call_center_or_self_service = cc_or_cs
+      assert_equal cc_or_cs, @external_request_label_req.call_center_or_self_service
     end
   end
 
@@ -110,15 +109,14 @@ class ExternalReturnLabelRequestTest < ActiveSupport::TestCase
   end
 
   test "#packaging_information accepts a value" do
-    assert_nothing_raised do
-      @external_request_label_req.packaging_information = "Any String"
-    end
+    @external_request_label_req.packaging_information = @anything
+    assert_equal @anything, @external_request_label_req.packaging_information
   end
 
   test "#packaging_information accepts blank values" do
-    assert_nothing_raised do
-      @external_request_label_req.packaging_information = " "
-      @external_request_label_req.packaging_information = ""
+    @blank_values.each do |blank|
+      @external_request_label_req.packaging_information = blank
+      assert_equal "", @external_request_label_req.packaging_information
     end
   end
 
@@ -129,15 +127,14 @@ class ExternalReturnLabelRequestTest < ActiveSupport::TestCase
   end
 
   test "#packaging_information2 accepts a value" do
-    assert_nothing_raised do
-      @external_request_label_req.packaging_information2 = "Any String"
-    end
+    @external_request_label_req.packaging_information2 = @anything
+    assert_equal @anything, @external_request_label_req.packaging_information2
   end
 
   test "#packaging_information2 accepts blank values" do
-    assert_nothing_raised do
-      @external_request_label_req.packaging_information2 = " "
-      @external_request_label_req.packaging_information2 = ""
+    @blank_values.each do |blank|
+      @external_request_label_req.packaging_information2 = blank
+      assert_equal "", @external_request_label_req.packaging_information2
     end
   end
 
@@ -148,16 +145,20 @@ class ExternalReturnLabelRequestTest < ActiveSupport::TestCase
   end
 
   test "#customer_address2 accepts a value" do
-    assert_nothing_raised do
-      @external_request_label_req.customer_address2 = "anything"
-    end
+    @external_request_label_req.customer_address2 = @anything
+    assert_equal @anything, @external_request_label_req.customer_address2
   end
 
   test "#customer_address2 accepts blank values" do
-    assert_nothing_raised do
-      @external_request_label_req.customer_address2 = "     "
-      @external_request_label_req.customer_address2 = nil
+    @blank_values.each do |blank|
+      @external_request_label_req.customer_address2 = blank
+      assert_nil @external_request_label_req.customer_address2
     end
+  end
+
+  test "#customer_address2 accepts nil" do
+    @external_request_label_req.customer_address2 = nil
+    assert_nil @external_request_label_req.customer_address2
   end
 
   test "#sanitize scrubs strings" do
@@ -246,9 +247,7 @@ class ExternalReturnLabelRequestTest < ActiveSupport::TestCase
       :address_override_notification => "true"
     }
 
-    assert_nothing_raised do
-      ExternalReturnLabelRequest.from_hash(sample_hash)
-    end
+    assert ExternalReturnLabelRequest.from_hash(sample_hash)
 
     sample_hash.keys.each do |k|
       assert_raises(USPSMissingRequiredTagError) do
