@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class UPSTest < Minitest::Test
+class UPSTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Fixtures
 
   def setup

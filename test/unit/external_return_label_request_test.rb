@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class ExternalReturnLabelRequestTest < Minitest::Test
+class ExternalReturnLabelRequestTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Fixtures
 
   def setup

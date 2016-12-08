@@ -1,6 +1,6 @@
 require "test_helper"
 
-class NewZealandPostTest < Minitest::Test
+class NewZealandPostTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Fixtures
 
   def setup

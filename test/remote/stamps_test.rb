@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class RemoteStampsTest < Minitest::Test
+class RemoteStampsTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Credentials
   include ActiveShipping::Test::Fixtures
 

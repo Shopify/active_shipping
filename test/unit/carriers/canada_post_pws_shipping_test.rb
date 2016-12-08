@@ -1,5 +1,5 @@
 require 'test_helper'
-class CanadaPostPwsShippingTest < Minitest::Test
+class CanadaPostPwsShippingTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Fixtures
 
   def setup

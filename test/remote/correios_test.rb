@@ -1,7 +1,6 @@
 require 'test_helper'
 
-class RemoteCorreiosTest < Minitest::Test
-
+class RemoteCorreiosTest < ActiveSupport::TestCase
   def setup
     @carrier = Correios.new
 
