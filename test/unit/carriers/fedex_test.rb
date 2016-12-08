@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class FedExTest < Minitest::Test
+class FedExTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Fixtures
 
   def setup

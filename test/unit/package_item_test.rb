@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class PackageItemTest < Minitest::Test
+class PackageItemTest < ActiveSupport::TestCase
   def setup
     @name = "Fancy Pants"
     @weight = 100

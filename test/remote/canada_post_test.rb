@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class RemoteCanadaPostTest < Minitest::Test
+class RemoteCanadaPostTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Credentials
 
   def setup

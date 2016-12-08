@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class TrackingResponseTest < Minitest::Test
+class TrackingResponseTest < ActiveSupport::TestCase
   def test_equality
     options1 = {
       carrier: 'usps',

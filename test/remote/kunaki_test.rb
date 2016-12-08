@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class RemoteKunakiTest < Minitest::Test
+class RemoteKunakiTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Fixtures
 
   def setup

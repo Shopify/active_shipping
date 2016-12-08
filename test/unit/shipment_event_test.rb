@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class ShipmentEventTest < Minitest::Test
+class ShipmentEventTest < ActiveSupport::TestCase
   def test_equality
     options1 = [
       'ARRIVED AT UNIT',

@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class LocationTest < Minitest::Test
+class LocationTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Fixtures
 
   def test_countries

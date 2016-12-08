@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class CarrierTest < Minitest::Test
+class CarrierTest < ActiveSupport::TestCase
   class ExampleCarrier < Carrier
     cattr_reader :name
     @@name = "Example Carrier"

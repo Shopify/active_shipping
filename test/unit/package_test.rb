@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class PackageTest < Minitest::Test
+class PackageTest < ActiveSupport::TestCase
   def setup
     @weight = 100
     @dimensions = [5, 6, 7]

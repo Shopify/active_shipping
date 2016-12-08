@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class RateEstimateTest < Minitest::Test
+class RateEstimateTest < ActiveSupport::TestCase
   def setup
     @origin      = {address1: "61A York St", city: "Ottawa", province: "ON", country: "Canada", postal_code: "K1N 5T2"}
     @destination = {city: "Beverly Hills", state: "CA", country: "United States", postal_code: "90210"}

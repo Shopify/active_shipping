@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class RemoteNewZealandPostTest < Minitest::Test
+class RemoteNewZealandPostTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Credentials
   include ActiveShipping::Test::Fixtures
 

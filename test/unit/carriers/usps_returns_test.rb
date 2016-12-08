@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class USPSReturnsTest < Minitest::Test
+class USPSReturnsTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Fixtures
 
   attr_reader :carrier

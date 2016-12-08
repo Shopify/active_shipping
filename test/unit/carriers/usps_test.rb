@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class USPSTest < Minitest::Test
+class USPSTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Fixtures
 
   def setup

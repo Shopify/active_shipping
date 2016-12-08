@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class ShipwireTest < Minitest::Test
+class ShipwireTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Fixtures
 
   def setup

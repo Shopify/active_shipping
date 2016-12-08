@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class RemoteFedExTest < Minitest::Test
+class RemoteFedExTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Credentials
   include ActiveShipping::Test::Fixtures
 

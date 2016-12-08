@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class CarriersTest < Minitest::Test
+class CarriersTest < ActiveSupport::TestCase
 
   def test_get_usps_by_string
     assert_equal ActiveShipping::USPS, ActiveShipping::Carriers.find('usps')
