@@ -11,7 +11,7 @@ require 'logger'
 require 'erb'
 require 'pry'
 
-Minitest::Reporters.use!
+Minitest::Reporters.use! Minitest::Reporters::ProgressReporter.new(detailed_skip: !!ENV["CI"])
 
 class ActiveSupport::TestCase
   include ActiveShipping
