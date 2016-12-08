@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class BenchmarkTest < Minitest::Test
+class BenchmarkTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Fixtures
 
   def setup

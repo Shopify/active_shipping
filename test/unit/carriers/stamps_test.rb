@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class StampsTest < Minitest::Test
+class StampsTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Fixtures
 
   def setup

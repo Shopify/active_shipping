@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class CanadaPostPwsRatingTest < Minitest::Test
+class CanadaPostPwsRatingTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Fixtures
 
   def setup

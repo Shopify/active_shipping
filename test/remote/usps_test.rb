@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class RemoteUSPSTest < Minitest::Test
+class RemoteUSPSTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Credentials
   include ActiveShipping::Test::Fixtures
 

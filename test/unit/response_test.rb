@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class ResponseTest < Minitest::Test
+class ResponseTest < ActiveSupport::TestCase
   def test_initialize_success
     response = RateResponse.new(true, "success!", {:rate => 'Free!'}, :rates => [stub(:service_name => 'Free!', :total_price => 0)], :xml => "<rate>Free!</rate>")
     assert response.success?

@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class RemoteCanadaPostPWSTest < Minitest::Test
+class RemoteCanadaPostPWSTest < ActiveSupport::TestCase
   # All remote tests require Canada Post development environment credentials
   include ActiveShipping::Test::Credentials
   include ActiveShipping::Test::Fixtures
