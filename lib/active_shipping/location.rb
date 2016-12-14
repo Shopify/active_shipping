@@ -151,13 +151,7 @@ module ActiveShipping #:nodoc:
 
     # Returns the postal code as a properly formatted Zip+4 code, e.g. "77095-2233"
     def zip_plus_4
-      if /(\d{5})(\d{4})/ =~ @postal_code
-        "#{$1}-#{$2}"
-      elsif /\d{5}-\d{4}/ =~ @postal_code
-        @postal_code
-      else
-        nil
-      end
+      "#{$1}-#{$2}" if /(\d{5})-?(\d{4})/ =~ @postal_code
     end
 
     def address2_and_3
