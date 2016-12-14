@@ -7,15 +7,7 @@ class LocationTest < ActiveSupport::TestCase
     @location = location_fixtures[:ottawa]
     @address2 = 'Apt 613'
     @address3 = 'Victory Lane'
-  end
-
-  test "#initialize sets a country object" do
-    assert_instance_of ActiveUtils::Country, @location.country
-    assert_equal 'CA', @location.country_code(:alpha2)
-  end
-
-  test "#initialize sets up the location from a hash" do
-    hash = {
+    @attributes_hash = {
       country: 'CA',
       zip: '90210',
       territory_code: 'QC',
@@ -26,39 +18,71 @@ class LocationTest < ActiveSupport::TestCase
       address_type: :commercial,
       name: "Bob Bobsen",
     }
-    location = Location.from(hash)
-
-    assert_equal hash[:country], location.country_code(:alpha2)
-    assert_equal hash[:zip], location.zip
-    assert_equal hash[:territory_code], location.province
-    assert_equal hash[:town], location.city
-    assert_equal hash[:address], location.address1
-    assert_equal hash[:phone], location.phone
-    assert_equal hash[:fax_number], location.fax
-    assert_equal hash[:address_type].to_s, location.address_type
-    assert_equal hash[:name], location.name
   end
 
-  test "#initialize sets the name to nil if it is not provided" do
+  test "#initialize sets a country object" do
+    assert_instance_of ActiveUtils::Country, @location.country
+    assert_equal 'CA', @location.country_code(:alpha2)
+  end
+
+  test ".from sets up the location from a hash" do
+    location = Location.from(@attributes_hash)
+
+    assert_equal @attributes_hash[:country], location.country_code(:alpha2)
+    assert_equal @attributes_hash[:zip], location.zip
+    assert_equal @attributes_hash[:territory_code], location.province
+    assert_equal @attributes_hash[:town], location.city
+    assert_equal @attributes_hash[:address], location.address1
+    assert_equal @attributes_hash[:phone], location.phone
+    assert_equal @attributes_hash[:fax_number], location.fax
+    assert_equal @attributes_hash[:address_type].to_s, location.address_type
+    assert_equal @attributes_hash[:name], location.name
+  end
+
+  test ".from sets from an object with properties" do
+    object = Class.new do
+      def initialize(hash)
+        @hash = hash
+      end
+      def method_missing(method)
+        @hash[method]
+      end
+      def respond_to?(method) ; true ; end
+    end.new(@attributes_hash)
+
+    location = Location.from(object)
+
+    assert_equal @attributes_hash[:country], location.country_code(:alpha2)
+    assert_equal @attributes_hash[:zip], location.zip
+    assert_equal @attributes_hash[:territory_code], location.province
+    assert_equal @attributes_hash[:town], location.city
+    assert_equal @attributes_hash[:address], location.address1
+    assert_equal @attributes_hash[:phone], location.phone
+    assert_equal @attributes_hash[:fax_number], location.fax
+    assert_equal @attributes_hash[:address_type].to_s, location.address_type
+    assert_equal @attributes_hash[:name], location.name
+  end
+
+  test ".from sets the name to nil if it is not provided" do
     location = Location.from({})
     assert_nil location.name
   end
 
-  test "#initialize sets company and company_name from company" do
+  test ".from sets company and company_name from company" do
     location = Location.from(company: "Mine")
 
     assert_equal "Mine", location.company
     assert_equal "Mine", location.company_name
   end
 
-  test "#initialize sets company and company_name from company_name" do
+  test ".from sets company and company_name from company_name" do
     location = Location.from(company_name: "Mine")
 
     assert_equal "Mine", location.company
     assert_equal "Mine", location.company_name
   end
 
-  test "#initialize prioritizes company" do
+  test ".from prioritizes company" do
     location = Location.from(company_name: "from company_name", company: "from company")
 
     assert_equal "from company", location.company
