@@ -242,8 +242,8 @@ module ActiveShipping
                 # Reference Numbers
                 reference_numbers = Array(package.options[:reference_numbers])
                 if reference_numbers.size > 0
-                  xml.CustomerReferences do
-                    reference_numbers.each do |reference_number_info|
+                  reference_numbers.each do |reference_number_info|
+                    xml.CustomerReferences do
                       xml.CustomerReferenceType(reference_number_info[:type] || "CUSTOMER_REFERENCE")
                       xml.Value(reference_number_info[:value])
                     end
