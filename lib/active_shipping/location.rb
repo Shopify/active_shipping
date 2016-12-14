@@ -75,7 +75,7 @@ module ActiveShipping #:nodoc:
         aliases.detect do |sym|
           value = if hash_access
             object[sym]
-          elsif object.respond_to?(sym) && !Hash.public_instance_methods.include?(sym.to_s)
+          elsif object.respond_to?(sym)
             object.send(sym)
           end
 
