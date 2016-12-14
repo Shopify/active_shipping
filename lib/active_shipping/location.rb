@@ -2,7 +2,7 @@ module ActiveShipping #:nodoc:
   class Location
     ADDRESS_TYPES = %w(residential commercial po_box)
 
-    ATTRIBUTE_MAPPINGS = {
+    ATTRIBUTE_ALIASES = {
       name: [:name],
       country: [:country_code, :country],
       postal_code: [:postal_code, :zip, :postal],
@@ -71,12 +71,15 @@ module ActiveShipping #:nodoc:
         false
       end
 
-      ATTRIBUTE_MAPPINGS.each do |pair|
-        pair[1].each do |sym|
-          if value = (object[sym] if hash_access) || (object.send(sym) if object.respond_to?(sym) && (!hash_access || !Hash.public_instance_methods.include?(sym.to_s)))
-            attributes[pair[0]] = value
-            break
+      ATTRIBUTE_ALIASES.each do |attribute, aliases|
+        aliases.detect do |sym|
+          value = if hash_access
+            object[sym]
+          elsif object.respond_to?(sym) && !Hash.public_instance_methods.include?(sym.to_s)
+            object.send(sym)
           end
+
+          attributes[attribute] = value if value
         end
       end
 
