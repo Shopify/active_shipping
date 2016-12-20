@@ -10,9 +10,9 @@
       <item>
         <quantity>1</quantity>
         <weight>0.5</weight>
-        <length>4</length>
-        <width>3</width>
-        <height>2</height>
+        <length>4.0</length>
+        <width>3.0</width>
+        <height>2.0</height>
         <description>a box full of stuff</description>
         <readyToShip/>
       </item>

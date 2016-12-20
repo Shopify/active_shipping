@@ -1,7 +1,5 @@
 module ActiveShipping #:nodoc:
   class PackageItem
-    include Quantified
-
     attr_reader :sku, :hs_code, :value, :name, :weight, :quantity, :options
 
     def initialize(name, grams_or_ounces, value, quantity, options = {})
@@ -12,7 +10,7 @@ module ActiveShipping #:nodoc:
 
       @unit_system = imperial ? :imperial : :metric
 
-      @weight = attribute_from_metric_or_imperial(grams_or_ounces, Mass, :grams, :ounces)
+      @weight = attribute_from_metric_or_imperial(grams_or_ounces, Measured::Weight, :grams, :ounces)
 
       @value = Package.cents_from(value)
       @quantity = quantity > 0 ? quantity : 1
@@ -28,7 +26,7 @@ module ActiveShipping #:nodoc:
         @weight
       when :volumetric, :dimensional
         @volumetric_weight ||= begin
-          m = Mass.new((centimetres(:box_volume) / 6.0), :grams)
+          m = Measured::Weight.new((centimetres(:box_volume) / 6.0), :grams)
           @unit_system == :imperial ? m.in_ounces : m
         end
       when :billable
@@ -38,23 +36,23 @@ module ActiveShipping #:nodoc:
     alias_method :mass, :weight
 
     def ounces(options = {})
-      weight(options).in_ounces.amount
+      weight(options).convert_to(:oz).value
     end
     alias_method :oz, :ounces
 
     def grams(options = {})
-      weight(options).in_grams.amount
+      weight(options).convert_to(:g).value
     end
     alias_method :g, :grams
 
     def pounds(options = {})
-      weight(options).in_pounds.amount
+      weight(options).convert_to(:lb).value
     end
     alias_method :lb, :pounds
     alias_method :lbs, :pounds
 
     def kilograms(options = {})
-      weight(options).in_kilograms.amount
+      weight(options).convert_to(:kg).value
     end
     alias_method :kg, :kilograms
     alias_method :kgs, :kilograms

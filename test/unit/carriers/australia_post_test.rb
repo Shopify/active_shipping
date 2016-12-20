@@ -11,13 +11,13 @@ class AustraliaPostTest < ActiveSupport::TestCase
   end
 
   def test_service_domestic_simple_request
-    url = 'https://digitalapi.auspost.com.au/postage/parcel/domestic/service.json?from_postcode=2000&height=2&length=19&to_postcode=3108&weight=0.25&width=14'
+    url = 'https://digitalapi.auspost.com.au/postage/parcel/domestic/service.json?from_postcode=2000&height=2.0&length=19.0&to_postcode=3108&weight=0.25&width=14.0'
     @carrier.expects(:commit).with(url).returns(json_fixture('australia_post/service_domestic'))
     @carrier.find_rates(@sydney, @melbourne, package_fixtures[:book])
   end
 
   def test_service_domestic_combined_request
-    url_1 = 'https://digitalapi.auspost.com.au/postage/parcel/domestic/service.json?from_postcode=2000&height=2&length=19&to_postcode=3108&weight=0.25&width=14'
+    url_1 = 'https://digitalapi.auspost.com.au/postage/parcel/domestic/service.json?from_postcode=2000&height=2.0&length=19.0&to_postcode=3108&weight=0.25&width=14.0'
     url_2 = 'https://digitalapi.auspost.com.au/postage/parcel/domestic/service.json?from_postcode=2000&height=2.54&length=2.54&to_postcode=3108&weight=0.23&width=2.54'
     @carrier.expects(:commit).with(url_1).returns(json_fixture('australia_post/service_domestic'))
     @carrier.expects(:commit).with(url_2).returns(json_fixture('australia_post/service_domestic_2'))
@@ -95,13 +95,13 @@ class AustraliaPostTest < ActiveSupport::TestCase
   end
 
   def test_calculate_domestic_simple_request
-    url = 'https://digitalapi.auspost.com.au/postage/parcel/domestic/calculate.json?from_postcode=2000&height=2&length=19&service_code=AUS_PARCEL_EXPRESS&to_postcode=3108&weight=0.25&width=14'
+    url = 'https://digitalapi.auspost.com.au/postage/parcel/domestic/calculate.json?from_postcode=2000&height=2.0&length=19.0&service_code=AUS_PARCEL_EXPRESS&to_postcode=3108&weight=0.25&width=14.0'
     @carrier.expects(:commit).with(url).returns(json_fixture('australia_post/calculate_domestic'))
     @carrier.calculate_rates(@sydney, @melbourne, package_fixtures[:book], 'AUS_PARCEL_EXPRESS')
   end
 
   def test_calculate_domestic_combined_request
-    url_1 = 'https://digitalapi.auspost.com.au/postage/parcel/domestic/calculate.json?from_postcode=2000&height=2&length=19&service_code=AUS_PARCEL_EXPRESS&to_postcode=3108&weight=0.25&width=14'
+    url_1 = 'https://digitalapi.auspost.com.au/postage/parcel/domestic/calculate.json?from_postcode=2000&height=2.0&length=19.0&service_code=AUS_PARCEL_EXPRESS&to_postcode=3108&weight=0.25&width=14.0'
     url_2 = 'https://digitalapi.auspost.com.au/postage/parcel/domestic/calculate.json?from_postcode=2000&height=2.54&length=2.54&service_code=AUS_PARCEL_EXPRESS&to_postcode=3108&weight=0.23&width=2.54'
     @carrier.expects(:commit).with(url_1).returns(json_fixture('australia_post/calculate_domestic'))
     @carrier.expects(:commit).with(url_2).returns(json_fixture('australia_post/calculate_domestic_2'))

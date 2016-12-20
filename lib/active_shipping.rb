@@ -2,7 +2,7 @@ require 'active_support/all'
 require 'active_utils'
 
 require 'nokogiri'
-require 'quantified'
+require 'measured'
 
 require 'active_shipping/response'
 require 'active_shipping/rate_response'
