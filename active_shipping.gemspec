@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   s.require_path  = "lib"
 
-  s.add_dependency("quantified", "~> 1.0.1")
+  s.add_dependency("measured", "~> 1.6.0")
   s.add_dependency("activesupport", ">= 4.2", "< 5.1.0")
   s.add_dependency("active_utils", "~> 3.2.0")
   s.add_dependency("nokogiri", ">= 1.6")

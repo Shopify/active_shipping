@@ -11,20 +11,20 @@ class NewZealandPostTest < ActiveSupport::TestCase
   end
 
   def test_domestic_book_request
-    url = "http://api.nzpost.co.nz/ratefinder/domestic?api_key=4d9dc0f0-dda0-012e-066f-000c29b44ac0&carrier=all&format=json&height=20&length=190&postcode_dest=1010&postcode_src=6011&thickness=140&weight=0.25"
+    url = "http://api.nzpost.co.nz/ratefinder/domestic?api_key=4d9dc0f0-dda0-012e-066f-000c29b44ac0&carrier=all&format=json&height=20.0&length=190.0&postcode_dest=1010&postcode_src=6011&thickness=140.0&weight=0.25"
     @carrier.expects(:commit).with([url]).returns([json_fixture("newzealandpost/domestic_book")])
     @carrier.find_rates(@wellington, @auckland, package_fixtures[:book])
   end
 
   def test_domestic_poster_request
-    url = "http://api.nzpost.co.nz/ratefinder/domestic?api_key=4d9dc0f0-dda0-012e-066f-000c29b44ac0&carrier=all&diameter=100&format=json&length=930&postcode_dest=1010&postcode_src=6011&weight=0.1"
+    url = "http://api.nzpost.co.nz/ratefinder/domestic?api_key=4d9dc0f0-dda0-012e-066f-000c29b44ac0&carrier=all&diameter=100.0&format=json&length=930.0&postcode_dest=1010&postcode_src=6011&weight=0.1"
     @carrier.expects(:commit).with([url]).returns([json_fixture("newzealandpost/domestic_poster")])
     @carrier.find_rates(@wellington, @auckland, package_fixtures[:poster])
   end
 
   def test_domestic_combined_request
     urls = [
-      "http://api.nzpost.co.nz/ratefinder/domestic?api_key=4d9dc0f0-dda0-012e-066f-000c29b44ac0&carrier=all&format=json&height=20&length=190&postcode_dest=1010&postcode_src=6011&thickness=140&weight=0.25",
+      "http://api.nzpost.co.nz/ratefinder/domestic?api_key=4d9dc0f0-dda0-012e-066f-000c29b44ac0&carrier=all&format=json&height=20.0&length=190.0&postcode_dest=1010&postcode_src=6011&thickness=140.0&weight=0.25",
       "http://api.nzpost.co.nz/ratefinder/domestic?api_key=4d9dc0f0-dda0-012e-066f-000c29b44ac0&carrier=all&format=json&height=25.4&length=25.4&postcode_dest=1010&postcode_src=6011&thickness=25.4&weight=0.226796185"
     ]
     @carrier.expects(:commit).with(urls).returns([json_fixture("newzealandpost/domestic_book"), json_fixture("newzealandpost/domestic_small_half_pound")])
@@ -75,14 +75,14 @@ class NewZealandPostTest < ActiveSupport::TestCase
   end
 
   def test_domestic_blank_package_response
-    url = "http://api.nzpost.co.nz/ratefinder/domestic?api_key=4d9dc0f0-dda0-012e-066f-000c29b44ac0&carrier=all&format=json&height=0&length=0&postcode_dest=1010&postcode_src=6011&thickness=0&weight=0.0"
+    url = "http://api.nzpost.co.nz/ratefinder/domestic?api_key=4d9dc0f0-dda0-012e-066f-000c29b44ac0&carrier=all&format=json&height=0.0&length=0.0&postcode_dest=1010&postcode_src=6011&thickness=0.0&weight=0.0"
     @carrier.expects(:commit).with([url]).returns([json_fixture("newzealandpost/domestic_default")])
     response = @carrier.find_rates(@wellington, @auckland, package_fixtures[:just_zero_grams])
     assert_equal [240, 300, 400, 420, 450, 450, 450, 500, 550, 589, 715, 830, 890], response.rates.map(&:price)
   end
 
   def test_domestic_book_response_params
-    url = "http://api.nzpost.co.nz/ratefinder/domestic?api_key=4d9dc0f0-dda0-012e-066f-000c29b44ac0&carrier=all&format=json&height=20&length=190&postcode_dest=1010&postcode_src=6011&thickness=140&weight=0.25"
+    url = "http://api.nzpost.co.nz/ratefinder/domestic?api_key=4d9dc0f0-dda0-012e-066f-000c29b44ac0&carrier=all&format=json&height=20.0&length=190.0&postcode_dest=1010&postcode_src=6011&thickness=140.0&weight=0.25"
     @carrier.expects(:commit).with([url]).returns([json_fixture("newzealandpost/domestic_book")])
     response = @carrier.find_rates(@wellington, @auckland, package_fixtures[:book])
     assert_equal [url], response.request
@@ -91,7 +91,7 @@ class NewZealandPostTest < ActiveSupport::TestCase
   end
 
   def test_international_book_request
-    url = "http://api.nzpost.co.nz/ratefinder/international?api_key=4d9dc0f0-dda0-012e-066f-000c29b44ac0&country_code=CA&format=json&height=20&length=190&thickness=140&value=0&weight=0.25"
+    url = "http://api.nzpost.co.nz/ratefinder/international?api_key=4d9dc0f0-dda0-012e-066f-000c29b44ac0&country_code=CA&format=json&height=20.0&length=190.0&thickness=140.0&value=0&weight=0.25"
     @carrier.expects(:commit).with([url]).returns([json_fixture("newzealandpost/international_book")])
     @carrier.find_rates(@wellington, @ottawa, package_fixtures[:book])
   end
@@ -109,7 +109,7 @@ class NewZealandPostTest < ActiveSupport::TestCase
   end
 
   def test_international_book_response_params
-    url = "http://api.nzpost.co.nz/ratefinder/international?api_key=4d9dc0f0-dda0-012e-066f-000c29b44ac0&country_code=CA&format=json&height=20&length=190&thickness=140&value=0&weight=0.25"
+    url = "http://api.nzpost.co.nz/ratefinder/international?api_key=4d9dc0f0-dda0-012e-066f-000c29b44ac0&country_code=CA&format=json&height=20.0&length=190.0&thickness=140.0&value=0&weight=0.25"
     @carrier.expects(:commit).with([url]).returns([json_fixture("newzealandpost/international_book")])
     response = @carrier.find_rates(@wellington, @ottawa, package_fixtures[:book])
     assert_equal [url], response.request
@@ -119,7 +119,7 @@ class NewZealandPostTest < ActiveSupport::TestCase
 
   def test_international_combined_request
     urls = [
-      "http://api.nzpost.co.nz/ratefinder/international?api_key=4d9dc0f0-dda0-012e-066f-000c29b44ac0&country_code=CA&format=json&height=20&length=190&thickness=140&value=0&weight=0.25",
+      "http://api.nzpost.co.nz/ratefinder/international?api_key=4d9dc0f0-dda0-012e-066f-000c29b44ac0&country_code=CA&format=json&height=20.0&length=190.0&thickness=140.0&value=0&weight=0.25",
       "http://api.nzpost.co.nz/ratefinder/international?api_key=4d9dc0f0-dda0-012e-066f-000c29b44ac0&country_code=CA&format=json&height=25.4&length=25.4&thickness=25.4&value=0&weight=0.226796185"
     ]
     @carrier.expects(:commit).with(urls).returns([json_fixture("newzealandpost/international_book"), json_fixture("newzealandpost/international_wii")])

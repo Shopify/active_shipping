@@ -34,8 +34,8 @@ class CarrierTest < ActiveSupport::TestCase
     end
   end
 
-  test "#maximum_weight returns a Quantified::Mass" do
-    assert_equal Quantified::Mass.new(150, :pounds), @carrier.maximum_weight
+  test "#maximum_weight returns a Measured::Weight" do
+    assert_equal Measured::Weight.new(150, :pounds), @carrier.maximum_weight
   end
 
   test "#maximum_address_field_length default value" do
