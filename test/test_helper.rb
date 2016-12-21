@@ -15,6 +15,10 @@ Minitest::Reporters.use! Minitest::Reporters::ProgressReporter.new(detailed_skip
 
 class ActiveSupport::TestCase
   include ActiveShipping
+
+  def logger
+    @logger ||= Logger.new(STDERR)
+  end
 end
 
 module ActiveShipping::Test
