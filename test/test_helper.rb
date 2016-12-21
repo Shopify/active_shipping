@@ -11,10 +11,16 @@ require 'logger'
 require 'erb'
 require 'pry'
 
+require_relative 'helpers/holiday_helpers.rb'
+
 Minitest::Reporters.use! Minitest::Reporters::ProgressReporter.new(detailed_skip: !!ENV["CI"])
 
 class ActiveSupport::TestCase
   include ActiveShipping
+
+  def logger
+    @logger ||= Logger.new(STDERR)
+  end
 end
 
 module ActiveShipping::Test
