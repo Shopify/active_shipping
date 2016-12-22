@@ -30,12 +30,13 @@ class PackageTest < ActiveSupport::TestCase
     @package = Package.new(@weight, @dimensions, @options)
     @imperial_package = Package.new(@weight, @dimensions, @options.merge(units: :imperial, dim_units: :imperial, weight_units: :imperial))
 
-    @mass = ::Quantified::Mass.new(@weight, :grams)
+    @mass = Measured::Weight.new(@weight, :grams)
   end
 
   def test_package_from_mass
-    package = Package.new(Quantified::Mass.new(10, :pounds), [])
-    assert_equal 10, package.weight
+    ten_pounds = Measured::Weight.new(10, :pounds)
+    package = Package.new(ten_pounds, [])
+    assert_equal ten_pounds, package.weight
   end
 
   def test_initialize_defaults
@@ -266,27 +267,27 @@ class PackageTest < ActiveSupport::TestCase
 
   def test_weight
     assert_equal @mass, @package.weight
-    assert_instance_of ::Quantified::Mass, @package.weight
+    assert_instance_of Measured::Weight, @package.weight
   end
 
   def test_weight_actual
     assert_equal @mass, @package.weight(type: :actual)
-    assert_instance_of ::Quantified::Mass, @package.weight(type: :actual)
+    assert_instance_of Measured::Weight, @package.weight(type: :actual)
   end
 
   def test_weight_volumetric
-    assert_equal ::Quantified::Mass.new(35, :grams), @package.weight(type: :volumetric)
+    assert_equal Measured::Weight.new(35, :grams), @package.weight(type: :volumetric)
   end
 
   def test_weight_dimensional
-    assert_equal ::Quantified::Mass.new(35, :grams), @package.weight(type: :dimensional)
+    assert_equal Measured::Weight.new(35, :grams), @package.weight(type: :dimensional)
   end
 
   def test_weight_billable_max_weight_and_volumetric
-    assert_equal ::Quantified::Mass.new(100, :grams), @package.weight(type: :billable)
+    assert_equal Measured::Weight.new(100, :grams), @package.weight(type: :billable)
 
     @package = Package.new(500, [1, 1, 1], @options)
-    assert_equal ::Quantified::Mass.new(500, :grams), @package.weight(type: :billable)
+    assert_equal Measured::Weight.new(500, :grams), @package.weight(type: :billable)
   end
 
   def test_grams_value

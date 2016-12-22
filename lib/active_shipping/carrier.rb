@@ -18,8 +18,6 @@ module ActiveShipping
   #   The last request performed against the carrier's API.
   #   @see #save_request
   class Carrier
-    include Quantified
-
     attr_reader :last_request
     attr_accessor :test_mode
     alias_method :test_mode?, :test_mode
@@ -112,9 +110,9 @@ module ActiveShipping
     end
 
     # The maximum weight the carrier will accept.
-    # @return [Quantified::Mass]
+    # @return [Measured::Weight]
     def maximum_weight
-      Mass.new(150, :pounds)
+      Measured::Weight.new(150, :pounds)
     end
 
     # The address field maximum length accepted by the carrier

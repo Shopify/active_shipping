@@ -16,7 +16,7 @@ class PackageItemTest < ActiveSupport::TestCase
     }
 
     @item = PackageItem.new(@name, @weight, @value, @quantity, @options)
-    @mass = ::Quantified::Mass.new(@weight, :grams)
+    @mass = Measured::Weight.new(@weight, :grams)
   end
 
   def test_initialize_with_all_attributes
@@ -91,18 +91,18 @@ class PackageItemTest < ActiveSupport::TestCase
 
   def test_weight
     assert_equal @mass, @item.weight
-    assert_instance_of ::Quantified::Mass, @item.weight
+    assert_instance_of Measured::Weight, @item.weight
   end
 
   def test_weight_actual
     assert_equal @mass, @item.weight(type: :actual)
-    assert_instance_of ::Quantified::Mass, @item.weight(type: :actual)
+    assert_instance_of Measured::Weight, @item.weight(type: :actual)
   end
 
   def test_weight_volumetric
     begin
       assert_equal :todo, @item.weight(type: :volumetric)
-      assert_instance_of ::Quantified::Mass, @item.weight(type: :volumetric)
+      assert_instance_of Measured::Weight, @item.weight(type: :volumetric)
       flunk "This code path is broken but passed unexpectedly"
     rescue NoMethodError
       skip "This code path is broken"
@@ -112,7 +112,7 @@ class PackageItemTest < ActiveSupport::TestCase
   def test_weight_dimensional
     begin
       assert_equal :todo, @item.weight(type: :dimensional)
-      assert_instance_of ::Quantified::Mass, @item.weight(type: :dimensional)
+      assert_instance_of Measured::Weight, @item.weight(type: :dimensional)
       flunk "This code path is broken but passed unexpectedly"
     rescue NoMethodError
       skip "This code path is broken"
@@ -122,7 +122,7 @@ class PackageItemTest < ActiveSupport::TestCase
   def test_weight_billable_max_weight_and_volumetric
     begin
       assert_equal :todo, @item.weight(type: :billable)
-      assert_instance_of ::Quantified::Mass, @item.weight(type: :billable)
+      assert_instance_of Measured::Weight, @item.weight(type: :billable)
       flunk "This code path is broken but passed unexpectedly"
     rescue NoMethodError
       skip "This code path is broken"
