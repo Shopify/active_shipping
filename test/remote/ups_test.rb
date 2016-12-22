@@ -3,6 +3,7 @@ require 'test_helper'
 class RemoteUPSTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Credentials
   include ActiveShipping::Test::Fixtures
+  include HolidayHelpers
 
   def setup
     @options = credentials(:ups).merge(:test => true)
@@ -312,7 +313,7 @@ class RemoteUPSTest < ActiveSupport::TestCase
     assert response.success?
     refute_empty response.delivery_estimates
     ground_delivery_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Ground"}.first
-    assert_equal 1.business_days.after(today), ground_delivery_estimate.date
+    with_holidays(:ups) { assert_equal 1.business_days.after(today), ground_delivery_estimate.date }
   end
 
   def test_delivery_date_estimates_within_zip_with_no_value
@@ -331,7 +332,7 @@ class RemoteUPSTest < ActiveSupport::TestCase
     assert response.success?
     refute_empty response.delivery_estimates
     ground_delivery_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Ground"}.first
-    assert_equal 1.business_days.after(today), ground_delivery_estimate.date
+    with_holidays(:ups) { assert_equal 1.business_days.after(today), ground_delivery_estimate.date }
   end
 
   def test_delivery_date_estimates_across_zips
@@ -350,9 +351,11 @@ class RemoteUPSTest < ActiveSupport::TestCase
     assert response.success?
     refute_empty response.delivery_estimates
     ground_delivery_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Ground"}.first
-    assert_equal 3.business_days.after(today), ground_delivery_estimate.date
-    next_day_delivery_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Next Day Air"}.first
-    assert_equal 1.business_days.after(today), next_day_delivery_estimate.date
+    with_holidays(:ups) do
+      assert_equal 3.business_days.after(today), ground_delivery_estimate.date
+      next_day_delivery_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Next Day Air"}.first
+      assert_equal 1.business_days.after(today), next_day_delivery_estimate.date
+    end
   end
 
   def test_rate_with_single_service
@@ -387,7 +390,7 @@ class RemoteUPSTest < ActiveSupport::TestCase
     assert response.success?
     refute_empty response.delivery_estimates
     ww_express_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Worldwide Express"}.first
-    assert_equal 1.business_days.after(today), ww_express_estimate.date
+    with_holidays(:ups) { assert_equal 1.business_days.after(today), ww_express_estimate.date }
   end
 
   def test_void_shipment
