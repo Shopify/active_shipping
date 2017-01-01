@@ -80,12 +80,12 @@ class RemoteUPSTest < ActiveSupport::TestCase
     assert_equal 'UPS', rate.carrier
     assert_equal 'CAD', rate.currency
     if @options[:origin_account]
-      assert_instance_of Fixnum, rate.negotiated_rate
+      assert_kind_of Integer, rate.negotiated_rate
     else
       assert_equal rate.negotiated_rate, 0
     end
-    assert_instance_of Fixnum, rate.total_price
-    assert_instance_of Fixnum, rate.price
+    assert_kind_of Integer, rate.total_price
+    assert_kind_of Integer, rate.price
     assert_instance_of String, rate.service_name
     assert_instance_of String, rate.service_code
     assert_instance_of Array, rate.package_rates
