@@ -28,7 +28,7 @@ class CanadaPostTest < ActiveSupport::TestCase
       assert_instance_of Date, rate.delivery_date
       assert_instance_of Date, rate.shipping_date
       assert_instance_of String, rate.service_name
-      assert_instance_of Fixnum, rate.total_price
+      assert_kind_of Integer, rate.total_price
     end
 
     rate_estimates.boxes.each do |box|
@@ -41,7 +41,7 @@ class CanadaPostTest < ActiveSupport::TestCase
       assert_instance_of Float, box.width
 
       box.packedItems.each do |p|
-        assert_instance_of Fixnum, p.quantity
+        assert_kind_of Integer, p.quantity
         assert_instance_of String, p.description
       end
     end
@@ -61,7 +61,7 @@ class CanadaPostTest < ActiveSupport::TestCase
       assert_instance_of Date, rate.delivery_date
       assert_instance_of Date, rate.shipping_date
       assert_instance_of String, rate.service_name
-      assert_instance_of Fixnum, rate.total_price
+      assert_kind_of Integer, rate.total_price
     end
 
     rate_estimates.boxes.each do |box|
@@ -74,7 +74,7 @@ class CanadaPostTest < ActiveSupport::TestCase
       assert_instance_of Float, box.width
 
       box.packedItems.each do |p|
-        assert_instance_of Fixnum, p.quantity
+        assert_kind_of Integer, p.quantity
         assert_instance_of String, p.description
       end
     end
