@@ -11,6 +11,14 @@ module HolidayHelpers
         { month: 11, day: 24 },
         { month: 12, day: 26 },
       ],
+      "2017" => [
+        { month: 1,  day: 2  },
+        { month: 5,  day: 29 },
+        { month: 6,  day: 4  },
+        { month: 9,  day: 4  },
+        { month: 11, day: 23 },
+        { month: 12, day: 25 },
+      ]
     }
   }
 
