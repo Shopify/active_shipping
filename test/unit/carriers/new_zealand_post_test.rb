@@ -145,7 +145,6 @@ class NewZealandPostTest < ActiveSupport::TestCase
     @carrier.expects(:commit).returns([""])
     error = @carrier.find_rates(@wellington, @ottawa, package_fixtures[:book]) rescue $!
     assert_equal ActiveShipping::ResponseError, error.class
-    assert_equal "A JSON text must at least contain two octets!", error.message
     assert_equal [""], error.response.raw_responses
     response_params = { "responses" => [] }
     assert_equal response_params, error.response.params
