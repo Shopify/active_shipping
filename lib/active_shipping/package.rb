@@ -142,7 +142,7 @@ module ActiveShipping #:nodoc:
 
     def measure(measurement, ary)
       case measurement
-      when Fixnum then ary[measurement]
+      when Integer then ary[measurement]
       when :x, :max, :length, :long then ary[2]
       when :y, :mid, :width, :wide then ary[1]
       when :z, :min, :height, :depth, :high, :deep then ary[0]

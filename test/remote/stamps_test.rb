@@ -138,7 +138,7 @@ class RemoteStampsTest < ActiveSupport::TestCase
     assert_equal '10017', response.rate.destination.zip
     assert_equal 'US', response.rate.destination.country_code
 
-    assert_instance_of Fixnum, response.rate.total_price
+    assert_kind_of Integer, response.rate.total_price
     assert_instance_of String, response.stamps_tx_id
 
     assert_nil response.label_url
@@ -169,7 +169,7 @@ class RemoteStampsTest < ActiveSupport::TestCase
     assert_equal 'K1P 1J1', response.rate.destination.zip
     assert_equal 'CA', response.rate.destination.country_code
 
-    assert_instance_of Fixnum, response.rate.total_price
+    assert_kind_of Integer, response.rate.total_price
     assert_instance_of String, response.stamps_tx_id
     assert_instance_of String, response.label_url
 
@@ -299,8 +299,8 @@ class RemoteStampsTest < ActiveSupport::TestCase
     rate = response.rates.first
     assert_equal 'Stamps', rate.carrier
     assert_equal 'USD', rate.currency
-    assert_instance_of Fixnum, rate.total_price
-    assert_instance_of Fixnum, rate.price
+    assert_kind_of Integer, rate.total_price
+    assert_kind_of Integer, rate.price
     assert_instance_of String, rate.service_name
     assert_instance_of String, rate.service_code
     assert_instance_of Array, rate.package_rates
@@ -328,8 +328,8 @@ class RemoteStampsTest < ActiveSupport::TestCase
     rate = response.rates.first
     assert_equal 'Stamps', rate.carrier
     assert_equal 'USD', rate.currency
-    assert_instance_of Fixnum, rate.total_price
-    assert_instance_of Fixnum, rate.price
+    assert_kind_of Integer, rate.total_price
+    assert_kind_of Integer, rate.price
     assert_instance_of String, rate.service_name
     assert_instance_of String, rate.service_code
     assert_instance_of Array, rate.package_rates
