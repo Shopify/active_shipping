@@ -1,7 +1,7 @@
 require 'test_helper'
 
 class PackageItemTest < ActiveSupport::TestCase
-  def setup
+  setup do
     @name = "Fancy Pants"
     @weight = 100
     @value = 1299
@@ -19,7 +19,7 @@ class PackageItemTest < ActiveSupport::TestCase
     @mass = Measured::Weight.new(@weight, :grams)
   end
 
-  def test_initialize_with_all_attributes
+  test "#initialize with all attributes" do
     assert_equal @name, @item.name
     assert_equal @options, @item.options
     assert_equal @hs_code, @item.hs_code
@@ -28,7 +28,7 @@ class PackageItemTest < ActiveSupport::TestCase
     assert_equal @quantity, @item.quantity
   end
 
-  def test_initialize_assumes_symbol_keys
+  test "#initialize assumes symbol keys" do
     options = {
       "units" => :imperial,
       "sku" => @sku,
@@ -42,12 +42,12 @@ class PackageItemTest < ActiveSupport::TestCase
     assert_equal @weight, @item.grams
   end
 
-  def test_initialize_negative_quantity
+  test "#initialize with a negative quantity" do
     assert_equal 1, PackageItem.new(@name, @weight, @value, -1).quantity
     assert_equal 1, PackageItem.new(@name, @weight, @value, 0).quantity
   end
 
-  def test_initialize_weight_mass_object
+  test "#initialize weight mass object" do
     begin
       @item = PackageItem.new(@name, @mass, @value, @quantity, @options)
       assert_equal @mass, @item.weight
@@ -57,49 +57,49 @@ class PackageItemTest < ActiveSupport::TestCase
     end
   end
 
-  def test_initialize_weight_default_metric
+  test "#initialize weight default metric" do
     assert_equal @weight, @item.grams
     refute_equal @weight, @item.ounces
   end
 
-  def test_initialize_weight_accepts_imperial
+  test "#initialize weight accepts imperial" do
     @item = PackageItem.new(@name, @weight, @value, @quantity, @options.merge(units: :imperial))
 
     assert_equal @weight, @item.ounces
     refute_equal @weight, @item.grams
   end
 
-  def test_initialize_weight_accepts_metric
+  test "#initialize_weight accepts metric" do
     @item = PackageItem.new(@name, @weight, @value, @quantity, @options.merge(units: :metric))
 
     assert_equal @weight, @item.grams
     refute_equal @weight, @item.ounces
   end
 
-  def test_initialize_weight_does_not_accept_strings
+  test "#initialize weight does not accept strings" do
     @item = PackageItem.new(@name, @weight, @value, @quantity, @options.merge(units: "imperial"))
 
     assert_equal @weight, @item.grams
     refute_equal @weight, @item.ounces
   end
 
-  def test_initialize_value_from_cents
+  test "#initialize value from cents" do
     @item = PackageItem.new(@name, @weight, "1.23", @quantity, @options)
 
     assert_equal 123, @item.value
   end
 
-  def test_weight
+  test "#weight default lookup" do
     assert_equal @mass, @item.weight
     assert_instance_of Measured::Weight, @item.weight
   end
 
-  def test_weight_actual
+  test "#weight type: actual" do
     assert_equal @mass, @item.weight(type: :actual)
     assert_instance_of Measured::Weight, @item.weight(type: :actual)
   end
 
-  def test_weight_volumetric
+  test "#weight type: volumetric" do
     begin
       assert_equal :todo, @item.weight(type: :volumetric)
       assert_instance_of Measured::Weight, @item.weight(type: :volumetric)
@@ -109,7 +109,7 @@ class PackageItemTest < ActiveSupport::TestCase
     end
   end
 
-  def test_weight_dimensional
+  test "#weight type: dimensional" do
     begin
       assert_equal :todo, @item.weight(type: :dimensional)
       assert_instance_of Measured::Weight, @item.weight(type: :dimensional)
@@ -119,7 +119,7 @@ class PackageItemTest < ActiveSupport::TestCase
     end
   end
 
-  def test_weight_billable_max_weight_and_volumetric
+  test "#weight type: billable is the max of weight and volumetric" do
     begin
       assert_equal :todo, @item.weight(type: :billable)
       assert_instance_of Measured::Weight, @item.weight(type: :billable)
@@ -129,11 +129,11 @@ class PackageItemTest < ActiveSupport::TestCase
     end
   end
 
-  def test_grams_value
+  test "#grams is the value" do
     assert_equal 100, @item.grams
   end
 
-  def test_grams_accepts_options_with_type
+  test "#grams accepts options with type" do
     begin
       assert_equal :todo, @item.grams(type: :volumetric)
       flunk "This code path is broken but passed unexpectedly"
@@ -142,23 +142,23 @@ class PackageItemTest < ActiveSupport::TestCase
     end
   end
 
-  def test_grams_converts
+  test "#grams converts to another unit" do
     @item = PackageItem.new(@name, 100, @value, @quantity, @options.merge(units: :imperial))
 
     assert_in_delta 2834.9, @item.grams, 0.1
   end
 
-  def test_grams_alias_g
+  test "#grams aliases to g" do
     assert_equal @item.grams, @item.g
   end
 
-  def test_ounces_value
+  test "#ounces is the value" do
     @item = PackageItem.new(@name, @weight, @value, @quantity, @options.merge(units: :imperial))
 
     assert_equal 100, @item.ounces
   end
 
-  def test_ounces_accepts_options_with_type
+  test "#ounces accepts options with type" do
     begin
       assert_equal :todo, @item.ounces(type: :volumetric)
       flunk "This code path is broken but passed unexpectedly"
@@ -167,23 +167,23 @@ class PackageItemTest < ActiveSupport::TestCase
     end
   end
 
-  def test_ounces_converts
+  test "#ounces converts to another unit" do
     @item = PackageItem.new(@name, @weight, @value, @quantity, @options.merge(units: :metric))
 
     assert_in_delta 3.5, @item.ounces, 0.1
   end
 
-  def test_ounces_alias_oz
+  test "#ounces aliases to oz" do
     assert_equal @item.ounces, @item.oz
   end
 
-  def test_pounds_value
+  test "#pounds is the value" do
     @item = PackageItem.new(@name, 32, @value, @quantity, @options.merge(units: :imperial))
 
     assert_equal 2, @item.pounds
   end
 
-  def test_pounds_accepts_options_with_type
+  test "#pounds accepts options with type" do
     begin
       assert_equal :todo, @item.pounds(type: :volumetric)
       flunk "This code path is broken but passed unexpectedly"
@@ -192,27 +192,27 @@ class PackageItemTest < ActiveSupport::TestCase
     end
   end
 
-  def test_pounds_converts
+  test "#pounds converts to another unit" do
     @item = PackageItem.new(@name, 1000, @value, @quantity, @options.merge(units: :metric))
 
     assert_in_delta 2.2, @item.pounds, 0.1
   end
 
-  def test_pounds_alias_lb
+  test "#pounds aliases to lb" do
     assert_equal @item.pounds, @item.lb
   end
 
-  def test_pounds_alias_lbs
+  test "#pounds aliases to lbs" do
     assert_equal @item.pounds, @item.lbs
   end
 
-  def test_kilograms_value
+  test "#kilograms is the value" do
     @item = PackageItem.new(@name, 1000, @value, @quantity, @options.merge(units: :metric))
 
     assert_equal 1, @item.kilograms
   end
 
-  def test_kilograms_accepts_options_with_type
+  test "#kilograms accepts options with type" do
     begin
       assert_equal :todo, @item.kilograms(type: :volumetric)
       flunk "This code path is broken but passed unexpectedly"
@@ -221,17 +221,17 @@ class PackageItemTest < ActiveSupport::TestCase
     end
   end
 
-  def test_kilograms_converts
+  test "#kilograms converts to another unit" do
     @item = PackageItem.new(@name, 1000, @value, @quantity, @options.merge(units: :imperial))
 
     assert_in_delta 28.3, @item.kilograms, 0.1
   end
 
-  def test_kilograms_alias_kg
+  test "#kilograms aliases to kg" do
     assert_equal @item.kilograms, @item.kg
   end
 
-  def test_kilograms_alias_kgs
+  test "#kilograms aliases to kgs" do
     assert_equal @item.kilograms, @item.kgs
   end
 end
