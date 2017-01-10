@@ -1,7 +1,7 @@
 require 'test_helper'
 
 class PackageTest < ActiveSupport::TestCase
-  def setup
+  setup do
     @weight = 100
     @dimensions = [5, 6, 7]
     @value = 1299
@@ -33,13 +33,13 @@ class PackageTest < ActiveSupport::TestCase
     @mass = Measured::Weight.new(@weight, :grams)
   end
 
-  def test_package_from_mass
+  test "#initialize package from mass" do
     ten_pounds = Measured::Weight.new(10, :pounds)
     package = Package.new(ten_pounds, [])
     assert_equal ten_pounds, package.weight
   end
 
-  def test_initialize_defaults
+  test "#initialize with defaults" do
     assert_equal @value, @package.value
     assert_equal @currency, @package.currency
     assert_equal @cylinder, @package.cylinder?
@@ -49,61 +49,61 @@ class PackageTest < ActiveSupport::TestCase
     assert_equal @gift, @package.gift?
   end
 
-  def test_currency_cents
+  test "#initialize with currency cents" do
     @package = Package.new(@weight, @dimensions, value: money)
     assert_equal @currency, @package.currency
     assert_equal @value, @package.value
   end
 
-  def test_initialize_sorted_dimensions
+  test "#initialize sorts the passed in dimensions" do
     @package = Package.new(@weight, [9, 8, 7], @options)
 
     assert_equal [7, 8, 9], @package.centimetres
   end
 
-  def test_initialize_blank_dimensions
+  test "#initialize sets default dimensions if blank" do
     @package = Package.new(@weight, [], @options)
 
     assert_equal [0, 0, 0], @package.centimetres
   end
 
-  def test_initialize_increases_dimension_size_to_three
+  test "#initialize increases dimension size to three elements in the array and pads" do
     @package = Package.new(@weight, [2], @options)
 
     assert_equal [2, 2, 2], @package.centimetres
   end
 
-  def test_initialize_default_units
+  test "#initialize default units" do
     assert_equal @dimensions, @package.centimetres
     assert_equal @weight, @package.grams
   end
 
-  def test_initialize_units
+  test "#initialize units" do
     assert_equal @dimensions, @imperial_package.inches
   end
 
-  def test_initialize_weight_units
+  test "#initialize weight_units" do
     @package = Package.new(@weight, @dimensions, @options.merge(weight_units: :imperial))
 
     assert_equal @weight, @package.ounces
   end
 
-  def test_unpackaged
+  test "#unpackaged?" do
     assert_predicate Package.new(@weight, @dimensions, unpackaged: true), :unpackaged?
     refute_predicate Package.new(@weight, @dimensions, unpackaged: false), :unpackaged?
   end
 
-  def test_oversized
+  test "#oversized?" do
     assert_predicate Package.new(@weight, @dimensions, oversized: true), :oversized?
     refute_predicate Package.new(@weight, @dimensions, oversized: false), :oversized?
   end
 
-  def test_gift
+  test "#gift?" do
     assert_predicate Package.new(@weight, @dimensions, gift: true), :gift?
     refute_predicate Package.new(@weight, @dimensions, gift: false), :gift?
   end
 
-  def test_cylinder_tube
+  test "#cylinder? and #tube? check both values" do
     @package = Package.new(@weight, @dimensions, cylinder: false, tube: false)
     refute_predicate @package, :cylinder?
     refute_predicate @package, :tube?
@@ -121,28 +121,28 @@ class PackageTest < ActiveSupport::TestCase
     assert_predicate @package, :tube?
   end
 
-  def test_inches_number_index
+  test "#inches performs lookup with a numerical index" do
     assert_equal @dimensions[0], @imperial_package.inches(0)
     assert_equal @dimensions[1], @imperial_package.inches(1)
     assert_equal @dimensions[2], @imperial_package.inches(2)
     assert_nil @imperial_package.inches(3)
   end
 
-  def test_inches_x
+  test "#inches for dimension x" do
     assert_equal @dimensions[2], @imperial_package.inches(:x)
     assert_equal @dimensions[2], @imperial_package.inches(:max)
     assert_equal @dimensions[2], @imperial_package.inches(:length)
     assert_equal @dimensions[2], @imperial_package.inches(:long)
   end
 
-  def test_inches_y
+  test "#inches for dimension y" do
     assert_equal @dimensions[1], @imperial_package.inches(:y)
     assert_equal @dimensions[1], @imperial_package.inches(:mid)
     assert_equal @dimensions[1], @imperial_package.inches(:width)
     assert_equal @dimensions[1], @imperial_package.inches(:wide)
   end
 
-  def test_inches_z
+  test "#inches for dimension z" do
     assert_equal @dimensions[0], @imperial_package.inches(:z)
     assert_equal @dimensions[0], @imperial_package.inches(:min)
     assert_equal @dimensions[0], @imperial_package.inches(:height)
@@ -151,7 +151,7 @@ class PackageTest < ActiveSupport::TestCase
     assert_equal @dimensions[0], @imperial_package.inches(:deep)
   end
 
-  def test_inches_girth_cylinder
+  test "#inches for girth of a cylinder" do
     @imperial_package = Package.new(@weight, @dimensions, @options.merge(cylinder: true, units: :imperial, dim_units: :imperial))
 
     assert_predicate @imperial_package, :cylinder?
@@ -161,60 +161,60 @@ class PackageTest < ActiveSupport::TestCase
 
   end
 
-  def test_inches_girth
+  test "#inches for girth of a non cylinder" do
     refute_predicate @imperial_package, :cylinder?
     assert_in_delta 22, @imperial_package.inches(:girth), 1
     assert_in_delta 22, @imperial_package.inches(:around), 1
     assert_in_delta 22, @imperial_package.inches(:circumference), 1
   end
 
-  def test_inches_volume_cylinder
+  test "#inches for the volume of a cylinder" do
     @imperial_package = Package.new(@weight, @dimensions, @options.merge(cylinder: true, units: :imperial, dim_units: :imperial))
 
     assert_predicate @imperial_package, :cylinder?
     assert_in_delta 522.4, @imperial_package.inches(:volume), 1
   end
 
-  def test_inches_volume
+  test "#inches for volume" do
     refute_predicate @imperial_package, :cylinder?
     assert_equal 210, @imperial_package.inches(:volume)
   end
 
-  def test_inches_box_volume
+  test "#inches for box_volume" do
     assert_equal 210, @imperial_package.inches(:box_volume)
   end
 
-  def test_inches_unknown
+  test "#inches of an unknown value" do
     assert_nil @imperial_package.inches(:unknown)
   end
 
-  def test_inches_alias_in
+  test "#inches alias to #in" do
     assert_equal @dimensions, @imperial_package.inches
     assert_equal @dimensions, @imperial_package.in
   end
 
-  def test_centimetres_number_index
+  test "#centimetres performs lookup with a numerical index" do
     assert_equal @dimensions[0], @package.centimetres(0)
     assert_equal @dimensions[1], @package.centimetres(1)
     assert_equal @dimensions[2], @package.centimetres(2)
     assert_nil @package.centimetres(3)
   end
 
-  def test_centimetres_x
+  test "#centimetres for dimension x" do
     assert_equal @dimensions[2], @package.centimetres(:x)
     assert_equal @dimensions[2], @package.centimetres(:max)
     assert_equal @dimensions[2], @package.centimetres(:length)
     assert_equal @dimensions[2], @package.centimetres(:long)
   end
 
-  def test_centimetres_y
+  test "#centimetres for dimension y" do
     assert_equal @dimensions[1], @package.centimetres(:y)
     assert_equal @dimensions[1], @package.centimetres(:mid)
     assert_equal @dimensions[1], @package.centimetres(:width)
     assert_equal @dimensions[1], @package.centimetres(:wide)
   end
 
-  def test_centimetres_z
+  test "#centimetres for dimension z" do
     assert_equal @dimensions[0], @package.centimetres(:z)
     assert_equal @dimensions[0], @package.centimetres(:min)
     assert_equal @dimensions[0], @package.centimetres(:height)
@@ -223,7 +223,7 @@ class PackageTest < ActiveSupport::TestCase
     assert_equal @dimensions[0], @package.centimetres(:deep)
   end
 
-  def test_centimetres_girth_cylinder
+  test "#centimetres for girth of a cylinder" do
     @package = Package.new(@weight, @dimensions, @options.merge(cylinder: true, units: :metric, dim_units: :metric))
 
     assert_predicate @package, :cylinder?
@@ -233,158 +233,158 @@ class PackageTest < ActiveSupport::TestCase
 
   end
 
-  def test_centimetres_girth
+  test "#centimetres for girth of a non-cylinder" do
     refute_predicate @package, :cylinder?
     assert_in_delta 22, @package.centimetres(:girth), 1
     assert_in_delta 22, @package.centimetres(:around), 1
     assert_in_delta 22, @package.centimetres(:circumference), 1
   end
 
-  def test_centimetres_volume_cylinder
+  test "#centimetres for the volume of a cylinder" do
     @package = Package.new(@weight, @dimensions, @options.merge(cylinder: true, units: :metric, dim_units: :metric))
 
     assert_predicate @package, :cylinder?
     assert_in_delta 522.4, @package.centimetres(:volume), 1
   end
 
-  def test_centimetres_volume
+  test "#centimetres for volume" do
     refute_predicate @package, :cylinder?
     assert_equal 210, @package.centimetres(:volume)
   end
 
-  def test_centimetres_box_volume
+  test "#centimetres for box_volume" do
     assert_equal 210, @package.centimetres(:box_volume)
   end
 
-  def test_centimetres_unknown
+  test "#centimetres of an unknown value" do
     assert_nil @package.centimetres(:unknown)
   end
 
-  def test_centimetres_alias_cm
+  test "#centimetres alias to #cm" do
     assert_equal @dimensions, @package.centimetres
     assert_equal @dimensions, @package.cm
   end
 
-  def test_weight
+  test "#weight" do
     assert_equal @mass, @package.weight
     assert_instance_of Measured::Weight, @package.weight
   end
 
-  def test_weight_actual
+  test "#weight for actual" do
     assert_equal @mass, @package.weight(type: :actual)
     assert_instance_of Measured::Weight, @package.weight(type: :actual)
   end
 
-  def test_weight_volumetric
+  test "#weight volumetric" do
     assert_equal Measured::Weight.new(35, :grams), @package.weight(type: :volumetric)
   end
 
-  def test_weight_dimensional
+  test "#weight dimensional" do
     assert_equal Measured::Weight.new(35, :grams), @package.weight(type: :dimensional)
   end
 
-  def test_weight_billable_max_weight_and_volumetric
+  test "#weight billable is the max of weight and volumetric" do
     assert_equal Measured::Weight.new(100, :grams), @package.weight(type: :billable)
 
     @package = Package.new(500, [1, 1, 1], @options)
     assert_equal Measured::Weight.new(500, :grams), @package.weight(type: :billable)
   end
 
-  def test_grams_value
+  test "#grams value" do
     assert_equal 100, @package.grams
   end
 
-  def test_grams_accepts_options_with_type
+  test "#grams accepts options with type" do
     assert_in_delta 35, @package.grams(type: :volumetric), 1
   end
 
-  def test_grams_converts
+  test "#grams converts to another unit from another system" do
     @package = Package.new(@weight, @dimensions, weight_units: :imperial)
 
     assert_in_delta 2834.9, @package.grams, 1
   end
 
-  def test_grams_alias_g
+  test "#grams alias to #g" do
     assert_equal @package.grams, @package.g
   end
 
-  def test_ounces_value
+  test "#ounces value" do
     assert_equal 100, @imperial_package.ounces
   end
 
-  def test_ounces_accepts_options_with_type
+  test "#ounces accepts options with type" do
     assert_in_delta 20.2, @imperial_package.ounces(type: :volumetric), 1
   end
 
-  def test_ounces_converts
+  test "#ounces converts to another unit from another system" do
     assert_in_delta 3.5, @package.ounces, 1
   end
 
-  def test_ounces_alias_oz
+  test "#ounces alias to #oz" do
     assert_equal @imperial_package.ounces, @imperial_package.oz
   end
 
-  def test_pounds_value
+  test "#pounds value" do
     assert_equal 6.25, @imperial_package.pounds
   end
 
-  def test_pounds_accepts_options_with_type
+  test "#pounds accepts options with type" do
     assert_in_delta 0.07, @package.pounds(type: :volumetric), 0.01
   end
 
-  def test_pounds_converts
+  test "#pounds converts to another unit from another system" do
     assert_in_delta 0.22, @package.pounds, 0.01
   end
 
-  def test_pounds_alias_lb
+  test "#pounds alias to #lb" do
     assert_equal @package.pounds, @package.lb
   end
 
-  def test_pounds_alias_lbs
+  test "#pounds alias to #lbs" do
     assert_equal @package.pounds, @package.lbs
   end
 
-  def test_kilograms_value
+  test "#kilograms value" do
     assert_equal 0.1, @package.kilograms
   end
 
-  def test_kilograms_accepts_options_with_type
+  test "#kilograms accepts options with type" do
     assert_equal 0.035, @package.kilograms(type: :volumetric)
   end
 
-  def test_kilograms_converts
+  test "#kilograms converts to another unit from another system" do
     assert_in_delta 2.8, @imperial_package.kilograms, 1
   end
 
-  def test_kilograms_alias_kg
+  test "#kilograms alias to #kg" do
     assert_equal 0.1, @package.kg
   end
 
-  def test_kilograms_alias_kgs
+  test "#kilograms alias to #kgs" do
     assert_equal @package.kilograms, @package.kgs
   end
 
-  def test_cents_from_nil
+  test ".cents_from nil" do
     assert_nil Package.cents_from(nil)
   end
 
-  def test_cents_from_cents
+  test ".cents_from cents on a money object" do
     assert_equal @value, Package.cents_from(money)
   end
 
-  def test_cents_from_float
+  test ".cents_from float" do
     assert_equal 120, Package.cents_from(1.2)
   end
 
-  def test_cents_from_string
+  test ".cents_from string" do
     assert_equal 120, Package.cents_from("1.20")
   end
 
-  def test_cents_from_int
+  test ".cents_from integer" do
     assert_equal 12, Package.cents_from(12)
   end
 
-  def test_cents_from_nonsense
+  test ".cents_from an unhandled object" do
     exception = assert_raises NoMethodError do
       Package.cents_from(Object.new)
     end
