@@ -30,4 +30,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency("timecop")
   s.add_development_dependency("business_time")
   s.add_development_dependency("pry")
+  s.add_development_dependency("pry-byebug")
 end
