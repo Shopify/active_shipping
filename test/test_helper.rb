@@ -10,10 +10,18 @@ require 'active_shipping'
 require 'logger'
 require 'erb'
 require 'pry'
+require 'vcr'
+require 'webmock/minitest'
 
 require_relative 'helpers/holiday_helpers.rb'
 
 Minitest::Reporters.use! Minitest::Reporters::ProgressReporter.new(detailed_skip: !!ENV["CI"])
+
+VCR.configure do |config|
+  config.cassette_library_dir = 'test/remote/vcr_cassettes'
+  config.allow_http_connections_when_no_cassette = true
+  config.hook_into :webmock
+end
 
 class ActiveSupport::TestCase
   include ActiveShipping
