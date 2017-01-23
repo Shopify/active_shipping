@@ -590,6 +590,12 @@ module ActiveShipping
       message = response_message(xml)
 
       if success
+        tracking_details_root = xml.at('CompletedTrackDetails')
+        success = response_success?(tracking_details_root)
+        message = response_message(tracking_details_root)
+      end
+
+      if success
         delivery_signature = nil
         shipment_events = []
 
@@ -718,13 +724,13 @@ module ActiveShipping
     end
 
     def response_success?(document)
-      highest_severity = document.root.at('HighestSeverity')
+      highest_severity = document.at('HighestSeverity')
       return false if highest_severity.nil?
       %w(SUCCESS WARNING NOTE).include?(highest_severity.text)
     end
 
     def response_message(document)
-      notifications = document.root.at('Notifications')
+      notifications = document.at('Notifications')
       return "" if notifications.nil?
 
       "#{notifications.at('Severity').text} - #{notifications.at('Code').text}: #{notifications.at('Message').text}"
