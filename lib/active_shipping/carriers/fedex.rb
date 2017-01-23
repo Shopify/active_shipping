@@ -590,7 +590,6 @@ module ActiveShipping
       message = response_message(xml)
 
       if success
-        origin = nil
         delivery_signature = nil
         shipment_events = []
 
@@ -599,12 +598,27 @@ module ActiveShipping
           when 1
             all_tracking_details.first
           when 0
-            raise ActiveShipping::Error, "The response did not contain tracking details"
+            message = "The response did not contain tracking details"
+            return TrackingResponse.new(
+              false,
+              message,
+              Hash.from_xml(response),
+              carrier: @@name,
+              xml: response,
+              request: last_request
+            )
           else
             all_unique_identifiers = xml.root.xpath('CompletedTrackDetails/TrackDetails/TrackingNumberUniqueIdentifier').map(&:text)
-            raise ActiveShipping::Error, "Multiple matches were found. Specify a unqiue identifier: #{all_unique_identifiers.join(', ')}"
+            message = "Multiple matches were found. Specify a unqiue identifier: #{all_unique_identifiers.join(', ')}"
+            return TrackingResponse.new(
+              false,
+              message,
+              Hash.from_xml(response),
+              carrier: @@name,
+              xml: response,
+              request: last_request
+            )
         end
-
 
         first_notification = tracking_details.at('Notification')
         severity = first_notification.at('Severity').text
@@ -634,11 +648,11 @@ module ActiveShipping
           end
         end
 
-        if origin_node = tracking_details.at('OriginLocationAddress')
-          origin = Location.new(
-                :country =>     origin_node.at('CountryCode').text,
-                :province =>    origin_node.at('StateOrProvinceCode').text,
-                :city =>        origin_node.at('City').text
+        origin = if origin_node = tracking_details.at('OriginLocationAddress')
+          Location.new(
+            country: origin_node.at('CountryCode').text,
+            province: origin_node.at('StateOrProvinceCode').text,
+            city: origin_node.at('City').text
           )
         end
 
@@ -667,26 +681,29 @@ module ActiveShipping
 
           shipment_events << ShipmentEvent.new(description, zoneless_time, location, description, type_code)
         end
-        shipment_events = shipment_events.sort_by(&:time)
 
+        shipment_events = shipment_events.sort_by(&:time)
       end
 
-      TrackingResponse.new(success, message, Hash.from_xml(response),
-                           :carrier => @@name,
-                           :xml => response,
-                           :request => last_request,
-                           :status => status,
-                           :status_code => status_code,
-                           :status_description => status_description,
-                           :ship_time => ship_time,
-                           :scheduled_delivery_date => scheduled_delivery_time,
-                           :actual_delivery_date => actual_delivery_time,
-                           :delivery_signature => delivery_signature,
-                           :shipment_events => shipment_events,
-                           :shipper_address => (shipper_address.nil? || shipper_address.unknown?) ? nil : shipper_address,
-                           :origin => origin,
-                           :destination => destination,
-                           :tracking_number => tracking_number
+      TrackingResponse.new(
+        success,
+        message,
+        Hash.from_xml(response),
+        carrier: @@name,
+        xml: response,
+        request: last_request,
+        status: status,
+        status_code: status_code,
+        status_description: status_description,
+        ship_time: ship_time,
+        scheduled_delivery_date: scheduled_delivery_time,
+        actual_delivery_date: actual_delivery_time,
+        delivery_signature: delivery_signature,
+        shipment_events: shipment_events,
+        shipper_address: (shipper_address.nil? || shipper_address.unknown?) ? nil : shipper_address,
+        origin: origin,
+        destination: destination,
+        tracking_number: tracking_number
       )
     end
 

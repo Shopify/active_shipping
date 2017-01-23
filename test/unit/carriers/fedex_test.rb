@@ -318,14 +318,31 @@ class FedExTest < ActiveSupport::TestCase
     @carrier.expects(:commit).returns(mock_response)
 
     assert_raises ActiveShipping::ResponseContentError do
-    @carrier.find_rates(
+      @carrier.find_rates(
         location_fixtures[:ottawa],
         location_fixtures[:beverly_hills],
         package_fixtures.values_at(:book, :wii),
-        :test => true
+        test: true
       )
     end
   end
+
+  def test_parsing_response_without_notifications
+    mock_response = xml_fixture('fedex/reply_without_notifications')
+
+    @carrier.expects(:commit).returns(mock_response)
+
+    response = @carrier.find_rates(
+      location_fixtures[:ottawa],
+      location_fixtures[:beverly_hills],
+      package_fixtures.values_at(:book, :wii),
+      test: true
+    )
+
+    assert_predicate response, :success?
+  end
+
+  ### find_tracking_info
 
   def test_response_transient_failure
     mock_response = xml_fixture('fedex/tracking_response_failure_code_9045')
@@ -350,23 +367,6 @@ class FedExTest < ActiveSupport::TestCase
     msg = 'Sorry, we are unable to process your tracking request.  Please contact Customer Service at 1.800.Go.FedEx(R) 800.463.3339.'
     assert_equal msg, error.message
   end
-
-  def test_parsing_response_without_notifications
-    mock_response = xml_fixture('fedex/reply_without_notifications')
-
-    @carrier.expects(:commit).returns(mock_response)
-
-    response = @carrier.find_rates(
-      location_fixtures[:ottawa],
-      location_fixtures[:beverly_hills],
-      package_fixtures.values_at(:book, :wii),
-      :test => true
-    )
-
-    assert response.success?
-  end
-
-  ### find_tracking_info
 
   def test_tracking_info_for_delivered_with_signature
     mock_response = xml_fixture('fedex/tracking_response_delivered_with_signature')
@@ -507,12 +507,23 @@ class FedExTest < ActiveSupport::TestCase
     mock_response = xml_fixture('fedex/tracking_response_multiple_results')
     @carrier.expects(:commit).returns(mock_response)
 
-    error = assert_raises(ActiveShipping::Error) do
+    error = assert_raises(ActiveShipping::ResponseError) do
       @carrier.find_tracking_info('123456789012')
     end
 
     msg = 'Multiple matches were found. Specify a unqiue identifier: 2456987000~123456789012~FX, 2456979001~123456789012~FX, 2456979000~123456789012~FX'
     assert_equal msg, error.message
+  end
+
+  def test_tracking_info_without_tracking_details
+    mock_response = xml_fixture('fedex/tracking_response_no_results')
+    @carrier.expects(:commit).returns(mock_response)
+
+    error = assert_raises(ActiveShipping::ResponseError) do
+      @carrier.find_tracking_info('abc')
+    end
+
+    assert_equal 'The response did not contain tracking details', error.message
   end
 
   def test_tracking_info_with_unknown_tracking_number
@@ -574,6 +585,8 @@ class FedExTest < ActiveSupport::TestCase
     assert_empty response.shipment_events
   end
 
+  ### create_shipment
+  
   def test_create_shipment
     confirm_response = xml_fixture('fedex/create_shipment_response')
     @carrier.stubs(:commit).returns(confirm_response)
