@@ -18,8 +18,15 @@
     <Minor>0</Minor>
   </Version>
   <CompletedTrackDetails>
-    <HighestSeverity>SUCCESS</HighestSeverity>
-    <DuplicateWaybill>true</DuplicateWaybill>
+    <HighestSeverity>FAILURE</HighestSeverity>
+    <Notifications>
+      <Severity>FAILURE</Severity>
+      <Source>trck</Source>
+      <Code>6330</Code>
+      <Message>Sorry, we are unable to process your tracking request.  Please retry later, or contact Customer Service at 1.800.Go.FedEx(R) 800.463.3339.</Message>
+      <LocalizedMessage>Sorry, we are unable to process your tracking request.  Please retry later, or contact Customer Service at 1.800.Go.FedEx(R) 800.463.3339.</LocalizedMessage>
+    </Notifications>
+    <DuplicateWaybill>false</DuplicateWaybill>
     <MoreData>false</MoreData>
   </CompletedTrackDetails>
 </TrackReply>

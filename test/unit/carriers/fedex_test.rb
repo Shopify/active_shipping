@@ -356,7 +356,7 @@ class FedExTest < ActiveSupport::TestCase
     assert_equal msg, error.message
   end
 
-  def test_response_terminal_failure
+  def test_response_with_failure_nested_in_track_details
     mock_response = xml_fixture('fedex/tracking_response_failure_code_9080')
     @carrier.expects(:commit).returns(mock_response)
 
@@ -365,6 +365,18 @@ class FedExTest < ActiveSupport::TestCase
     end
 
     msg = 'Sorry, we are unable to process your tracking request.  Please contact Customer Service at 1.800.Go.FedEx(R) 800.463.3339.'
+    assert_equal msg, error.message
+  end
+
+  def test_response_with_failure_nested_in_completed_track_details
+    mock_response = xml_fixture('fedex/tracking_response_unable_to_process')
+    @carrier.expects(:commit).returns(mock_response)
+
+    error = assert_raises(ActiveShipping::ResponseError) do
+      @carrier.find_tracking_info('123456789013')
+    end
+
+    msg = 'FAILURE - 6330: Sorry, we are unable to process your tracking request.  Please retry later, or contact Customer Service at 1.800.Go.FedEx(R) 800.463.3339.'
     assert_equal msg, error.message
   end
 
@@ -513,17 +525,6 @@ class FedExTest < ActiveSupport::TestCase
 
     msg = 'Multiple matches were found. Specify a unqiue identifier: 2456987000~123456789012~FX, 2456979001~123456789012~FX, 2456979000~123456789012~FX'
     assert_equal msg, error.message
-  end
-
-  def test_tracking_info_without_tracking_details
-    mock_response = xml_fixture('fedex/tracking_response_no_results')
-    @carrier.expects(:commit).returns(mock_response)
-
-    error = assert_raises(ActiveShipping::ResponseError) do
-      @carrier.find_tracking_info('abc')
-    end
-
-    assert_equal 'The response did not contain tracking details', error.message
   end
 
   def test_tracking_info_with_unknown_tracking_number
