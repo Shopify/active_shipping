@@ -316,6 +316,8 @@ class RemoteFedExTest < Minitest::Test
     end
   end
 
+  ### create_shipment
+
   def test_cant_obtain_multiple_shipping_labels
     assert_raises(ActiveShipping::Error,"Multiple packages are not supported yet.") do
       @carrier.create_shipment(
