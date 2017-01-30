@@ -1,0 +1,25 @@
+<AddressValidationResponse>
+  <Response>
+    <TransactionReference />
+    <ResponseStatusCode>1</ResponseStatusCode>
+    <ResponseStatusDescription>Success</ResponseStatusDescription>
+  </Response>
+  <ValidAddressIndicator />
+  <AddressClassification>
+    <Code>1</Code>
+    <Description>Commercial</Description>
+  </AddressClassification>
+  <AddressKeyFormat>
+    <AddressClassification>
+      <Code>1</Code>
+      <Description>Commercial</Description>
+    </AddressClassification>
+    <AddressLine>55 GLENLAKE PKWY</AddressLine>
+    <Region>ATLANTA GA 30328-3474</Region>
+    <PoliticalDivision2>ATLANTA</PoliticalDivision2>
+    <PoliticalDivision1>GA</PoliticalDivision1>
+    <PostcodePrimaryLow>30328</PostcodePrimaryLow>
+    <PostcodeExtendedLow>3474</PostcodeExtendedLow>
+    <CountryCode>US</CountryCode>
+  </AddressKeyFormat>
+</AddressValidationResponse>

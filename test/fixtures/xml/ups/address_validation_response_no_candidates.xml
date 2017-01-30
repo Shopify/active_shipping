@@ -1,0 +1,8 @@
+<AddressValidationResponse>
+  <Response>
+    <TransactionReference />
+    <ResponseStatusCode>1</ResponseStatusCode>
+    <ResponseStatusDescription>Success</ResponseStatusDescription>
+  </Response>
+  <NoCandidatesIndicator />
+</AddressValidationResponse>
