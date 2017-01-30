@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<AddressValidationRequest>
+  <Request>
+    <RequestAction>XAV</RequestAction>
+    <RequestOption>3</RequestOption>
+  </Request>
+  <AddressKeyFormat>
+    <AddressLine>55 Glenlake Parkway NE</AddressLine>
+    <PoliticalDivision2>Atlanta</PoliticalDivision2>
+    <PoliticalDivision1>GA</PoliticalDivision1>
+    <PostcodePrimaryLow>30328</PostcodePrimaryLow>
+    <CountryCode>US</CountryCode>
+  </AddressKeyFormat>
+</AddressValidationRequest>
