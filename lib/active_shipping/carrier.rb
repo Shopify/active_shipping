@@ -94,6 +94,16 @@ module ActiveShipping
       raise NotImplementedError, "#find_tracking_info is not supported by #{self.class.name}."
     end
 
+    # Get a list of services available for the a specific route
+    #
+    # @param origin_country [String] The country of origin
+    # @param destination_country [String] The destination country
+    # @return [Array<String>] A list of names of the available services
+    #
+    def available_services(origin_country, destination_country)
+      raise NotImplementedError, "#available_services is not supported by #{self.class.name}."
+    end
+
     # Validate credentials with a call to the API.
     #
     # By default this just does a `find_rates` call with the origin and destination both as
