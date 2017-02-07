@@ -34,6 +34,12 @@ class CarrierTest < ActiveSupport::TestCase
     end
   end
 
+  test "#available_services is not implemented" do
+    assert_raises NotImplementedError do
+      @carrier.available_services(nil, nil)
+    end
+  end
+
   test "#maximum_weight returns a Measured::Weight" do
     assert_equal Measured::Weight.new(150, :pounds), @carrier.maximum_weight
   end
