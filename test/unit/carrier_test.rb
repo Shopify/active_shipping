@@ -121,4 +121,10 @@ class CarrierTest < Minitest::Test
     assert_equal "1-310-285-1013", result.phone
     assert_equal "1-310-275-8159", result.fax
   end
+
+  def test_available_services_is_not_implemented
+    assert_raises NotImplementedError do
+      @carrier.available_services(nil, nil)
+    end
+  end
 end
