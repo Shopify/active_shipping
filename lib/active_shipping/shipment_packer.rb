@@ -84,7 +84,8 @@ module ActiveShipping
           # Grab the max amount of this item we can fit into this package
           # Or, if there are fewer than the max for this item, put
           # what is left into this package
-          [(maximum_weight - package_weight) / item_grams, item_quantity].min
+          available_grams = (maximum_weight - package_weight).to_i
+          [available_grams / item_grams, item_quantity].min
         end
       end
 
