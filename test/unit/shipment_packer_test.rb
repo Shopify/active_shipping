@@ -146,10 +146,35 @@ class ShipmentPackerTest < Minitest::Test
     assert_equal 100, package.value
   end
 
-  test "excess packages" do
+  test "excess packages raised over threshold before packing begins" do
+    ActiveShipping::Package.expects(:new).never
+    items = [{ grams: 1, quantity: ShipmentPacker::EXCESS_PACKAGE_QUANTITY_THRESHOLD + 1, price: 1.0 }]
+
     assert_raises(ShipmentPacker::ExcessPackageQuantity) do
-      items = [{ grams: 1, quantity: ShipmentPacker::EXCESS_PACKAGE_QUANTITY_THRESHOLD + 1, price: 1.0 }]
       ShipmentPacker.pack(items, @dimensions, 1, 'USD')
+    end
+  end
+
+  test "excess packages not raised at threshold" do
+    items = [{ grams: 1, quantity: ShipmentPacker::EXCESS_PACKAGE_QUANTITY_THRESHOLD, price: 1.0 }]
+    packages = ShipmentPacker.pack(items, @dimensions, 1, 'USD')
+
+    assert_predicate packages, :present?
+  end
+
+  test "excess packages not raised below threshold" do
+    items = [{ grams: 1, quantity: ShipmentPacker::EXCESS_PACKAGE_QUANTITY_THRESHOLD - 1, price: 1.0 }]
+    packages = ShipmentPacker.pack(items, @dimensions, 1, 'USD')
+
+    assert_predicate packages, :present?
+  end
+
+  test "excess packages with slightly larger max weight than item weight" do
+    max_weight = 750
+    items = [{ grams: 500, quantity: ShipmentPacker::EXCESS_PACKAGE_QUANTITY_THRESHOLD + 1, price: 1.0 }]
+
+    assert_raises(ShipmentPacker::ExcessPackageQuantity) do
+      ShipmentPacker.pack(items, @dimensions, max_weight, 'USD')
     end
   end
 
