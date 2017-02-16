@@ -30,6 +30,8 @@ module ActiveShipping
             package_weight, package_value = 0, 0
             state = :filling_package
           when :filling_package
+            validate_package_quantity(packages.count)
+
             items_to_pack.each do |item|
               quantity = determine_fillable_quantity_for_package(item, maximum_weight, package_weight)
               package_weight += item_weight(quantity, item[:grams])
@@ -61,6 +63,10 @@ module ActiveShipping
 
           raise_excess_quantity_error if maybe_excess_package_quantity?(total_weight, maximum_weight)
         end
+      end
+
+      def validate_package_quantity(number_of_packages)
+        raise_excess_quantity_error if number_of_packages >= EXCESS_PACKAGE_QUANTITY_THRESHOLD
       end
 
       def raise_excess_quantity_error
