@@ -5,7 +5,7 @@ class ShipmentPackerTest < Minitest::Test
     @dimensions = [5.1, 15.2, 30.5]
   end
 
-  test "pack divide order into a single package" do
+  def test_pack_divide_order_into_a_single_package
     items = [{ grams: 1, quantity: 1, price: 1.0 }]
 
     packages = ShipmentPacker.pack(items, @dimensions, 1, 'USD')
@@ -15,7 +15,7 @@ class ShipmentPackerTest < Minitest::Test
     assert_equal 1, package.weight
   end
 
-  test "divide order with multiple lines into a single package" do
+  def test_divide_order_with_multiple_lines_into_a_single_package
     items = [{ grams: 1, quantity: 2, price: 1.0 }]
 
     packages = ShipmentPacker.pack(items, @dimensions, 2, 'USD')
@@ -25,7 +25,7 @@ class ShipmentPackerTest < Minitest::Test
     assert_equal 2, package.weight
   end
 
-  test "divide order with single line into two packages" do
+  def test_divide_order_with_single_line_into_two_packages
     items = [{ grams: 1, quantity: 2, price: 1.0 }]
 
     packages = ShipmentPacker.pack(items, @dimensions, 1, 'USD')
@@ -36,7 +36,7 @@ class ShipmentPackerTest < Minitest::Test
     end
   end
 
-  test "divide order with single line into two packages max weight as float" do
+  def test_divide_order_with_single_line_into_two_packages_max_weight_as_float
     max_weight = 68038.8555
 
     items = [{ grams: 45359, quantity: 2, price: 1.0 }]
@@ -45,11 +45,11 @@ class ShipmentPackerTest < Minitest::Test
     assert_equal 2, packages.size
 
     packages.each do |package|
-      assert_equal Measured::Weight(45359, :g), package.weight
+      assert_equal 45359, package.weight
     end
   end
 
-  test "divide order with multiple lines into two packages" do
+  def test_divide_order_with_multiple_lines_into_two_packages
     items = [
       { grams: 1, quantity: 1, price: 1.0 },
       { grams: 1, quantity: 1, price: 1.0 }
@@ -63,7 +63,7 @@ class ShipmentPackerTest < Minitest::Test
     end
   end
 
-  test "divide order into two packages mixing line items" do
+  def test_divide_order_into_two_packages_mixing_line_items
     items = [
       { grams: 1, quantity: 1, price: 1.0 },
       { grams: 1, quantity: 1, price: 1.0 },
@@ -77,25 +77,25 @@ class ShipmentPackerTest < Minitest::Test
     assert_equal 1, packages[1].weight
   end
 
-  test "raise overweight exception when a single item exceeds the maximum weight of a package" do
+  def test_raise_overweight_exception_when_a_single_item_exceeds_the_maximum_weight_of_a_package
     assert_raises(ShipmentPacker::OverweightItem) do
       items = [{ grams: 2, quantity: 1, price: 1.0 }]
       ShipmentPacker.pack(items, @dimensions, 1, 'USD')
     end
   end
 
-  test "raise over weight exceptions before over package limit exceptions" do
+  def test_raise_over_weight_exceptions_before_over_package_limit_exceptions
     assert_raises(ShipmentPacker::OverweightItem) do
       items = [{ grams: 5, quantity: ShipmentPacker::EXCESS_PACKAGE_QUANTITY_THRESHOLD + 1, price: 1.0 }]
       ShipmentPacker.pack(items, @dimensions, 4, 'USD')
     end
   end
 
-  test "returns an empty list when no items provided" do
+  def test_returns_an_empty_list_when_no_items_provided
     assert_equal [], ShipmentPacker.pack([], @dimensions, 1, 'USD')
   end
 
-  test "add summarized prices for all items and currency to package" do
+  def test_add_summarized_prices_for_all_items_and_currency_to_package
     items = [
       { grams: 1, quantity: 3, price: 1.0 },
       { grams: 2, quantity: 1, price: 2.0 }
@@ -106,7 +106,7 @@ class ShipmentPackerTest < Minitest::Test
     assert_equal 'USD', packages.first.currency
   end
 
-  test "divide items and prices accordingly when splitting into two packages" do
+  def test_divide_items_and_prices_accordingly_when_splitting_into_two_packages
     items = [
       { grams: 1, quantity: 1, price: 1.0 },
       { grams: 1, quantity: 1, price: 1.0 },
@@ -122,7 +122,7 @@ class ShipmentPackerTest < Minitest::Test
     assert_equal 'USD', packages[1].currency
   end
 
-  test "symbolize item keys" do
+  def test_symbolize_item_keys
     string_key_items          = [{ 'grams' => 1, 'quantity' => 1, 'price' => 1.0 }]
     indifferent_access_items  = [{ 'grams' => 1, 'quantity' => 1, 'price' => 1.0 }.with_indifferent_access]
 
@@ -136,7 +136,7 @@ class ShipmentPackerTest < Minitest::Test
     end
   end
 
-  test "cast quantity and grams to int" do
+  def test_cast_quantity_and_grams_to_int
     items = [{ grams: '1', quantity: '1', price: '1.0' }]
 
     packages = ShipmentPacker.pack(items, @dimensions, 1, 'USD')
@@ -146,7 +146,7 @@ class ShipmentPackerTest < Minitest::Test
     assert_equal 100, package.value
   end
 
-  test "excess packages raised over threshold before packing begins" do
+  def test_excess_packages_raised_over_threshold_before_packing_begins
     ActiveShipping::Package.expects(:new).never
     items = [{ grams: 1, quantity: ShipmentPacker::EXCESS_PACKAGE_QUANTITY_THRESHOLD + 1, price: 1.0 }]
 
@@ -155,21 +155,21 @@ class ShipmentPackerTest < Minitest::Test
     end
   end
 
-  test "excess packages not raised at threshold" do
+  def test_excess_packages_not_raised_at_threshold
     items = [{ grams: 1, quantity: ShipmentPacker::EXCESS_PACKAGE_QUANTITY_THRESHOLD, price: 1.0 }]
     packages = ShipmentPacker.pack(items, @dimensions, 1, 'USD')
 
     assert_predicate packages, :present?
   end
 
-  test "excess packages not raised below threshold" do
+  def test_excess_packages_not_raised_below_threshold
     items = [{ grams: 1, quantity: ShipmentPacker::EXCESS_PACKAGE_QUANTITY_THRESHOLD - 1, price: 1.0 }]
     packages = ShipmentPacker.pack(items, @dimensions, 1, 'USD')
 
     assert_predicate packages, :present?
   end
 
-  test "excess packages with slightly larger max weight than item weight" do
+  def test_excess_packages_with_slightly_larger_max_weight_than_item_weight
     max_weight = 750
     items = [{ grams: 500, quantity: ShipmentPacker::EXCESS_PACKAGE_QUANTITY_THRESHOLD + 1, price: 1.0 }]
 
@@ -178,7 +178,7 @@ class ShipmentPackerTest < Minitest::Test
     end
   end
 
-  test "lots of zero weight items" do
+  def test_lots_of_zero_weight_items
     items = [{ grams: 0, quantity: 1_000_000, price: 1.0 }]
     packages = ShipmentPacker.pack(items, @dimensions, 1, 'USD')
 
@@ -187,7 +187,7 @@ class ShipmentPackerTest < Minitest::Test
     assert_equal 100_000_000, packages[0].value
   end
 
-  test "dont destroy input items" do
+  def test_dont_destroy_input_items
     items = [{ grams: 1, quantity: 5, price: 1.0 }]
 
     packages = ShipmentPacker.pack(items, @dimensions, 10, 'USD')
@@ -196,14 +196,14 @@ class ShipmentPackerTest < Minitest::Test
     assert_equal 1, packages.size
   end
 
-  test "dont modify input item quantities" do
+  def test_dont_modify_input_item_quantities
     items = [{ grams: 1, quantity: 5, price: 1.0 }]
 
     ShipmentPacker.pack(items, @dimensions, 10, 'USD')
     assert_equal 5, items.first[:quantity]
   end
 
-  test "items with negative weight" do
+  def test_items_with_negative_weight
     items = [{ grams: -1, quantity: 5, price: 1.0 }]
 
     ShipmentPacker.pack(items, @dimensions, 10, 'USD')
