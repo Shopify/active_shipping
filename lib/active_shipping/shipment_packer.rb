@@ -20,7 +20,7 @@ module ActiveShipping
 
         # Naive in that it assumes weight is equally distributed across all items
         # Should raise early enough in most cases
-        total_weight = calculate_total_weight(items, maximum_weight)
+        validate_total_weight(items, maximum_weight)
         items_to_pack = items.map(&:dup).sort_by! { |i| i[:grams].to_i }
 
         state = :package_empty
@@ -50,27 +50,28 @@ module ActiveShipping
 
       private
 
-      def calculate_total_weight(items, maximum_weight)
-        items.inject(0) do |total_weight, item|
+      def validate_total_weight(items, maximum_weight)
+        total_weight = 0
+        items.each do |item|
           total_weight += item[:quantity].to_i * item[:grams].to_i
 
           if overweight_item?(item[:grams], maximum_weight)
             raise OverweightItem, "The item with weight of #{item[:grams]}g is heavier than the allowable package weight of #{maximum_weight}g"
           end
 
-          if excess_package_quantity?(total_weight, maximum_weight)
-            raise ExcessPackageQuantity, "Unable to pack more than #{EXCESS_PACKAGE_QUANTITY_THRESHOLD} packages"
-          end
-
-          total_weight
+          raise_excess_quantity_error if maybe_excess_package_quantity?(total_weight, maximum_weight)
         end
+      end
+
+      def raise_excess_quantity_error
+        raise ExcessPackageQuantity, "Unable to pack more than #{EXCESS_PACKAGE_QUANTITY_THRESHOLD} packages"
       end
 
       def overweight_item?(grams, maximum_weight)
         grams.to_i > maximum_weight
       end
 
-      def excess_package_quantity?(total_weight, maximum_weight)
+      def maybe_excess_package_quantity?(total_weight, maximum_weight)
         total_weight > (maximum_weight * EXCESS_PACKAGE_QUANTITY_THRESHOLD)
       end
 
