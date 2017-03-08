@@ -13,6 +13,7 @@ module ActiveShipping
     EventDetails = Struct.new(:description, :time, :zoneless_time, :location, :event_code)
     ONLY_PREFIX_EVENTS = ['DELIVERED','OUT FOR DELIVERY']
     self.retry_safe = true
+    self.ssl_version = :TLSv1_2
 
     cattr_reader :name
     @@name = "USPS"
