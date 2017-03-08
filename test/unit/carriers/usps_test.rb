@@ -386,6 +386,13 @@ class USPSTest < ActiveSupport::TestCase
     assert request =~ /\>12345\</
   end
 
+  def test_strip_9_digit_zip_codes_world_rates
+    request = URI.decode(@carrier.send(:build_world_rate_request, location_fixtures[:beverly_hills_9_zip],
+                                        package_fixtures[:book], location_fixtures[:auckland], {}))
+    refute_match /\<OriginZip\>90210-1234/, request
+    assert_match /\<OriginZip\>90210/, request
+  end
+
   def test_maximum_weight
     assert Package.new(70 * 16, [5, 5, 5], :units => :imperial).mass == @carrier.maximum_weight
     assert Package.new((70 * 16) + 0.01, [5, 5, 5], :units => :imperial).mass > @carrier.maximum_weight
