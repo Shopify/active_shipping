@@ -422,7 +422,7 @@ module ActiveShipping
               xml.Length("%0.2f" % [package.inches(:length), 0.01].max)
               xml.Height("%0.2f" % [package.inches(:height), 0.01].max)
               xml.Girth("%0.2f" % [package.inches(:girth), 0.01].max)
-              xml.OriginZip(origin.zip)
+              xml.OriginZip(strip_zip(origin.zip))
               if commercial_type = commercial_type(options)
                 xml.public_send(COMMERCIAL_FLAG_NAME.fetch(commercial_type), 'Y')
               end
