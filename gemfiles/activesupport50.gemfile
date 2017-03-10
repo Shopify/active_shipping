@@ -3,4 +3,4 @@ source "https://rubygems.org"
 gemspec path: '..'
 
 gem 'activesupport', '~> 5.0.0'
-gem 'active_utils', '~> 3.2.2'
+gem 'active_utils', '~> 3.3.0'
