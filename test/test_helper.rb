@@ -267,8 +267,14 @@ module ActiveShipping::Test
                                       :city => 'Melbourne',
                                       :state => 'VIC',
                                       :address1 => '192 George Street',
-                                      :postal_code => '3108')
+                                      :postal_code => '3108'),
+        :kosovo => Location.new(
+                                      :country => 'XK',
+                                      :city => 'Prishtinë',
+                                      :address1 => 'Ahmet Krasniqi',
+                                      :postal_code => '10000')
       }
+
     end
 
     def line_item_fixture
