@@ -656,4 +656,47 @@ class UPSTest < ActiveSupport::TestCase
     assert_equal :invalid, response.validity
   end
 
+  def test_kosovo_location_node
+    xml_builder = Nokogiri::XML::Builder.new do |xml|
+      @carrier.send(:build_location_node,
+                    xml,
+                    "KosovoRequest",
+                    location_fixtures[:kosovo],
+                    {}
+      )
+    end
+    request = Nokogiri::XML(xml_builder.to_xml)
+    assert_equal 'KV', request.search('/KosovoRequest/Address/CountryCode').text
+  end
+
+  def test_kosovo_build_address_artifact_format_location
+    xml_builder = Nokogiri::XML::Builder.new do |xml|
+      @carrier.send(:build_address_artifact_format_location,
+                    xml,
+                    "KosovoRequest",
+                    location_fixtures[:kosovo]
+      )
+    end
+    request = Nokogiri::XML(xml_builder.to_xml)
+    assert_equal 'KV', request.search('/KosovoRequest/AddressArtifactFormat/CountryCode').text
+  end
+
+  def test_kosovo_build_address_validation_request
+    xml = @carrier.send(:build_address_validation_request, location_fixtures[:kosovo])
+    request = Nokogiri::XML(xml)
+    assert_equal 'KV', request.search('/AddressValidationRequest/AddressKeyFormat/CountryCode').text
+  end
+
+  def test_kosovo_build_billing_info_node
+    options = {bill_third_party: true, bill_to_consignee: true, billing_account: 12345,
+               billing_zip: 12345, billing_country: 'XK'}
+    xml_builder = Nokogiri::XML::Builder.new do |xml|
+      @carrier.send(:build_billing_info_node,
+                    xml,
+                    options
+      )
+    end
+    request = Nokogiri::XML(xml_builder.to_xml)
+    assert_equal 'KV', request.search('/BillThirdParty/BillThirdPartyConsignee/ThirdParty/Address/CountryCode').text
+  end
 end
