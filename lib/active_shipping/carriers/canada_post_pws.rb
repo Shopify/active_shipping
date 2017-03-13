@@ -64,6 +64,16 @@ module ActiveShipping
       [:api_key, :secret]
     end
 
+    def self.default_location
+      {
+        :country     => 'CA',
+        :province    => 'ON',
+        :city        => 'Ottawa',
+        :address1    => '61A York St',
+        :postal_code => 'K1N5T2'
+      }
+    end
+
     def find_rates(origin, destination, line_items = [], options = {}, package = nil, services = [])
       url = endpoint + "rs/ship/price"
       request  = build_rates_request(origin, destination, line_items, options, package, services)
