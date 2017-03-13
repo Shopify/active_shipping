@@ -1,5 +1,9 @@
 # ActiveShipping CHANGELOG
 
+### v1.12.1
+- Explicitly set ssl_version for USPS
+- Strip 9 digit origin zip code for USPS world rate requests
+
 ### v1.12.0
 - Update active_utils dependency to v3.3.0
 
