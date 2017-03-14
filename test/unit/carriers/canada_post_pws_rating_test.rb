@@ -112,6 +112,25 @@ class CanadaPostPwsRatingTest < Minitest::Test
     assert_equal @dest.to_s, Location.new(rate.destination).to_s
   end
 
+  def test_find_rates_excluding_tax
+    response = xml_fixture('canadapost_pws/rates_info')
+    expected_headers = {
+      'Authorization'   => "#{@cp.send(:encoded_authorization)}",
+      'Accept-Language' => 'en-CA',
+      'Accept'          => 'application/vnd.cpc.ship.rate+xml',
+      'Content-Type'    => 'application/vnd.cpc.ship.rate+xml'
+    }
+    CanadaPostPWS.any_instance.expects(:ssl_post).with(anything, anything, expected_headers).returns(response).twice
+
+    rates_tax_response = @cp.find_rates(@home_params, @dest_params, [@pkg1, @pkg2], {})
+    rates_no_tax_response = @cp.find_rates(@home_params, @dest_params, [@pkg1, @pkg2], {exclude_tax: true})
+
+    expected = [139, 407, 139, 240] #taken from fixture, tax in centsÏ
+    assert_equal rates_no_tax_response.rates.size, rates_tax_response.rates.size
+    expected.zip(rates_no_tax_response.rates, rates_tax_response.rates).each do |expected, no_tax, tax|
+      assert_equal expected, tax.total_price - no_tax.total_price
+    end
+  end
   # build rates
 
   def test_build_rates_request
@@ -283,7 +302,7 @@ class CanadaPostPwsRatingTest < Minitest::Test
 
   def test_parse_rates_response
     body = xml_fixture('canadapost_pws/rates_info')
-    rates_response = @cp.parse_rates_response(body, @home, @dest)
+    rates_response = @cp.parse_rates_response(body, @home, @dest, false)
 
     assert_equal 4, rates_response.rates.count
     rate = rates_response.rates.first
@@ -297,7 +316,7 @@ class CanadaPostPwsRatingTest < Minitest::Test
   def test_parse_rates_response_with_invalid_response_raises
     body = xml_fixture('canadapost_pws/rates_info_error')
     exception = assert_raises ActiveShipping::ResponseError do
-      @response = @cp.parse_rates_response(body, @home, @dest)
+      @response = @cp.parse_rates_response(body, @home, @dest, false)
     end
     assert_equal "No Quotes", exception.message
   end
