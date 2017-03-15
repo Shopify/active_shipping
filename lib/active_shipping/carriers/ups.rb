@@ -127,6 +127,10 @@ module ActiveShipping
 
     IMPERIAL_COUNTRIES = %w(US LR MM)
 
+    COUNTRY_MAPPING = {
+      'XK' => 'KV'
+    }.freeze
+
     DEFAULT_SERVICE_NAME_TO_CODE = Hash[UPS::DEFAULT_SERVICES.to_a.map(&:reverse)]
     DEFAULT_SERVICE_NAME_TO_CODE['UPS 2nd Day Air'] = "02"
     DEFAULT_SERVICE_NAME_TO_CODE['UPS 3 Day Select'] = "12"
@@ -670,7 +674,7 @@ module ActiveShipping
           xml.StateProvinceCode(location.province) unless location.province.blank?
           # StateProvinceCode required for negotiated rates but not otherwise, for some reason
           xml.PostalCode(location.postal_code) unless location.postal_code.blank?
-          xml.CountryCode(location.country_code(:alpha2)) unless location.country_code(:alpha2).blank?
+          xml.CountryCode(mapped_country_code(location.country_code(:alpha2))) unless location.country_code(:alpha2).blank?
           xml.ResidentialAddressIndicator(true) unless location.commercial? # the default should be that UPS returns residential rates for destinations that it doesn't know about
           # not implemented: Shipment/(Shipper|ShipTo|ShipFrom)/Address/ResidentialAddressIndicator element
         end
@@ -682,7 +686,7 @@ module ActiveShipping
         xml.AddressArtifactFormat do
           xml.PoliticalDivision2(location.city)
           xml.PoliticalDivision1(location.province)
-          xml.CountryCode(location.country_code(:alpha2))
+          xml.CountryCode(mapped_country_code(location.country_code(:alpha2)))
           xml.PostcodePrimaryLow(location.postal_code)
           xml.ResidentialAddressIndicator(true) unless location.commercial?
         end
@@ -785,7 +789,7 @@ module ActiveShipping
             xml.ThirdParty do
               xml.Address do
                 xml.PostalCode(options[:billing_zip])
-                xml.CountryCode(options[:billing_country])
+                xml.CountryCode(mapped_country_code(options[:billing_country]))
               end
             end
           end
@@ -1000,7 +1004,7 @@ module ActiveShipping
             xml.PoliticalDivision2(location.city)
             xml.PoliticalDivision1(location.state)
             xml.PostcodePrimaryLow(location.postal_code)
-            xml.CountryCode(location.country_code)
+            xml.CountryCode(mapped_country_code(location.country_code))
           end
         end
       end
@@ -1022,7 +1026,7 @@ module ActiveShipping
         if xml.at('AddressClassification/Code').present?
           classification_code = xml.at('AddressClassification/Code').text
         end
-        
+
         classification = case classification_code
         when "1"
           :commercial
@@ -1054,7 +1058,7 @@ module ActiveShipping
       return nil unless address
       country = address.at('CountryCode').try(:text)
       country = 'US' if country == 'ZZ' # Sometimes returned by SUREPOST in the US
-      
+
       address_lines = address.css('AddressLine')
 
       Location.new(
@@ -1200,6 +1204,10 @@ module ActiveShipping
     def package_level_delivery_confirmation?(origin, destination)
       origin.country_code == destination.country_code ||
       [['US','PR'], ['PR','US']].include?([origin,destination].map(&:country_code))
+    end
+
+    def mapped_country_code(country_code)
+      COUNTRY_MAPPING[country_code].presence || country_code
     end
   end
 end
