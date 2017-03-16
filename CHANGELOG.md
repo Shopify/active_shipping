@@ -1,5 +1,10 @@
 # ActiveShipping CHANGELOG
 
+### v1.13.0
+- Add default location for CanadaPost PWS
+- Patch UPS to use old Kosovo country code
+- Add option to not include tax in rates for CP PWS
+
 ### v1.12.1
 - Explicitly set ssl_version for USPS
 - Strip 9 digit origin zip code for USPS world rate requests
