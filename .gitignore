@@ -12,3 +12,4 @@ test/fixtures/live_credentials.yml
 doc/
 .idea
 .bundle
+.byebug_history
