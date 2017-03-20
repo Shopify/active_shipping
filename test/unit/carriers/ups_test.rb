@@ -173,6 +173,30 @@ class UPSTest < Minitest::Test
     assert_empty response.shipment_events
   end
 
+  def test_location_from_address_node_kosovo_kv
+    address = Nokogiri::XML::DocumentFragment.parse(xml_fixture('ups/location_node_kosovo_kv'))
+
+    parsed = @carrier.send(:location_from_address_node, address)
+    assert_equal 'XK', parsed.country_code
+    assert_equal 'Kosovo', parsed.country.name
+  end
+
+  def test_location_from_address_node_kosovo_xk
+    address = Nokogiri::XML::DocumentFragment.parse(xml_fixture('ups/location_node_kosovo_xk'))
+
+    parsed = @carrier.send(:location_from_address_node, address)
+    assert_equal 'XK', parsed.country_code
+    assert_equal 'Kosovo', parsed.country.name
+  end
+
+  def test_location_from_address_node_zz
+    address = Nokogiri::XML::DocumentFragment.parse(xml_fixture('ups/location_node_zz'))
+
+    parsed = @carrier.send(:location_from_address_node, address)
+    assert_equal 'US', parsed.country_code
+    assert_equal 'United States', parsed.country.name
+  end
+
   def test_response_parsing_an_oversize_package
     mock_response = xml_fixture('ups/package_exceeds_maximum_length')
     @carrier.expects(:commit).returns(mock_response)
