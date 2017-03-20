@@ -1076,6 +1076,7 @@ module ActiveShipping
       return nil unless address
       country = address.at('CountryCode').try(:text)
       country = 'US' if country == 'ZZ' # Sometimes returned by SUREPOST in the US
+      country = 'XK' if country == 'KV' # ActiveUtils now refers to Kosovo by XK
       Location.new(
         :country     => country,
         :postal_code => address.at('PostalCode').try(:text),
