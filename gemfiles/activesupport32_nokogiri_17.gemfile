@@ -2,6 +2,6 @@ source "https://rubygems.org"
 
 gemspec path: '..'
 
-gem 'nokogiri', '= 1.6.8'
+gem 'nokogiri', '>= 1.7'
 gem 'activesupport', '~> 3.2.0'
 gem 'tzinfo'
