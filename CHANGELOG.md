@@ -1,5 +1,15 @@
 # ActiveShipping CHANGELOG
 
+### v1.13.3
+- CanadaPostPWS no longer modifies locations passed to it
+
+### v1.13.2
+- Bump active_utils to 3.3.1
+- Allow activesupport <5.2.0
+
+### v1.13.1
+- Fix up UPS tracker parsing for Kosovo (KV)
+
 ### v1.13.0
 - Add default location for CanadaPost PWS
 - Patch UPS to use old Kosovo country code
