@@ -359,9 +359,6 @@ module ActiveShipping
     # :cod, :cod_amount, :insurance, :insurance_amount, :signature_required, :pa18, :pa19, :hfp, :dns, :lad
     #
     def build_shipment_request(origin, destination, package, line_items = [], options = {})
-      origin = sanitize_location(origin)
-      destination = sanitize_location(destination)
-
       builder = Nokogiri::XML::Builder.new do |xml|
         xml.public_send('non-contract-shipment', :xmlns => "http://www.canadapost.ca/ws/ncshipment") do
           xml.public_send('delivery-spec') do
@@ -385,7 +382,8 @@ module ActiveShipping
       xml.public_send('service-code', options[:service])
     end
 
-    def shipment_sender_node(xml, location, options)
+    def shipment_sender_node(xml, sender, options)
+      location = location_from_hash(sender)
       xml.public_send('sender') do
         xml.public_send('name', location.name)
         xml.public_send('company', location.company) if location.company.present?
@@ -396,12 +394,13 @@ module ActiveShipping
           xml.public_send('city', location.city)
           xml.public_send('prov-state', location.province)
           # xml.public_send('country-code', location.country_code)
-          xml.public_send('postal-zip-code', location.postal_code)
+          xml.public_send('postal-zip-code', get_sanitized_postal_code(location))
         end
       end
     end
 
-    def shipment_destination_node(xml, location, options)
+    def shipment_destination_node(xml, destination, options)
+      location = location_from_hash(destination)
       xml.public_send('destination') do
         xml.public_send('name', location.name)
         xml.public_send('company', location.company) if location.company.present?
@@ -412,7 +411,7 @@ module ActiveShipping
           xml.public_send('city', location.city)
           xml.public_send('prov-state', location.province) unless location.province.blank?
           xml.public_send('country-code', location.country_code)
-          xml.public_send('postal-zip-code', location.postal_code)
+          xml.public_send('postal-zip-code', get_sanitized_postal_code(location))
         end
       end
     end
@@ -446,7 +445,7 @@ module ActiveShipping
     end
 
     def shipment_customs_node(xml, destination, line_items, options)
-      return unless destination.country_code != 'CA'
+      return unless location_from_hash(destination).country_code != 'CA'
 
       xml.public_send('customs') do
         currency = options[:currency] || "CAD"
@@ -690,24 +689,25 @@ module ActiveShipping
     end
 
     def origin_node(xml, location)
-      origin = sanitize_location(location)
-      xml.public_send("origin-postal-code", origin.zip)
+      origin = location_from_hash(location)
+      xml.public_send("origin-postal-code", get_sanitized_postal_code(origin))
     end
 
     def destination_node(xml, location)
-      destination = sanitize_location(location)
+      destination = location_from_hash(location)
+      postal_code = get_sanitized_postal_code(destination)
       case destination.country_code
         when 'CA'
           xml.public_send('destination') do
             xml.public_send('domestic') do
-              xml.public_send('postal-code', destination.postal_code)
+              xml.public_send('postal-code', postal_code)
             end
           end
 
         when 'US'
           xml.public_send('destination') do
             xml.public_send('united-states') do
-              xml.public_send('zip-code', destination.postal_code)
+              xml.public_send('zip-code', postal_code)
             end
           end
 
@@ -776,17 +776,13 @@ module ActiveShipping
       DateTime.strptime((options[:shipping_date] || Time.now).to_s, "%Y-%m-%d")
     end
 
-    def sanitize_location(location)
-      location_hash = location.is_a?(Location) ? location.to_hash : location
-      location_hash = sanitize_zip(location_hash)
-      Location.new(location_hash)
+    def location_from_hash(location)
+      return location if location.is_a?(Location)
+      return Location.new(location)
     end
 
-    def sanitize_zip(hash)
-      [:postal_code, :zip].each do |attr|
-        hash[attr].gsub!(/\s+/, '') if hash[attr]
-      end
-      hash
+    def get_sanitized_postal_code(location)
+      location.try(:postal_code).try(:gsub, /\s+/, '')
     end
 
     def sanitize_weight_kg(kg)
