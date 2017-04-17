@@ -782,7 +782,8 @@ module ActiveShipping
     end
 
     def get_sanitized_postal_code(location)
-      location.try(:postal_code).try(:gsub, /\s+/, '')
+      return nil if location.nil? || location.postal_code.nil?
+      location.postal_code.gsub(/\s+/, '').upcase
     end
 
     def sanitize_weight_kg(kg)
