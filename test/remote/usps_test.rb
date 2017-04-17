@@ -12,12 +12,12 @@ class RemoteUSPSTest < ActiveSupport::TestCase
   end
 
    def test_tracking_with_attempted_delivery
-    response = @carrier.find_tracking_info('CJ509046330US', test: false)
+    response = @carrier.find_tracking_info('LZ117228611US', test: false)
     assert response.success?, response.message
-    assert_equal 10,response.shipment_events.size
+    assert_equal 15,response.shipment_events.size
     assert_equal 'DELIVERED', response.shipment_events.last.message
-    assert_equal Time.parse('2016-04-21 13:46:00 UTC'), response.attempted_delivery_date
-    assert_equal Time.parse('2016-04-25 17:13:00 UTC'), response.actual_delivery_date
+    assert_equal Time.parse('2017-03-31 11:37:00 UTC'), response.attempted_delivery_date
+    assert_equal Time.parse('2017-04-03 14:05:00 UTC'), response.actual_delivery_date
   end
 
   def test_tracking_with_bad_number
