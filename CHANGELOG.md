@@ -1,5 +1,10 @@
 # ActiveShipping CHANGELOG
 
+### v1.13.4
+- Upcase postal code for CanadaPostPWS
+- Fix failing USPS test
+- add .byebug_history to .gitignore
+
 ### v1.13.3
 - CanadaPostPWS no longer modifies locations passed to it
 
