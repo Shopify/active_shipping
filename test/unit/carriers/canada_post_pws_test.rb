@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class CanadaPostPwsTest < ActiveSupport::TestCase
+class CanadaPostPwsTest < Minitest::Test
 
   def setup
     credentials = { platform_id: 123, api_key: '456', secret: '789' }
@@ -10,17 +10,17 @@ class CanadaPostPwsTest < ActiveSupport::TestCase
   def test_get_sanitized_postal_code_location_nil
     postal_code = @cp.send(:get_sanitized_postal_code, nil)
 
-    assert_equal nil, postal_code
+    assert_nil postal_code
   end
 
   def test_get_sanitized_postal_code_postal_code_nil
     location = Location.new(name: 'Test test')
 
-    assert_equal nil, location.postal_code
+    assert_nil location.postal_code
 
     postal_code = @cp.send(:get_sanitized_postal_code, location)
 
-    assert_equal nil, postal_code
+    assert_nil postal_code
   end
 
   def test_get_sanitized_postal_code_spaces
