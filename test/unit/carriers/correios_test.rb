@@ -123,7 +123,7 @@ class CorreiosTest < ActiveSupport::TestCase
       "sCdMaoPropria=S",
       "nVlValorDeclarado=10%2C5",
       "sCdAvisoRecebimento=S",
-      "nCdServico=41106%2C40010",
+      "nCdServico=04510%2C04014",
       "sCepOrigem=01415000",
       "sCepDestino=38700000",
       "nVlPeso=0.25",
@@ -219,7 +219,7 @@ class CorreiosTest < ActiveSupport::TestCase
     services = Correios.available_services
 
     assert_kind_of Hash, services
-    assert_equal 19, services.size
+    assert_equal 21, services.size
     assert_equal 'PAC sem contrato', services[41106]
     assert_equal 'PAC com contrato', services[41068]
     assert_equal 'PAC para grandes formatos', services[41300]

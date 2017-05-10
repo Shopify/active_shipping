@@ -19,8 +19,10 @@ module ActiveShipping
 
     protected
 
-    DEFAULT_SERVICES = [41106, 40010]
+    DEFAULT_SERVICES = ['04510', '04014']
     AVAILABLE_SERVICES = {
+      '04510' => 'PAC sem contrato',
+      '04014' => 'SEDEX sem contrato',
       41106 => 'PAC sem contrato',
       41068 => 'PAC com contrato',
       41300 => 'PAC para grandes formatos',
