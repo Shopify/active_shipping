@@ -58,6 +58,20 @@ class CanadaPostPwsRegisterTest < Minitest::Test
     assert_equal false, response.has_default_credit_card
   end
 
+  def test_retrieve_merchant_details_without_contract_number
+    endpoint = @cp.endpoint + "ot/token/1234567890"
+    response = xml_fixture('canadapost_pws/merchant_details_response_no_contract_number')
+    @cp.expects(:ssl_get).with(endpoint, anything).returns(response)
+
+    response = @cp.retrieve_merchant_details(:token_id => '1234567890')
+    assert response.is_a?(CPPWSMerchantDetailsResponse)
+    assert_equal "1234567890", response.customer_number
+    assert_nil response.contract_number
+    assert_equal "1234567890123456", response.username
+    assert_equal "12343567890123456789012", response.password
+    assert_equal true, response.has_default_credit_card
+  end
+
   def test_retrieve_merchant_with_error
     endpoint = @cp.endpoint + "ot/token/1234567890"
     response = xml_fixture('canadapost_pws/merchant_details_error')
