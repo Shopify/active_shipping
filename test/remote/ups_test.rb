@@ -387,7 +387,8 @@ class RemoteUPSTest < Minitest::Test
     assert response.success?
     refute_empty response.delivery_estimates
     ww_express_estimate = response.delivery_estimates.select {|de| de.service_name == "UPS Worldwide Express"}.first
-    assert_equal 1.business_days.after(today), ww_express_estimate.date
+    expected_estimate = today.friday? ? today + 1 : 1.business_days.after(today)
+    assert_equal expected_estimate, ww_express_estimate.date
   end
 
   def test_void_shipment
