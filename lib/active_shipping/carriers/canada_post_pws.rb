@@ -526,7 +526,7 @@ module ActiveShipping
       raise "No Merchant Info" if doc.root.at('customer-number').blank?
       options = {
         :customer_number => doc.root.at('customer-number').text,
-        :contract_number => doc.root.at('contract-number').text,
+        :contract_number => doc.root.at('contract-number').try(:text),
         :username => doc.root.at('merchant-username').text,
         :password => doc.root.at('merchant-password').text,
         :has_default_credit_card => doc.root.at('has-default-credit-card').text == 'true'

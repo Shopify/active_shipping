@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<merchant-info xmlns="http://www.canadapost.ca/ws/merchant/registration">
+  <customer-number>1234567890</customer-number>
+  <merchant-username>1234567890123456</merchant-username>
+  <merchant-password>12343567890123456789012</merchant-password>
+  <has-default-credit-card>true</has-default-credit-card>
+</merchant-info>
