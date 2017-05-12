@@ -120,6 +120,18 @@ class CanadaPostPwsShippingTest < Minitest::Test
     refute request.blank?
   end
 
+  def test_create_shipment_request_with_incomplete_options_hash
+    bad_shipping_opts = { :cod_amount => 50.00, :cov_amount => 100.00 }
+    options = @default_options.merge(bad_shipping_opts)
+    request = @cp.build_shipment_request(@home_params, @paris_params, @pkg1, @line_item1, options)
+    refute request.blank?
+
+    doc = Nokogiri.XML(request)
+    doc.remove_namespaces!
+
+    assert_nil doc.at('non-contract-shipment').at('delivery-spec').at('options')
+  end
+
   def test_create_shipment_request_with_options
     options = @default_options.merge(@shipping_opts1)
     request = @cp.build_shipment_request(@home_params, @paris_params, @pkg1, @line_item1, options)

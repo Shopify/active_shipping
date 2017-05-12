@@ -728,39 +728,43 @@ module ActiveShipping
 
     def shipping_options_node(xml, available_options, options = {})
       return if (options.symbolize_keys.keys & available_options).empty?
-      xml.public_send('options') do
 
-        if options[:cod] && options[:cod_amount]
-          xml.public_send('option') do
-            xml.public_send('option-code', 'COD')
-            xml.public_send('option-amount', options[:cod_amount])
-            xml.public_send('option-qualifier-1', options[:cod_includes_shipping]) unless options[:cod_includes_shipping].blank?
-            xml.public_send('option-qualifier-2', options[:cod_method_of_payment]) unless options[:cod_method_of_payment].blank?
+      options_doc = Nokogiri::XML::Builder.new do |options_xml|
+        options_xml.public_send('options') do
+          if options[:cod] && options[:cod_amount]
+            options_xml.public_send('option') do
+              options_xml.public_send('option-code', 'COD')
+              options_xml.public_send('option-amount', options[:cod_amount])
+              options_xml.public_send('option-qualifier-1', options[:cod_includes_shipping]) unless options[:cod_includes_shipping].blank?
+              options_xml.public_send('option-qualifier-2', options[:cod_method_of_payment]) unless options[:cod_method_of_payment].blank?
+            end
           end
-        end
 
-        if options[:cov]
-          xml.public_send('option') do
-            xml.public_send('option-code', 'COV')
-            xml.public_send('option-amount', options[:cov_amount]) unless options[:cov_amount].blank?
+          if options[:cov]
+            options_xml.public_send('option') do
+              options_xml.public_send('option-code', 'COV')
+              options_xml.public_send('option-amount', options[:cov_amount]) unless options[:cov_amount].blank?
+            end
           end
-        end
 
-        if options[:d2po]
-          xml.public_send('option') do
-            xml.public_send('option-code', 'D2PO')
-            xml.public_send('option-qualifier-2'. options[:d2po_office_id]) unless options[:d2po_office_id].blank?
+          if options[:d2po]
+            options_xml.public_send('option') do
+              options_xml.public_send('option-code', 'D2PO')
+              options_xml.public_send('option-qualifier-2'. options[:d2po_office_id]) unless options[:d2po_office_id].blank?
+            end
           end
-        end
 
-        [:so, :dc, :pa18, :pa19, :hfp, :dns, :lad, :rase, :rts, :aban].each do |code|
-          if options[code]
-            xml.public_send('option') do
-              xml.public_send('option-code', code.to_s.upcase)
+          [:so, :dc, :pa18, :pa19, :hfp, :dns, :lad, :rase, :rts, :aban].each do |code|
+            if options[code]
+              options_xml.public_send('option') do
+                options_xml.public_send('option-code', code.to_s.upcase)
+              end
             end
           end
         end
       end
+
+      xml.parent << options_doc.doc.at("options") if options_doc.doc.at("options").children.any?
     end
 
     def expected_date_from_node(node)
