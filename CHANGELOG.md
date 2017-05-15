@@ -1,5 +1,11 @@
 # ActiveShipping CHANGELOG
 
+### v1.14.0
+- Update Correios default services list.
+- Fix CanadaPostPWS from generating an empty options tag.
+- Allow contract-number on CanadaPost merchant detail's response to be nil.
+- Fix a flakey UPS remote test that would fail only on Fridays.
+
 ### v1.13.4
 - Upcase postal code for CanadaPostPWS
 - Fix failing USPS test
