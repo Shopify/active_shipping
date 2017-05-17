@@ -96,6 +96,18 @@ class FedExTest < ActiveSupport::TestCase
                          package_fixtures.values_at(:book, :wii), test: true, saturday_delivery: true)
   end
 
+  def test_building_request_with_no_saturday_delivery_should_not_have_saturday_option_set
+    mock_response = xml_fixture('fedex/ottawa_to_beverly_hills_rate_response')
+    expected_request = xml_fixture('fedex/ottawa_to_beverly_hills_no_saturday_rate_request')
+
+    @carrier.expects(:ship_timestamp).returns(Time.parse("2009-07-20T12:01:55-04:00").in_time_zone('US/Eastern'))
+    @carrier.expects(:commit).with { |request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode }.returns(mock_response)
+    destination = ActiveShipping::Location.from(location_fixtures[:beverly_hills].to_hash) 
+    @carrier.find_rates( location_fixtures[:ottawa],
+                         destination,
+                         package_fixtures.values_at(:book, :wii), test: true)
+  end
+
   def test_building_freight_request_and_parsing_response
     expected_request = xml_fixture('fedex/freight_rate_request')
     mock_response = xml_fixture('fedex/freight_rate_response')
