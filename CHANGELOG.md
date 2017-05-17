@@ -1,5 +1,8 @@
 # ActiveShipping CHANGELOG
 
+### v1.14.2
+- Make saturday delivery an option for fedex
+
 ### v1.14.1
 - Fix parsing of CanadaPostPWS service options response.
 
