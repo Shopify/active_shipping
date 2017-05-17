@@ -93,7 +93,19 @@ class FedExTest < Minitest::Test
     destination = ActiveShipping::Location.from(location_fixtures[:beverly_hills].to_hash, :address_type => :commercial)
     @carrier.find_rates( location_fixtures[:ottawa],
                          destination,
-                         package_fixtures.values_at(:book, :wii), :test => true)
+                         package_fixtures.values_at(:book, :wii), test: true, saturday_delivery: true)
+  end
+
+  def test_building_request_with_no_saturday_delivery_should_not_have_saturday_option_set
+    mock_response = xml_fixture('fedex/ottawa_to_beverly_hills_rate_response')
+    expected_request = xml_fixture('fedex/ottawa_to_beverly_hills_no_saturday_rate_request')
+
+    @carrier.expects(:ship_timestamp).returns(Time.parse("2009-07-20T12:01:55-04:00").in_time_zone('US/Eastern'))
+    @carrier.expects(:commit).with { |request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode }.returns(mock_response)
+    destination = ActiveShipping::Location.from(location_fixtures[:beverly_hills].to_hash) 
+    @carrier.find_rates( location_fixtures[:ottawa],
+                         destination,
+                         package_fixtures.values_at(:book, :wii), test: true)
   end
 
   def test_building_freight_request_and_parsing_response
@@ -130,7 +142,7 @@ class FedExTest < Minitest::Test
 
     response = @carrier.find_rates( shipping_location,
                                     location_fixtures[:ottawa],
-                                    [package_fixtures[:wii]],  :freight => freight_options, :test => true )
+                                    [package_fixtures[:wii]],  freight: freight_options, test: true, saturday_delivery: true )
 
     assert_equal ["FedEx Freight Economy", "FedEx Freight Priority"], response.rates.map(&:service_name)
     assert_equal [66263, 68513], response.rates.map(&:price)
@@ -164,7 +176,7 @@ class FedExTest < Minitest::Test
     @carrier.expects(:commit).with { |request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode }.returns(mock_response)
     response = @carrier.find_rates( location_fixtures[:ottawa],
                                     location_fixtures[:beverly_hills],
-                                    package_fixtures.values_at(:book, :wii), :test => true)
+                                    package_fixtures.values_at(:book, :wii), test: true, saturday_delivery: true)
     assert_equal ["FedEx Ground"], response.rates.map(&:service_name)
     assert_equal [3836], response.rates.map(&:price)
 
@@ -199,7 +211,7 @@ class FedExTest < Minitest::Test
     exception = assert_raises(ActiveShipping::ResponseContentError) do
       @carrier.find_rates( location_fixtures[:ottawa],
                            location_fixtures[:beverly_hills],
-                           package_fixtures.values_at(:book, :wii), :test => true)
+                           package_fixtures.values_at(:book, :wii), test: true, saturday_delivery: true)
     end
     message = "Invalid document \n\n#{mock_response}"
     assert_equal message, exception.message
