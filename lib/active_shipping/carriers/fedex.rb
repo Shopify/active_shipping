@@ -304,7 +304,7 @@ module ActiveShipping
           xml.ReturnTransitAndCommit(true)
 
           # Returns saturday delivery shipping options when available
-          xml.VariableOptions('SATURDAY_DELIVERY')
+          xml.VariableOptions('SATURDAY_DELIVERY') if options[:saturday_delivery]
 
           xml.RequestedShipment do
             if options[:pickup_date]
