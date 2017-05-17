@@ -343,6 +343,20 @@ class CanadaPostPwsRatingTest < Minitest::Test
     assert_equal 150, response[:restrictions][:max_width]
   end
 
+  def test_parse_find_service_options_response
+    body = xml_fixture('canadapost_pws/service_options_response_priority_worldwide')
+    response = @cp.parse_service_options_response(body)
+    assert_equal 3, response[:options].size
+    assert_equal 0, response[:restrictions][:min_weight]
+    assert_equal 0, response[:restrictions][:max_weight]
+    assert_equal 0, response[:restrictions][:min_length]
+    assert_equal 0, response[:restrictions][:min_height]
+    assert_equal 0, response[:restrictions][:min_width]
+    assert_equal 0, response[:restrictions][:max_length]
+    assert_equal 0, response[:restrictions][:max_height]
+    assert_equal 0, response[:restrictions][:max_width]
+  end
+
   def test_parse_find_option_response
     body = xml_fixture('canadapost_pws/option_response')
     response = @cp.parse_option_response(body)

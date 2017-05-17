@@ -214,14 +214,14 @@ module ActiveShipping
       restrictions_node = doc.root.at('restrictions')
       dimensions_node = restrictions_node.at('dimensional-restrictions')
       restrictions = {
-        :min_weight => restrictions_node.at("weight-restriction").attributes['min'].value.to_i,
-        :max_weight => restrictions_node.at("weight-restriction").attributes['max'].value.to_i,
-        :min_length => dimensions_node.at("length").attributes['min'].value.to_f,
-        :max_length => dimensions_node.at("length").attributes['max'].value.to_f,
-        :min_height => dimensions_node.at("height").attributes['min'].value.to_f,
-        :max_height => dimensions_node.at("height").attributes['max'].value.to_f,
-        :min_width => dimensions_node.at("width").attributes['min'].value.to_f,
-        :max_width => dimensions_node.at("width").attributes['max'].value.to_f
+        :min_weight => restrictions_node.at("weight-restriction").attributes['min'].try(:value).to_i,
+        :max_weight => restrictions_node.at("weight-restriction").attributes['max'].try(:value).to_i,
+        :min_length => dimensions_node.at("length").attributes['min'].try(:value).to_f,
+        :max_length => dimensions_node.at("length").attributes['max'].try(:value).to_f,
+        :min_height => dimensions_node.at("height").attributes['min'].try(:value).to_f,
+        :max_height => dimensions_node.at("height").attributes['max'].try(:value).to_f,
+        :min_width => dimensions_node.at("width").attributes['min'].try(:value).to_f,
+        :max_width => dimensions_node.at("width").attributes['max'].try(:value).to_f
       }
 
       {

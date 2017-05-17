@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service>
+  <service-code>USA.PW.ENV</service-code>
+  <service-name>Priority Worldwide envelope USA</service-name>
+  <options>
+    <option>
+      <option-code>SO</option-code>
+      <option-name>Signature option</option-name>
+      <link rel="option" href="https://soa-gw.canadapost.ca/rs/ship/option/SO" media-type="application/vnd.cpc.ship.rate+xml"/>
+      <mandatory>true</mandatory>
+      <qualifier-required>false</qualifier-required>
+    </option>
+    <option>
+      <option-code>COV</option-code>
+      <option-name>Coverage</option-name>
+      <link rel="option" href="https://soa-gw.canadapost.ca/rs/ship/option/COV" media-type="application/vnd.cpc.ship.rate+xml"/>
+      <mandatory>false</mandatory>
+      <qualifier-required>true</qualifier-required>
+      <qualifier-max>100</qualifier-max>
+    </option>
+    <option>
+      <option-code>DC</option-code>
+      <option-name>Delivery confirmation</option-name>
+      <link rel="option" href="https://soa-gw.canadapost.ca/rs/ship/option/DC" media-type="application/vnd.cpc.ship.rate+xml"/>
+      <mandatory>true</mandatory>
+      <qualifier-required>false</qualifier-required>
+    </option>
+  </options>
+  <restrictions>
+    <weight-restriction/>
+    <dimensional-restrictions>
+      <length />
+      <width />
+      <height />
+      <length-plus-girth-max>300</length-plus-girth-max>
+    </dimensional-restrictions>
+    <can-ship-in-mailing-tube>false</can-ship-in-mailing-tube>
+    <can-ship-unpackaged>false</can-ship-unpackaged>
+    <allowed-as-return-service>false</allowed-as-return-service>
+  </restrictions>
+</service>
