@@ -1,5 +1,8 @@
 # ActiveShipping CHANGELOG
 
+### v1.14.1
+- Fix parsing of CanadaPostPWS service options response.
+
 ### v1.14.0
 - Update Correios default services list.
 - Fix CanadaPostPWS from generating an empty options tag.
