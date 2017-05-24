@@ -5,8 +5,7 @@ module ActiveShipping #:nodoc:
     def initialize(name, grams_or_ounces, value, quantity, options = {})
       @name = name
 
-      imperial = (options[:units] == :imperial) ||
-                 (grams_or_ounces.respond_to?(:unit) && m.unit.to_sym == :imperial)
+      imperial = (options[:units] == :imperial)
 
       @unit_system = imperial ? :imperial : :metric
 
@@ -61,7 +60,7 @@ module ActiveShipping #:nodoc:
 
     def attribute_from_metric_or_imperial(obj, klass, metric_unit, imperial_unit)
       if obj.is_a?(klass)
-        return value
+        return obj
       else
         return klass.new(obj, (@unit_system == :imperial ? imperial_unit : metric_unit))
       end
