@@ -13,19 +13,16 @@ module ActiveShipping #:nodoc:
 
       @dimensions = [dimensions].flatten.reject(&:nil?)
 
-      imperial = (options[:units] == :imperial) ||
-                 ([grams_or_ounces, *dimensions].all? { |m| m.respond_to?(:unit) && m.unit.to_sym == :imperial })
+      imperial = (options[:units] == :imperial)
 
       weight_imperial = dimensions_imperial = imperial if options.include?(:units)
 
       if options.include?(:weight_units)
-        weight_imperial = (options[:weight_units] == :imperial) ||
-                          (grams_or_ounces.respond_to?(:unit) && m.unit.to_sym == :imperial)
+        weight_imperial = (options[:weight_units] == :imperial)
       end
 
       if options.include?(:dim_units)
-        dimensions_imperial = (options[:dim_units] == :imperial) ||
-                              (dimensions && dimensions.all? { |m| m.respond_to?(:unit) && m.unit.to_sym == :imperial })
+        dimensions_imperial = (options[:dim_units] == :imperial)
       end
 
       @weight_unit_system = weight_imperial ? :imperial : :metric
@@ -66,35 +63,35 @@ module ActiveShipping #:nodoc:
     end
 
     def ounces(options = {})
-      weight(options).convert_to(:oz).value
+      weight(options).convert_to(:oz).value.to_f
     end
     alias_method :oz, :ounces
 
     def grams(options = {})
-      weight(options).convert_to(:g).value
+      weight(options).convert_to(:g).value.to_f
     end
     alias_method :g, :grams
 
     def pounds(options = {})
-      weight(options).convert_to(:lb).value
+      weight(options).convert_to(:lb).value.to_f
     end
     alias_method :lb, :pounds
     alias_method :lbs, :pounds
 
     def kilograms(options = {})
-      weight(options).convert_to(:kg).value
+      weight(options).convert_to(:kg).value.to_f
     end
     alias_method :kg, :kilograms
     alias_method :kgs, :kilograms
 
     def inches(measurement = nil)
-      @inches ||= @dimensions.map { |m| m.convert_to(:in).value }
+      @inches ||= @dimensions.map { |m| m.convert_to(:in).value.to_f }
       measurement.nil? ? @inches : measure(measurement, @inches)
     end
     alias_method :in, :inches
 
     def centimetres(measurement = nil)
-      @centimetres ||= @dimensions.map { |m| m.convert_to(:cm).value }
+      @centimetres ||= @dimensions.map { |m| m.convert_to(:cm).value.to_f }
       measurement.nil? ? @centimetres : measure(measurement, @centimetres)
     end
     alias_method :cm, :centimetres
