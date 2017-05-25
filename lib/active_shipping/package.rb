@@ -4,7 +4,7 @@ module ActiveShipping #:nodoc:
     attr_reader :options, :value, :currency
 
     # Package.new(100, [10, 20, 30], :units => :metric)
-    # Package.new(Mass.new(100, :grams), [10, 20, 30].map {|m| Length.new(m, :centimetres)})
+    # Package.new(Measured::Weight.new(100, :g), [10, 20, 30].map {|m| Length.new(m, :centimetres)})
     # Package.new(100.grams, [10, 20, 30].map(&:centimetres))
     def initialize(grams_or_ounces, dimensions, options = {})
       options = @@default_options.update(options) if @@default_options
