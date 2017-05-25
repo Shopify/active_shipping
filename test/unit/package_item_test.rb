@@ -48,13 +48,8 @@ class PackageItemTest < ActiveSupport::TestCase
   end
 
   test "#initialize weight mass object" do
-    begin
-      @item = PackageItem.new(@name, @mass, @value, @quantity, @options)
-      assert_equal @mass, @item.weight
-      flunk "This code path is broken but passed unexpectedly"
-    rescue NameError
-      skip "This code path is broken"
-    end
+    @item = PackageItem.new(@name, @mass, @value, @quantity, @options)
+    assert_equal @mass, @item.weight
   end
 
   test "#initialize weight default metric" do

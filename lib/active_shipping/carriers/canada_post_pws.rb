@@ -164,7 +164,7 @@ module ActiveShipping
     end
 
     def maximum_weight
-      Mass.new(MAX_WEIGHT, :kilograms)
+      Measured::Weight.new(MAX_WEIGHT, :kg)
     end
 
     def maximum_address_field_length

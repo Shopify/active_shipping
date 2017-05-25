@@ -5,12 +5,12 @@ module ActiveShipping #:nodoc:
     def initialize(name, grams_or_ounces, value, quantity, options = {})
       @name = name
 
-      imperial = (options[:units] == :imperial) ||
-                 (grams_or_ounces.respond_to?(:unit) && m.unit.to_sym == :imperial)
+      imperial = (options[:units] == :imperial)
 
       @unit_system = imperial ? :imperial : :metric
 
-      @weight = attribute_from_metric_or_imperial(grams_or_ounces, Measured::Weight, :grams, :ounces)
+      @weight = grams_or_ounces
+      @weight = Measured::Weight.new(grams_or_ounces, (@unit_system == :imperial ? :oz : :g)) unless @weight.is_a?(Measured::Weight)
 
       @value = Package.cents_from(value)
       @quantity = quantity > 0 ? quantity : 1
@@ -56,15 +56,5 @@ module ActiveShipping #:nodoc:
     end
     alias_method :kg, :kilograms
     alias_method :kgs, :kilograms
-
-    private
-
-    def attribute_from_metric_or_imperial(obj, klass, metric_unit, imperial_unit)
-      if obj.is_a?(klass)
-        return value
-      else
-        return klass.new(obj, (@unit_system == :imperial ? imperial_unit : metric_unit))
-      end
-    end
   end
 end
