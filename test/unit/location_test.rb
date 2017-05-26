@@ -63,6 +63,20 @@ class LocationTest < ActiveSupport::TestCase
     assert_equal @attributes_hash[:name], location.name
   end
 
+  test ".from adheres to propery order even if hash access is available" do
+    object = Class.new do
+      def [](_index)
+        return "California" if index == :province
+        nil
+      end
+
+      def province_code
+        "CA"
+      end
+    end.new
+    assert_equal "CA", Location.from(object).province
+  end
+
   test ".from sets the name to nil if it is not provided" do
     location = Location.from({})
     assert_nil location.name
