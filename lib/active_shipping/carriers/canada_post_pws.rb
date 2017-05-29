@@ -115,6 +115,8 @@ module ActiveShipping
     def find_shipment_receipt(shipping_id, options = {})
       response = ssl_get(shipment_receipt_url(shipping_id, options), headers(options, SHIPMENT_MIMETYPE, SHIPMENT_MIMETYPE))
       parse_shipment_receipt_response(response)
+    rescue ActiveUtils::ResponseError => e
+      raise ActiveShipping::ResponseError.new(e.message)
     end
 
     def retrieve_shipping_label(shipping_response, options = {})
