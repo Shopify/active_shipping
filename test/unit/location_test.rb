@@ -47,7 +47,10 @@ class LocationTest < ActiveSupport::TestCase
       def method_missing(method)
         @hash[method]
       end
-      def respond_to?(method) ; true ; end
+      def respond_to?(method)
+        return false if method == :[]
+        true
+      end
     end.new(@attributes_hash)
 
     location = Location.from(object)
@@ -65,9 +68,8 @@ class LocationTest < ActiveSupport::TestCase
 
   test ".from adheres to propery order even if hash access is available" do
     object = Class.new do
-      def [](_index)
-        return "California" if index == :province
-        nil
+      def [](index)
+        { province: "California" }[index]
       end
 
       def province_code
