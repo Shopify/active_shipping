@@ -64,12 +64,7 @@ module ActiveShipping #:nodoc:
 
       attributes = {}
 
-      hash_access = begin
-        object[:some_symbol]
-        true
-      rescue
-        false
-      end
+      hash_access = object.respond_to?(:[])
 
       ATTRIBUTE_ALIASES.each do |attribute, aliases|
         aliases.detect do |sym|
