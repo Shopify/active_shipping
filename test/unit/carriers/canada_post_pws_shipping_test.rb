@@ -231,9 +231,8 @@ class CanadaPostPwsShippingTest < ActiveSupport::TestCase
 
   def test_find_shipment_receipt_returns_active_shipping_response_error_if_active_utils_response_error
     options = @default_options.dup
-    http_response = mock
-    http_response.stubs(:code).returns('400')
-    response_error = ActiveUtils::ResponseError.new(http_response)
+    bad_response = Net::HTTPResponse.new({}, 404, "404 Not Found")
+    response_error = ActiveUtils::ResponseError.new(bad_response)
     @cp.expects(:ssl_get).once.raises(response_error)
     assert_raises ActiveShipping::ResponseError do
       response = @cp.find_shipment_receipt('1234567', options)
