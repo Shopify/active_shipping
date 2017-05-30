@@ -2,6 +2,8 @@
 
 We love receiving pull requests! Anything from new carriers to documentation fixes.
 
+Also, we are looking for maintainers for the current version of ActiveShipping 2.0.
+
 ## Standards
 
 * PR should explain what the feature does, and why the change exists.
