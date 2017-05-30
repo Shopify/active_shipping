@@ -1,5 +1,8 @@
 # ActiveShipping CHANGELOG
 
+### v2.0.1
+- Raise ActiveShipping::ResponseError error in favour of ActiveUtils::ResponseError for CanadaPostPWS#find_shipment_receipt
+
 ### v2.0.0
 - Drop support for < ruby 2.2, support ruby 2.4
 - Drop support for < Rails 4.2.
