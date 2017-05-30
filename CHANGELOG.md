@@ -1,5 +1,49 @@
 # ActiveShipping CHANGELOG
 
+### v2.0.0
+- Drop support for < ruby 2.2, support ruby 2.4
+- Drop support for < Rails 4.2.
+- BREAKING CHANGE: Use shopify/measured instead of shopify/quantified for dimensions and units.
+
+### v1.14.2
+- Make saturday delivery an option for fedex
+
+### v1.14.1
+- Fix parsing of CanadaPostPWS service options response.
+
+### v1.14.0
+- Update Correios default services list.
+- Fix CanadaPostPWS from generating an empty options tag.
+- Allow contract-number on CanadaPost merchant detail's response to be nil.
+- Fix a flakey UPS remote test that would fail only on Fridays.
+
+### v1.13.4
+- Upcase postal code for CanadaPostPWS
+- Fix failing USPS test
+- add .byebug_history to .gitignore
+
+### v1.13.3
+- CanadaPostPWS no longer modifies locations passed to it
+
+### v1.13.2
+- Bump active_utils to 3.3.1
+- Allow activesupport <5.2.0
+
+### v1.13.1
+- Fix up UPS tracker parsing for Kosovo (KV)
+
+### v1.13.0
+- Add default location for CanadaPost PWS
+- Patch UPS to use old Kosovo country code
+- Add option to not include tax in rates for CP PWS
+
+### v1.12.1
+- Explicitly set ssl_version for USPS
+- Strip 9 digit origin zip code for USPS world rate requests
+
+### v1.12.0
+- Update active_utils dependency to v3.3.0
+
 ### v1.8.6
 - Fix UPS TrackResponse with no status code
 - Stop FedEx from raising for successful responses with no statuses
