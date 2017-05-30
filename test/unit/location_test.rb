@@ -47,7 +47,10 @@ class LocationTest < ActiveSupport::TestCase
       def method_missing(method)
         @hash[method]
       end
-      def respond_to?(method) ; true ; end
+      def respond_to?(method)
+        return false if method == :[]
+        true
+      end
     end.new(@attributes_hash)
 
     location = Location.from(object)
@@ -61,6 +64,19 @@ class LocationTest < ActiveSupport::TestCase
     assert_equal @attributes_hash[:fax_number], location.fax
     assert_equal @attributes_hash[:address_type].to_s, location.address_type
     assert_equal @attributes_hash[:name], location.name
+  end
+
+  test ".from adheres to propery order even if hash access is available" do
+    object = Class.new do
+      def [](index)
+        { province: "California" }[index]
+      end
+
+      def province_code
+        "CA"
+      end
+    end.new
+    assert_equal "CA", Location.from(object).province
   end
 
   test ".from sets the name to nil if it is not provided" do
