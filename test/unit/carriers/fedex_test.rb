@@ -102,7 +102,7 @@ class FedExTest < ActiveSupport::TestCase
 
     @carrier.expects(:ship_timestamp).returns(Time.parse("2009-07-20T12:01:55-04:00").in_time_zone('US/Eastern'))
     @carrier.expects(:commit).with { |request, test_mode| Hash.from_xml(request) == Hash.from_xml(expected_request) && test_mode }.returns(mock_response)
-    destination = ActiveShipping::Location.from(location_fixtures[:beverly_hills].to_hash) 
+    destination = ActiveShipping::Location.from(location_fixtures[:beverly_hills].to_hash)
     @carrier.find_rates( location_fixtures[:ottawa],
                          destination,
                          package_fixtures.values_at(:book, :wii), test: true)
@@ -599,7 +599,7 @@ class FedExTest < ActiveSupport::TestCase
   end
 
   ### create_shipment
-  
+
   def test_create_shipment
     confirm_response = xml_fixture('fedex/create_shipment_response')
     @carrier.stubs(:commit).returns(confirm_response)
