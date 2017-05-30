@@ -229,6 +229,16 @@ class CanadaPostPwsShippingTest < ActiveSupport::TestCase
     assert_equal @cp.parse_shipment_receipt_response(xml_response), response
   end
 
+  def test_find_shipment_receipt_returns_active_shipping_response_error_if_active_utils_response_error
+    options = @default_options.dup
+    bad_response = Net::HTTPResponse.new({}, 404, "404 Not Found")
+    response_error = ActiveUtils::ResponseError.new(bad_response)
+    @cp.expects(:ssl_get).once.raises(response_error)
+    assert_raises ActiveShipping::ResponseError do
+      response = @cp.find_shipment_receipt('1234567', options)
+    end
+  end
+
   def test_character_limit_on_customs_description
     @line_item1.first.stubs(:name).returns("Some super long description that exceeds the 44 character limit")
     options = @default_options.dup
