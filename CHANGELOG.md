@@ -1,5 +1,8 @@
 # ActiveShipping CHANGELOG
 
+### v2.1.0
+- Add email field to Location
+
 ### v2.0.0
 - Drop support for < ruby 2.2, support ruby 2.4
 - Drop support for < Rails 4.2.
