@@ -15,6 +15,7 @@ class LocationTest < ActiveSupport::TestCase
       address: '66 Gregory Ave.',
       phone: '515-555-1212',
       fax_number: 'none to speak of',
+      email: 'bob.bobsen@gmail.com',
       address_type: :commercial,
       name: "Bob Bobsen",
     }
@@ -35,6 +36,7 @@ class LocationTest < ActiveSupport::TestCase
     assert_equal @attributes_hash[:address], location.address1
     assert_equal @attributes_hash[:phone], location.phone
     assert_equal @attributes_hash[:fax_number], location.fax
+    assert_equal @attributes_hash[:email], location.email
     assert_equal @attributes_hash[:address_type].to_s, location.address_type
     assert_equal @attributes_hash[:name], location.name
   end
@@ -62,6 +64,7 @@ class LocationTest < ActiveSupport::TestCase
     assert_equal @attributes_hash[:address], location.address1
     assert_equal @attributes_hash[:phone], location.phone
     assert_equal @attributes_hash[:fax_number], location.fax
+    assert_equal @attributes_hash[:email], location.email
     assert_equal @attributes_hash[:address_type].to_s, location.address_type
     assert_equal @attributes_hash[:name], location.name
   end
@@ -116,7 +119,7 @@ class LocationTest < ActiveSupport::TestCase
   end
 
   test "#inspect returns a readable string" do
-    expected = "110 Laurier Avenue West\nOttawa, ON, K1P 1J1\nCanada\nPhone: 1-613-580-2400\nFax: 1-613-580-2495"
+    expected = "110 Laurier Avenue West\nOttawa, ON, K1P 1J1\nCanada\nPhone: 1-613-580-2400\nFax: 1-613-580-2495\nEmail: bob.bobsen@gmail.com"
     assert_equal expected, @location.inspect
   end
 
@@ -165,7 +168,7 @@ class LocationTest < ActiveSupport::TestCase
   end
 
   test "#to_hash has the expected attributes" do
-    expected = %w(address1 address2 address3 address_type city company_name country fax name phone postal_code province)
+    expected = %w(address1 address2 address3 address_type city company_name country email fax name phone postal_code province)
 
     assert_equal expected, @location.to_hash.stringify_keys.keys.sort
   end

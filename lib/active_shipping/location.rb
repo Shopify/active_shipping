@@ -13,6 +13,7 @@ module ActiveShipping #:nodoc:
       address3: [:address3],
       phone: [:phone, :phone_number],
       fax: [:fax, :fax_number],
+      email: [:email],
       address_type: [:address_type],
       company_name: [:company, :company_name],
     }.freeze
@@ -28,6 +29,7 @@ module ActiveShipping #:nodoc:
                 :address3,
                 :phone,
                 :fax,
+                :email,
                 :address_type,
                 :company_name
 
@@ -54,6 +56,7 @@ module ActiveShipping #:nodoc:
       @address3 = options[:address3]
       @phone = options[:phone]
       @fax = options[:fax]
+      @email = options[:email]
       @company_name = options[:company_name] || options[:company]
 
       self.address_type = options[:address_type]
@@ -122,6 +125,7 @@ module ActiveShipping #:nodoc:
         address3: address3,
         phone: phone,
         fax: fax,
+        email: email,
         address_type: address_type,
         company_name: company_name
       }
@@ -142,6 +146,7 @@ module ActiveShipping #:nodoc:
       string = prettyprint
       string << "\nPhone: #{@phone}" unless @phone.blank?
       string << "\nFax: #{@fax}" unless @fax.blank?
+      string << "\nEmail: #{@email}" unless @email.blank?
       string
     end
 
