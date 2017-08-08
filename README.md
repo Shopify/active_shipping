@@ -22,8 +22,9 @@ This library interfaces with the web services of various shipping carriers. The 
 
 
 ## Versions
-Note: `2.x` contains breaking changes, please see the [changelog](https://github.com/Shopify/active_shipping/blob/master/CHANGELOG.md). Shopify will not be actively contibuting to the 2.0 version of this gem and is looking for maintainers.
-We have released `1.9` and will only backport small fixes to this version, on branch `1-9-stable`, and they should be on `master` first.
+Note: `2.x` contains breaking changes, please see the [changelog](https://github.com/Shopify/active_shipping/blob/master/CHANGELOG.md). Shopify will not be actively contributing to the `2.x` version of this gem and is looking for maintainers.
+
+[See our releases](https://github.com/Shopify/active_shipping/releases) for past versions.
 
 ## Installation
 
