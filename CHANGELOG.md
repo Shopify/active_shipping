@@ -1,5 +1,8 @@
 # ActiveShipping CHANGELOG
 
+### v2.1.1
+- Update README to clarify Shopify's involvement moving forward with v2.x
+
 ### v2.1.0
 - Add email field to Location
 
