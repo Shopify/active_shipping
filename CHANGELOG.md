@@ -1,5 +1,8 @@
 # ActiveShipping CHANGELOG
 
+### v2.2.0
+- Remove UPS integration from ActiveShipping repository as requested by UPS. For information about the UPS APIs see https://www.ups.com/upsdeveloperkit
+
 ### v2.1.1
 - Update README to clarify Shopify's involvement moving forward with v2.x
 
