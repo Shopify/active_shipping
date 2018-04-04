@@ -5,9 +5,10 @@ class RemoteKunakiTest < ActiveSupport::TestCase
 
   def setup
     @carrier = Kunaki.new
-    @item1 = { :sku => 'XZZ1111111', :quantity => 2 }
-    @item2 = { :sku => 'PXZZ111112', :quantity => 1 }
-    @items = [@item1, @item2]
+    @item1 = { :sku => 'PX002LTGLS', :quantity => 2 }
+    @item2 = { :sku => 'PX00MXGKAR', :quantity => 1 }
+    @item3 = { :sku => 'PX00ZEDG6F', :quantity => 1 }
+    @items = [@item1, @item2, @item3]
   end
 
   def test_successful_rates_request
