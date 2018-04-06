@@ -11,15 +11,6 @@ class RemoteUSPSTest < ActiveSupport::TestCase
     skip(e.message)
   end
 
-   def test_tracking_with_attempted_delivery
-    response = @carrier.find_tracking_info('LZ117228611US', test: false)
-    assert response.success?, response.message
-    assert_equal 15,response.shipment_events.size
-    assert_equal 'DELIVERED', response.shipment_events.last.message
-    assert_equal Time.parse('2017-03-31 11:37:00 UTC'), response.attempted_delivery_date
-    assert_equal Time.parse('2017-04-03 14:05:00 UTC'), response.actual_delivery_date
-  end
-
   def test_tracking_with_bad_number
     assert_raises(ResponseError) do
       @carrier.find_tracking_info('abc123xyz', test: false)
