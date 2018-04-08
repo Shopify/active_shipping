@@ -10,6 +10,7 @@ rvm:
 gemfile:
 - gemfiles/activesupport42.gemfile
 - gemfiles/activesupport50.gemfile
+- gemfiles/activesupport51.gemfile
 
 matrix:
   include:
