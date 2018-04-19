@@ -5,16 +5,20 @@ sudo: false
 rvm:
 - "2.2.2"
 - "2.3.1"
-- "2.4.0"
+- "2.4.1"
 
 gemfile:
 - gemfiles/activesupport42.gemfile
 - gemfiles/activesupport50.gemfile
-- gemfiles/activesupport_master.gemfile
+- gemfiles/activesupport51.gemfile
+- gemfiles/activesupport52.gemfile
 
 matrix:
+  include:
+    - rvm: "2.4.1"
+      gemfile: gemfiles/activesupport_master.gemfile
   exclude:
-    - rvm: "2.4.0"
+    - rvm: "2.4.1"
       gemfile: gemfiles/activesupport42.gemfile
 
 env:
